@@ -1,0 +1,56 @@
+.. _installation:
+
+Installing GIANT
+================
+
+Setting up the environment
+--------------------------
+
+GIANT is primarily a python package with some modules written in Cython for speed improvements.  This makes installation
+fairly straight forward in most Unix-like environments.  It should be possible to install GIANT on windows using similar
+steps to those that follow, but this is untested.  The following subsections give step by step instructions for
+installing GIANT.
+
+The first step to installing GIANT is to install the mamba-forge python environment/package manager. This helps to
+ensure that the GIANT requirements don't interfere with other python code you have on your system (and that other python
+environments you have don't interfere with GIANT).  Mamba-forge can be downloaded fom
+https://github.com/conda-forge/miniforge#mambaforge
+Once you have downloaded anaconda, install it following the instructions provided (note that you can install it to your
+home directory without needing admin privileges, which is a big benefit).
+
+With mamba installed, we can now set up an environment in which to install giant
+
+#. Create a new environment to install GIANT to and install the dependencies
+    - :code:`mamba create -n giant_env python=3 opencv matplotlib scipy pandas numpy cython pyqt astropy lxml sphinx spiceypy c-compiler openmp astroquery dill psutil imagemagick`
+    - Note that creating a new environment is not required, but is strongly recommended.
+#. Activate the new environment
+    - :code:`conda activate giant_env`
+    - If you did not create a new environment then this step is not necessary (as long as the mamba python is first
+      in your path).
+    - You will need to do this step each time you want to use GIANT.
+#. Now there are a couple operating system specific instructions.
+    - macOS
+        - You may need to set the environment variable ``CPATH`` to something like
+          ``/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include``
+          or ``/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include`` after installing xcode or xcode command
+          line tools to ensure system headers are available
+
+Installing and testing GIANT
+----------------------------
+With the anaconda envrionment set up and activated it is now easy to install giant.
+
+#. Download the GIANT source code from git
+    - :code:`git clone git@aetd-git.gsfc.nasa.gov:giant/giant.git`
+#. Install the GIANT package
+    - :code:`cd giant`
+    - :code:`python setup.py develop`
+    - You can also use "install" instead of "develop" but using "develop" makes it easier to update GIANT in the future.
+    - You will likely see a lot of warnings from the c compiler that can largely be ignored.  If you have an error
+      though that is a problem
+#. Check the installation (optional)
+    - :code:`cd unittests`
+    - :code:`python -Wignore -m unittest discover`
+    - This should complete with no errors (skips/warnings are OK).
+
+GIANT should now be installed and ready for use.
+

@@ -1,0 +1,62 @@
+Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
+Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
+The Goddard Image Analysis and Navigation Tool (GIANT) is a collection of utilities and
+scripts that aims to make all aspects of Optical Navigation (OpNav) and Camera Calibration easy.
+
+To install it is recommended that you use the
+[mamba-forge python distribution/package manager](https://github.com/conda-forge/miniforge#mambaforge).
+
+More detailed instructions can be found in the GIANT documentation (documentation/html/installation.html)
+
+The first thing to do is to download the GIANT git repository:
+
+    git clone git@github.com:nasa/giant.git
+
+Once the download is complete, cd into the new giant directory
+
+    cd giant
+
+GIANT is designed to work with python 3.5+ so it is likely that we will need to create a new environment in mamba for
+our work.  To create an environment from the terminal (or mamba prompt for windows) simply type
+
+    mamba create -n giant_env python=3 opencv matplotlib scipy pandas numpy cython pyqt astropy lxml sphinx spiceypy c-compiler openmp astroquery dill psutil imagemagick 
+
+which will create a virtual environment with python and all of the usual python tools (setuptools, pip,
+etc).  Once the virtual environment has been created you can run
+
+    conda activate giant_env
+
+to activate the environment.  Activating the environment basically adjusts your paths/aliases so that "python", "pip",
+etc now point to the virtual environment executables.  
+
+If you are on OSX you will also likely need to set the environment variable CPATH
+
+    export CPATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include
+
+or
+
+    export CPATH=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include
+
+to set where to find the system headers.
+
+With our GIANT environment activated we are good to install GIANT.  GIANT is installed like any normal python
+package.  Simply navigate to the root directory of GIANT and type (note that we use the develop option here because
+GIANT is still under development and this allows you to update with a simple git pull.
+
+    cd giant
+    python setup.py develop
+
+This will install the GIANT package to your virtual environment along with all of its dependencies.  Once GIANT is
+installed you can run some basic tests to make sure everything is working by entering the unittests directory and
+typing
+   
+    cd unittests
+    python -Wignore -m unittest discover
+
+This might return some warnings  but at the end of it all it should say "ok" and something about all of the
+tests passing.
+
+GIANT is now installed and you can begin navigating.
+
+See the GIANT documentation (documentation/html/index.html) for more information.

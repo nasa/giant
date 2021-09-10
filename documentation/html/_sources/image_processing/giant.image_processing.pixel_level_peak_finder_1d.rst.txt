@@ -1,0 +1,10 @@
+﻿pixel\_level\_peak\_finder\_1d
+==============================
+
+.. currentmodule:: giant.image_processing
+
+:mod:`giant.image_processing`\:
+
+.. autofunction:: pixel_level_peak_finder_1d
+
+|
