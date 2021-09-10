@@ -1,0 +1,394 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Camera &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="Camera.add_images" href="giant.camera.Camera.add_images.html" />
+    <link rel="prev" title="AttitudeUpdateMethods" href="giant.camera.AttitudeUpdateMethods.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.camera.html">giant.camera</a><ul>
+      <li>Previous: <a href="giant.camera.AttitudeUpdateMethods.html" title="previous chapter">AttitudeUpdateMethods</a></li>
+      <li>Next: <a href="giant.camera.Camera.add_images.html" title="next chapter">Camera.add_images</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.camera.AttitudeUpdateMethods.html" title="Previous document">AttitudeUpdateMethods</a>
+        </li>
+        <li>
+          <a href="giant.camera.Camera.add_images.html" title="Next document">Camera.add_images</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="camera">
+<h1>Camera<a class="headerlink" href="#camera" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.camera.html#module-giant.camera" title="giant.camera"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.camera</span></code></a>:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.camera.Camera">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.camera.</span></span><span class="sig-name descname"><span class="pre">Camera</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">images=None</span></em>, <em class="sig-param"><span class="pre">model=None</span></em>, <em class="sig-param"><span class="pre">name=None</span></em>, <em class="sig-param"><span class="pre">spacecraft_name=None</span></em>, <em class="sig-param"><span class="pre">frame=None</span></em>, <em class="sig-param"><span class="pre">parse_data=True</span></em>, <em class="sig-param"><span class="pre">psf=None</span></em>, <em class="sig-param"><span class="pre">attitude_function=None</span></em>, <em class="sig-param"><span class="pre">start_date=None</span></em>, <em class="sig-param"><span class="pre">end_date=None</span></em>, <em class="sig-param"><span class="pre">metadata_only=False</span></em>, <em class="sig-param"><span class="pre">default_image_class=&lt;class</span> <span class="pre">'giant.image.OpNavImage'&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/giant/camera.html#Camera"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.camera.Camera" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class collects images, the <a class="reference internal" href="../camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraModel</span></code></a>, and some relevant metadata about the camera into a single
+object for passing to the GIANT estimators and measurements.</p>
+<p>The <a class="reference internal" href="#giant.camera.Camera" title="giant.camera.Camera"><code class="xref py py-class docutils literal notranslate"><span class="pre">Camera</span></code></a> class is primarily a container for collecting and manipulating images and metadata for a
+single physical camera.  This container is passed to the various measurement and estimation routines
+throughout GIANT to provide them with the requisite images and data needed to complete their tasks. The
+<a class="reference internal" href="#giant.camera.Camera" title="giant.camera.Camera"><code class="xref py py-class docutils literal notranslate"><span class="pre">Camera</span></code></a> object is also an iterator over the images that are turned on.  This means you could do
+something like:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.camera</span> <span class="kn">import</span> <span class="n">Camera</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># generate the image data</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">image_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>  <span class="c1"># type: List[np.ndarray]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># create an instance with the images included</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cam</span> <span class="o">=</span> <span class="n">Camera</span><span class="p">(</span><span class="n">images</span><span class="o">=</span><span class="n">image_list</span><span class="p">,</span> <span class="n">parse_data</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># turn off a few of the images</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cam</span><span class="o">.</span><span class="n">image_mask</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cam</span><span class="o">.</span><span class="n">image_mask</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">cam</span><span class="o">.</span><span class="n">image_mask</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># iterate over the images that are turned on</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">cam</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="nb">print</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">image_list</span><span class="p">[</span><span class="n">ind</span><span class="p">],</span> <span class="n">image</span><span class="p">))</span>
+<span class="go">0 True</span>
+<span class="go">2 True</span>
+<span class="go">3 True</span>
+<span class="go">4 True</span>
+<span class="go">6 True</span>
+<span class="go">7 True</span>
+<span class="go">9 True</span>
+</pre></div>
+</div>
+<p>The implementation of the Camera object here is fully functional, however, you may want to subclass this
+object for customization purposes.  For instance you may want to implement the <a class="reference internal" href="giant.camera.Camera.preprocessor.html#giant.camera.Camera.preprocessor" title="giant.camera.Camera.preprocessor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">preprocessor()</span></code></a> method to
+apply corrections to images immediately after loading.  You may also want to update the <a class="reference internal" href="giant.camera.Camera.image_check.html#giant.camera.Camera.image_check" title="giant.camera.Camera.image_check"><code class="xref py py-meth docutils literal notranslate"><span class="pre">image_check()</span></code></a>
+method to use a custom <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage" title="giant.image.OpNavImage"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpNavImage</span></code></a> subclass instead of the default (alternatively you could override
+the <code class="docutils literal notranslate"><span class="pre">default_image_class</span></code> argument to <code class="docutils literal notranslate"><span class="pre">__init__</span></code>), or provide more custom functionality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>images</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Iterable</em><em>[</em><em>Union</em><em>[</em><em>pathlib.Path</em><em>, </em><em>str</em><em>, </em><em>Sequence</em><em>[</em><em>Sequence</em><em>]</em><em>, </em><em>numpy.ndarray</em><em>]</em><em>]</em><em>, </em><em>pathlib.Path</em><em>, </em><em>str</em><em>, </em><em>Sequence</em><em>[</em><em>Sequence</em><em>]</em><em>, </em><em>numpy.ndarray</em><em>]</em><em>]</em>) – A single image, or a list of images to store in the camera object.  The image data can either be
+a string (in which case it is represents the path to the image file), an array of image data
+(this is generally not recommended), an <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage" title="giant.image.OpNavImage"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpNavImage</span></code></a> object already initialized, or a
+list containing any of these three options.</p></li>
+<li><p><strong>model</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><em>giant.camera_models.camera_model.CameraModel</em></a><em>]</em>) – A camera model that represents how 3D points project onto the 2D imaging plane</p></li>
+<li><p><strong>name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The name of the camera that is represented by this object.  Not Required</p></li>
+<li><p><strong>spacecraft_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The name of the spacecraft that hosts the camera. Not Required</p></li>
+<li><p><strong>frame</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The name of the frame for this camera.  Not Required</p></li>
+<li><p><strong>parse_data</strong> (<em>bool</em>) – A flag specifying whether to parse the metadata for each image when it is being loaded.</p></li>
+<li><p><strong>psf</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="giant.point_spread_functions.psf_meta.PointSpreadFunction"><em>giant.point_spread_functions.psf_meta.PointSpreadFunction</em></a><em>]</em>) – A callable object that applies a PSF to a 2D image, and provides a
+:meth`~.PointSpreadFunction.apply_1d` method to apply the PSF to 1D scan lines.  Typically this is a
+<a class="reference internal" href="../giant.point_spread_functions.html#giant.point_spread_functions.PointSpreadFunction" title="giant.point_spread_functions.PointSpreadFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PointSpreadFunction</span></code></a> subclass.</p></li>
+<li><p><strong>attitude_function</strong> (<em>Optional</em><em>[</em><em>Callable</em><em>]</em>) – A function that returns the attitude of the camera frame with respect to the inertial
+frame for an input datetime object.  This is generally a call to a spice routine
+generated by the <a class="reference internal" href="../utilities/giant.utilities.spice_interface.html#module-giant.utilities.spice_interface" title="giant.utilities.spice_interface"><code class="xref py py-mod docutils literal notranslate"><span class="pre">spice_interface</span></code></a> helper functions.
+(see the <a class="reference internal" href="../utilities/spice_interface/giant.utilities.spice_interface.create_callable_orientation.html#giant.utilities.spice_interface.create_callable_orientation" title="giant.utilities.spice_interface.create_callable_orientation"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_callable_orientation()</span></code></a> and
+<a class="reference internal" href="../utilities/spice_interface/giant.utilities.spice_interface.et_callable_to_datetime_callable.html#giant.utilities.spice_interface.et_callable_to_datetime_callable" title="giant.utilities.spice_interface.et_callable_to_datetime_callable"><code class="xref py py-func docutils literal notranslate"><span class="pre">et_callable_to_datetime_callable()</span></code></a> functions in particular)</p></li>
+<li><p><strong>start_date</strong> (<em>Optional</em><em>[</em><em>datetime.datetime</em><em>]</em>) – The time at which images should start being processed</p></li>
+<li><p><strong>end_date</strong> (<em>Optional</em><em>[</em><em>datetime.datetime</em><em>]</em>) – The time at which images should start being processed</p></li>
+<li><p><strong>metadata_only</strong> (<em>bool</em>) – Only load image metadata to an empty OpNavImage instead of loading the full image data.</p></li>
+<li><p><strong>default_image_class</strong> (<em>type</em>) – The class that the images stored in this instance should be an instance of.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.camera.Camera.start_date">
+<span class="sig-name descname"><span class="pre">start_date</span></span><a class="headerlink" href="#giant.camera.Camera.start_date" title="Permalink to this definition">¶</a></dt>
+<dd><p>The initial time to start processing images.</p>
+<p>Any images with an <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage.observation_date" title="giant.image.OpNavImage.observation_date"><code class="xref py py-attr docutils literal notranslate"><span class="pre">observation_date</span></code></a> before this epoch are ignored.  This typically should 
+be set to None (no filtering) or a python datetime object. See the <a class="reference internal" href="giant.camera.Camera.apply_date_range.html#giant.camera.Camera.apply_date_range" title="giant.camera.Camera.apply_date_range"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apply_date_range()</span></code></a> method for more 
+details.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.camera.Camera.end_date">
+<span class="sig-name descname"><span class="pre">end_date</span></span><a class="headerlink" href="#giant.camera.Camera.end_date" title="Permalink to this definition">¶</a></dt>
+<dd><p>The final time to stop processing images.</p>
+<p>Any images with an <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage.observation_date" title="giant.image.OpNavImage.observation_date"><code class="xref py py-attr docutils literal notranslate"><span class="pre">observation_date</span></code></a> after this epoch are ignored.  This typically should 
+be set to None (no filtering) or a python datetime object. See the <a class="reference internal" href="giant.camera.Camera.apply_date_range.html#giant.camera.Camera.apply_date_range" title="giant.camera.Camera.apply_date_range"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apply_date_range()</span></code></a> method for more 
+details.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.camera.Camera.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#giant.camera.Camera.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the camera.</p>
+<p>This attribute is provided for documentation and convenience, but isn’t used directly by core GIANT
+functions.  For an example of how one might use this attribute, see the <a class="reference internal" href="../getting_started.html#getting-started"><span class="std std-ref">getting started</span></a>
+page for more details.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.camera.Camera.spacecraft_name">
+<span class="sig-name descname"><span class="pre">spacecraft_name</span></span><a class="headerlink" href="#giant.camera.Camera.spacecraft_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the spacecraft hosting this camera (typically set to a spice id).</p>
+<p>This attribute is provided for documentation and convenience, but isn’t used directly by core GIANT
+functions.  For an example of how one might use this attribute, see the <a class="reference internal" href="../getting_started.html#getting-started"><span class="std std-ref">getting started</span></a>
+page for more details.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera.Camera.images">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">images</span></span><em class="property"><span class="pre">:</span> <span class="pre">List[giant.image.OpNavImage]</span></em><a class="headerlink" href="#giant.camera.Camera.images" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of <code class="xref py py-class docutils literal notranslate"><span class="pre">OpNavImages</span></code> contained in this camera object that should be considered by the GIANT
+routines.</p>
+<p>Note that this attribute is read only.  To add or remove images from the list, use the <a class="reference internal" href="giant.camera.Camera.add_images.html#giant.camera.Camera.add_images" title="giant.camera.Camera.add_images"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_images()</span></code></a> method
+or <a class="reference internal" href="giant.camera.Camera.remove_images.html#giant.camera.Camera.remove_images" title="giant.camera.Camera.remove_images"><code class="xref py py-meth docutils literal notranslate"><span class="pre">remove_images()</span></code></a> method respectively as these will ensure that the <a class="reference internal" href="#giant.camera.Camera.images" title="giant.camera.Camera.images"><code class="xref py py-attr docutils literal notranslate"><span class="pre">images</span></code></a> and
+<a class="reference internal" href="#giant.camera.Camera.image_mask" title="giant.camera.Camera.image_mask"><code class="xref py py-attr docutils literal notranslate"><span class="pre">image_mask</span></code></a> lists stay in sync.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera.Camera.image_mask">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">image_mask</span></span><em class="property"><span class="pre">:</span> <span class="pre">list</span></em><a class="headerlink" href="#giant.camera.Camera.image_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>This property contains a mask for turning images on or off in the GIANT estimation and measurement routines.</p>
+<p>The mask is a list of boolean values, where a <code class="docutils literal notranslate"><span class="pre">True</span></code> indicates that the image <strong>should</strong> be considered
+in the GIANT routines and returned when iterating over the images using this class and a <code class="docutils literal notranslate"><span class="pre">False</span></code> indicates
+that the image <strong>should not</strong> be considered in the GIANT routines or returned when iterating over the images
+using this class.</p>
+<p>In general, you should not write to, or update this mask directly, and you should never add or remove elements
+from the list directly.  Instead you should use the <a class="reference internal" href="giant.camera.Camera.add_images.html#giant.camera.Camera.add_images" title="giant.camera.Camera.add_images"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_images()</span></code></a> or <a class="reference internal" href="giant.camera.Camera.remove_images.html#giant.camera.Camera.remove_images" title="giant.camera.Camera.remove_images"><code class="xref py py-meth docutils literal notranslate"><span class="pre">remove_images()</span></code></a> methods to
+add/remove images entirely and use the <cite>*_on</cite> or <cite>*_off</cite> methods to adjust the boolean values within the
+array.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>While it is strongly recommended to not directly modify this attribute, it is not write protected.  Instead
+there is a setter method which ensures that anything set to this attribute is coerced to be the right length
+and type that is expected.</p>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera.Camera.psf">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">psf</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional[giant.point_spread_functions.psf_meta.PointSpreadFunction]</span></em><a class="headerlink" href="#giant.camera.Camera.psf" title="Permalink to this definition">¶</a></dt>
+<dd><p>An object that applies a point spread function to 1D scan lines and 2D images.</p>
+<p>This object should provide a <code class="docutils literal notranslate"><span class="pre">__call__</span></code> method which applies the PSF to a 2D image, and an <code class="docutils literal notranslate"><span class="pre">apply_1d</span></code> method
+which applies the PSF to 1D scan lines (as the rows of a 2D array). Typically this is a subclass of
+<a class="reference internal" href="../giant.point_spread_functions.html#giant.point_spread_functions.PointSpreadFunction" title="giant.point_spread_functions.PointSpreadFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PointSpreadFunction</span></code></a>.</p>
+<p>The PSF object is used when generating templates in GIANT for use with the surface feature and cross
+correlation techniques.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">new_template</span> <span class="o">=</span> <span class="n">camera</span><span class="o">.</span><span class="n">psf</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera.Camera.attitude_function">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">attitude_function</span></span><em class="property"><span class="pre">:</span> <span class="pre">Callable</span></em><a class="headerlink" href="#giant.camera.Camera.attitude_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function that returns the orientation of the camera frame with respect to the inertial frame as an
+<a class="reference internal" href="../rotations/giant.rotations.Rotation.html#giant.rotations.Rotation" title="giant.rotations.Rotation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rotation</span></code></a> object for a specific time input as a python <code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code> object.</p>
+<p>This function is used in two different ways.  First, it can be used to replace the attitude metadata
+in all of the images that are turned on directly using the <a class="reference internal" href="giant.camera.Camera.update_attitude_from_function.html#giant.camera.Camera.update_attitude_from_function" title="giant.camera.Camera.update_attitude_from_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_attitude_from_function()</span></code></a> method.
+This is useful when you are parsing the image metadata from an outdated source (such as the header information
+in a fits file) and want to update the attitude to reflect the most recent attitude knowledge.  Second, this
+function can be used to compute delta quaternions in order to propagate a solved-for attitude from one image to
+another image using the <a class="reference internal" href="giant.camera.Camera.update_short_attitude.html#giant.camera.Camera.update_short_attitude" title="giant.camera.Camera.update_short_attitude"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_short_attitude()</span></code></a> method.  This is useful when you are taking long-short
+exposure sequences and need to update the attitude of the short images based off of the solved-for attitude
+from the long images.</p>
+<p>In both cases the call to this function passes a datetime object representing the UTC
+time we need the attitude for as the only argument and the function will return the attitude
+as an <a class="reference internal" href="../rotations/giant.rotations.Rotation.html#giant.rotations.Rotation" title="giant.rotations.Rotation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rotation</span></code></a> object.</p>
+<p>In general, this function is a wrapper around spice calls to retrieve the attitude from a ck file.  GIANT
+provides some helper routines in the <a class="reference internal" href="../utilities/giant.utilities.spice_interface.html#module-giant.utilities.spice_interface" title="giant.utilities.spice_interface"><code class="xref py py-mod docutils literal notranslate"><span class="pre">spice_interface</span></code></a> module to make it easy to generate this function.
+For instance, we can create a valid function for this attribute using the following:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.utilities.spice_interface</span> <span class="kn">import</span> <span class="n">et_callable_to_datetime_callable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.utilities.spice_interface</span> <span class="kn">import</span> <span class="n">create_callable_orientation</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attitude_function</span> <span class="o">=</span> <span class="n">et_callable_to_datetime_callable</span><span class="p">(</span><span class="n">create_callable_orientation</span><span class="p">(</span><span class="s1">&#39;J2000&#39;</span><span class="p">,</span> <span class="s1">&#39;MyNavCam&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>and then we simply need to ensure we furnish a metakernel that provides enough information to compute the
+transformation from the J2000 inertial frame to the <cite>‘MyNavCam’</cite> frame.  See the <a class="reference internal" href="../utilities/giant.utilities.spice_interface.html#module-giant.utilities.spice_interface" title="giant.utilities.spice_interface"><code class="xref py py-mod docutils literal notranslate"><span class="pre">spice_interface</span></code></a>
+documentation for more information about how this works.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera.Camera.model">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">model</span></span><em class="property"><span class="pre">:</span> <span class="pre">giant.camera_models.camera_model.CameraModel</span></em><a class="headerlink" href="#giant.camera.Camera.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>The camera model which describes how 3D points in the camera frame are transformed into 2D points in the image.</p>
+<p>The object set to this class will be used by all GIANT routines that make use of a camera model to relate
+3D and 2D points (which is nearly all of them).</p>
+<p>For more information about camera models and their theories, refer to the <a class="reference internal" href="../giant.camera_models.html#module-giant.camera_models" title="giant.camera_models"><code class="xref py py-mod docutils literal notranslate"><span class="pre">camera_models</span></code></a> module
+documentation.</p>
+<p>Although not required, it is strongly recommended that the object assigned to this property be a
+subclass of <a class="reference internal" href="../camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraModel</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p class="rubric">Summary of Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera.Camera.add_images.html#giant.camera.Camera.add_images" title="giant.camera.Camera.add_images"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_images</span></code></a></p></td>
+<td><p>This method is used to add images to the <a class="reference internal" href="#giant.camera.Camera.images" title="giant.camera.Camera.images"><code class="xref py py-attr docutils literal notranslate"><span class="pre">images</span></code></a> while also ensuring that the <a class="reference internal" href="#giant.camera.Camera.image_mask" title="giant.camera.Camera.image_mask"><code class="xref py py-attr docutils literal notranslate"><span class="pre">image_mask</span></code></a> list remains the same size as the <a class="reference internal" href="#giant.camera.Camera.images" title="giant.camera.Camera.images"><code class="xref py py-attr docutils literal notranslate"><span class="pre">images</span></code></a> list.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera.Camera.short_on.html#giant.camera.Camera.short_on" title="giant.camera.Camera.short_on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">short_on</span></code></a></p></td>
+<td><p>This method updates the <a class="reference internal" href="#giant.camera.Camera.image_mask" title="giant.camera.Camera.image_mask"><code class="xref py py-attr docutils literal notranslate"><span class="pre">image_mask</span></code></a> attribute so that any image whose <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage.exposure_type" title="giant.image.OpNavImage.exposure_type"><code class="xref py py-attr docutils literal notranslate"><span class="pre">exposure_type</span></code></a> is set to <code class="docutils literal notranslate"><span class="pre">SHORT</span></code> or <code class="docutils literal notranslate"><span class="pre">DUAL</span></code> is turned on (processed).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera.Camera.short_off.html#giant.camera.Camera.short_off" title="giant.camera.Camera.short_off"><code class="xref py py-obj docutils literal notranslate"><span class="pre">short_off</span></code></a></p></td>
+<td><p>This method updates the <a class="reference internal" href="#giant.camera.Camera.image_mask" title="giant.camera.Camera.image_mask"><code class="xref py py-attr docutils literal notranslate"><span class="pre">image_mask</span></code></a> attribute so that any image whose <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage.exposure_type" title="giant.image.OpNavImage.exposure_type"><code class="xref py py-attr docutils literal notranslate"><span class="pre">exposure_type</span></code></a> is set to <code class="docutils literal notranslate"><span class="pre">SHORT</span></code> is turned off (not processed).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera.Camera.only_short_on.html#giant.camera.Camera.only_short_on" title="giant.camera.Camera.only_short_on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">only_short_on</span></code></a></p></td>
+<td><p>This method updated the <a class="reference internal" href="#giant.camera.Camera.image_mask" title="giant.camera.Camera.image_mask"><code class="xref py py-attr docutils literal notranslate"><span class="pre">image_mask</span></code></a> list so that any image whose <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage.exposure_type" title="giant.image.OpNavImage.exposure_type"><code class="xref py py-attr docutils literal notranslate"><span class="pre">exposure_type</span></code></a> attribute is set to <code class="docutils literal notranslate"><span class="pre">SHORT</span></code> or <code class="docutils literal notranslate"><span class="pre">DUAL</span></code> is turned on (processed) and any image whose <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage.exposure_type" title="giant.image.OpNavImage.exposure_type"><code class="xref py py-attr docutils literal notranslate"><span class="pre">exposure_type</span></code></a> is set to <code class="docutils literal notranslate"><span class="pre">LONG</span></code> is turned off (not processed).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera.Camera.long_on.html#giant.camera.Camera.long_on" title="giant.camera.Camera.long_on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">long_on</span></code></a></p></td>
+<td><p>This method updates the <a class="reference internal" href="#giant.camera.Camera.image_mask" title="giant.camera.Camera.image_mask"><code class="xref py py-attr docutils literal notranslate"><span class="pre">image_mask</span></code></a> attribute so that any image whose <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage.exposure_type" title="giant.image.OpNavImage.exposure_type"><code class="xref py py-attr docutils literal notranslate"><span class="pre">exposure_type</span></code></a> is set to <code class="docutils literal notranslate"><span class="pre">LONG</span></code> or <code class="docutils literal notranslate"><span class="pre">DUAL</span></code> is turned on (processed).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera.Camera.long_off.html#giant.camera.Camera.long_off" title="giant.camera.Camera.long_off"><code class="xref py py-obj docutils literal notranslate"><span class="pre">long_off</span></code></a></p></td>
+<td><p>This method updates the <a class="reference internal" href="#giant.camera.Camera.image_mask" title="giant.camera.Camera.image_mask"><code class="xref py py-attr docutils literal notranslate"><span class="pre">image_mask</span></code></a> attribute so that any image whose <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage.exposure_type" title="giant.image.OpNavImage.exposure_type"><code class="xref py py-attr docutils literal notranslate"><span class="pre">exposure_type</span></code></a> is set to <code class="docutils literal notranslate"><span class="pre">LONG</span></code> is turned off (not processed).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera.Camera.only_long_on.html#giant.camera.Camera.only_long_on" title="giant.camera.Camera.only_long_on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">only_long_on</span></code></a></p></td>
+<td><p>This method updated the <a class="reference internal" href="#giant.camera.Camera.image_mask" title="giant.camera.Camera.image_mask"><code class="xref py py-attr docutils literal notranslate"><span class="pre">image_mask</span></code></a> list so that any image whose <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage.exposure_type" title="giant.image.OpNavImage.exposure_type"><code class="xref py py-attr docutils literal notranslate"><span class="pre">exposure_type</span></code></a> attribute is set to <code class="docutils literal notranslate"><span class="pre">LONG</span></code> or <code class="docutils literal notranslate"><span class="pre">DUAL</span></code> is turned on (processed) and any image whose <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage.exposure_type" title="giant.image.OpNavImage.exposure_type"><code class="xref py py-attr docutils literal notranslate"><span class="pre">exposure_type</span></code></a> is set to <code class="docutils literal notranslate"><span class="pre">SHORT</span></code> is turned off (not processed).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera.Camera.all_on.html#giant.camera.Camera.all_on" title="giant.camera.Camera.all_on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">all_on</span></code></a></p></td>
+<td><p>This method sets every element of the <a class="reference internal" href="#giant.camera.Camera.image_mask" title="giant.camera.Camera.image_mask"><code class="xref py py-attr docutils literal notranslate"><span class="pre">image_mask</span></code></a> list to <code class="docutils literal notranslate"><span class="pre">True</span></code> so that all images are considered in the GIANT routines and returned when this class is iterated on.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera.Camera.all_off.html#giant.camera.Camera.all_off" title="giant.camera.Camera.all_off"><code class="xref py py-obj docutils literal notranslate"><span class="pre">all_off</span></code></a></p></td>
+<td><p>This method sets every element of the <a class="reference internal" href="#giant.camera.Camera.image_mask" title="giant.camera.Camera.image_mask"><code class="xref py py-attr docutils literal notranslate"><span class="pre">image_mask</span></code></a> list to <code class="docutils literal notranslate"><span class="pre">False</span></code> so that no images are considered in the GIANT routines or returned when this class is iterated on.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera.Camera.sort_by_date.html#giant.camera.Camera.sort_by_date" title="giant.camera.Camera.sort_by_date"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort_by_date</span></code></a></p></td>
+<td><p>This method is used to sort the images currently loaded to the <code class="xref py py-attr docutils literal notranslate"><span class="pre">images</span></code> attribute by date.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera.Camera.apply_date_range.html#giant.camera.Camera.apply_date_range" title="giant.camera.Camera.apply_date_range"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_date_range</span></code></a></p></td>
+<td><p>This method filters images by date, setting any whose <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage.observation_date" title="giant.image.OpNavImage.observation_date"><code class="xref py py-attr docutils literal notranslate"><span class="pre">observation_date</span></code></a> is not between <code class="xref py py-attr docutils literal notranslate"><span class="pre">start_date</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">end_date</span></code> to False.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera.Camera.image_check.html#giant.camera.Camera.image_check" title="giant.camera.Camera.image_check"><code class="xref py py-obj docutils literal notranslate"><span class="pre">image_check</span></code></a></p></td>
+<td><p>This method is used to interpret the image data that is supplied by the user (either during initialization or through the <code class="xref py py-meth docutils literal notranslate"><span class="pre">add_images()</span></code> method) and ensure that it is a subclass of <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage" title="giant.image.OpNavImage"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpNavImage</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera.Camera.preprocessor.html#giant.camera.Camera.preprocessor" title="giant.camera.Camera.preprocessor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">preprocessor</span></code></a></p></td>
+<td><p>This method is used to globally apply corrections to all images contained in the <a class="reference internal" href="#giant.camera.Camera" title="giant.camera.Camera"><code class="xref py py-class docutils literal notranslate"><span class="pre">Camera</span></code></a> instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera.Camera.remove_images.html#giant.camera.Camera.remove_images" title="giant.camera.Camera.remove_images"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_images</span></code></a></p></td>
+<td><p>This method is used to remove images from the <a class="reference internal" href="#giant.camera.Camera.images" title="giant.camera.Camera.images"><code class="xref py py-attr docutils literal notranslate"><span class="pre">images</span></code></a> list while also ensuring that the <a class="reference internal" href="#giant.camera.Camera.image_mask" title="giant.camera.Camera.image_mask"><code class="xref py py-attr docutils literal notranslate"><span class="pre">image_mask</span></code></a> list remains the same size as the <a class="reference internal" href="#giant.camera.Camera.images" title="giant.camera.Camera.images"><code class="xref py py-attr docutils literal notranslate"><span class="pre">images</span></code></a> list.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera.Camera.update_attitude_from_function.html#giant.camera.Camera.update_attitude_from_function" title="giant.camera.Camera.update_attitude_from_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_attitude_from_function</span></code></a></p></td>
+<td><p>This method is used ot overwrite the attitude information stored in all images that are turned on with information from the <a class="reference internal" href="#giant.camera.Camera.attitude_function" title="giant.camera.Camera.attitude_function"><code class="xref py py-attr docutils literal notranslate"><span class="pre">attitude_function</span></code></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera.Camera.update_short_attitude.html#giant.camera.Camera.update_short_attitude" title="giant.camera.Camera.update_short_attitude"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_short_attitude</span></code></a></p></td>
+<td><p>This method updates the attitude metadata for short exposure images based off of the solved for attitudes in the long-exposure images.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.camera.AttitudeUpdateMethods.html" title="Previous document">AttitudeUpdateMethods</a>
+        </li>
+        <li>
+          <a href="giant.camera.Camera.add_images.html" title="Next document">Camera.add_images</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/camera/giant.camera.Camera.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

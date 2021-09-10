@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>GeneralizedGaussian.generate_kernel &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="GeneralizedGaussian.normalize_amplitude" href="giant.point_spread_functions.gaussians.GeneralizedGaussian.normalize_amplitude.html" />
+    <link rel="prev" title="GeneralizedGaussian.evaluate" href="giant.point_spread_functions.gaussians.GeneralizedGaussian.evaluate.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.point_spread_functions.html">giant.point_spread_functions</a><ul>
+  <li><a href="../giant.point_spread_functions.gaussians.html">giant.point_spread_functions.gaussians</a><ul>
+  <li><a href="giant.point_spread_functions.gaussians.GeneralizedGaussian.html">GeneralizedGaussian</a><ul>
+      <li>Previous: <a href="giant.point_spread_functions.gaussians.GeneralizedGaussian.evaluate.html" title="previous chapter">GeneralizedGaussian.evaluate</a></li>
+      <li>Next: <a href="giant.point_spread_functions.gaussians.GeneralizedGaussian.normalize_amplitude.html" title="next chapter">GeneralizedGaussian.normalize_amplitude</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.point_spread_functions.gaussians.GeneralizedGaussian.evaluate.html" title="Previous document">GeneralizedGaussian.evaluate</a>
+        </li>
+        <li>
+          <a href="giant.point_spread_functions.gaussians.GeneralizedGaussian.normalize_amplitude.html" title="Next document">GeneralizedGaussian.normalize_amplitude</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="generalizedgaussian-generate-kernel">
+<h1>GeneralizedGaussian.generate_kernel<a class="headerlink" href="#generalizedgaussian-generate-kernel" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.point_spread_functions.gaussians.html#module-giant.point_spread_functions.gaussians" title="giant.point_spread_functions.gaussians"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.point_spread_functions.gaussians</span></code></a>:</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.point_spread_functions.gaussians.GeneralizedGaussian.generate_kernel">
+<span class="sig-prename descclassname"><span class="pre">GeneralizedGaussian.</span></span><span class="sig-name descname"><span class="pre">generate_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giant.point_spread_functions.gaussians.GeneralizedGaussian.generate_kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a square kernel centered at the centroid of the PSF normalized to have a volume (sum) of 1 for the
+size input or specified in the <code class="xref py py-attr docutils literal notranslate"><span class="pre">size</span></code> attribute.</p>
+<p>Essentially this evaluates <span class="math notranslate nohighlight">\(z = f(x, y)\)</span> for x in <span class="math notranslate nohighlight">\([x_0-size//2, x_0+size//2]\)</span> and y in
+<span class="math notranslate nohighlight">\([y_0-size//2, y_0+size//2]\)</span> where x0 is the x location of the centroid of the PSF and y0 is the y
+location of the centroid of the PSF.</p>
+<p>The resulting values are then normalized to sum to 1 so that the result can be applied using convolution
+without changing the overall signal level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>size</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The size of the kernel to generate (ie return a (size, size) shaped array).  Overrides the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">size</span></code> attribute.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A normalized kernel of the PSF centered at the centroid</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.point_spread_functions.gaussians.GeneralizedGaussian.evaluate.html" title="Previous document">GeneralizedGaussian.evaluate</a>
+        </li>
+        <li>
+          <a href="giant.point_spread_functions.gaussians.GeneralizedGaussian.normalize_amplitude.html" title="Next document">GeneralizedGaussian.normalize_amplitude</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/point_spread_functions/gaussians/giant.point_spread_functions.gaussians.GeneralizedGaussian.generate_kernel.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

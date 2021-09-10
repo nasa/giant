@@ -1,0 +1,1220 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.camera_models.owen_model &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.camera_models.owen_model</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
+<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
+
+
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides a subclass of :class:`.CameraModel` that implements the distortion modeled Owen (or JPL) camera</span>
+<span class="sd">model.</span>
+
+<span class="sd">Theory</span>
+<span class="sd">______</span>
+
+<span class="sd">The Owen camera model is the pinhole camera model combined with a lens distortion model which projects any point</span>
+<span class="sd">along a ray emanating from the camera center (origin of the camera frame) to the same 2D point in an image.  Given</span>
+<span class="sd">some 3D point (or direction) expressed in the camera frame, :math:`\mathbf{x}_C`, the Owen model is defined as</span>
+
+<span class="sd">.. math::</span>
+<span class="sd">    &amp;\mathbf{x}_I = \frac{f}{z_C}\left[\begin{array}{c} x_C \\ y_C \end{array}\right] \\</span>
+<span class="sd">    &amp;r = \sqrt{x_I^2 + y_I^2} \\</span>
+<span class="sd">    &amp;\Delta\mathbf{x}_I = \left(\epsilon_2r^2+\epsilon_4r^4+\epsilon_5y_I+\epsilon_6x_I\right)\mathbf{x}_I+</span>
+<span class="sd">    \left(\epsilon_1r + \epsilon_2r^3\right)\left[\begin{array}{c} -y_I \\ x_I \end{array}\right] \\</span>
+<span class="sd">    &amp;\mathbf{x}_P = \left[\begin{array}{ccc} k_x &amp; k_{xy} &amp; p_x \\ k_{yx} &amp; k_y &amp; p_y\end{array}\right]</span>
+<span class="sd">    \left[\begin{array}{c} (1+a_1T+a_2T^2+a_3T^3)(\mathbf{x}_I+\Delta\mathbf{x}_I) \\ 1 \end{array}\right]</span>
+
+<span class="sd">where :math:`\mathbf{x}_I` are the image frame coordinates for the point (pinhole location), :math:`f` is the</span>
+<span class="sd">focal length of the camera in units of distance, :math:`r` is the radial distance from the principal point of the</span>
+<span class="sd">camera to the gnomic location of the point, :math:`\epsilon_2` and :math:`\epsilon_4` are radial distortion</span>
+<span class="sd">coefficients, :math:`\epsilon_5` and :math:`\epsilon_6` are tip/tilt/prism distortion coefficients,</span>
+<span class="sd">:math:`\epsilon_1` and :math:`\epsilon_3` are pinwheel distortion coefficients, :math:`\Delta\mathbf{x}_I` is</span>
+<span class="sd">the distortion for point :math:`\mathbf{x}_I`, :math:`k_x` and :math:`k_y` are the pixel pitch values in units of</span>
+<span class="sd">pixels/distance in the :math:`x` and :math:`y` directions respectively, :math:`k_{xy}` and :math:`k_{yx}` are alpha</span>
+<span class="sd">terms for non-rectangular pixels, :math:`p_x` and :math:`p_y` are the location of the principal point of the</span>
+<span class="sd">camera in the image expressed in units of pixels, :math:`T` is the temperature of the camera, :math:`a_{1-3}` are</span>
+<span class="sd">temperature dependence coefficients, and :math:`\mathbf{x}_P` is the pixel location of the point in</span>
+<span class="sd">the image. For a more thorough description of the Owen camera model checkout</span>
+<span class="sd">:download:`this memo &lt;docs/cameraModels.pdf&gt;`.</span>
+
+<span class="sd">Speeding up the camera model</span>
+<span class="sd">----------------------------</span>
+
+<span class="sd">One of the most common functions of the camera model is to relate pixels in a camera to unit vectors in the 3D camera</span>
+<span class="sd">frame.  This is done extensively throughout GIANT, particularly when ray tracing.  Unfortunately, this transformation is</span>
+<span class="sd">iterative (there isn&#39;t an analytic solution), which can make things a little slow, particularly when you need to do the</span>
+<span class="sd">transformation for many pixel locations.</span>
+
+<span class="sd">In order to speed up this transformation we can precompute it for each pixel in an detector and for a range of</span>
+<span class="sd">temperatures specified by a user and then use bilinear interpolation to compute the location of future pixel/temperature</span>
+<span class="sd">combinations we need.  While this is an approximation, it saves significant time rather than going through the full</span>
+<span class="sd">iterative transformation, and based on testing, it is accurate to a few thousandths of a pixel, which is more than</span>
+<span class="sd">sufficient for nearly every use case.  The :class:`.OwenModel` and its subclasses make precomputing the</span>
+<span class="sd">transformation, and using the precomputed transformation, as easy as calling :meth:`~OwenModel.prepare_interp` once.</span>
+<span class="sd">Future calls to any method that then needs the transformation from pixels to gnomic locations (on the way to unit</span>
+<span class="sd">vectors) will then use the precomputed transformation unless specifically requested otherwise.  In addition, once the</span>
+<span class="sd">:meth:`~OwenModel.prepare_interp` method has been called, if the resulting camera object is then saved to a file</span>
+<span class="sd">either using the :mod:`.camera_model`</span>
+<span class="sd">:func:`~giant.camera_models.camera_model.save`/:func:`~giant.camera_models.camera_model.load` functions  or another</span>
+<span class="sd">serialization method like pickle/dill, then the precomputed transformation will also be saved and loaded so that it</span>
+<span class="sd">truly only needs to be computed once.</span>
+
+<span class="sd">Since precomputing the transformation can take a somewhat long time, it is not always smart to do so.  Typically if you</span>
+<span class="sd">have a camera model that you will be using again and again (as is typical in most operations and analysis cases) then</span>
+<span class="sd">you *should* precompute the transformation and save the resulting camera object to a file that is then used for future</span>
+<span class="sd">work.  This is usually best done at the end of a calibration script (for a real camera) or in a stand-alone script that</span>
+<span class="sd">defines the camera, precomputes the transformation, and then saves it off for a synthetic camera for analysis.  If you</span>
+<span class="sd">are just doing a quick analysis and don&#39;t need the camera model repeatedly or for any heavy duty ray tracing then it is</span>
+<span class="sd">recommended that you *not precompute* the transformation.</span>
+
+<span class="sd">Whether you precompute the transformation or not, the use of the camera model should appear unchanged beyond computation</span>
+<span class="sd">time.</span>
+
+<span class="sd">Use</span>
+<span class="sd">___</span>
+
+<span class="sd">This is a concrete implementation of a :class:`.CameraModel`, therefore to use this class you simply need to initialize</span>
+<span class="sd">it with the proper values.  Typically these values come from either the physical dimensions of the camera, or from</span>
+<span class="sd">a camera calibration routine performed to refine the values using observed data (see the :mod:`.calibration` sub-package</span>
+<span class="sd">for details).  For instance, say we have a camera which has an effective focal length of 10 mm, a pix pitch of 2.2 um,</span>
+<span class="sd">and a detector size of 1024x1024 with second order radial distortion.  We could then create a model for this camera as</span>
+
+<span class="sd">    &gt;&gt;&gt; from giant.camera_models import OwenModel</span>
+<span class="sd">    &gt;&gt;&gt; model = OwenModel(focal_length=10, kx=1/2.2e-3, ky=1/2.2e-3, radial2=1e-5,</span>
+<span class="sd">    ...                   n_rows=1024, n_cols=1024, px=(1024-1)/2, py=(1024-1)/2)</span>
+
+<span class="sd">Note that we did not set the field of view, but it is automatically computed for us based off of the prescribed camera</span>
+<span class="sd">model.</span>
+
+<span class="sd">    &gt;&gt;&gt; model.field_of_view</span>
+<span class="sd">    9.050773898292755</span>
+
+<span class="sd">In addition, we can now use our model to project points</span>
+
+<span class="sd">    &gt;&gt;&gt; model.project_onto_image([0, 0, 1])</span>
+<span class="sd">    array([511.5, 511.5])</span>
+
+<span class="sd">or to determine the unit vector through a pixel</span>
+
+<span class="sd">    &gt;&gt;&gt; model.pixels_to_unit([[0, 500], [0, 100]])</span>
+<span class="sd">    array([[-0.1111288 , -0.00251967],</span>
+<span class="sd">           [-0.1111288 , -0.09016027],</span>
+<span class="sd">           [ 0.98757318,  0.99592408]])</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">giant._typing</span> <span class="kn">import</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">NONEARRAY</span><span class="p">,</span> <span class="n">Real</span><span class="p">,</span> <span class="n">NONENUM</span>
+<span class="kn">from</span> <span class="nn">giant.rotations</span> <span class="kn">import</span> <span class="n">rotvec_to_rotmat</span><span class="p">,</span> <span class="n">Rotation</span>
+<span class="kn">from</span> <span class="nn">giant.camera_models.pinhole_model</span> <span class="kn">import</span> <span class="n">PinholeModel</span>
+
+
+<div class="viewcode-block" id="OwenModel"><a class="viewcode-back" href="../../../owen_model/giant.camera_models.owen_model.OwenModel.html#giant.camera_models.owen_model.OwenModel">[docs]</a><span class="k">class</span> <span class="nc">OwenModel</span><span class="p">(</span><span class="n">PinholeModel</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class provides an implementation of the Owen camera model for projecting 3D points onto images and performing</span>
+<span class="sd">    camera calibration.</span>
+
+<span class="sd">    The :class:`OwenModel` class is a subclass of :class:`.CameraModel`.  This means that it includes implementations</span>
+<span class="sd">    for all of the abstract methods defined in the :class:`.CameraModel` class.  This also means that it can be used</span>
+<span class="sd">    throughout GIANT as the primary camera model, including within the :mod:`.calibration` subpackage.  If this class is</span>
+<span class="sd">    going to be used with the :mod:`.calibration` subpackage, the user can set which parameters are estimated and which</span>
+<span class="sd">    are held fixed by using the ``estimation_parameters`` key word argument when creating an instance of the class or by</span>
+<span class="sd">    adjusting the :attr:`~OwenModel.estimation_parameters` instance variable on an instance of the class.  The</span>
+<span class="sd">    ``estimation_parameters`` input/attribute is a string or list of strings specifying which parameters to estimate.</span>
+<span class="sd">    This means that :attr:`estimation_parameters` could be something like ``&#39;basic&#39;`` which would indicate to estimate</span>
+<span class="sd">    just eh usual parameters, or something like ``[&#39;focal_length&#39;, &#39;ky&#39;, &#39;px&#39;, &#39;py&#39;]`` to estimate just the terms</span>
+<span class="sd">    included in the list.</span>
+
+<span class="sd">    In addition to the standard set of methods for a :class:`.CameraModel` subclass, the :class:`OwenModel` class</span>
+<span class="sd">    provides the following additional methods which may or may not be useful to some people:</span>
+
+<span class="sd">    =================================  =================================================================================</span>
+<span class="sd">    Method                             Use</span>
+<span class="sd">    =================================  =================================================================================</span>
+<span class="sd">    :meth:`get_projections`            computes the pinhole, image frame, and pixel locations of a 3D point</span>
+<span class="sd">    :meth:`pixels_to_gnomic`           removes distortion from a point to get the corresponding pinhole location in</span>
+<span class="sd">                                       units of distance</span>
+<span class="sd">    =================================  =================================================================================</span>
+
+<span class="sd">    The Owen model also provides the following properties for easy getting/setting:</span>
+
+<span class="sd">    ================================ ===================================================================================</span>
+<span class="sd">    Property                         Description</span>
+<span class="sd">    ================================ ===================================================================================</span>
+<span class="sd">    :attr:`field_of_view`            the diagonal field of view of the camera in units of degrees</span>
+<span class="sd">    :attr:`kx`                       :math:`k_x`, the pixel pitch in the x direction in units of pixels/distance</span>
+<span class="sd">    :attr:`ky`                       :math:`k_y`, the pixel pitch in the y direction in units of pixels/distance</span>
+<span class="sd">    :attr:`kxy`                      :math:`k_{xy}`, A alpha term for non-rectangular pixels</span>
+<span class="sd">    :attr:`kyx`                      :math:`k_{yx}`, A alpha term for non-rectangular pixels</span>
+<span class="sd">    :attr:`px`                       :math:`p_{x}`, the x axis pixel location of the principal point of the camera in</span>
+<span class="sd">                                     units of pixels</span>
+<span class="sd">    :attr:`py`                       :math:`p_{y}`, the y axis pixel location of the principal point of the camera in</span>
+<span class="sd">                                     units of pixels</span>
+<span class="sd">    :attr:`radial2`, :attr:`e2`      :math:`\epsilon_2`, the radial distortion coefficient corresponding to :math:`r^2`</span>
+<span class="sd">    :attr:`radial4`, :attr:`e4`      :math:`\epsilon_4`, the radial distortion coefficient corresponding to :math:`r^4`</span>
+<span class="sd">    :attr:`tangential_y`, :attr:`e5` :math:`\epsilon_5`, the tip/tilt/prism distortion coefficient corresponding to</span>
+<span class="sd">                                     :math:`y_I`</span>
+<span class="sd">    :attr:`tangential_x`, :attr:`e6` :math:`\epsilon_6`, the tip/tilt/prism distortion coefficient corresponding to</span>
+<span class="sd">                                     :math:`x_I`</span>
+<span class="sd">    :attr:`pinwheel1`, :attr:`e1`    :math:`\epsilon_1`, the pinwheel distortion coefficient corresponding to :math:`r`</span>
+<span class="sd">    :attr:`pinwheel2`, :attr:`e3`    :math:`\epsilon_3`, the pinwheel distortion coefficient corresponding to</span>
+<span class="sd">                                     :math:`r^3`</span>
+<span class="sd">    :attr:`a1`                       :math:`a_1`, the linear coefficient for focal length dependent focal length</span>
+<span class="sd">    :attr:`a2`                       :math:`a_2`, the quadratic coefficient for focal length dependent focal length</span>
+<span class="sd">    :attr:`a3`                       :math:`a_3`, the cubic coefficient for focal length dependent focal length</span>
+<span class="sd">    :attr:`intrinsic_matrix_inv`     The inverse of the intrinsic matrix</span>
+<span class="sd">    ================================ ===================================================================================</span>
+
+<span class="sd">    .. note:: The distortion attributes are aliases over each other and refer to the same data.  Therefore setting a</span>
+<span class="sd">              value to :attr:`radial2` would also change the value of :attr:`e2`</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intrinsic_matrix</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">focal_length</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">field_of_view</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">use_a_priori</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">distortion_coefficients</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">misalignment</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">estimation_parameters</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;basic&#39;</span><span class="p">,</span>
+                 <span class="n">kx</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ky</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">kxy</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">kyx</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">px</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">py</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">radial2</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">radial4</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tangential_x</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">tangential_y</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">pinwheel1</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">pinwheel2</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">e1</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">e2</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">e3</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">e4</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">e5</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">e6</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">a1</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">a2</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">a3</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">n_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="n">temperature_coefficients</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param intrinsic_matrix: the intrinsic matrix for the camera as a numpy shape (2, 3) array.  Note that this is</span>
+<span class="sd">                                 overwritten if ``kx``, ``ky``, ``kxy``, ``kyx``, ``px``, ``py`` are also specified.</span>
+<span class="sd">        :param focal_length: The focal length of the camera in units of distance</span>
+<span class="sd">        :param field_of_view: The field of view of the camera in units of degrees.</span>
+<span class="sd">        :param use_a_priori: A flag to indicate whether to include the a priori state vector in the Jacobian matrix when</span>
+<span class="sd">                             performing a calibration</span>
+<span class="sd">        :param distortion_coefficients: A numpy array of shape (6,) containing the six distortion coefficients in order.</span>
+<span class="sd">                                        Note that this array is overwritten with any distortion coefficients that are</span>
+<span class="sd">                                        specified independently.</span>
+<span class="sd">        :param misalignment: either a numpy array of shape (3,) or a list of numpy arrays of shape(3,) with each array</span>
+<span class="sd">                             corresponding to a single image (the list of numpy arrays is only valid when estimating</span>
+<span class="sd">                             multiple misalignments)</span>
+<span class="sd">        :param estimation_parameters: A string or list of strings specifying which model parameters to include in the</span>
+<span class="sd">                                      calibration</span>
+<span class="sd">        :param kx: The pixel pitch along the x axis in units of pixel/distance</span>
+<span class="sd">        :param ky: The pixel pitch along the y axis in units of pixel/distance</span>
+<span class="sd">        :param kxy: A alpha term for non-rectangular pixels</span>
+<span class="sd">        :param kyx: A alpha term for non-rectangular pixels</span>
+<span class="sd">        :param px: the x component of the pixel location of the principal point in the image in units of pixels</span>
+<span class="sd">        :param py: the y component of the pixel location of the principal point in the image in units of pixels</span>
+<span class="sd">        :param radial2: the radial distortion coefficient corresponding to the r**2 term</span>
+<span class="sd">        :param e2: the radial distortion coefficient corresponding to the r**2 term</span>
+<span class="sd">        :param radial4: the radial distortion coefficient corresponding to the r**4 term</span>
+<span class="sd">        :param e4: the radial distortion coefficient corresponding to the r**4 term</span>
+<span class="sd">        :param tangential_x: the tangential distortion coefficient corresponding to the x term</span>
+<span class="sd">        :param e6: the tangential distortion coefficient corresponding to the x term</span>
+<span class="sd">        :param tangential_y: the tangential distortion coefficient corresponding to the y term</span>
+<span class="sd">        :param e5: the tangential distortion coefficient corresponding to the y term</span>
+<span class="sd">        :param pinwheel1: the pinwheel distortion coefficient corresponding to the r term</span>
+<span class="sd">        :param e1: the pinwheel distortion coefficient corresponding to the r term</span>
+<span class="sd">        :param pinwheel2: the pinwheel distortion coefficient corresponding to the r**2 term</span>
+<span class="sd">        :param e3: the pinwheel distortion coefficient corresponding to the r**2 term</span>
+<span class="sd">        :param n_rows: the number of rows of the active image array</span>
+<span class="sd">        :param n_cols: the number of columns in the active image array</span>
+<span class="sd">        :param a1: the linear coefficient of the focal length temperature dependence</span>
+<span class="sd">        :param a2: the quadratic coefficient of the focal length temperature dependence</span>
+<span class="sd">        :param a3: the cubic coefficient of the focal length temperature dependence</span>
+<span class="sd">        :param temperature_coefficients: The temperature polynomial coefficients as a length 3 Sequence</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># call the super init</span>
+        <span class="c1"># temporarily set the field of view to 0</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">intrinsic_matrix</span><span class="o">=</span><span class="n">intrinsic_matrix</span><span class="p">,</span> <span class="n">kx</span><span class="o">=</span><span class="n">kx</span><span class="p">,</span> <span class="n">ky</span><span class="o">=</span><span class="n">ky</span><span class="p">,</span> <span class="n">px</span><span class="o">=</span><span class="n">px</span><span class="p">,</span> <span class="n">py</span><span class="o">=</span><span class="n">py</span><span class="p">,</span>
+                         <span class="n">focal_length</span><span class="o">=</span><span class="n">focal_length</span><span class="p">,</span> <span class="n">misalignment</span><span class="o">=</span><span class="n">misalignment</span><span class="p">,</span> <span class="n">use_a_priori</span><span class="o">=</span><span class="n">use_a_priori</span><span class="p">,</span>
+                         <span class="n">a1</span><span class="o">=</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="o">=</span><span class="n">a2</span><span class="p">,</span> <span class="n">a3</span><span class="o">=</span><span class="n">a3</span><span class="p">,</span> <span class="n">n_rows</span><span class="o">=</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="n">n_cols</span><span class="p">,</span>
+                         <span class="n">temperature_coefficients</span><span class="o">=</span><span class="n">temperature_coefficients</span><span class="p">)</span>
+
+        <span class="c1"># finish the intrinsic matrix</span>
+        <span class="k">if</span> <span class="n">kxy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kxy</span> <span class="o">=</span> <span class="n">kxy</span>
+        <span class="k">if</span> <span class="n">kyx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kyx</span> <span class="o">=</span> <span class="n">kyx</span>
+
+        <span class="c1"># set the distortion coefficients vector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The distortion coefficients array contains the distortion coefficients for the Brown model </span>
+<span class="sd">        [e2, e4, e5, e6, e1, e3].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">distortion_coefficients</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span> <span class="o">=</span> <span class="n">distortion_coefficients</span>
+
+        <span class="k">if</span> <span class="n">radial2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">radial2</span> <span class="o">=</span> <span class="n">radial2</span>
+        <span class="k">if</span> <span class="n">radial4</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">radial4</span> <span class="o">=</span> <span class="n">radial4</span>
+        <span class="k">if</span> <span class="n">tangential_x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tangential_x</span> <span class="o">=</span> <span class="n">tangential_x</span>
+        <span class="k">if</span> <span class="n">tangential_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tangential_y</span> <span class="o">=</span> <span class="n">tangential_y</span>
+        <span class="k">if</span> <span class="n">pinwheel1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pinwheel1</span> <span class="o">=</span> <span class="n">pinwheel1</span>
+        <span class="k">if</span> <span class="n">pinwheel2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pinwheel2</span> <span class="o">=</span> <span class="n">pinwheel2</span>
+
+        <span class="k">if</span> <span class="n">e2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">e2</span> <span class="o">=</span> <span class="n">e2</span>
+        <span class="k">if</span> <span class="n">e4</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">e4</span> <span class="o">=</span> <span class="n">e4</span>
+        <span class="k">if</span> <span class="n">e6</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">e6</span> <span class="o">=</span> <span class="n">e6</span>
+        <span class="k">if</span> <span class="n">e5</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">e5</span> <span class="o">=</span> <span class="n">e5</span>
+        <span class="k">if</span> <span class="n">e1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">e1</span> <span class="o">=</span> <span class="n">e1</span>
+        <span class="k">if</span> <span class="n">e3</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">e3</span> <span class="o">=</span> <span class="n">e3</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;focal_length&#39;</span><span class="p">,</span> <span class="s1">&#39;kx&#39;</span><span class="p">,</span> <span class="s1">&#39;kxy&#39;</span><span class="p">,</span> <span class="s1">&#39;kyx&#39;</span><span class="p">,</span> <span class="s1">&#39;ky&#39;</span><span class="p">,</span> <span class="s1">&#39;px&#39;</span><span class="p">,</span> <span class="s1">&#39;py&#39;</span><span class="p">,</span> <span class="s1">&#39;e2&#39;</span><span class="p">,</span> <span class="s1">&#39;e4&#39;</span><span class="p">,</span> <span class="s1">&#39;e5&#39;</span><span class="p">,</span> <span class="s1">&#39;e6&#39;</span><span class="p">,</span> <span class="s1">&#39;e1&#39;</span><span class="p">,</span> <span class="s1">&#39;e3&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39;a1&#39;</span><span class="p">,</span> <span class="s1">&#39;a2&#39;</span><span class="p">,</span> <span class="s1">&#39;a3&#39;</span><span class="p">,</span> <span class="s1">&#39;misalignment&#39;</span><span class="p">]</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A list of state labels that correspond to the attributes of this class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># store the element dict for indices into the state vector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">element_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;basic&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">],</span>
+            <span class="s1">&#39;intrinsic&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">13</span><span class="p">),</span>
+            <span class="s1">&#39;basic intrinsic&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span>
+            <span class="s1">&#39;temperature dependence&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">],</span>
+            <span class="s1">&#39;focal_length&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s1">&#39;kx&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="s1">&#39;kxy&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="s1">&#39;kyx&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+            <span class="s1">&#39;ky&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">],</span>
+            <span class="s1">&#39;px&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">5</span><span class="p">],</span>
+            <span class="s1">&#39;py&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">6</span><span class="p">],</span>
+            <span class="s1">&#39;radial2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">7</span><span class="p">],</span>
+            <span class="s1">&#39;radial4&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">],</span>
+            <span class="s1">&#39;tangential_y&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">9</span><span class="p">],</span>
+            <span class="s1">&#39;tangential_x&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">],</span>
+            <span class="s1">&#39;pinwheel1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">11</span><span class="p">],</span>
+            <span class="s1">&#39;pinwheel2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">],</span>
+            <span class="s1">&#39;e2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">7</span><span class="p">],</span>
+            <span class="s1">&#39;e4&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">8</span><span class="p">],</span>
+            <span class="s1">&#39;e5&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">9</span><span class="p">],</span>
+            <span class="s1">&#39;e6&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">],</span>
+            <span class="s1">&#39;e1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">11</span><span class="p">],</span>
+            <span class="s1">&#39;e3&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">],</span>
+            <span class="s1">&#39;a1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">13</span><span class="p">],</span>
+            <span class="s1">&#39;a2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">14</span><span class="p">],</span>
+            <span class="s1">&#39;a3&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">15</span><span class="p">],</span>
+            <span class="s1">&#39;single misalignment&#39;</span><span class="p">:</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="s1">&#39;multiple misalignments&#39;</span><span class="p">:</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimation_parameters</span> <span class="o">=</span> <span class="n">estimation_parameters</span>
+
+        <span class="c1"># add the distortion parameters to the important variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">important_attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">important_attributes</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;radial2&#39;</span><span class="p">,</span> <span class="s1">&#39;radial4&#39;</span><span class="p">,</span> <span class="s1">&#39;tangential_y&#39;</span><span class="p">,</span> <span class="s1">&#39;tangential_x&#39;</span><span class="p">,</span>
+                                                                 <span class="s1">&#39;pinwheel1&#39;</span><span class="p">,</span> <span class="s1">&#39;pinwheel2&#39;</span><span class="p">,</span> <span class="s1">&#39;kxy&#39;</span><span class="p">,</span> <span class="s1">&#39;kyx&#39;</span><span class="p">]</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A list specifying the important attributes the must be saved/loaded for this camera model to be completely </span>
+<span class="sd">        reconstructed. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_of_view</span> <span class="o">=</span> <span class="n">field_of_view</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">template</span> <span class="o">=</span> <span class="s2">&quot;OwenModel(kx=</span><span class="si">{kx}</span><span class="s2">, ky=</span><span class="si">{ky}</span><span class="s2">, kxy=</span><span class="si">{kxy}</span><span class="s2">, kyx=</span><span class="si">{kyx}</span><span class="s2">, px=</span><span class="si">{px}</span><span class="s2">, py=</span><span class="si">{py}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;           field_of_view=</span><span class="si">{fov}</span><span class="s2">, focal_length=</span><span class="si">{f}</span><span class="s2">, radial2=</span><span class="si">{r2}</span><span class="s2">, radial4=</span><span class="si">{r4}</span><span class="s2">, </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;           tangential_x=</span><span class="si">{tanx}</span><span class="s2">, tangential_y=</span><span class="si">{tany}</span><span class="s2">, pinwheel1=</span><span class="si">{pin1}</span><span class="s2">, pinwheel2=</span><span class="si">{pin2}</span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;           misalignment=</span><span class="si">{mis!r}</span><span class="s2">, </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;           estimation_parameters=</span><span class="si">{ep!r}</span><span class="s2">, use_a_priori=</span><span class="si">{ap}</span><span class="s2">, a1=</span><span class="si">{a1}</span><span class="s2">, a2=</span><span class="si">{a2}</span><span class="s2">, a3=</span><span class="si">{a3}</span><span class="s2">,&quot;</span> \
+                   <span class="s2">&quot;           n_rows=</span><span class="si">{nr}</span><span class="s2">, n_cols=</span><span class="si">{nc}</span><span class="s2">)</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">kx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kx</span><span class="p">,</span> <span class="n">ky</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ky</span><span class="p">,</span> <span class="n">kxy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kxy</span><span class="p">,</span> <span class="n">kyx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kyx</span><span class="p">,</span> <span class="n">px</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">px</span><span class="p">,</span> <span class="n">py</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">py</span><span class="p">,</span>
+            <span class="n">fov</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">field_of_view</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">focal_length</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">radial2</span><span class="p">,</span> <span class="n">r4</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">radial4</span><span class="p">,</span>
+            <span class="n">tanx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tangential_x</span><span class="p">,</span> <span class="n">tany</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tangential_y</span><span class="p">,</span> <span class="n">pin1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pinwheel1</span><span class="p">,</span> <span class="n">pin2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pinwheel2</span><span class="p">,</span>
+            <span class="n">mis</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">misalignment</span><span class="p">,</span> <span class="n">ep</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">estimation_parameters</span><span class="p">,</span> <span class="n">ap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_a_priori</span><span class="p">,</span>
+            <span class="n">a1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">a2</span><span class="p">,</span> <span class="n">a3</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">a3</span><span class="p">,</span> <span class="n">nr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">nc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="s2">&quot;Owen Camera Model:</span><span class="se">\n\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot; __  __     __       __    </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;|   x  | _ |  f*Xc/Zc  |   </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;|   y  | - |  f*Yc/Zc  |   </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot; --  --     --       --    </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;      _________ </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;     /  2   2   </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;r =</span><span class="se">\\</span><span class="s2">/  x + y    </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot; __ __                                      __ __                    __  __   </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;|  x&#39; |            2      4                |  x  |               3  |  -y  |  </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;|     | = (1 + e2*r + e4*r + e5*y + e6*x ) |     | + (e1*r + e3*r ) |      |  </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;|  y&#39; |                                    |  y  |                  |   x  |  </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot; -- --                                      -- --                    --  --   </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot; __  __                               __ __   </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;|  xt&#39; |                   2      3  |  x&#39; |  </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;|      | = (1 + a1*T + a2*T + a3*T ) |     |  </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;|  yt&#39; |                             |  y&#39; |  </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot; --  --                               -- --   </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot; __ __     __           __  __  __  </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;|  u  | _ |  kx  kxy  px  ||  xt&#39; | </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;|  v  | - |  kyx ky   py  ||  yt&#39; | </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot; -- --     --           -- |  1   | </span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;                            --  --  </span><span class="se">\n\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;————————————————————————————————————————————————————————————————————————————</span><span class="se">\n\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;distortion coefficients:</span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;    e1=</span><span class="si">{0}</span><span class="s2">, e2=</span><span class="si">{1}</span><span class="s2">, e3=</span><span class="si">{2}</span><span class="s2">, e4=</span><span class="si">{3}</span><span class="s2">, e5=</span><span class="si">{4}</span><span class="s2">, e6=</span><span class="si">{5}</span><span class="se">\n\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;camera parameters:</span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;    f=</span><span class="si">{12}</span><span class="s2">, kx=</span><span class="si">{6}</span><span class="s2">, ky=</span><span class="si">{7}</span><span class="s2">, kxy=</span><span class="si">{8}</span><span class="s2">, kyx=</span><span class="si">{9}</span><span class="s2">, px=</span><span class="si">{10}</span><span class="s2">, py=</span><span class="si">{11}</span><span class="se">\n\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;temperature coefficients:</span><span class="se">\n</span><span class="s2">&quot;</span> \
+                   <span class="s2">&quot;    a1=</span><span class="si">{13}</span><span class="s2">, a2=</span><span class="si">{14}</span><span class="s2">, a3=</span><span class="si">{15}</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">e1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e4</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e5</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e6</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">kx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ky</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kxy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kyx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">px</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">py</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">focal_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">a1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">a2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">a3</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">kxy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A alpha term for non-rectangular pixels.</span>
+
+<span class="sd">        This corresponds to the [0, 1] component of the intrinsic matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">intrinsic_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="nd">@kxy</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">kxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intrinsic_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">kyx</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A alpha term for non-rectangular pixels.</span>
+
+<span class="sd">        This corresponds to the [1, 0] component of the intrinsic matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">intrinsic_matrix</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@kyx</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">kyx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intrinsic_matrix</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">radial2</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The radial distortion coefficient corresponding to the r**2 term</span>
+
+<span class="sd">        This corresponds to the [0] index of the distortion_coefficients array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@radial2</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">radial2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">e2</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The radial distortion coefficient corresponding to the r**2 term</span>
+
+<span class="sd">        This corresponds to the [0] index of the distortion_coefficients array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@e2</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">e2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">radial4</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The radial distortion coefficient corresponding to the r**4 term</span>
+
+<span class="sd">        This corresponds to the [1] index of the distortion_coefficients array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="nd">@radial4</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">radial4</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">e4</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The radial distortion coefficient corresponding to the r**4 term</span>
+
+<span class="sd">        This corresponds to the [1] index of the distortion_coefficients array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="nd">@e4</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">e4</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">tangential_x</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The tangential distortion coefficient corresponding to the x term</span>
+
+<span class="sd">        this corresponds to the [3] index of the distortion_coefficients array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="nd">@tangential_x</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">tangential_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">e6</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The tangential distortion coefficient corresponding to the x term</span>
+
+<span class="sd">        this corresponds to the [3] index of the distortion_coefficients array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="nd">@e6</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">e6</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">tangential_y</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The tangential distortion coefficient corresponding to the y term</span>
+
+<span class="sd">        this corresponds to the [2] index of the distortion_coefficients array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="nd">@tangential_y</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">tangential_y</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">e5</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The tangential distortion coefficient corresponding to the y term</span>
+
+<span class="sd">        this corresponds to the [2] index of the distortion_coefficients array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="nd">@e5</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">e5</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pinwheel1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The pinwheel distortion coefficient corresponding to the r term.</span>
+
+<span class="sd">        This corresponds to the [4] index of the distortion_coefficients array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+
+    <span class="nd">@pinwheel1</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">pinwheel1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">e1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The pinwheel distortion coefficient corresponding to the r term.</span>
+
+<span class="sd">        This corresponds to the [4] index of the distortion_coefficients array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+
+    <span class="nd">@e1</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">e1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pinwheel2</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The pinwheel distortion coefficient corresponding to the r**3 term.</span>
+
+<span class="sd">        This corresponds to the [5] index of the distortion_coefficients array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+
+    <span class="nd">@pinwheel2</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">pinwheel2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">e3</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The pinwheel distortion coefficient corresponding to the r**3 term.</span>
+
+<span class="sd">        This corresponds to the [5] index of the distortion_coefficients array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+
+    <span class="nd">@e3</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">e3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">intrinsic_matrix_inv</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The inverse of the intrinsic matrix.</span>
+
+<span class="sd">        The inverse of the intrinsic matrix is used to convert from units of pixels with an origin at the upper left</span>
+<span class="sd">        corner of the image to units of distance with an origin at the principal point of the image.</span>
+
+<span class="sd">        The intrinsic matrix has an analytic inverse which is given by</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            d=k_xk_y-k_{xy}k_{yx} \\</span>
+<span class="sd">            \mathbf{K}^{-1} = \left[\begin{array}{ccc} \frac{k_y}{d} &amp; -\frac{k_{xy}}{d} &amp;</span>
+<span class="sd">            \frac{k_{xy}p_y-k_yp_x}{d} \\</span>
+<span class="sd">            -\frac{k_{yx}}{d} &amp; \frac{k_x}{d} &amp; \frac{k_{yx}p_x-k_xp_y}{d} \end{array}\right]</span>
+
+<span class="sd">        To convert from units of pixels to units of distance you would do::</span>
+<span class="sd">            &gt;&gt;&gt; from giant.camera_models import OwenModel</span>
+<span class="sd">            &gt;&gt;&gt; model = OwenModel(kx=5, ky=10, px=100, py=500)</span>
+<span class="sd">            &gt;&gt;&gt; ((model.intrinsic_matrix_inv[:, :2]@[[1, 2, 300], [4, 5, 600]]).T + model.intrinsic_matrix_inv[:, 2]).T</span>
+<span class="sd">            array([[-19.8, -19.6, 40.]</span>
+<span class="sd">                   [-49.6, -49.5, 10.]])</span>
+
+<span class="sd">        .. note:: The above code will give you distorted gnomic location, while the :meth:`pixels_to_gnomic` will give</span>
+<span class="sd">                  you undistorted gnomic locations (true pinhole points).</span>
+
+<span class="sd">        .. note:: Since the intrinsic matrix is defined as a :math:`2\times 3` matrix this</span>
+<span class="sd">                  isn&#39;t a formal inverse.  To get the true inverse you need to append a row of [0, 0, 1] to both the</span>
+<span class="sd">                  intrinsic matrix and intrinsic matrix inverse.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">tldet</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kx</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">ky</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">kxy</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">kyx</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="bp">self</span><span class="o">.</span><span class="n">ky</span> <span class="o">/</span> <span class="n">tldet</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">kxy</span> <span class="o">/</span> <span class="n">tldet</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">py</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">kxy</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">ky</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">px</span><span class="p">)</span> <span class="o">/</span> <span class="n">tldet</span><span class="p">],</span>
+                         <span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">kyx</span> <span class="o">/</span> <span class="n">tldet</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kx</span> <span class="o">/</span> <span class="n">tldet</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">py</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">kx</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">kyx</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">px</span><span class="p">)</span> <span class="o">/</span> <span class="n">tldet</span><span class="p">]])</span>
+
+<div class="viewcode-block" id="OwenModel.apply_distortion"><a class="viewcode-back" href="../../../owen_model/giant.camera_models.owen_model.OwenModel.apply_distortion.html#giant.camera_models.owen_model.OwenModel.apply_distortion">[docs]</a>    <span class="k">def</span> <span class="nf">apply_distortion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pinhole_locations</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method applies the distortion model to the specified pinhole (gnomic) locations in the image frame.</span>
+
+<span class="sd">        In general this function is not used by the user and the higher level :meth:`project_onto_image` is used</span>
+<span class="sd">        which calls this method (along with a few others) instead.  In cases were it is desirable to use this method</span>
+<span class="sd">        the pinhole locations should be input as a shape (2,) or shape (2, n) array of image plane locations in units of</span>
+<span class="sd">        distance.  The output from this function is the distorted image plane locations of the points in units of</span>
+<span class="sd">        distance.</span>
+
+<span class="sd">        For the Owen model, the distortion is defined as</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \Delta\mathbf{x}_I = \left(\epsilon_2r^2+\epsilon_4r^4+\epsilon_5y_I+\epsilon_6x_I\right)\mathbf{x}_I +</span>
+<span class="sd">            \left(\epsilon_1r + \epsilon_2r^3\right)\left[\begin{array}{c} -y_I \\ x_I \end{array}\right]</span>
+
+<span class="sd">        where :math:`\Delta\mathbf{x}_I` is the additive distortion, :math:`\epsilon_2` and :math:`\epsilon_4` are</span>
+<span class="sd">        radial distortion coefficients, :math:`\epsilon_5` and :math:`\epsilon_6` are tip/tilt/prism distortion</span>
+<span class="sd">        coefficients, :math:`\epsilon_1` and :math:`\epsilon_3` are pinwheel distortion coefficients,</span>
+<span class="sd">        :math:`\mathbf{x}_I` is the gnomic location in units of distance, and</span>
+<span class="sd">        :math:`r = \sqrt{\mathbf{x}_I^T\mathbf{x}_I}` is the radial distance from the optical axis.</span>
+
+<span class="sd">        :param pinhole_locations: The image plane location of points to be distorted as a shape (2,) or (2, n) array in</span>
+<span class="sd">                                  units of distance</span>
+<span class="sd">        :return: The distorted locations of the points on the image plane as a shape (2,) or (2, n) array in units of</span>
+<span class="sd">                 distance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># make sure the input is an array</span>
+        <span class="n">pinhole_locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pinhole_locations</span><span class="p">)</span>
+
+        <span class="n">radius</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">pinhole_locations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">radius2</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">radius3</span> <span class="o">=</span> <span class="n">radius2</span> <span class="o">*</span> <span class="n">radius</span>
+        <span class="n">radius4</span> <span class="o">=</span> <span class="n">radius2</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="n">distortion_values</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">radial2</span> <span class="o">*</span> <span class="n">radius2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">radial4</span> <span class="o">*</span> <span class="n">radius4</span> <span class="o">+</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">tangential_y</span> <span class="o">*</span> <span class="n">pinhole_locations</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">tangential_x</span> <span class="o">*</span> <span class="n">pinhole_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">pinhole_locations</span> <span class="o">+</span> \
+                            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pinwheel1</span> <span class="o">*</span> <span class="n">radius</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">pinwheel2</span> <span class="o">*</span> <span class="n">radius3</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">pinhole_locations</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                                                                             <span class="n">pinhole_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+
+        <span class="k">return</span> <span class="n">pinhole_locations</span> <span class="o">+</span> <span class="n">distortion_values</span></div>
+
+<div class="viewcode-block" id="OwenModel.get_projections"><a class="viewcode-back" href="../../../owen_model/giant.camera_models.owen_model.OwenModel.get_projections.html#giant.camera_models.owen_model.OwenModel.get_projections">[docs]</a>    <span class="k">def</span> <span class="nf">get_projections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points_in_camera_frame</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method computes and returns the pinhole, and pixel locations for a set of</span>
+<span class="sd">        3D points expressed in the camera frame.</span>
+
+<span class="sd">        In general the user will not use this method and the higher level :meth:`project_onto_image` will be used</span>
+<span class="sd">        instead.  In cases where it is desirable to use this method, the camera points should be input as a shape (2,)</span>
+<span class="sd">        or shape (2, n) array of points expressed in the camera frame (units don&#39;t matter)  This method will then return</span>
+<span class="sd">        the gnomic locations in units of distance as a shape (2,) or (2, n) numpy array and the pixel locations of the</span>
+<span class="sd">        points as a shape (2,) or (2, n) numpy array with units of pixels as a length 2 tuple.</span>
+
+<span class="sd">        The optional image flag specifies which image you are projecting the points onto.  This is only important if you</span>
+<span class="sd">        have the estimate_multiple_misalignments flag set to true, and have a different alignment set for each image.</span>
+<span class="sd">        In general, the optional input image should be ignored except during calibration.</span>
+
+<span class="sd">        The optional temperature input specifies the temperature to perform the projection at.  This is only import when</span>
+<span class="sd">        your focal length is dependent on temperature and you have entered or calibrated for the temperature dependency</span>
+<span class="sd">        coefficients.</span>
+
+<span class="sd">        You can specify the directions to be input as either a shape (3,) or shape (3, n) array::</span>
+<span class="sd">            &gt;&gt;&gt; from giant.camera_models import OwenModel</span>
+<span class="sd">            &gt;&gt;&gt; model = OwenModel(kx=300, ky=400, px=500, py=500, focal_length=10, a1=1e-5, a2=1e-6, radial2=1e-5,</span>
+<span class="sd">            &gt;&gt;&gt;                   misalignment=[[1e-12, -2e-14, 3e-10], [2e-15, 1e-13, 3e-10]],</span>
+<span class="sd">            &gt;&gt;&gt;                   estimation_parameters=[&#39;multiple misalignments&#39;])</span>
+<span class="sd">            &gt;&gt;&gt; model.get_projections([1, 2, 12000])</span>
+<span class="sd">            (array([ 0.00083333,  0.00166667]), array([0.00112269, 0.00224537]), array([500.33680555, 500.89814814]))</span>
+<span class="sd">            &gt;&gt;&gt; model.get_projections([[1, 2, 3, 4], [2, 5, 6, 7], [12000, 13000, 9000, 5000]], image=1)</span>
+<span class="sd">            (array([[0.00083333, 0.00153846, 0.00333333, 0.008     ],</span>
+<span class="sd">                    [0.00166667, 0.00384615, 0.00666667, 0.014     ]]),</span>
+<span class="sd">             array([[0.00112269, 0.00417843, 0.02185185, 0.216     ],</span>
+<span class="sd">                    [0.00224537, 0.01044606, 0.0437037 , 0.378     ]]),</span>
+<span class="sd">             array([[500.33680556, 501.25352754, 506.55555555, 564.79999998],</span>
+<span class="sd">                    [500.89814815, 504.17842513, 517.48148149, 651.20000003]]))</span>
+<span class="sd">            &gt;&gt;&gt; model.get_projections([[1, 2, 3, 4], [2, 5, 6, 7], [12000, 13000, 9000, 5000]], temperature=-1)</span>
+<span class="sd">            (array([[0.00083333, 0.00153846, 0.00333333, 0.008     ],</span>
+<span class="sd">                    [0.00166667, 0.00384615, 0.00666667, 0.014     ]]),</span>
+<span class="sd">             array([[0.00112268, 0.00417839, 0.02185166, 0.21599806],</span>
+<span class="sd">                    [0.00224535, 0.01044597, 0.04370331, 0.3779966 ]]),</span>
+<span class="sd">             array([[500.33680252, 501.25351625, 506.55549654, 564.7994167 ],</span>
+<span class="sd">                    [500.89814006, 504.1783875 , 517.48132409, 651.19863896]]))</span>
+
+<span class="sd">        :param points_in_camera_frame: a shape (3,) or shape (3, n) array of points to project</span>
+<span class="sd">        :param image: The index of the image being projected onto (only applicable with multiple misalignments)</span>
+<span class="sd">        :param temperature: The temperature to project the points at</span>
+<span class="sd">        :return: A tuple of the pinhole, distorted pinhole, and pixel locations for a set of 3D points</span>
+<span class="sd">                 expressed in the camera frame</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># ensure the points are an array</span>
+        <span class="n">camera_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">points_in_camera_frame</span><span class="p">)</span>
+
+        <span class="c1"># apply misalignment to the points</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimate_multiple_misalignments</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">misalignment</span><span class="p">[</span><span class="n">image</span><span class="p">]):</span>  <span class="c1"># optimization to avoid matrix multiplication</span>
+                <span class="n">camera_points</span> <span class="o">=</span> <span class="n">rotvec_to_rotmat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">misalignment</span><span class="p">[</span><span class="n">image</span><span class="p">])</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span> <span class="o">@</span> <span class="n">camera_points</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">misalignment</span><span class="p">):</span>  <span class="c1"># optimization to avoid matrix multiplication</span>
+                <span class="n">camera_points</span> <span class="o">=</span> <span class="n">rotvec_to_rotmat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">misalignment</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span> <span class="o">@</span> <span class="n">camera_points</span>
+
+        <span class="c1"># get the pinhole locations of the points</span>
+        <span class="n">pinhole_locations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">focal_length</span> <span class="o">*</span> <span class="n">camera_points</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">camera_points</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># type: np.ndarray</span>
+
+        <span class="c1"># get the distorted pinhole locations of the points</span>
+        <span class="n">image_locations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_distortion</span><span class="p">(</span><span class="n">pinhole_locations</span><span class="p">)</span>
+
+        <span class="c1"># add the temperature based scaling</span>
+        <span class="n">image_locations</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_temperature_scale</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="c1"># get the pixel locations of the points, need to mess with transposes due to numpy broadcasting rules</span>
+        <span class="n">picture_locations</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">intrinsic_matrix</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">@</span> <span class="n">image_locations</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">intrinsic_matrix</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="k">return</span> <span class="n">pinhole_locations</span><span class="p">,</span> <span class="n">image_locations</span><span class="p">,</span> <span class="n">picture_locations</span></div>
+
+<div class="viewcode-block" id="OwenModel.project_onto_image"><a class="viewcode-back" href="../../../owen_model/giant.camera_models.owen_model.OwenModel.project_onto_image.html#giant.camera_models.owen_model.OwenModel.project_onto_image">[docs]</a>    <span class="k">def</span> <span class="nf">project_onto_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points_in_camera_frame</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method transforms 3D points or directions expressed in the camera frame into the corresponding 2D image</span>
+<span class="sd">        locations.</span>
+
+<span class="sd">        The points input should be either 1 or 2 dimensional, with the first axis being length 3 (each point</span>
+<span class="sd">        (direction) in the camera frame is specified as a column).</span>
+
+<span class="sd">        The optional ``image`` key word argument specifies the index of the image you are projecting onto (this only</span>
+<span class="sd">        applies if you have a separate misalignment for each image)</span>
+
+<span class="sd">        The optional temperature input specifies the temperature to perform the projection at.  This is only import when</span>
+<span class="sd">        your focal length is dependent on temperature and you have entered or calibrated for the temperature dependency</span>
+<span class="sd">        coefficients.</span>
+
+<span class="sd">        You can specify the directions to be input as either a shape (3,) or shape (3, n) array::</span>
+<span class="sd">            &gt;&gt;&gt; from giant.camera_models import PinholeModel</span>
+<span class="sd">            &gt;&gt;&gt; model = OwenModel(kx=300, ky=400, px=500, py=500, focal_length=10, a1=1e-5, a2=1e-6, radial2=1e5,</span>
+<span class="sd">            &gt;&gt;&gt;                   misalignment=[[1e-12, -2e-14, 3e-10], [2e-15, 1e-13, 3e-10]],</span>
+<span class="sd">            &gt;&gt;&gt;                   estimation_parameters=[&#39;multiple misalignments&#39;])</span>
+<span class="sd">            &gt;&gt;&gt; model.project_onto_image([1, 2, 12000])</span>
+<span class="sd">            array([500.33680555, 500.89814814])</span>
+<span class="sd">            &gt;&gt;&gt; model.project_onto_image([[1, 2, 3, 4], [2, 5, 6, 7], [12000, 13000, 9000, 5000]], image=1)</span>
+<span class="sd">            array([[500.33680556, 501.25352754, 506.55555555, 564.79999998],</span>
+<span class="sd">                   [500.89814815, 504.17842513, 517.48148149, 651.20000003]])</span>
+<span class="sd">            &gt;&gt;&gt; model.project_onto_image([[1, 2, 3, 4], [2, 5, 6, 7], [12000, 13000, 9000, 5000]], temperature=-1)</span>
+<span class="sd">            array([[500.33680252, 501.25351625, 506.55549654, 564.7994167 ],</span>
+<span class="sd">                   [500.89814006, 504.1783875 , 517.48132409, 651.19863896]])</span>
+
+<span class="sd">        :param points_in_camera_frame: a shape (3,) or shape (3, n) array of points to project</span>
+<span class="sd">        :param image: The index of the image being projected onto (only applicable with multiple misalignments)</span>
+<span class="sd">        :param temperature: The temperature to project the points at</span>
+<span class="sd">        :return: A shape (2,) or shape (2, n) numpy array of image points (with units of pixels)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">picture_locations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_projections</span><span class="p">(</span><span class="n">points_in_camera_frame</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">picture_locations</span></div>
+
+    <span class="k">def</span> <span class="nf">_compute_ddistortion_dgnomic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gnomic_location</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">radius</span><span class="p">:</span> <span class="n">Real</span><span class="p">,</span> <span class="n">radius2</span><span class="p">:</span> <span class="n">Real</span><span class="p">,</span> <span class="n">radius3</span><span class="p">:</span> <span class="n">Real</span><span class="p">,</span>
+                                     <span class="n">radius4</span><span class="p">:</span> <span class="n">Real</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the partial derivative of the distortion with respect to a change in the gnomic location</span>
+
+<span class="sd">        Mathematically this is given by:</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \frac{\partial\mathbf{x}_I&#39;}{\partial\mathbf{x}_I} =&amp;</span>
+<span class="sd">            \left(\epsilon_2r^2+\epsilon_4r^4+\epsilon_5y_I+\epsilon_6x_I\right)\mathbf{I}_{2\times 2}+</span>
+<span class="sd">            \left(\epsilon_1r+\epsilon_3r^3\right)</span>
+<span class="sd">            \left[\begin{array}{cc}0 &amp; -1 \\ 1 &amp; 0 \end{array}\right]+\\</span>
+<span class="sd">            &amp;\left\{\left(2\epsilon_2r+4\epsilon_4r^3\right)</span>
+<span class="sd">            \\ \mathbf{x}_I+\left(\epsilon_1+3\epsilon_3r^2\right)</span>
+<span class="sd">            \left[\begin{array}{c} -y_I \\ x_I\end{array}\right]\right\}</span>
+<span class="sd">            \frac{\mathbf{x}_I^T}{r} +</span>
+<span class="sd">            \mathbf{x}_I\left[\begin{array}{cc} \epsilon_5 &amp; \epsilon_6\end{array}\right]</span>
+
+<span class="sd">        :param gnomic_location: The gnomic location of the point being considered as a shape (2,) numpy array</span>
+<span class="sd">        :param radius: The radial distance from the optical axis in units of distance</span>
+<span class="sd">        :param radius2: The radial distance squared from the optical axis in units of distance</span>
+<span class="sd">        :param radius3: The radial distance cubed from the optical axis in units of distance</span>
+<span class="sd">        :param radius4: The radial distance to the fourth power from the optical axis in units of distance</span>
+<span class="sd">        :return: The partial derivative of the distortion with respect to a change in the gnomic location</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">1e-8</span><span class="p">:</span>
+            <span class="c1"># make sure we have an array</span>
+            <span class="n">gnomic_location</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gnomic_location</span><span class="p">)</span>
+
+            <span class="n">dr_dgnom</span> <span class="o">=</span> <span class="n">gnomic_location</span> <span class="o">/</span> <span class="n">radius</span>
+
+            <span class="n">vec_portion</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">radial2</span> <span class="o">*</span> <span class="n">radius2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">radial4</span> <span class="o">*</span> <span class="n">radius4</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangential_y</span> <span class="o">*</span> <span class="n">gnomic_location</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">tangential_x</span> <span class="o">*</span> <span class="n">gnomic_location</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> \
+                          <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pinwheel1</span> <span class="o">*</span> <span class="n">radius</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">pinwheel2</span> <span class="o">*</span> <span class="n">radius3</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+
+            <span class="n">scal_portion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">radial2</span> <span class="o">*</span> <span class="n">radius</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">radial4</span> <span class="o">*</span> <span class="n">radius3</span><span class="p">)</span> <span class="o">*</span> <span class="n">gnomic_location</span> <span class="o">+</span>
+                                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pinwheel1</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pinwheel2</span> <span class="o">*</span> <span class="n">radius2</span><span class="p">)</span> <span class="o">*</span>
+                                    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">gnomic_location</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">gnomic_location</span><span class="p">[</span><span class="mi">0</span><span class="p">]]),</span>
+                                    <span class="n">dr_dgnom</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">gnomic_location</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">tangential_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangential_y</span><span class="p">])</span>
+
+            <span class="k">return</span> <span class="n">vec_portion</span> <span class="o">+</span> <span class="n">scal_portion</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;small radius, derivative unstable, returning 0&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_compute_dpixel_dintrinsic</span><span class="p">(</span><span class="n">gnomic_location_distorted</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        computes the partial derivative of the pixel location with respect to a change in one of the intrinsic matrix</span>
+<span class="sd">        parameters given the gnomic location of the point we are computing the derivative for.</span>
+
+<span class="sd">        Mathematically this is given by</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \frac{\partial\mathbf{x}_p}{\partial\mathbf{k}} = \left[</span>
+<span class="sd">            \begin{array}{cccccc} x_i &amp; y_i &amp; 0 &amp; 0 &amp; 1 &amp; 0 \\</span>
+<span class="sd">            0 &amp; 0 &amp; x_i &amp; y_i &amp; 0 &amp; 1 \end{array}\right]</span>
+
+<span class="sd">        where :math:`\mathbf{k}=[k_x \quad k_{xy} \quad k_{yx} \quad k_y \quad p_x \quad p_y]` is a vector of the</span>
+<span class="sd">        intrinsic camera parameters and all else is as defined before.</span>
+
+<span class="sd">        :param gnomic_location_distorted: the gnomic location of the point to compute the derivative for</span>
+<span class="sd">        :return: the partial derivative of the pixel location with respect to a change in one of the intrinsic matrix</span>
+<span class="sd">                 parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># compute the partial derivative of the pixel location with respect to the pixel pitch</span>
+        <span class="n">dpix_dkx</span> <span class="o">=</span> <span class="p">[</span><span class="n">gnomic_location_distorted</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">dpix_dky</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">gnomic_location_distorted</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+        <span class="c1"># compute the partial derivative of the pixel location with respect to the non-rectangular pixel terms</span>
+        <span class="n">dpix_dkxy</span> <span class="o">=</span> <span class="p">[</span><span class="n">gnomic_location_distorted</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">dpix_dkyx</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">gnomic_location_distorted</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+        <span class="c1"># compute the partial derivative of the pixel location with respect to the principal point</span>
+        <span class="n">dpix_dpx</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">dpix_dpy</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># compute the partial derivative of the pixel location with respect to the intrinsic matrix</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">dpix_dkx</span><span class="p">,</span> <span class="n">dpix_dkxy</span><span class="p">,</span> <span class="n">dpix_dkyx</span><span class="p">,</span> <span class="n">dpix_dky</span><span class="p">,</span> <span class="n">dpix_dpx</span><span class="p">,</span> <span class="n">dpix_dpy</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_compute_ddistorted_gnomic_ddistortion</span><span class="p">(</span><span class="n">gnomic_location</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">radius</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">radius2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                                               <span class="n">radius3</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">radius4</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the partial derivative of the distorted gnomic location with respect to a change in the distortion</span>
+<span class="sd">        coefficients</span>
+
+<span class="sd">        Mathematically this is given by</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \frac{\partial\mathbf{x}_I&#39;}{\partial\mathbf{d}} = \left[</span>
+<span class="sd">            \begin{array}{cccccc} r^2\mathbf{x}_I &amp; r^4\mathbf{x}_I &amp; y_I\mathbf{x}_I &amp; x_I\mathbf{x}_I &amp;</span>
+<span class="sd">            r\mathbf{x}_{Ii} &amp; r^3\mathbf{x}_{Ii} \end{array}\right]</span>
+
+<span class="sd">        where :math:`\mathbf{d}=[\epsilon_2 \quad \epsilon_4 \quad \epsilon_5 \quad</span>
+<span class="sd">        \epsilon_6 \quad \epsilon_1 \quad \epsilon_3]` is a vector of the</span>
+<span class="sd">        intrinsic camera parameters, :math:`\mathbf{x}_{Ii}=[-y_I \quad x_I]^T`, and all else is as defined before.</span>
+
+<span class="sd">        :param gnomic_location: The undistorted gnomic location of the point</span>
+<span class="sd">        :type gnomic_location: np.ndarray</span>
+<span class="sd">        :param radius: The radial distance from the optical axis in units of distance</span>
+<span class="sd">        :type radius: float</span>
+<span class="sd">        :param radius2: The radial distance squared from the optical axis in units of distance</span>
+<span class="sd">        :type radius2: float</span>
+<span class="sd">        :param radius3: The radial distance cubed from the optical axis in units of distance</span>
+<span class="sd">        :type radius3: float</span>
+<span class="sd">        :param radius4: The radial distance to the fourth power from the optical axis in units of distance</span>
+<span class="sd">        :type radius4: float</span>
+<span class="sd">        :return: the partial derivative of the distorted gnomic location with respect to a change in the distortion</span>
+<span class="sd">                 coefficients</span>
+<span class="sd">        :rtype: np.ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">gnomic_location</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gnomic_location</span><span class="p">)</span>
+
+        <span class="c1"># the partial derivative of the distorted gnomic location with respect to the radial distortion coefficients</span>
+        <span class="n">ddist_gnom_dradial2</span> <span class="o">=</span> <span class="n">radius2</span> <span class="o">*</span> <span class="n">gnomic_location</span>
+        <span class="n">ddist_gnom_dradial4</span> <span class="o">=</span> <span class="n">radius4</span> <span class="o">*</span> <span class="n">gnomic_location</span>
+
+        <span class="c1"># the partial derivative of the distorted gnomic location with respect to the tangential distortion coefficients</span>
+        <span class="n">ddist_gnom_dtangential_y</span> <span class="o">=</span> <span class="n">gnomic_location</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">gnomic_location</span>
+        <span class="n">ddist_gnom_dtangential_x</span> <span class="o">=</span> <span class="n">gnomic_location</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">gnomic_location</span>
+
+        <span class="c1"># compute the partial derivative of the distorted gnomic location with respect to the pinwheel distortion</span>
+        <span class="n">ddist_gnom_dpinwheel1</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">gnomic_location</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">gnomic_location</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="n">ddist_gnom_dpinwheel2</span> <span class="o">=</span> <span class="n">radius3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">gnomic_location</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">gnomic_location</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+
+        <span class="c1"># compute the partial derivative of the distorted gnomic location with respect to the distortion coefficients</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ddist_gnom_dradial2</span><span class="p">,</span> <span class="n">ddist_gnom_dradial4</span><span class="p">,</span>
+                         <span class="n">ddist_gnom_dtangential_y</span><span class="p">,</span> <span class="n">ddist_gnom_dtangential_x</span><span class="p">,</span>
+                         <span class="n">ddist_gnom_dpinwheel1</span><span class="p">,</span> <span class="n">ddist_gnom_dpinwheel2</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">def</span> <span class="nf">_get_jacobian_row</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit_vector_camera</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_images</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                          <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates the Jacobian matrix for a single point.</span>
+
+<span class="sd">        The Jacobian is calculated for every possible parameter that could be included in the state vector in this</span>
+<span class="sd">        method, and then columns corresponding to the state vectors that the Jacobian is not needed for can be removed</span>
+<span class="sd">        using the :meth:`_remove_jacobian_columns` method.</span>
+
+<span class="sd">        In general you should use the :meth:`compute_jacobian method in place of this method.</span>
+
+<span class="sd">        This method computes the following:</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \frac{\partial\mathbf{x}_P}{\partial\mathbf{c}} = \left[\begin{array}{cccc}</span>
+<span class="sd">            \frac{\partial\mathbf{x}_P}{\partial f} &amp; \frac{\partial\mathbf{x}_P}{\mathbf{k}} &amp;</span>
+<span class="sd">            \frac{\partial\mathbf{x}_P}{\partial\mathbf{d}} &amp;</span>
+<span class="sd">            \frac{\partial\mathbf{x}_P}{\partial\mathbf{a}} &amp;</span>
+<span class="sd">            \frac{\partial\mathbf{x}_P}{\partial\boldsymbol{\delta\theta}}\end{array}\right]</span>
+
+<span class="sd">        where all is as defined previously through the use of the chain rule.</span>
+
+<span class="sd">        :param unit_vector_camera: The unit vector we are computing the Jacobian for</span>
+<span class="sd">        :param image: The number of the image we are computing the Jacobian for</span>
+<span class="sd">        :param num_images:   The total number of images included in our Jacobian matrix</span>
+<span class="sd">        :param temperature: The temperature to compute the Jacobian at</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># ensure the input is an array and the right shape</span>
+        <span class="n">unit_vector_camera</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">unit_vector_camera</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+        <span class="c1"># get the required projections for the point</span>
+        <span class="n">gnomic_location</span><span class="p">,</span> <span class="n">gnomic_location_distorted</span><span class="p">,</span> <span class="n">pixel_location</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_projections</span><span class="p">(</span><span class="n">unit_vector_camera</span><span class="p">,</span>
+                                                                                          <span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span>
+                                                                                          <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="c1"># get the camera point after misalignment and shift from principle frame is applied</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimate_multiple_misalignments</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">misalignment</span><span class="p">[</span><span class="n">image</span><span class="p">]):</span>  <span class="c1"># optimization to avoid matrix multiplication</span>
+                <span class="n">cam_point</span> <span class="o">=</span> <span class="n">rotvec_to_rotmat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">misalignment</span><span class="p">[</span><span class="n">image</span><span class="p">])</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span> <span class="o">@</span> <span class="n">unit_vector_camera</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cam_point</span> <span class="o">=</span> <span class="n">unit_vector_camera</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">misalignment</span><span class="p">):</span>  <span class="c1"># optimization to avoid matrix multiplication</span>
+                <span class="n">cam_point</span> <span class="o">=</span> <span class="n">rotvec_to_rotmat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">misalignment</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span> <span class="o">@</span> <span class="n">unit_vector_camera</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cam_point</span> <span class="o">=</span> <span class="n">unit_vector_camera</span>
+
+        <span class="c1"># compute the radial distance from the optical axis as well as its powers</span>
+        <span class="n">radius</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gnomic_location</span><span class="p">)</span>
+        <span class="n">radius2</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">radius3</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">radius2</span>
+        <span class="n">radius4</span> <span class="o">=</span> <span class="n">radius2</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="c1"># --------------------------------------------------------------------------------------------------------------</span>
+        <span class="c1"># get the partial derivative of the measurement with respect to the misalignment vector</span>
+        <span class="c1"># --------------------------------------------------------------------------------------------------------------</span>
+
+        <span class="c1"># get the partial derivative of the distorted gnomic location with respect to the gnomic location</span>
+        <span class="n">ddist_gnom_dgnom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_ddistortion_dgnomic</span><span class="p">(</span><span class="n">gnomic_location</span><span class="p">,</span>
+                                                                         <span class="n">radius</span><span class="p">,</span> <span class="n">radius2</span><span class="p">,</span> <span class="n">radius3</span><span class="p">,</span> <span class="n">radius4</span><span class="p">)</span>
+
+        <span class="c1"># get the partial derivative of the pixel location of the point with respect to the distorted gnomic location</span>
+        <span class="n">dpix_ddist_gnom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dpixel_ddistorted_gnomic</span><span class="p">(</span><span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="c1"># compute the partial derivative of the camera location with respect to a change in the misalignment vector</span>
+        <span class="n">dcam_point_dmisalignment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dcamera_point_dmisalignment</span><span class="p">(</span><span class="n">unit_vector_camera</span><span class="p">)</span>
+
+        <span class="c1"># compute the partial derivative of the gnomic location with respect to the point in the camera frame</span>
+        <span class="n">dgnom_dcam_point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dgnomic_dcamera_point</span><span class="p">(</span><span class="n">cam_point</span><span class="p">)</span>
+
+        <span class="c1"># compute the partial derivative of the pixel location with respect to the misalignment</span>
+        <span class="n">dpix_dmisalignment</span> <span class="o">=</span> <span class="n">dpix_ddist_gnom</span> <span class="o">@</span> <span class="n">ddist_gnom_dgnom</span> <span class="o">@</span> <span class="n">dgnom_dcam_point</span> <span class="o">@</span> <span class="n">dcam_point_dmisalignment</span>
+
+        <span class="c1"># --------------------------------------------------------------------------------------------------------------</span>
+        <span class="c1"># get the partial derivative of the measurement with respect to the focal length</span>
+        <span class="c1"># --------------------------------------------------------------------------------------------------------------</span>
+
+        <span class="c1"># compute the change in the gnomic location with respect to a change in the focal length</span>
+        <span class="n">dgnom_dfocal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dgnomic_dfocal_length</span><span class="p">(</span><span class="n">cam_point</span><span class="p">)</span>
+
+        <span class="c1"># compute the change in the pixel location with respect to the focal length</span>
+        <span class="n">dpix_dfocal</span> <span class="o">=</span> <span class="n">dpix_ddist_gnom</span> <span class="o">@</span> <span class="n">ddist_gnom_dgnom</span> <span class="o">@</span> <span class="n">dgnom_dfocal</span>
+
+        <span class="c1"># --------------------------------------------------------------------------------------------------------------</span>
+        <span class="c1"># get the partial derivative of the measurement with respect to the terms of the intrinsic matrix</span>
+        <span class="c1"># --------------------------------------------------------------------------------------------------------------</span>
+
+        <span class="n">dpix_dintrinsic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dpixel_dintrinsic</span><span class="p">(</span><span class="n">gnomic_location_distorted</span><span class="p">)</span>
+
+        <span class="c1"># --------------------------------------------------------------------------------------------------------------</span>
+        <span class="c1"># get the partial derivative of the measurement with respect to the distortion coefficients</span>
+        <span class="c1"># --------------------------------------------------------------------------------------------------------------</span>
+
+        <span class="c1"># compute the partial derivative of the distorted gnomic location with respect to the distortion coefficients</span>
+        <span class="n">ddist_gnom_ddist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_ddistorted_gnomic_ddistortion</span><span class="p">(</span><span class="n">gnomic_location</span><span class="p">,</span>
+                                                                       <span class="n">radius</span><span class="p">,</span> <span class="n">radius2</span><span class="p">,</span> <span class="n">radius3</span><span class="p">,</span> <span class="n">radius4</span><span class="p">)</span>
+
+        <span class="c1"># compute the partial derivative of the pixel location with respect to the distortion coefficients</span>
+        <span class="n">dpix_ddist</span> <span class="o">=</span> <span class="n">dpix_ddist_gnom</span> <span class="o">@</span> <span class="n">ddist_gnom_ddist</span>
+
+        <span class="c1"># --------------------------------------------------------------------------------------------------------------</span>
+        <span class="c1"># get the partial derivative of the measurement with respect to the temperature coefficients</span>
+        <span class="c1"># --------------------------------------------------------------------------------------------------------------</span>
+
+        <span class="n">dpix_dtemperature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dpixel_dtemperature_coeffs</span><span class="p">(</span><span class="n">gnomic_location_distorted</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="c1"># stack everything together.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimate_multiple_misalignments</span><span class="p">:</span>
+            <span class="n">jacobian_row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">dpix_dfocal</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dpix_dintrinsic</span><span class="p">,</span> <span class="n">dpix_ddist</span><span class="p">,</span> <span class="n">dpix_dtemperature</span><span class="p">,</span>
+                                      <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">image</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)),</span>
+                                      <span class="n">dpix_dmisalignment</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">num_images</span> <span class="o">-</span> <span class="n">image</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span><span class="p">))])</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">jacobian_row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">dpix_dfocal</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dpix_dintrinsic</span><span class="p">,</span> <span class="n">dpix_ddist</span><span class="p">,</span> <span class="n">dpix_dtemperature</span><span class="p">,</span>
+                                      <span class="n">dpix_dmisalignment</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">jacobian_row</span>
+
+<div class="viewcode-block" id="OwenModel.apply_update"><a class="viewcode-back" href="../../../owen_model/giant.camera_models.owen_model.OwenModel.apply_update.html#giant.camera_models.owen_model.OwenModel.apply_update">[docs]</a>    <span class="k">def</span> <span class="nf">apply_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update_vec</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method takes in a delta update to camera parameters (:math:`\Delta\mathbf{c}`) and applies the update</span>
+<span class="sd">        to the current instance in place.</span>
+
+<span class="sd">        In general the delta update is calculated in the estimators in the :mod:`.calibration` subpackage and this</span>
+<span class="sd">        method is not used by the user.</span>
+
+<span class="sd">        The order of the update vector is determined by the order of the elements in :attr:`estimation_parameters`.  Any</span>
+<span class="sd">        misalignment terms must always be last.</span>
+
+<span class="sd">        This method operates by walking through the elements in :attr:`estimation_parameters` and retrieving the</span>
+<span class="sd">        parameter that the element corresponds to.  The value of the update_vec at the index of the parameter is then</span>
+<span class="sd">        applied as an additive update to the parameter in self, with the exception of misalignment, which is applied</span>
+<span class="sd">        as a multiplicative update.</span>
+
+<span class="sd">        :param update_vec: An iterable of delta updates to the model parameters</span>
+<span class="sd">        :type update_vec: Sequence</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">jacobian_parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element_dict</span><span class="p">[</span><span class="n">element</span><span class="p">],</span> <span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_dict</span><span class="p">[</span><span class="n">element</span><span class="p">])</span>
+                                         <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimation_parameters</span><span class="p">])</span>
+
+        <span class="n">update_vec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fix_update_vector</span><span class="p">(</span><span class="n">update_vec</span><span class="p">,</span> <span class="n">jacobian_parameters</span><span class="p">)</span>
+
+        <span class="n">update_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">update_vec</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">jacobian_parameters</span><span class="p">):</span>
+
+            <span class="k">if</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">focal_length</span> <span class="o">+=</span> <span class="n">update_vec</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kx</span> <span class="o">+=</span> <span class="n">update_vec</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kxy</span> <span class="o">+=</span> <span class="n">update_vec</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kyx</span> <span class="o">+=</span> <span class="n">update_vec</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ky</span> <span class="o">+=</span> <span class="n">update_vec</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">px</span> <span class="o">+=</span> <span class="n">update_vec</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">py</span> <span class="o">+=</span> <span class="n">update_vec</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span> <span class="o">+=</span> <span class="p">[</span><span class="n">update_vec</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">ind</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span> <span class="o">+=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">update_vec</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">ind</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span> <span class="o">+=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">update_vec</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">ind</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span> <span class="o">+=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">update_vec</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">ind</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">11</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span> <span class="o">+=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">update_vec</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">ind</span><span class="p">),</span> <span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coefficients</span> <span class="o">+=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">update_vec</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">ind</span><span class="p">)]</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">13</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">a1</span> <span class="o">+=</span> <span class="n">update_vec</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">14</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">a2</span> <span class="o">+=</span> <span class="n">update_vec</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">15</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">a3</span> <span class="o">+=</span> <span class="n">update_vec</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="mi">16</span> <span class="ow">or</span> <span class="n">parameter</span> <span class="o">==</span> <span class="s1">&#39;16:&#39;</span><span class="p">:</span>
+
+                <span class="n">misalignment_updates</span> <span class="o">=</span> <span class="n">update_vec</span><span class="p">[</span><span class="n">ind</span><span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimate_multiple_misalignments</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">misalignment</span> <span class="o">=</span> <span class="p">[(</span><span class="n">Rotation</span><span class="p">(</span><span class="n">update</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">*</span> <span class="n">Rotation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">misalignment</span><span class="p">[</span><span class="n">ind</span><span class="p">]))</span><span class="o">.</span><span class="n">vector</span>
+                                         <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">update</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">misalignment_updates</span><span class="o">.</span><span class="n">T</span><span class="p">)]</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">misalignment</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">Rotation</span><span class="p">(</span><span class="n">misalignment_updates</span><span class="p">)</span> <span class="o">*</span> <span class="n">Rotation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">misalignment</span><span class="p">)</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">vector</span>
+
+                <span class="k">break</span></div></div>
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

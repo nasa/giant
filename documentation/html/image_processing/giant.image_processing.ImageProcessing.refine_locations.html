@@ -1,0 +1,191 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>ImageProcessing.refine_locations &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="ImageProcessing.locate_subpixel_poi_in_roi" href="giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi.html" />
+    <link rel="prev" title="ImageProcessing.find_poi_in_roi" href="giant.image_processing.ImageProcessing.find_poi_in_roi.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.image_processing.html">giant.image_processing</a><ul>
+  <li><a href="giant.image_processing.ImageProcessing.html">ImageProcessing</a><ul>
+      <li>Previous: <a href="giant.image_processing.ImageProcessing.find_poi_in_roi.html" title="previous chapter">ImageProcessing.find_poi_in_roi</a></li>
+      <li>Next: <a href="giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi.html" title="next chapter">ImageProcessing.locate_subpixel_poi_in_roi</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.image_processing.ImageProcessing.find_poi_in_roi.html" title="Previous document">ImageProcessing.find_poi_in_roi</a>
+        </li>
+        <li>
+          <a href="giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi.html" title="Next document">ImageProcessing.locate_subpixel_poi_in_roi</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="imageprocessing-refine-locations">
+<h1>ImageProcessing.refine_locations<a class="headerlink" href="#imageprocessing-refine-locations" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.image_processing.html#module-giant.image_processing" title="giant.image_processing"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.image_processing</span></code></a>:</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.refine_locations">
+<span class="sig-prename descclassname"><span class="pre">ImageProcessing.</span></span><span class="sig-name descname"><span class="pre">refine_locations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_subs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/giant/image_processing.html#ImageProcessing.refine_locations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.image_processing.ImageProcessing.refine_locations" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is used to estimate the subpixel centers of blobs in an image given the pixel level location of the
+blobs.</p>
+<p>The method operates by performing a user specified centroiding algorithm on the image area surrounding the
+specified pixel level centers of the points of interest.  The centroiding algorithm should typically be a
+subclass of <a class="reference internal" href="../giant.point_spread_functions.html#giant.point_spread_functions.PointSpreadFunction" title="giant.point_spread_functions.PointSpreadFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PointSpreadFunction</span></code></a>, however it can be any object with a <code class="docutils literal notranslate"><span class="pre">fit</span></code> method that inputs  3
+array like parameters with the first two being pixel locations and the last being DN values and returns a
+object with a <code class="docutils literal notranslate"><span class="pre">centroid</span></code> attribute which provides the (x, y) location of the centroid.  The centroiding
+algorithm is specified using the <a class="reference internal" href="giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.centroiding" title="giant.image_processing.ImageProcessing.centroiding"><code class="xref py py-attr docutils literal notranslate"><span class="pre">centroiding</span></code></a> attribute. The size of the area considered in the
+centroiding algorithm can be specified in the <a class="reference internal" href="giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.centroid_size" title="giant.image_processing.ImageProcessing.centroid_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">centroid_size</span></code></a> attribute.</p>
+<p>This method returns both the subpixel centers of the points of interest as well as the illumination values of
+the pixels containing the subpixel centers of the points of interest.  Optionally, stats about the blobs that
+the centroid was fit to and then full centroid fit can be returned if <code class="docutils literal notranslate"><span class="pre">stats</span></code> and <code class="docutils literal notranslate"><span class="pre">snrs</span></code> are not
+None and <a class="reference internal" href="giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.save_psf" title="giant.image_processing.ImageProcessing.save_psf"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_psf</span></code></a> is set to True, respectively.</p>
+<p>Note that if a centroid fit is unsuccessful then no information is returned for that point.  Therefore the
+output arrays lengths will be less than or equal to the length of the input array.</p>
+<p>This method is designed to be used in conjunction with the <a class="reference internal" href="giant.image_processing.ImageProcessing.find_poi_in_roi.html#giant.image_processing.ImageProcessing.find_poi_in_roi" title="giant.image_processing.ImageProcessing.find_poi_in_roi"><code class="xref py py-meth docutils literal notranslate"><span class="pre">find_poi_in_roi()</span></code></a> method; however, it can be
+used with any rough identification method so long as the input format is correct.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>numpy.ndarray</em>) – The image to be processed</p></li>
+<li><p><strong>image_subs</strong> (<em>Iterable</em><em>[</em><em>numpy.ndarray</em><em>]</em>) – The pixel level locations of interest to be refined</p></li>
+<li><p><strong>stats</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>numpy.ndarray</em><em>]</em><em>]</em>) – An optional input of stats about the blobs.  This is not used in this function but is passed
+through, removing any blobs where a centroid was not found.</p></li>
+<li><p><strong>snrs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>numpy.ndarray</em><em>]</em><em>]</em>) – An optional input of signal to noise ratios from the blobs.  This is not used in this function but
+is passed through, removing any blobs where a centroid was not found.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The subpixel centers of the points of interest as well as the illumination values (row, col)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Union[Tuple[numpy.ndarray, numpy.ndarray], Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray], Tuple[numpy.ndarray, numpy.ndarray, List[numpy.ndarray], List[numpy.ndarray]], Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray, List[numpy.ndarray], List[numpy.ndarray]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.image_processing.ImageProcessing.find_poi_in_roi.html" title="Previous document">ImageProcessing.find_poi_in_roi</a>
+        </li>
+        <li>
+          <a href="giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi.html" title="Next document">ImageProcessing.locate_subpixel_poi_in_roi</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/image_processing/giant.image_processing.ImageProcessing.refine_locations.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

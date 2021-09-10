@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>triangle &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="Triangle64" href="triangle/giant.ray_tracer.shapes.triangle.Triangle64.html" />
+    <link rel="prev" title="find_limbs_surface" href="surface/giant.ray_tracer.shapes.surface.find_limbs_surface.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.ray_tracer.html">ray_tracer</a><ul>
+  <li><a href="../giant.ray_tracer.shapes.html">shapes</a><ul>
+      <li>Previous: <a href="surface/giant.ray_tracer.shapes.surface.find_limbs_surface.html" title="previous chapter">find_limbs_surface</a></li>
+      <li>Next: <a href="triangle/giant.ray_tracer.shapes.triangle.Triangle64.html" title="next chapter">Triangle64</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="surface/giant.ray_tracer.shapes.surface.find_limbs_surface.html" title="Previous document">find_limbs_surface</a>
+        </li>
+        <li>
+          <a href="triangle/giant.ray_tracer.shapes.triangle.Triangle64.html" title="Next document">Triangle64</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.ray_tracer.shapes.triangle">
+<span id="triangle"></span><h1>triangle<a class="headerlink" href="#module-giant.ray_tracer.shapes.triangle" title="Permalink to this headline">¶</a></h1>
+<p>This cython module defines surfaces for GIANT tesselated using Triangles as the geometry primitive.</p>
+<section id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>The triangle is the most commonly used geometry primitive for tesselating a surface in the general rendering/modelling
+community and GIANT is no different.  the vast majority of surfaces in GIANT are represented using the classes defined
+in this module.  They represent surfaces as a collection of triangles (defined by an array of vertices, an array of
+albedos, an array of normal vectors, and a facet map which specifies how the vertices are connected into Triangles)
+which is a very memory efficient way to represent these structures (and is very similar to the format used for the
+ubiquitous wavefront obj format).  There are 2 classes that implement this that are identical except for the precision
+with which they store these values, <a class="reference internal" href="triangle/giant.ray_tracer.shapes.triangle.Triangle64.html#giant.ray_tracer.shapes.triangle.Triangle64" title="giant.ray_tracer.shapes.triangle.Triangle64"><code class="xref py py-class docutils literal notranslate"><span class="pre">Triangle64</span></code></a> which stores the values using double precision and
+<a class="reference internal" href="triangle/giant.ray_tracer.shapes.triangle.Triangle32.html#giant.ray_tracer.shapes.triangle.Triangle32" title="giant.ray_tracer.shapes.triangle.Triangle32"><code class="xref py py-class docutils literal notranslate"><span class="pre">Triangle32</span></code></a> which store these values using single precision.  In many cases single precision is sufficient,
+however, if you are dealing with very high resolution terrain of a large object, or are translating/rotating the terrain
+frequently then you may need to consider using the double precision representation.  One way to get around this is to
+use the <a class="reference internal" href="../kdtree/giant.ray_tracer.kdtree.KDTree.html#giant.ray_tracer.kdtree.KDTree" title="giant.ray_tracer.kdtree.KDTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">KDTree</span></code></a> acceleration structure (recommended in general anyway) since this never actually
+translates/rotates the terrain, therefore avoiding loss of precision.</p>
+<p>The triangle representations in this module are fully featured and can be used throughout GIANT for ray tracing,
+rendering, and relative OpNav.  That being said, due to the nature of tesselation, they are typically not the most
+efficient when it comes to ray tracing.  Therefore, we strongly recommend that you wrap these objects in the
+acceleration structure provided by class <a class="reference internal" href="../kdtree/giant.ray_tracer.kdtree.KDTree.html#giant.ray_tracer.kdtree.KDTree" title="giant.ray_tracer.kdtree.KDTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">KDTree</span></code></a>, which dramatically accelerates the ray tracing performance
+while still providing exact tracing results.</p>
+</section>
+<section id="use">
+<h2>Use<a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h2>
+<p>In general users will rarely directly need to create instances of these classes, as GIANT provides tools the create them
+from common formats in the scripts <a class="reference internal" href="../../scripts/giant.scripts.ingest_shape.html#module-giant.scripts.ingest_shape" title="giant.scripts.ingest_shape"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ingest_shape</span></code></a>, <a class="reference internal" href="../../scripts/giant.scripts.spc_to_feature_catalogue.html#module-giant.scripts.spc_to_feature_catalogue" title="giant.scripts.spc_to_feature_catalogue"><code class="xref py py-mod docutils literal notranslate"><span class="pre">spc_to_feature_catalogue</span></code></a>, and <a class="reference internal" href="../../scripts/giant.scripts.tile_shape.html#module-giant.scripts.tile_shape" title="giant.scripts.tile_shape"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tile_shape</span></code></a>.  If
+you do need to use these classes directly the documentation below should help you (and examining the aforementioned
+scripts as examples would also be helpful).</p>
+</section>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="triangle/giant.ray_tracer.shapes.triangle.Triangle64.html#giant.ray_tracer.shapes.triangle.Triangle64" title="giant.ray_tracer.shapes.triangle.Triangle64"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Triangle64</span></code></a></p></td>
+<td><p>This class represents surfaces as tessellated triangles, storing the vertices, albedos, and normal vectors using double precision.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="triangle/giant.ray_tracer.shapes.triangle.Triangle32.html#giant.ray_tracer.shapes.triangle.Triangle32" title="giant.ray_tracer.shapes.triangle.Triangle32"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Triangle32</span></code></a></p></td>
+<td><p>This class represents surfaces as tessellated triangles, storing the vertices, albedos, and normal vectors using single precision.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="surface/giant.ray_tracer.shapes.surface.find_limbs_surface.html" title="Previous document">find_limbs_surface</a>
+        </li>
+        <li>
+          <a href="triangle/giant.ray_tracer.shapes.triangle.Triangle64.html" title="Next document">Triangle64</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/ray_tracer/shapes/giant.ray_tracer.shapes.triangle.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

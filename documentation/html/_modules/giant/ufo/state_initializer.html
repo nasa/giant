@@ -1,0 +1,321 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.ufo.state_initializer &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.ufo.state_initializer</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
+<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides a working example state initializer callable for use with the :class:`.ExtendedKalmanFilter`.</span>
+
+<span class="sd">Description</span>
+<span class="sd">-----------</span>
+
+<span class="sd">A state initializer is a Callable object which takes in the initial :class:`.Measurement` instance and the</span>
+<span class="sd">:class:`.Dynamics.State` class object and returns an initialized :class:`.Dynamics.State` with position, velocity,</span>
+<span class="sd">covariance and other state parameters filled in.  This callable can either be a function or a class which implements the</span>
+<span class="sd">``__call__`` method, although it is more typically implemented as a class to enable easy changing of parameters.</span>
+
+<span class="sd">Use</span>
+<span class="sd">---</span>
+
+<span class="sd">The process of initializing the state from a measurement will likely be different in every scenario, so the provided</span>
+<span class="sd">initializer really just serves as an example (taken from the OSIRIS-REx particle tracking code) for building your own.</span>
+<span class="sd">If your case is sufficiently similar to the OSIRIS-REx case then you can use this initializer directly (it is fully</span>
+<span class="sd">functional) by supplying an instance of it to the :class:`.ExtendedKalmanFilter` class.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">giant.ray_tracer.scene</span> <span class="kn">import</span> <span class="n">Scene</span>
+<span class="kn">from</span> <span class="nn">giant.ufo.dynamics</span> <span class="kn">import</span> <span class="n">Dynamics</span>
+<span class="kn">from</span> <span class="nn">giant.ufo.measurements</span> <span class="kn">import</span> <span class="n">OpticalBearingMeasurement</span><span class="p">,</span> <span class="n">Measurement</span>
+
+<span class="kn">from</span> <span class="nn">giant._typing</span> <span class="kn">import</span> <span class="n">Real</span><span class="p">,</span> <span class="n">SCALAR_OR_ARRAY</span>
+
+
+
+<div class="viewcode-block" id="ORExInitializer"><a class="viewcode-back" href="../../../ufo/state_initializer/giant.ufo.state_initializer.ORExInitializer.html#giant.ufo.state_initializer.ORExInitializer">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ORExInitializer</span><span class="p">:</span>
+
+    <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The :class:`.Scene` instance that has the central body of the integrator as the first &quot;target&quot;.</span>
+<span class="sd">     </span>
+<span class="sd">    The first target need not have any geometry associated with it (in fact it is better if it doesn&#39;t for speed/memory </span>
+<span class="sd">    reasons)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">initial_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The initial range to the target as a number or ``None``.</span>
+<span class="sd">    </span>
+<span class="sd">    If this is ``None``, then the initial range to the target will be the same as the range from the camera to the </span>
+<span class="sd">    central body assumed to be the first target in the :attr:`scene` attribute.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">initial_cram</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mf">1e-3</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The initial CrAm value for the filter in m**2/kg.  </span>
+<span class="sd">    </span>
+<span class="sd">    See the :class:`.SolRadAndGravityDynamics` class for details.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">range_variance</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mf">49.0</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The initial range variance in km**2 for computing the initial state covariance.  </span>
+<span class="sd">    </span>
+<span class="sd">    This is used along with the measurement covariance to compute the initial position covariance matrix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">measurement_covariance_multiplier</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mf">9.0</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The multiplier to use on the measurement covariance when computing the state covariance.  </span>
+<span class="sd">    </span>
+<span class="sd">    Because this is applied to the covariance it is essentially a sigma**2 multiplier (so a value of 9 is saying use the </span>
+<span class="sd">    3 sigma measurement uncertainty).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">initial_velocity_variance</span><span class="p">:</span> <span class="n">SCALAR_OR_ARRAY</span> <span class="o">=</span> <span class="mf">1e-6</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The initial velocity variance in units of (km/s)**2</span>
+<span class="sd">    </span>
+<span class="sd">    This can be specified as a scalar, in which case it is assumed that all 3 axes are the specified value, a 1d array </span>
+<span class="sd">    of length 3 in which case the covariance matrix is formed with this as the main diagonal, or a 2d array of shape 3x3 </span>
+<span class="sd">    in which case the covariance matrix is directly used.  Note that if you specify the full covariance matrix it must </span>
+<span class="sd">    be symmetric.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">initial_cram_variance</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The initial CrAm variance in units of (m**2/kg)**2.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">minimum_initial_radius</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mf">0.250</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The minimum initial radius to the central body in km.  </span>
+<span class="sd">    </span>
+<span class="sd">    If the initial determined particle location is less than this the initial range will be decreased until </span>
+<span class="sd">    this condition is met.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">measurement</span><span class="p">:</span> <span class="n">Measurement</span><span class="p">,</span> <span class="n">state_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Dynamics</span><span class="o">.</span><span class="n">State</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dynamics</span><span class="o">.</span><span class="n">State</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implement the initializer function.</span>
+
+<span class="sd">        This is only valid for :class:`.OpticalBearingMeasurement` measurements.  It may work with others through duck</span>
+<span class="sd">        typing but not likely.</span>
+
+<span class="sd">        :param measurement: The bearing measurement we are using to initialize the state</span>
+<span class="sd">        :param state_type: The type of the state we are initializing</span>
+<span class="sd">        :return: The initialized state</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">measurement</span><span class="p">,</span> <span class="n">OpticalBearingMeasurement</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Currently only OpticalBearingMeasurement measurements are accepted&#39;</span><span class="p">)</span>
+
+        <span class="c1"># retrieve the image form the measurement</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">measurement</span><span class="o">.</span><span class="n">image</span>
+
+        <span class="c1"># update the scene to be at this image time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+        <span class="c1"># determine what the initial range should be</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_range</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># if it wasn&#39;t specified then use the distance from the spacecraft to the central body as an initial guess</span>
+            <span class="n">initial_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># otherwise use the user specified value</span>
+            <span class="n">initial_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_range</span>
+
+        <span class="c1"># get the initial position of the target in the camera fixed/centered frame</span>
+        <span class="n">los_camera</span> <span class="o">=</span> <span class="n">measurement</span><span class="o">.</span><span class="n">camera_model</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="n">measurement</span><span class="o">.</span><span class="n">observed</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="n">position_camera</span> <span class="o">=</span> <span class="n">initial_range</span> <span class="o">*</span> <span class="n">los_camera</span>
+
+        <span class="c1"># rotate and translate into the inertial frame centered ont he central body</span>
+        <span class="n">position_inertial</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="p">(</span><span class="n">position_camera</span> <span class="o">-</span>
+                                                                          <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+
+        <span class="n">cb_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">position_inertial</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="n">cb_distance</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_initial_radius</span><span class="p">:</span>
+
+            <span class="c1"># shrink the initial range</span>
+            <span class="n">initial_range</span> <span class="o">*=</span> <span class="mf">0.9</span>
+
+            <span class="n">position_camera</span> <span class="o">=</span> <span class="n">initial_range</span><span class="o">*</span><span class="n">los_camera</span>
+
+            <span class="c1"># rotate and translate into the inertial frame centered ont he central body</span>
+            <span class="n">position_inertial</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">T</span><span class="o">@</span><span class="p">(</span><span class="n">position_camera</span> <span class="o">-</span>
+                                                                            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+
+            <span class="n">cb_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">position_inertial</span><span class="p">)</span>
+
+        <span class="c1"># initialize the covariance matrix</span>
+        <span class="n">covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">state_type</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="n">state_type</span><span class="o">.</span><span class="n">length</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+        <span class="c1"># determine the covariance for the line-of-sight vector in the camera frame</span>
+        <span class="n">jacobian_los_pix</span> <span class="o">=</span> <span class="n">measurement</span><span class="o">.</span><span class="n">camera_model</span><span class="o">.</span><span class="n">compute_unit_vector_jacobian</span><span class="p">(</span>
+            <span class="n">measurement</span><span class="o">.</span><span class="n">observed</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+
+        <span class="n">covariance_los_camera</span> <span class="o">=</span> <span class="p">(</span><span class="n">jacobian_los_pix</span> <span class="o">@</span>
+                                 <span class="n">measurement</span><span class="o">.</span><span class="n">covariance</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurement_covariance_multiplier</span> <span class="o">@</span>
+                                 <span class="n">jacobian_los_pix</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+        <span class="c1"># determine the covariance of the position vector in the camera frame</span>
+        <span class="n">covariance_position_camera</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">range_variance</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">los_camera</span><span class="p">,</span> <span class="n">los_camera</span><span class="p">)</span> <span class="o">+</span>
+                                      <span class="n">initial_range</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">covariance_los_camera</span><span class="p">)</span>
+
+        <span class="c1"># get the position covariance in the inertial frame and store it into the covariance matrix</span>
+        <span class="n">covariance</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span>
+                              <span class="n">covariance_position_camera</span> <span class="o">@</span>
+                              <span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span>
+
+        <span class="c1"># determine the initial velocity covariance</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_velocity_variance</span><span class="p">):</span>
+            <span class="n">covariance</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_velocity_variance</span><span class="p">]</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_velocity_variance</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">covariance</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_velocity_variance</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">covariance</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_velocity_variance</span>
+
+        <span class="c1"># determine if this state uses solar radiation and treat it differently if it doesn&#39;t</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">state_type</span><span class="p">,</span> <span class="s1">&#39;cram&#39;</span><span class="p">):</span>
+
+            <span class="n">covariance</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_cram_variance</span>
+
+            <span class="c1"># noinspection PyArgumentList</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">state_type</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">,</span> <span class="n">position_inertial</span><span class="p">,</span> <span class="n">velocity</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+                               <span class="n">covariance</span><span class="o">=</span><span class="n">covariance</span><span class="p">,</span> <span class="n">cram</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_cram</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="c1"># noinspection PyArgumentList</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">state_type</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">,</span> <span class="n">position_inertial</span><span class="p">,</span> <span class="n">velocity</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+                               <span class="n">covariance</span><span class="o">=</span><span class="n">covariance</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">state</span></div>
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

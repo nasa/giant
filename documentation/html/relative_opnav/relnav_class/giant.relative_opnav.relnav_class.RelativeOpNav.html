@@ -1,0 +1,363 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>RelativeOpNav &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="RelativeOpNav.add_images" href="giant.relative_opnav.relnav_class.RelativeOpNav.add_images.html" />
+    <link rel="prev" title="relnav_class" href="../giant.relative_opnav.relnav_class.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.relative_opnav.html">giant.relative_opnav</a><ul>
+  <li><a href="../giant.relative_opnav.relnav_class.html">relnav_class</a><ul>
+      <li>Previous: <a href="../giant.relative_opnav.relnav_class.html" title="previous chapter">relnav_class</a></li>
+      <li>Next: <a href="giant.relative_opnav.relnav_class.RelativeOpNav.add_images.html" title="next chapter">RelativeOpNav.add_images</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.relative_opnav.relnav_class.html" title="Previous document">relnav_class</a>
+        </li>
+        <li>
+          <a href="giant.relative_opnav.relnav_class.RelativeOpNav.add_images.html" title="Next document">RelativeOpNav.add_images</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="relativeopnav">
+<h1>RelativeOpNav<a class="headerlink" href="#relativeopnav" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.relative_opnav.relnav_class.html#module-giant.relative_opnav.relnav_class" title="giant.relative_opnav.relnav_class"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.relative_opnav.relnav_class</span></code></a>:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.relative_opnav.relnav_class.RelativeOpNav">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.relative_opnav.relnav_class.</span></span><span class="sig-name descname"><span class="pre">RelativeOpNav</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">camera</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extended_body_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_templates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_processing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_processing_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unresolved</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unresolved_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ellipse_matching</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ellipse_matching_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limb_matching</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limb_matching_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moment_algorithm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moment_algorithm_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sfn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sfn_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/relative_opnav/relnav_class.html#RelativeOpNav"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.relative_opnav.relnav_class.RelativeOpNav" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class serves as the main user interface for performing relative optical navigation.</p>
+<p>The class acts as a container for the <a class="reference internal" href="../../camera/giant.camera.Camera.html#giant.camera.Camera" title="giant.camera.Camera"><code class="xref py py-class docutils literal notranslate"><span class="pre">Camera</span></code></a>, <a class="reference internal" href="../../image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a>, and <a class="reference internal" href="../../ray_tracer/scene/giant.ray_tracer.scene.Scene.html#giant.ray_tracer.scene.Scene" title="giant.ray_tracer.scene.Scene"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scene</span></code></a> instances as
+well as for instance of all of the registered RelNav techniques.  By default the registered RelNav techniques are
+<a class="reference internal" href="../estimators/cross_correlation/giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding.html#giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding" title="giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding"><code class="xref py py-class docutils literal notranslate"><span class="pre">XCorrCenterFinding</span></code></a> to <a class="reference internal" href="#giant.relative_opnav.relnav_class.RelativeOpNav.cross_correlation" title="giant.relative_opnav.relnav_class.RelativeOpNav.cross_correlation"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cross_correlation</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">EllipseMatching'</span> <span class="pre">to</span> <span class="pre">:attr:`ellipse_matching</span></code>,
+<a class="reference internal" href="../estimators/limb_matching/giant.relative_opnav.estimators.limb_matching.LimbMatching.html#giant.relative_opnav.estimators.limb_matching.LimbMatching" title="giant.relative_opnav.estimators.limb_matching.LimbMatching"><code class="xref py py-class docutils literal notranslate"><span class="pre">LimbMatching</span></code></a> to <a class="reference internal" href="#giant.relative_opnav.relnav_class.RelativeOpNav.limb_matching" title="giant.relative_opnav.relnav_class.RelativeOpNav.limb_matching"><code class="xref py py-attr docutils literal notranslate"><span class="pre">limb_matching</span></code></a>, <a class="reference internal" href="../estimators/moment_algorithm/giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.html#giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm" title="giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomentAlgorithm</span></code></a> to <a class="reference internal" href="#giant.relative_opnav.relnav_class.RelativeOpNav.moment_algorithm" title="giant.relative_opnav.relnav_class.RelativeOpNav.moment_algorithm"><code class="xref py py-attr docutils literal notranslate"><span class="pre">moment_algorithm</span></code></a>, and
+<a class="reference internal" href="../estimators/unresolved/giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding.html#giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding" title="giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding"><code class="xref py py-class docutils literal notranslate"><span class="pre">UnresolvedCenterFinding</span></code></a> to <a class="reference internal" href="#giant.relative_opnav.relnav_class.RelativeOpNav.unresolved" title="giant.relative_opnav.relnav_class.RelativeOpNav.unresolved"><code class="xref py py-attr docutils literal notranslate"><span class="pre">unresolved</span></code></a>.  Besides storing all of these objects, it handles data
+transfer and collection between the different objects.  Therefore, in general this class will be the exclusive
+interface for doing Relative OpNav.</p>
+<p>For each registered technique, this class provides a few useful capabilities.  First, it creates a property that
+returns the current instance of the class that implements the technique to make it easy to edit/modify properties.
+Second, it provides a <code class="docutils literal notranslate"><span class="pre">{technique}_estimate</span></code> method which can be used to apply the technique to specific or all
+image/target pairs.  These <code class="docutils literal notranslate"><span class="pre">_estimate</span></code> methods also handle collecting and storing the data from the initialized
+objects as well as providing the appropriate data to the objects.  Finally, for each registered technique this
+class provides the opportunity to pass either a pre-initialized instance of the object as a key word argument
+(using <code class="docutils literal notranslate"><span class="pre">{technique}=instance</span></code>) or the keyword arguments to use to initialize the instance (using
+<code class="docutils literal notranslate"><span class="pre">{technique}_kwargs=dict</span></code>) as part of the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method for this class.</p>
+<p>This class also provides a simple method for automatically determining which RelNav technique to use based on the
+expected apparent diameter of a target in the image, as well as the type of the shape representing the target in the
+scene.  This method, <a class="reference internal" href="giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate.html#giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate" title="giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">auto_estimate()</span></code></a> is generally sufficient for use for most missions that are doing typical
+RelNav type work and really makes doing RelNav easy.</p>
+<p>For most RelNav types, the results will be collected and stored in the <code class="xref py py-attr docutils literal notranslate"><span class="pre">center_finding_results</span></code>,
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">relative_position_results</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">landmark_results</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">limb_results</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">saved_templates</span></code>,
+depending on the type of RelNav used (where each type is stored will be described in the class documentation for the
+technique).  In addition, each technique can store more details about what occurred in the fit to the
+<code class="docutils literal notranslate"><span class="pre">{technique}_details</span></code> attributes which are lists of lists where the outer list corresponds to the images and the
+inner lists corresponds to the targets in the scene.  Typically these details are stored as dictionaries with
+detailed key names to indicate what each value means, but they can technically be any python object.  The
+documentation for each technique will describe what is included in the details output.</p>
+<p>When initializing this class, most of the initial options can be set using the <code class="docutils literal notranslate"><span class="pre">*_kwargs</span></code> inputs with
+dictionaries specifying the keyword arguments and values. Alternatively, you can provide already initialized
+instances of the objects if you want a little more control or want to use a subclass instead of the registered
+class itself.  You should see the documentation for the registered techniques and the <a class="reference internal" href="../../image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a>
+class for more details about what settings can be specified at initialization.</p>
+<p>It is possible to register new techniques to use with this class, which will automatically create many of the
+benefits just discussed.  For details on how to do this, refer to the <a class="reference internal" href="../giant.relative_opnav.relnav_class.html#module-giant.relative_opnav.relnav_class" title="giant.relative_opnav.relnav_class"><code class="xref py py-mod docutils literal notranslate"><span class="pre">relnav_class</span></code></a>,
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">relnav_estimators</span></code>, and <a class="reference internal" href="giant.relative_opnav.relnav_class.RelativeOpNav.register.html#giant.relative_opnav.relnav_class.RelativeOpNav.register" title="giant.relative_opnav.relnav_class.RelativeOpNav.register"><code class="xref py py-meth docutils literal notranslate"><span class="pre">register()</span></code></a> documentation for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>camera</strong> (<a class="reference internal" href="../../camera/giant.camera.Camera.html#giant.camera.Camera" title="giant.camera.Camera"><em>giant.camera.Camera</em></a>) – The <a class="reference internal" href="../../camera/giant.camera.Camera.html#giant.camera.Camera" title="giant.camera.Camera"><code class="xref py py-class docutils literal notranslate"><span class="pre">Camera</span></code></a> containing the camera model and images to be analyzed</p></li>
+<li><p><strong>scene</strong> (<a class="reference internal" href="../../ray_tracer/scene/giant.ray_tracer.scene.Scene.html#giant.ray_tracer.scene.Scene" title="giant.ray_tracer.scene.Scene"><em>giant.ray_tracer.scene.Scene</em></a>) – The <a class="reference internal" href="../../ray_tracer/scene/giant.ray_tracer.scene.Scene.html#giant.ray_tracer.scene.Scene" title="giant.ray_tracer.scene.Scene"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scene</span></code></a> describing the a priori knowledge of the relative state between the camera and
+the targets</p></li>
+<li><p><strong>extended_body_cutoff</strong> (<em>numbers.Real</em>) – The apparent diameter threshold in pixels at which <a class="reference internal" href="giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate.html#giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate" title="giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">auto_estimate()</span></code></a> will
+switch from using unresolved techniques to using resolved techniques for
+extracting observables from the images.</p></li>
+<li><p><strong>save_templates</strong> (<em>bool</em>) – A flag specifying whether to save the templates generated for cross-correlation based
+techniques to the <code class="xref py py-attr docutils literal notranslate"><span class="pre">saved_templates</span></code> attribute.</p></li>
+<li><p><strong>image_processing</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../../image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><em>giant.image_processing.ImageProcessing</em></a><em>]</em>) – An already initialized instance of <a class="reference internal" href="../../image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a> (or a subclass).  If not
+<code class="docutils literal notranslate"><span class="pre">None</span></code> then <code class="docutils literal notranslate"><span class="pre">image_processing_kwargs</span></code> are ignored.</p></li>
+<li><p><strong>image_processing_kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – The keyword arguments to pass to the <a class="reference internal" href="../../image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a> class
+constructor.  These are ignored if argument <code class="docutils literal notranslate"><span class="pre">image_processing</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><strong>cross_correlation</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../estimators/cross_correlation/giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding.html#giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding" title="giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding"><em>giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding</em></a><em>]</em>) – An already initialized instance of <a class="reference internal" href="../estimators/cross_correlation/giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding.html#giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding" title="giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding"><code class="xref py py-class docutils literal notranslate"><span class="pre">XCorrCenterFinding</span></code></a> (or a subclass).  If
+not <code class="docutils literal notranslate"><span class="pre">None</span></code> then <code class="docutils literal notranslate"><span class="pre">cross_correlation_kwargs</span></code> are ignored.</p></li>
+<li><p><strong>cross_correlation_kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – The keyword arguments to pass to the <a class="reference internal" href="../estimators/cross_correlation/giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding.html#giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding" title="giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding"><code class="xref py py-class docutils literal notranslate"><span class="pre">XCorrCenterFinding</span></code></a> class
+constructor.  These are ignored if argument <code class="docutils literal notranslate"><span class="pre">cross_correlation</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">``None</span></code></p></li>
+<li><p><strong>unresolved</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../estimators/unresolved/giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding.html#giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding" title="giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding"><em>giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding</em></a><em>]</em>) – An already initialized instance of <a class="reference internal" href="../estimators/unresolved/giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding.html#giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding" title="giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding"><code class="xref py py-class docutils literal notranslate"><span class="pre">UnresolvedCenterFinding</span></code></a> (or a subclass).  If
+not <code class="docutils literal notranslate"><span class="pre">None</span></code> then <code class="docutils literal notranslate"><span class="pre">unresolved_kwargs</span></code> are ignored.</p></li>
+<li><p><strong>unresolved_kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – The keyword arguments to pass to the <a class="reference internal" href="../estimators/unresolved/giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding.html#giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding" title="giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding"><code class="xref py py-class docutils literal notranslate"><span class="pre">UnresolvedCenterFinding</span></code></a> class
+constructor. These are ignored if argument <code class="docutils literal notranslate"><span class="pre">unresolved</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><strong>ellipse_matching</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.html#giant.relative_opnav.estimators.ellipse_matching.EllipseMatching" title="giant.relative_opnav.estimators.ellipse_matching.EllipseMatching"><em>giant.relative_opnav.estimators.ellipse_matching.EllipseMatching</em></a><em>]</em>) – An already initialized instance of <a class="reference internal" href="../estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.html#giant.relative_opnav.estimators.ellipse_matching.EllipseMatching" title="giant.relative_opnav.estimators.ellipse_matching.EllipseMatching"><code class="xref py py-class docutils literal notranslate"><span class="pre">EllipseMatching</span></code></a> (or a subclass).
+If not <code class="docutils literal notranslate"><span class="pre">None</span></code> then <code class="docutils literal notranslate"><span class="pre">ellipse_matching_kwargs</span></code> are ignored.</p></li>
+<li><p><strong>ellipse_matching_kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – The keyword arguments to pass to the <a class="reference internal" href="../estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.html#giant.relative_opnav.estimators.ellipse_matching.EllipseMatching" title="giant.relative_opnav.estimators.ellipse_matching.EllipseMatching"><code class="xref py py-class docutils literal notranslate"><span class="pre">EllipseMatching</span></code></a> class
+constructor. These are ignored if argument <code class="docutils literal notranslate"><span class="pre">ellipse_matching</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><strong>limb_matching</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../estimators/limb_matching/giant.relative_opnav.estimators.limb_matching.LimbMatching.html#giant.relative_opnav.estimators.limb_matching.LimbMatching" title="giant.relative_opnav.estimators.limb_matching.LimbMatching"><em>giant.relative_opnav.estimators.limb_matching.LimbMatching</em></a><em>]</em>) – An already initialized instance of <a class="reference internal" href="../estimators/limb_matching/giant.relative_opnav.estimators.limb_matching.LimbMatching.html#giant.relative_opnav.estimators.limb_matching.LimbMatching" title="giant.relative_opnav.estimators.limb_matching.LimbMatching"><code class="xref py py-class docutils literal notranslate"><span class="pre">LimbMatching</span></code></a> (or a subclass).  If not
+<code class="docutils literal notranslate"><span class="pre">None</span></code> then <code class="docutils literal notranslate"><span class="pre">limb_matching_kwargs</span></code> are ignored</p></li>
+<li><p><strong>limb_matching_kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – The key word arguments to pass to the <a class="reference internal" href="../estimators/limb_matching/giant.relative_opnav.estimators.limb_matching.LimbMatching.html#giant.relative_opnav.estimators.limb_matching.LimbMatching" title="giant.relative_opnav.estimators.limb_matching.LimbMatching"><code class="xref py py-class docutils literal notranslate"><span class="pre">LimbMatching</span></code></a> class constructor.
+These are ignored if argument <code class="docutils literal notranslate"><span class="pre">limb_matching</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>moment_algorithm</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../estimators/moment_algorithm/giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.html#giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm" title="giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm"><em>giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm</em></a><em>]</em>) – An already initialized instance of <a class="reference internal" href="../estimators/moment_algorithm/giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.html#giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm" title="giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomentAlgorithm</span></code></a> (or a subclass).  If not
+<code class="docutils literal notranslate"><span class="pre">None</span></code> then <code class="docutils literal notranslate"><span class="pre">moment_algorithm_kwargs</span></code> are ignored.</p></li>
+<li><p><strong>moment_algorithm_kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – The key word arguments to pass to the <a class="reference internal" href="../estimators/moment_algorithm/giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.html#giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm" title="giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomentAlgorithm</span></code></a> class
+constructor.  These are ignored if argument <code class="docutils literal notranslate"><span class="pre">moment_algorithm</span></code> is not
+<code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>sfn</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../estimators/sfn/sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation"><em>giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation</em></a><em>]</em>) – An already initialized instance of <a class="reference internal" href="../estimators/sfn/sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurfaceFeatureNavigation</span></code></a> (or a subclass).  If not
+<code class="docutils literal notranslate"><span class="pre">None</span></code> then <code class="docutils literal notranslate"><span class="pre">sfn_kwargs</span></code> are ignored.</p></li>
+<li><p><strong>sfn_kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – The key word arguments to pass to the <a class="reference internal" href="../estimators/sfn/sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurfaceFeatureNavigation</span></code></a> class constructor.
+These are ignored if argument <code class="docutils literal notranslate"><span class="pre">sfn</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>kwargs</strong> – Extra arguments for other registered RelNav techniques.  These should take the same form as above
+(<code class="docutils literal notranslate"><span class="pre">{technique_name}={technique_instance}</span></code> or <code class="docutils literal notranslate"><span class="pre">{technique_name}_kwargs=dict()</span></code>).  Any that are
+not supplied are defaulted to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.relative_opnav.relnav_class.RelativeOpNav.camera">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">camera</span></span><em class="property"><span class="pre">:</span> <span class="pre">giant.camera.Camera</span></em><a class="headerlink" href="#giant.relative_opnav.relnav_class.RelativeOpNav.camera" title="Permalink to this definition">¶</a></dt>
+<dd><p>The camera instance to perform OpNav on.</p>
+<p>This should be an instance of the <a class="reference internal" href="../../camera/giant.camera.Camera.html#giant.camera.Camera" title="giant.camera.Camera"><code class="xref py py-class docutils literal notranslate"><span class="pre">Camera</span></code></a> class or one of its subclasses.</p>
+<p>See the <a class="reference internal" href="../../camera/giant.camera.Camera.html#giant.camera.Camera" title="giant.camera.Camera"><code class="xref py py-class docutils literal notranslate"><span class="pre">Camera</span></code></a> class documentation for more details</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.relative_opnav.relnav_class.RelativeOpNav.image_processing">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">image_processing</span></span><em class="property"><span class="pre">:</span> <span class="pre">giant.image_processing.ImageProcessing</span></em><a class="headerlink" href="#giant.relative_opnav.relnav_class.RelativeOpNav.image_processing" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ImageProcessing instance to use when doing image processing on the images</p>
+<p>This must be an instance of the <a class="reference internal" href="../../image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a> class.</p>
+<p>See the <a class="reference internal" href="../../image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a> class documentation for more details</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.relative_opnav.relnav_class.RelativeOpNav.model">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">model</span></span><em class="property"><span class="pre">:</span> <span class="pre">giant.camera_models.camera_model.CameraModel</span></em><a class="headerlink" href="#giant.relative_opnav.relnav_class.RelativeOpNav.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>This alias returns the current camera model from the camera attribute.</p>
+<p>It is provided for convenience since the camera model is used frequently.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.relative_opnav.relnav_class.RelativeOpNav.scene">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">scene</span></span><em class="property"><span class="pre">:</span> <span class="pre">giant.ray_tracer.scene.Scene</span></em><a class="headerlink" href="#giant.relative_opnav.relnav_class.RelativeOpNav.scene" title="Permalink to this definition">¶</a></dt>
+<dd><p>This property stores the scene describing the a priori conditions that the camera observed.</p>
+<p>This is used to communicate both where to expect the target in the image, as well as how to render what we think
+the target should look like for techniques that use cross correlation.  For more details see the <a class="reference internal" href="../../ray_tracer/giant.ray_tracer.scene.html#module-giant.ray_tracer.scene" title="giant.ray_tracer.scene"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scene</span></code></a>
+documentation.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.relative_opnav.relnav_class.RelativeOpNav.cross_correlation">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">cross_correlation</span></span><em class="property"><span class="pre">:</span> <span class="pre">giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding</span></em><a class="headerlink" href="#giant.relative_opnav.relnav_class.RelativeOpNav.cross_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">XCorrCenterFinding</span></code> instance to use when extracting center finding observables from images using
+cross-correlation.</p>
+<p>This should be an instance of the <a class="reference internal" href="../estimators/cross_correlation/giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding.html#giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding" title="giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding"><code class="xref py py-class docutils literal notranslate"><span class="pre">XCorrCenterFinding</span></code></a> class or a subclass.</p>
+<p>See the <a class="reference internal" href="../estimators/cross_correlation/giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding.html#giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding" title="giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding"><code class="xref py py-class docutils literal notranslate"><span class="pre">XCorrCenterFinding</span></code></a> documentation for more details.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.relative_opnav.relnav_class.RelativeOpNav.ellipse_matching">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">ellipse_matching</span></span><em class="property"><span class="pre">:</span> <span class="pre">giant.relative_opnav.estimators.ellipse_matching.EllipseMatching</span></em><a class="headerlink" href="#giant.relative_opnav.relnav_class.RelativeOpNav.ellipse_matching" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">EllipseMatching</span></code> instance to use when extracting center finding observables from images using
+cross-correlation.</p>
+<p>This should be an instance of the <a class="reference internal" href="../estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.html#giant.relative_opnav.estimators.ellipse_matching.EllipseMatching" title="giant.relative_opnav.estimators.ellipse_matching.EllipseMatching"><code class="xref py py-class docutils literal notranslate"><span class="pre">EllipseMatching</span></code></a> class or a subclass.</p>
+<p>See the <a class="reference internal" href="../estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.html#giant.relative_opnav.estimators.ellipse_matching.EllipseMatching" title="giant.relative_opnav.estimators.ellipse_matching.EllipseMatching"><code class="xref py py-class docutils literal notranslate"><span class="pre">EllipseMatching</span></code></a> documentation for more details.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.relative_opnav.relnav_class.RelativeOpNav.limb_matching">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">limb_matching</span></span><em class="property"><span class="pre">:</span> <span class="pre">giant.relative_opnav.estimators.limb_matching.LimbMatching</span></em><a class="headerlink" href="#giant.relative_opnav.relnav_class.RelativeOpNav.limb_matching" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">LimbMatching</span></code> instance to use when extracting center finding observables from images using
+cross-correlation.</p>
+<p>This should be an instance of the <a class="reference internal" href="../estimators/limb_matching/giant.relative_opnav.estimators.limb_matching.LimbMatching.html#giant.relative_opnav.estimators.limb_matching.LimbMatching" title="giant.relative_opnav.estimators.limb_matching.LimbMatching"><code class="xref py py-class docutils literal notranslate"><span class="pre">LimbMatching</span></code></a> class or a subclass.</p>
+<p>See the <a class="reference internal" href="../estimators/limb_matching/giant.relative_opnav.estimators.limb_matching.LimbMatching.html#giant.relative_opnav.estimators.limb_matching.LimbMatching" title="giant.relative_opnav.estimators.limb_matching.LimbMatching"><code class="xref py py-class docutils literal notranslate"><span class="pre">LimbMatching</span></code></a> documentation for more details.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.relative_opnav.relnav_class.RelativeOpNav.moment_algorithm">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">moment_algorithm</span></span><em class="property"><span class="pre">:</span> <span class="pre">giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm</span></em><a class="headerlink" href="#giant.relative_opnav.relnav_class.RelativeOpNav.moment_algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">MomentAlgorithm</span></code> instance to use when extracting center finding observables from images using
+cross-correlation.</p>
+<p>This should be an instance of the <a class="reference internal" href="../estimators/moment_algorithm/giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.html#giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm" title="giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomentAlgorithm</span></code></a> class or a subclass.</p>
+<p>See the <a class="reference internal" href="../estimators/moment_algorithm/giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.html#giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm" title="giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomentAlgorithm</span></code></a> documentation for more details.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.relative_opnav.relnav_class.RelativeOpNav.unresolved">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">unresolved</span></span><em class="property"><span class="pre">:</span> <span class="pre">giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding</span></em><a class="headerlink" href="#giant.relative_opnav.relnav_class.RelativeOpNav.unresolved" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">UnresolvedCenterFinding</span></code> instance to use when extracting center finding observables from images using
+cross-correlation.</p>
+<p>This should be an instance of the <a class="reference internal" href="../estimators/unresolved/giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding.html#giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding" title="giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding"><code class="xref py py-class docutils literal notranslate"><span class="pre">UnresolvedCenterFinding</span></code></a> class or a subclass.</p>
+<p>See the <a class="reference internal" href="../estimators/unresolved/giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding.html#giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding" title="giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding"><code class="xref py py-class docutils literal notranslate"><span class="pre">UnresolvedCenterFinding</span></code></a> documentation for more details.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p class="rubric">Summary of Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.relative_opnav.relnav_class.RelativeOpNav.add_images.html#giant.relative_opnav.relnav_class.RelativeOpNav.add_images" title="giant.relative_opnav.relnav_class.RelativeOpNav.add_images"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_images</span></code></a></p></td>
+<td><p>This is essentially an alias to the <a class="reference internal" href="../../camera/giant.camera.Camera.add_images.html#giant.camera.Camera.add_images" title="giant.camera.Camera.add_images"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Camera.add_images()</span></code></a> method, but it also expands various lists to account for the new number of images.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate.html#giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate" title="giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">auto_estimate</span></code></a></p></td>
+<td><p>This method attempts to automatically determine the best RelNav technique to use for each image/target pair considered out of the most common RelNav techniques, <a class="reference internal" href="../estimators/giant.relative_opnav.estimators.unresolved.html#module-giant.relative_opnav.estimators.unresolved" title="giant.relative_opnav.estimators.unresolved"><code class="xref py py-mod docutils literal notranslate"><span class="pre">unresolved</span></code></a>, <a class="reference internal" href="../estimators/giant.relative_opnav.estimators.ellipse_matching.html#module-giant.relative_opnav.estimators.ellipse_matching" title="giant.relative_opnav.estimators.ellipse_matching"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ellipse_matching</span></code></a>, <a class="reference internal" href="../estimators/giant.relative_opnav.estimators.cross_correlation.html#module-giant.relative_opnav.estimators.cross_correlation" title="giant.relative_opnav.estimators.cross_correlation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cross_correlation</span></code></a>, and <a class="reference internal" href="../estimators/giant.relative_opnav.estimators.sfn.html#module-giant.relative_opnav.estimators.sfn" title="giant.relative_opnav.estimators.sfn"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sfn</span></code></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.relative_opnav.relnav_class.RelativeOpNav.cross_correlation_estimate.html#giant.relative_opnav.relnav_class.RelativeOpNav.cross_correlation_estimate" title="giant.relative_opnav.relnav_class.RelativeOpNav.cross_correlation_estimate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cross_correlation_estimate</span></code></a></p></td>
+<td><p>This method loops applies the <a class="reference internal" href="../estimators/giant.relative_opnav.estimators.cross_correlation.html#module-giant.relative_opnav.estimators.cross_correlation" title="giant.relative_opnav.estimators.cross_correlation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cross_correlation</span></code></a> technique to image/target pairs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.relative_opnav.relnav_class.RelativeOpNav.default_estimator.html#giant.relative_opnav.relnav_class.RelativeOpNav.default_estimator" title="giant.relative_opnav.relnav_class.RelativeOpNav.default_estimator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_estimator</span></code></a></p></td>
+<td><p>This method extracts observables from image(s) using the requested worker and stores them according to the types of observables generated by the technique.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.relative_opnav.relnav_class.RelativeOpNav.ellipse_matching_estimate.html#giant.relative_opnav.relnav_class.RelativeOpNav.ellipse_matching_estimate" title="giant.relative_opnav.relnav_class.RelativeOpNav.ellipse_matching_estimate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ellipse_matching_estimate</span></code></a></p></td>
+<td><p>This method loops applies the <a class="reference internal" href="../estimators/giant.relative_opnav.estimators.ellipse_matching.html#module-giant.relative_opnav.estimators.ellipse_matching" title="giant.relative_opnav.estimators.ellipse_matching"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ellipse_matching</span></code></a> technique to image/target pairs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.relative_opnav.relnav_class.RelativeOpNav.limb_matching_estimate.html#giant.relative_opnav.relnav_class.RelativeOpNav.limb_matching_estimate" title="giant.relative_opnav.relnav_class.RelativeOpNav.limb_matching_estimate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">limb_matching_estimate</span></code></a></p></td>
+<td><p>This method loops applies the <a class="reference internal" href="../estimators/giant.relative_opnav.estimators.limb_matching.html#module-giant.relative_opnav.estimators.limb_matching" title="giant.relative_opnav.estimators.limb_matching"><code class="xref py py-mod docutils literal notranslate"><span class="pre">limb_matching</span></code></a> technique to image/target pairs.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.relative_opnav.relnav_class.RelativeOpNav.moment_algorithm_estimate.html#giant.relative_opnav.relnav_class.RelativeOpNav.moment_algorithm_estimate" title="giant.relative_opnav.relnav_class.RelativeOpNav.moment_algorithm_estimate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moment_algorithm_estimate</span></code></a></p></td>
+<td><p>This method loops applies the <a class="reference internal" href="../estimators/giant.relative_opnav.estimators.moment_algorithm.html#module-giant.relative_opnav.estimators.moment_algorithm" title="giant.relative_opnav.estimators.moment_algorithm"><code class="xref py py-mod docutils literal notranslate"><span class="pre">moment_algorithm</span></code></a> technique to image/target pairs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.relative_opnav.relnav_class.RelativeOpNav.process_image.html#giant.relative_opnav.relnav_class.RelativeOpNav.process_image" title="giant.relative_opnav.relnav_class.RelativeOpNav.process_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_image</span></code></a></p></td>
+<td><p>This is the default setup for processing an image through a RelNav technique and storing the results for a single image.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.relative_opnav.relnav_class.RelativeOpNav.register.html#giant.relative_opnav.relnav_class.RelativeOpNav.register" title="giant.relative_opnav.relnav_class.RelativeOpNav.register"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register</span></code></a></p></td>
+<td><p>This class method registers a new RelNav technique with the RelativeOpNav class.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.relative_opnav.relnav_class.RelativeOpNav.reset_image_processing.html#giant.relative_opnav.relnav_class.RelativeOpNav.reset_image_processing" title="giant.relative_opnav.relnav_class.RelativeOpNav.reset_image_processing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_image_processing</span></code></a></p></td>
+<td><p>This method replaces the existing image processing instance with a new instance using the initial <code class="docutils literal notranslate"><span class="pre">image_processing_kwargs</span></code> argument passed to the constructor.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.relative_opnav.relnav_class.RelativeOpNav.unresolved_estimate.html#giant.relative_opnav.relnav_class.RelativeOpNav.unresolved_estimate" title="giant.relative_opnav.relnav_class.RelativeOpNav.unresolved_estimate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unresolved_estimate</span></code></a></p></td>
+<td><p>This method loops applies the <a class="reference internal" href="../estimators/giant.relative_opnav.estimators.unresolved.html#module-giant.relative_opnav.estimators.unresolved" title="giant.relative_opnav.estimators.unresolved"><code class="xref py py-mod docutils literal notranslate"><span class="pre">unresolved</span></code></a> technique to image/target pairs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.relative_opnav.relnav_class.RelativeOpNav.update_image_processing.html#giant.relative_opnav.relnav_class.RelativeOpNav.update_image_processing" title="giant.relative_opnav.relnav_class.RelativeOpNav.update_image_processing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_image_processing</span></code></a></p></td>
+<td><p>This method updates the attributes of the <code class="xref py py-attr docutils literal notranslate"><span class="pre">image_processing</span></code> instance.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.relative_opnav.relnav_class.html" title="Previous document">relnav_class</a>
+        </li>
+        <li>
+          <a href="giant.relative_opnav.relnav_class.RelativeOpNav.add_images.html" title="Next document">RelativeOpNav.add_images</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/relative_opnav/relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,251 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>giant.camera_models.brown_model &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="shortcut icon" href="_static/logo.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="next" title="BrownModel" href="brown_model/giant.camera_models.brown_model.BrownModel.html" />
+    <link rel="prev" title="PinholeModel.get_misalignment" href="pinhole_model/giant.camera_models.pinhole_model.PinholeModel.get_misalignment.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="giant.html">API Reference</a><ul>
+  <li><a href="giant.camera_models.html">giant.camera_models</a><ul>
+      <li>Previous: <a href="pinhole_model/giant.camera_models.pinhole_model.PinholeModel.get_misalignment.html" title="previous chapter">PinholeModel.get_misalignment</a></li>
+      <li>Next: <a href="brown_model/giant.camera_models.brown_model.BrownModel.html" title="next chapter">BrownModel</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="pinhole_model/giant.camera_models.pinhole_model.PinholeModel.get_misalignment.html" title="Previous document">PinholeModel.get_misalignment</a>
+        </li>
+        <li>
+          <a href="brown_model/giant.camera_models.brown_model.BrownModel.html" title="Next document">BrownModel</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.camera_models.brown_model">
+<span id="giant-camera-models-brown-model"></span><h1>giant.camera_models.brown_model<a class="headerlink" href="#module-giant.camera_models.brown_model" title="Permalink to this headline">¶</a></h1>
+<p>This module provides a subclass of <a class="reference internal" href="camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraModel</span></code></a> that implements the Brown camera model, which adds basic
+distortion corrections to the Pinhole model.</p>
+<section id="theory">
+<h2>Theory<a class="headerlink" href="#theory" title="Permalink to this headline">¶</a></h2>
+<p>The Brown camera model is the pinhole camera model combined with a lens distortion model which projects any point
+along a ray emanating from the camera center (origin of the camera frame) to the same 2D point in an image.  Given
+some 3D point (or direction) expressed in the camera frame, <span class="math notranslate nohighlight">\(\mathbf{x}_C\)</span>, the Brown model is defined as</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}&amp;\mathbf{x}_I = \frac{1}{z_C}\left[\begin{array}{c} x_C \\ y_C \end{array}\right] \\
+&amp;r = \sqrt{x_I^2 + y_I^2} \\
+&amp;\Delta\mathbf{x}_I = (k_1r^2+k_2r^4+k_3r^6)\mathbf{x}_I +
+\left[\begin{array}{c} 2p_1x_Iy_I+p_2(r^2+2x_I^2) \\ p_1(r^2+2y_I^2) + 2p_2x_Iy_I \end{array}\right] \\
+&amp;\mathbf{x}_P = \left[\begin{array}{ccc} f_x &amp; \alpha &amp; p_x \\ 0 &amp; f_y &amp; p_y\end{array}\right]
+\left[\begin{array}{c} (1+a_1T+a_2T^2+a_3T^3)(\mathbf{x}_I+\Delta\mathbf{x}_I) \\ 1 \end{array}\right]\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{x}_I\)</span> are the image frame coordinates for the point (pinhole location), <span class="math notranslate nohighlight">\(r\)</span> is the
+radial distance from the principal point of the camera to the gnomic location of the point, <span class="math notranslate nohighlight">\(k_{1-3}\)</span>
+are radial distortion coefficients, <span class="math notranslate nohighlight">\(p_{1-2}\)</span> are tip/tilt/prism distortion coefficients,
+<span class="math notranslate nohighlight">\(\Delta\mathbf{x}_I\)</span> is the distortion for point <span class="math notranslate nohighlight">\(\mathbf{x}_I\)</span>, <span class="math notranslate nohighlight">\(f_x\)</span> and <span class="math notranslate nohighlight">\(f_y\)</span> are the
+focal length divided by the pixel pitch in the <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span> directions respectively expressed in units
+of pixels, <span class="math notranslate nohighlight">\(\alpha\)</span> is an alpha term for non-rectangular pixels, <span class="math notranslate nohighlight">\(p_x\)</span> and <span class="math notranslate nohighlight">\(p_y\)</span> are the location
+of the principal point of the camera in the image expressed in units of pixels, <span class="math notranslate nohighlight">\(T\)</span> is the temperature of the
+camera, <span class="math notranslate nohighlight">\(a_{1-3}\)</span> are temperature dependence coefficients, and <span class="math notranslate nohighlight">\(\mathbf{x}_P\)</span> is the pixel location of
+the point in the image. For a more thorough description of the Brown camera model checkout
+<a class="reference download internal" download="" href="_downloads/2216ed4e261478b876a3177ae9c93ed9/cameraModels.pdf"><code class="xref download docutils literal notranslate"><span class="pre">this</span> <span class="pre">memo</span></code></a>.</p>
+</section>
+<section id="speeding-up-the-camera-model">
+<h2>Speeding up the camera model<a class="headerlink" href="#speeding-up-the-camera-model" title="Permalink to this headline">¶</a></h2>
+<p>One of the most common functions of the camera model is to relate pixels in a camera to unit vectors in the 3D camera
+frame.  This is done extensively throughout GIANT, particularly when ray tracing.  Unfortunately, this transformation is
+iterative (there isn’t an analytic solution), which can make things a little slow, particularly when you need to do the
+transformation for many pixel locations.</p>
+<p>In order to speed up this transformation we can precompute it for each pixel in an detector and for a range of
+temperatures specified by a user and then use bilinear interpolation to compute the location of future pixel/temperature
+combinations we need.  While this is an approximation, it saves significant time rather than going through the full
+iterative transformation, and based on testing, it is accurate to a few thousandths of a pixel, which is more than
+sufficient for nearly every use case.  The <a class="reference internal" href="brown_model/giant.camera_models.brown_model.BrownModel.html#giant.camera_models.brown_model.BrownModel" title="giant.camera_models.brown_model.BrownModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BrownModel</span></code></a> and its subclasses make precomputing the
+transformation, and using the precomputed transformation, as easy as calling <a class="reference internal" href="brown_model/giant.camera_models.brown_model.BrownModel.prepare_interp.html#giant.camera_models.brown_model.BrownModel.prepare_interp" title="giant.camera_models.brown_model.BrownModel.prepare_interp"><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_interp()</span></code></a>
+once.  Future calls to any method that then needs the transformation from pixels to gnomic locations (on the way to
+unit vectors) will then use the precomputed transformation unless specifically requested otherwise.  In addition,
+once the <a class="reference internal" href="brown_model/giant.camera_models.brown_model.BrownModel.prepare_interp.html#giant.camera_models.brown_model.BrownModel.prepare_interp" title="giant.camera_models.brown_model.BrownModel.prepare_interp"><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_interp()</span></code></a> method has been called, if the resulting camera object is then saved to a
+file either using the <a class="reference internal" href="giant.camera_models.camera_model.html#module-giant.camera_models.camera_model" title="giant.camera_models.camera_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">camera_model</span></code></a>
+<a class="reference internal" href="camera_model/giant.camera_models.camera_model.save.html#giant.camera_models.camera_model.save" title="giant.camera_models.camera_model.save"><code class="xref py py-func docutils literal notranslate"><span class="pre">save()</span></code></a>/<a class="reference internal" href="camera_model/giant.camera_models.camera_model.load.html#giant.camera_models.camera_model.load" title="giant.camera_models.camera_model.load"><code class="xref py py-func docutils literal notranslate"><span class="pre">load()</span></code></a> functions  or another
+serialization method like pickle/dill, then the precomputed transformation will also be saved and loaded so that it
+truly only needs to be computed once.</p>
+<p>Since precomputing the transformation can take a somewhat long time, it is not always smart to do so.  Typically if you
+have a camera model that you will be using again and again (as is typical in most operations and analysis cases) then
+you <em>should</em> precompute the transformation and save the resulting camera object to a file that is then used for future
+work.  This is usually best done at the end of a calibration script (for a real camera) or in a stand-alone script that
+defines the camera, precomputes the transformation, and then saves it off for a synthetic camera for analysis.  If you
+are just doing a quick analysis and don’t need the camera model repeatedly or for any heavy duty ray tracing then it is
+recommended that you <em>not precompute</em> the transformation.</p>
+<p>Whether you precompute the transformation or not, the use of the camera model should appear unchanged beyond computation
+time.</p>
+<section id="use">
+<h3>Use<a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h3>
+<p>This is a concrete implementation of a <a class="reference internal" href="camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraModel</span></code></a>, therefore to use this class you simply need to initialize
+it with the proper values.  Typically these values come from either the physical dimensions of the camera, or from
+a camera calibration routine performed to refine the values using observed data (see the <a class="reference internal" href="giant.calibration.html#module-giant.calibration" title="giant.calibration"><code class="xref py py-mod docutils literal notranslate"><span class="pre">calibration</span></code></a> sub-package
+for details).  For instance, say we have a camera which has an effective focal length of 10 mm, a pix pitch of 2.2 um,
+and a detector size of 1024x1024, with radial distortion of 1e-5, -2e-7, 3e-9.  We could then create a model for this
+camera as</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">BrownModel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">BrownModel</span><span class="p">(</span><span class="n">fx</span><span class="o">=</span><span class="mi">10</span><span class="o">/</span><span class="mf">2.2e-3</span><span class="p">,</span> <span class="n">fy</span><span class="o">=</span><span class="mi">10</span><span class="o">/</span><span class="mf">2.2e-3</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="n">n_rows</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">px</span><span class="o">=</span><span class="p">(</span><span class="mi">1024</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">py</span><span class="o">=</span><span class="p">(</span><span class="mi">1024</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="n">k1</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">k2</span><span class="o">=-</span><span class="mf">2e-3</span><span class="p">,</span> <span class="n">k3</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that we did not set the field of view, but it is automatically computed for us based off of the prescribed camera
+model.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">field_of_view</span>
+<span class="go">9.048754127234737</span>
+</pre></div>
+</div>
+<p>In addition, we can now use our model to project points</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="go">array([511.5, 511.5])</span>
+</pre></div>
+</div>
+<p>or to determine the unit vector through a pixel</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">500</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">]])</span>
+<span class="go">array([[-0.11110425, -0.00251948],</span>
+<span class="go">       [-0.11110425, -0.09015368],</span>
+<span class="go">       [ 0.9875787 ,  0.99592468]]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="brown_model/giant.camera_models.brown_model.BrownModel.html#giant.camera_models.brown_model.BrownModel" title="giant.camera_models.brown_model.BrownModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BrownModel</span></code></a></p></td>
+<td><p>This class provides an implementation of the Brown camera model for projecting 3D points onto images and performing camera calibration.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="pinhole_model/giant.camera_models.pinhole_model.PinholeModel.get_misalignment.html" title="Previous document">PinholeModel.get_misalignment</a>
+        </li>
+        <li>
+          <a href="brown_model/giant.camera_models.brown_model.BrownModel.html" title="Next document">BrownModel</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/giant.camera_models.brown_model.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

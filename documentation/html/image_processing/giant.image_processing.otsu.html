@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>giant.image_processing.otsu &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="giant.image_processing.quadric_peak_finder_2d" href="giant.image_processing.quadric_peak_finder_2d.html" />
+    <link rel="prev" title="fft_correlator_1d" href="giant.image_processing.fft_correlator_1d.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.image_processing.html">giant.image_processing</a><ul>
+      <li>Previous: <a href="giant.image_processing.fft_correlator_1d.html" title="previous chapter">fft_correlator_1d</a></li>
+      <li>Next: <a href="giant.image_processing.quadric_peak_finder_2d.html" title="next chapter">giant.image_processing.quadric_peak_finder_2d</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.image_processing.fft_correlator_1d.html" title="Previous document">fft_correlator_1d</a>
+        </li>
+        <li>
+          <a href="giant.image_processing.quadric_peak_finder_2d.html" title="Next document">giant.image_processing.quadric_peak_finder_2d</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="giant-image-processing-otsu">
+<h1>giant.image_processing.otsu<a class="headerlink" href="#giant-image-processing-otsu" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="giant.image_processing.otsu">
+<span class="sig-prename descclassname"><span class="pre">giant.image_processing.</span></span><span class="sig-name descname"><span class="pre">otsu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/giant/image_processing.html#otsu"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.image_processing.otsu" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function performs multilevel Otsu thresholding on a 2D array.</p>
+<p>Otsu thresholding is a technique by which the optimal threshold is chosen so as to split a 2D array based on the
+peaks in its histogram.  In multilevel thresholding, we choose multiple optimal thresholds so that multiple peaks
+are separated.  This process is described in
+“Otsu N, A Threshold Selection Method from Gray-Level Histograms, IEEE Trans. Syst. Man Cybern. 1979;9:62-66.”</p>
+<p>To use this function, simply input the image and the number of times you want to split the histogram.  The function
+will then return the optimal threshold values used to bin the image (n-1 thresholds), and a labeled image where each
+bin has its own number (n labels).  Note that the function will convert the image to a uint8 image if it is not
+already, and the thresholds will correspond to the uint8 image.</p>
+<p>This function uses the opencv threhold function to perform the thresholding when n=2 and is based off of the
+MATLAB function otsu
+(<a class="reference external" href="https://www.mathworks.com/matlabcentral/fileexchange/26532-image-segmentation-using-otsu-thresholding?s_tid=prof_contriblnk">https://www.mathworks.com/matlabcentral/fileexchange/26532-image-segmentation-using-otsu-thresholding?s_tid=prof_contriblnk</a>)
+for when n&gt;=3.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.image_processing</span> <span class="kn">import</span> <span class="n">otsu</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.point_spread_functions</span> <span class="kn">import</span> <span class="n">Gaussian</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">im</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">psf</span> <span class="o">=</span> <span class="n">Gaussian</span><span class="p">(</span><span class="n">sigma_x</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">sigma_y</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">centroid_x</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">centroid_y</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">im</span><span class="p">[</span><span class="mi">50</span><span class="p">:</span><span class="mi">60</span><span class="p">,</span> <span class="mi">50</span><span class="p">:</span><span class="mi">60</span><span class="p">]</span> <span class="o">=</span> <span class="n">psf</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">thresh</span><span class="p">,</span> <span class="n">labeled_im</span> <span class="o">=</span> <span class="n">otsu</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">thresh</span><span class="p">)</span>
+<span class="go">[0.24723526470339388, 2.235294117647059]</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>numpy.ndarray</em>) – The grayscale image to be thresholded as a numpy array</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – The number of times to bin the image (for a binary threshold n=2)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The n-1 threshold values and the labeled image with the background
+being labeled 0 and each subsequent bin being labeled with the next integer (ie 1, 2, 3, …)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[List[numbers.Real], numpy.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.image_processing.fft_correlator_1d.html" title="Previous document">fft_correlator_1d</a>
+        </li>
+        <li>
+          <a href="giant.image_processing.quadric_peak_finder_2d.html" title="Next document">giant.image_processing.quadric_peak_finder_2d</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/image_processing/giant.image_processing.otsu.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

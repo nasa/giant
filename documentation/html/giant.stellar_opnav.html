@@ -1,0 +1,437 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>giant.stellar_opnav &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/logo.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="next" title="giant.stellar_opnav.stellar_class" href="stellar_opnav/giant.stellar_opnav.stellar_class.html" />
+    <link rel="prev" title="OpNav.update_image_processing" href="opnav_class/giant.opnav_class.OpNav.update_image_processing.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="giant.html">API Reference</a><ul>
+      <li>Previous: <a href="opnav_class/giant.opnav_class.OpNav.update_image_processing.html" title="previous chapter">OpNav.update_image_processing</a></li>
+      <li>Next: <a href="stellar_opnav/giant.stellar_opnav.stellar_class.html" title="next chapter">giant.stellar_opnav.stellar_class</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="opnav_class/giant.opnav_class.OpNav.update_image_processing.html" title="Previous document">OpNav.update_image_processing</a>
+        </li>
+        <li>
+          <a href="stellar_opnav/giant.stellar_opnav.stellar_class.html" title="Next document">giant.stellar_opnav.stellar_class</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.stellar_opnav">
+<span id="giant-stellar-opnav"></span><h1>giant.stellar_opnav<a class="headerlink" href="#module-giant.stellar_opnav" title="Permalink to this headline">¶</a></h1>
+<p>This package provides the required routines and objects to identify stars in an image and to estimate attitude based on
+those identified stars.</p>
+<section id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>In GIANT, Stellar OpNav refers to the process of identifying stars in an image and then extracting the attitude 
+information from those stars. There are many different sub-steps that need to be performed for all parts of Stellar
+OpNav, which can lead to cluttered scripts and hard to maintain code when everything is thrown together.  Luckily, GIANT
+has done most of the work for us, and created a simple single interface to perform all portions of Stellar OpNav through
+the <a class="reference internal" href="stellar_opnav/stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html#giant.stellar_opnav.stellar_class.StellarOpNav" title="giant.stellar_opnav.stellar_class.StellarOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">StellarOpNav</span></code></a> class.</p>
+<p>The <a class="reference internal" href="stellar_opnav/stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html#giant.stellar_opnav.stellar_class.StellarOpNav" title="giant.stellar_opnav.stellar_class.StellarOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">StellarOpNav</span></code></a> class is generally the only interface a user will require when performing Stellar OpNav, as
+it provides easy access to every component you need.  It also abstracts away most of the nitty gritty details into 2
+simple method calls <a class="reference internal" href="stellar_opnav/stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.id_stars.html#giant.stellar_opnav.stellar_class.StellarOpNav.id_stars" title="giant.stellar_opnav.stellar_class.StellarOpNav.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> and <a class="reference internal" href="stellar_opnav/stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.estimate_attitude.html#giant.stellar_opnav.stellar_class.StellarOpNav.estimate_attitude" title="giant.stellar_opnav.stellar_class.StellarOpNav.estimate_attitude"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate_attitude()</span></code></a> which means you can
+perform Stellar OpNav without an in depth understanding of what’s going on in the background (though at least a basic
+understanding certainly helps).  That being said, the substeps are also exposed throughout GIANT, so if you are doing
+advanced design or analysis it is easy to get these components as well.</p>
+<p>This package level documentation only focuses on the use of the class and some techniques for successfully performing
+Stellar OpNav (in the upcoming tuning section).  To see behind the scenes of what’s going on, refer to the submodule
+documentations from this package
+(<a class="reference internal" href="stellar_opnav/giant.stellar_opnav.stellar_class.html#module-giant.stellar_opnav.stellar_class" title="giant.stellar_opnav.stellar_class"><code class="xref py py-mod docutils literal notranslate"><span class="pre">stellar_class</span></code></a>, <a class="reference internal" href="stellar_opnav/giant.stellar_opnav.star_identification.html#module-giant.stellar_opnav.star_identification" title="giant.stellar_opnav.star_identification"><code class="xref py py-mod docutils literal notranslate"><span class="pre">star_identification</span></code></a>, and <a class="reference internal" href="stellar_opnav/giant.stellar_opnav.estimators.html#module-giant.stellar_opnav.estimators" title="giant.stellar_opnav.estimators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">estimators</span></code></a>).</p>
+</section>
+<section id="tuning-for-successful-stellar-opnav">
+<h2>Tuning for Successful Stellar OpNav<a class="headerlink" href="#tuning-for-successful-stellar-opnav" title="Permalink to this headline">¶</a></h2>
+<p>The process of tuning the Stellar OpNav routines is both a science and an art.  In general, you should be able to find a
+single set of tuning parameters that applies to a number of similar images (similar exposure times, similar scene, etc),
+but this often takes a decent amount of experimentation.  With this section, we hope to introduce you to all the
+different nobs you can turn when performing Stellar OpNav and give you some basic tips to getting a good tuning for a
+wide range of images.</p>
+<p>The primary goal with tuning in Stellar OpNav is to successfully identify a good number of stars in every image.  In
+general, at least 2 stars are required for each image to be able to solve for an updated rotation matrix for the image,
+but in practice it is best to get at least 4, and generally more is better.  In addition, it may frequently be useful to
+perform other types of analysis on the images using identified stars, and in these cases more is almost always
+better.  Therefore we will be shooting to get the tuning that provides the most correctly identified stars as possible.</p>
+<p>Each of the parameters you will need is discussed briefly in the following table.  <a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a> attributes
+can easily be accessed through the <a class="reference internal" href="stellar_opnav/stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html#giant.stellar_opnav.stellar_class.StellarOpNav.image_processing" title="giant.stellar_opnav.stellar_class.StellarOpNav.image_processing"><code class="xref py py-attr docutils literal notranslate"><span class="pre">image_processing</span></code></a> property, while <a class="reference internal" href="giant.calibration.html#giant.calibration.StarID" title="giant.calibration.StarID"><code class="xref py py-class docutils literal notranslate"><span class="pre">StarID</span></code></a>
+attributes can easily be accessed through the <a class="reference internal" href="stellar_opnav/stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html#giant.stellar_opnav.stellar_class.StellarOpNav.star_id" title="giant.stellar_opnav.stellar_class.StellarOpNav.star_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">star_id</span></code></a> attribute.  For more detailed
+descriptions of these attributes see the <a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a> or <a class="reference internal" href="giant.calibration.html#giant.calibration.StarID" title="giant.calibration.StarID"><code class="xref py py-class docutils literal notranslate"><span class="pre">StarID</span></code></a> documentation.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 59%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Attribute</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.centroiding" title="giant.image_processing.ImageProcessing.centroiding"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageProcessing.centroiding</span></code></a></p></td>
+<td><p>This function is used to compute the subpixel center of the points
+of interest in the image. Changing this function can change where
+your image points are identified.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.image_denoising" title="giant.image_processing.ImageProcessing.image_denoising"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageProcessing.image_denoising</span></code></a></p></td>
+<td><p>This contains the image denoising function. This function is used to
+attempt to remove a little bit of the noise in the image (generally by
+smoothing the image).  Having a good denoising routine can make the
+process of identifying stars in the image much easier.  A simple
+gaussian blur (the default image denoising function) is generally a
+good denoising function for star images.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.denoising_kwargs" title="giant.image_processing.ImageProcessing.denoising_kwargs"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageProcessing.denoising_kwargs</span></code></a></p></td>
+<td><p>The image denoising function keyword arguments as a
+dictionary. These arguments are passed to the denoising function along
+with the image to be denoised.  Adjusting these parameters may change
+how well the denoising function performs its job.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.denoise_flag" title="giant.image_processing.ImageProcessing.denoise_flag"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageProcessing.denoise_flag</span></code></a></p></td>
+<td><p>The flag specifying whether to use the denoising function on
+the images or not. If you are using a decent
+<a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.image_denoising" title="giant.image_processing.ImageProcessing.image_denoising"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageProcessing.image_denoising</span></code></a> function then it is generally
+best to have this set to <code class="docutils literal notranslate"><span class="pre">True</span></code> as it will make star identification
+easier.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.centroid_size" title="giant.image_processing.ImageProcessing.centroid_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageProcessing.centroid_size</span></code></a></p></td>
+<td><p>The size of the sub-image to use when centroiding a point of
+interest.  Changing the size of this parameter changes how big of a
+widow is centeroided when identifying the subpixel centers of points
+of interest in the image. The value for this depends on the
+centroiding function you are using, but typical values range anywhere
+from 1 (3x3 grid) to 10 (21x21 grid) depending on the centroid
+function used and the expected PSF of the camera.  If you are using
+a centroid function that doesn’t estimate background then smaller is
+usually better.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.poi_threshold" title="giant.image_processing.ImageProcessing.poi_threshold"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageProcessing.poi_threshold</span></code></a></p></td>
+<td><p>The threshold to use when identifying points of interest in
+an image. This largely controls how many image points of interest are
+extracted from the image. The higher this number is, the less points
+of interest that will be extracted.  In general you want to set this
+fairly high for an initial identification (in the range of 20-40) and
+then lower for a subsequent identification (in the range of 8-20).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.poi_max_size" title="giant.image_processing.ImageProcessing.poi_max_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageProcessing.poi_max_size</span></code></a></p></td>
+<td><p>The maximum size for a blob before it is no longer considered a point
+of interest. This can be used to exclude extended bodies, however, it
+also can exclude really bright stars if set too low.  Generally a
+setting of about 100 is good, which corresponds to a 10x10 window of
+points above the threshold.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.poi_min_size" title="giant.image_processing.ImageProcessing.poi_min_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageProcessing.poi_min_size</span></code></a></p></td>
+<td><p>The minimum size for a blob before it is no longer considered a point
+of interest. This can be used to exclude noise spikes from being
+identified as points of interest, but it can also exclude very faint
+stars. Generally a setting of 2-5 is good for an initial
+identification, and a setting of 1-2 is good for a subsequent
+identification trying to get dim stars.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.reject_saturation" title="giant.image_processing.ImageProcessing.reject_saturation"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageProcessing.reject_saturation</span></code></a></p></td>
+<td><p>A flag specifying whether to include blobs which contain
+saturated pixels as points of interest or not. In general you should
+set this flag to True, as overexposed pixels can severely degrade
+the centroiding accuracy.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.calibration.html#giant.calibration.StarID.max_magnitude" title="giant.calibration.StarID.max_magnitude"><code class="xref py py-attr docutils literal notranslate"><span class="pre">StarID.max_magnitude</span></code></a></p></td>
+<td><p>The maximum magnitude to retrieve when querying the star catalogue.
+The star magnitude is an inverse logarithmic scale of brightness,
+which means the larger the magnitude, the dimmer the star.  In general
+this should be set fairly low for an initial identification, and then
+set higher for a subsequent identification of dimmer stars.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.calibration.html#giant.calibration.StarID.max_combos" title="giant.calibration.StarID.max_combos"><code class="xref py py-attr docutils literal notranslate"><span class="pre">StarID.max_combos</span></code></a></p></td>
+<td><p>The maximum number of combinations to try when performing the RANSAC
+star identification. The higher this number, the more likely a
+combination of correctly identified stars will be processed; however,
+the amount of computation time will also increase.  In general values
+between 500 and 1000 provide a good tradeoff between speed and
+accuracy.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.calibration.html#giant.calibration.StarID.tolerance" title="giant.calibration.StarID.tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">StarID.tolerance</span></code></a></p></td>
+<td><p>The maximum initial separation between a catalogue star and an image
+star for a pair to be formed. Setting this parameter correctly is one
+of the most crucial components of getting good star identification
+results. For the first identification, this number must encompass the
+errors in the projected star locations due to the error in the star
+catalogue (generally small), the error in the centroiding of the
+image points of interest (generally small), the error caused by the
+camera model (may be small or large), and the error caused by the
+attitude error for the image (generally large).  After the initial
+identification, the attitude error is largely removed and this value
+can be set much smaller.  The correct value for this parameter can
+vary widely from camera to camera and spacecraft to spacecraft so
+there are no good rough estimates to provide for this setting.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.calibration.html#giant.calibration.StarID.ransac_tolerance" title="giant.calibration.StarID.ransac_tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">StarID.ransac_tolerance</span></code></a></p></td>
+<td><p>The maximum separation between a catalogue star and an image star for
+a pair to be formed after correcting the attitude in the RANSAC
+routine. This value should generally be set fairly small since the
+attitude error should be removed correctly for a correct RANSAC
+iteration.  If there is a good camera model and good star catalogue
+being used then setting this between 1-5 is usually appropriate.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.calibration.html#giant.calibration.StarID.second_closest_check" title="giant.calibration.StarID.second_closest_check"><code class="xref py py-attr docutils literal notranslate"><span class="pre">StarID.second_closest_check</span></code></a></p></td>
+<td><p>Check if two catalogue stars fall within the pair
+tolerance for a single image point of interest. In general, you may
+want to set this to False for an initial ID, and then set it to True
+for a subsequent ID when trying to identify dimmer stars.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.calibration.html#giant.calibration.StarID.unique_check" title="giant.calibration.StarID.unique_check"><code class="xref py py-attr docutils literal notranslate"><span class="pre">StarID.unique_check</span></code></a></p></td>
+<td><p>Check if two image points of interest fall within the pair
+tolerance for a single catalogue star. In general, you may want to set
+this to False for an initial ID, and then set it to True for a
+subsequent ID when trying to identify dimmer stars.</p></td>
+</tr>
+</tbody>
+</table>
+<p>As you can see, there are 3 different processes that need tuned for a successful star identification, the image 
+processing, the catalogue query, and the identification routines themselves.  The following are a few suggestions for
+attempting to find the correct tuning.</p>
+<ul class="simple">
+<li><p>Getting the initial identification is generally the most difficult; therefore, you should generally have 2 tunings
+for an image set.</p></li>
+<li><p>The first tuning should be fairly conservative in order to get a good refined attitude estimate for the image.  
+(Remember that we really only need 4 or 5 correctly identified stars to get a good attitude estimate.)</p>
+<ul>
+<li><p><a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.denoise_flag" title="giant.image_processing.ImageProcessing.denoise_flag"><code class="xref py py-attr docutils literal notranslate"><span class="pre">denoise_flag</span></code></a> turned on</p></li>
+<li><p><a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.poi_threshold" title="giant.image_processing.ImageProcessing.poi_threshold"><code class="xref py py-attr docutils literal notranslate"><span class="pre">poi_threshold</span></code></a> set fairly high (around 20-40)</p></li>
+<li><p>a large initial <a class="reference internal" href="giant.calibration.html#giant.calibration.StarID.tolerance" title="giant.calibration.StarID.tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">tolerance</span></code></a>–typically greater than 10 pixels.  Note that this initial
+tolerance should include the errors in the star projections due to both the <em>a priori</em> attitude uncertainty and the
+camera model</p></li>
+<li><p>a smaller but still relatively large <a class="reference internal" href="giant.calibration.html#giant.calibration.StarID.ransac_tolerance" title="giant.calibration.StarID.ransac_tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ransac_tolerance</span></code></a>–on the order of about 1-5 pixels. This
+tolerance should mostly reflect a very conservative estimate on the errors caused by the camera model as the 
+attitude errors should largely be removed</p></li>
+<li><p>a small <a class="reference internal" href="giant.calibration.html#giant.calibration.StarID.max_magnitude" title="giant.calibration.StarID.max_magnitude"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_magnitude</span></code></a>–only allowing bright stars.  Bright stars generally have more
+accurate catalogue positions and are more likely to be picked up by the <a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a> algorithms</p></li>
+<li><p>the <a class="reference internal" href="giant.calibration.html#giant.calibration.StarID.max_combos" title="giant.calibration.StarID.max_combos"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_combos</span></code></a> set fairly large–on the order of 500-1000</p></li>
+</ul>
+</li>
+<li><p>After getting the initial pairing and updating
+the attitude for the images (note that this is done external to the calls to <a class="reference internal" href="stellar_opnav/stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.id_stars.html#giant.stellar_opnav.stellar_class.StellarOpNav.id_stars" title="giant.stellar_opnav.stellar_class.StellarOpNav.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a>), you can
+then attempt a larger identification with dimmer stars</p>
+<ul>
+<li><p>decreasing <a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.poi_threshold" title="giant.image_processing.ImageProcessing.poi_threshold"><code class="xref py py-attr docutils literal notranslate"><span class="pre">poi_threshold</span></code></a> (around 8-20)</p></li>
+<li><p>decreasing the <a class="reference internal" href="giant.calibration.html#giant.calibration.StarID.tolerance" title="giant.calibration.StarID.tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">tolerance</span></code></a> to be about the same as your previous
+<a class="reference internal" href="giant.calibration.html#giant.calibration.StarID.ransac_tolerance" title="giant.calibration.StarID.ransac_tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ransac_tolerance</span></code></a></p></li>
+<li><p>turning the RANSAC algorithm off by setting the <a class="reference internal" href="giant.calibration.html#giant.calibration.StarID.max_combos" title="giant.calibration.StarID.max_combos"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_combos</span></code></a> to 0</p></li>
+<li><p>increasing the <a class="reference internal" href="giant.calibration.html#giant.calibration.StarID.max_magnitude" title="giant.calibration.StarID.max_magnitude"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_magnitude</span></code></a>.</p></li>
+</ul>
+</li>
+<li><p>If you are having problems getting the identification to work it can be useful to visually examine the results for a
+couple of images using the <a class="reference internal" href="stellar_opnav/visualizer/giant.stellar_opnav.visualizer.show_id_results.html#giant.stellar_opnav.visualizer.show_id_results" title="giant.stellar_opnav.visualizer.show_id_results"><code class="xref py py-func docutils literal notranslate"><span class="pre">show_id_results()</span></code></a> function.</p></li>
+</ul>
+</section>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>Below shows how stellar opnav can be used to id stars and estimate attitude corrections.  It assumes that
+the <a class="reference internal" href="scripts/giant.scripts.generate_sample_data.html#module-giant.scripts.generate_sample_data" title="giant.scripts.generate_sample_data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">generate_sample_data</span></code></a> script has been run already and that the <code class="docutils literal notranslate"><span class="pre">sample_data</span></code> directory is in the current
+working directory.  For a more in depth example using real images, see the tutorial.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pickle</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># use pathlib and pickle to get the data</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;sample_data&quot;</span> <span class="o">/</span> <span class="s2">&quot;camera.pickle&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">data</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">pfile</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">camera</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># import the stellar opnav class</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.stellar_opnav.stellar_class</span> <span class="kn">import</span> <span class="n">StellarOpNav</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># import the default catalogue</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.catalogues.giant_catalogue</span> <span class="kn">import</span> <span class="n">GIANTCatalogue</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># form the stellaropnav object</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sopnav</span> <span class="o">=</span> <span class="n">StellarOpNav</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="n">image_processing_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;centroid_size&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;poi_threshold&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+<span class="gp">... </span>                      <span class="n">star_identification_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;max_magnitude&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;tolerance&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sopnav</span><span class="o">.</span><span class="n">id_stars</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sopnav</span><span class="o">.</span><span class="n">sid_summary</span><span class="p">()</span>  <span class="c1"># print a summary of the star id results</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">camera</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="p">)</span>  <span class="c1"># print the attitude before</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sopnav</span><span class="o">.</span><span class="n">estimate_attitude</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">camera</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="p">)</span>  <span class="c1"># print the attitude after</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># import the visualizer to look at the results</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.stellar_opnav.visualizer</span> <span class="kn">import</span> <span class="n">show_id_results</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">show_id_results</span><span class="p">(</span><span class="n">sopnav</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<p class="rubric">Modules</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="stellar_opnav/giant.stellar_opnav.stellar_class.html#module-giant.stellar_opnav.stellar_class" title="giant.stellar_opnav.stellar_class"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stellar_class</span></code></a></p></td>
+<td><p>This module provides a subclass of the <a class="reference internal" href="opnav_class/giant.opnav_class.OpNav.html#giant.opnav_class.OpNav" title="giant.opnav_class.OpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpNav</span></code></a> class for performing stellar OpNav.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stellar_opnav/giant.stellar_opnav.star_identification.html#module-giant.stellar_opnav.star_identification" title="giant.stellar_opnav.star_identification"><code class="xref py py-obj docutils literal notranslate"><span class="pre">star_identification</span></code></a></p></td>
+<td><p>This module provides the star identification routines for GIANT through the <code class="xref py py-class docutils literal notranslate"><span class="pre">StarID</span></code> class.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stellar_opnav/giant.stellar_opnav.estimators.html#module-giant.stellar_opnav.estimators" title="giant.stellar_opnav.estimators"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimators</span></code></a></p></td>
+<td><p>This module provides the ability to find the rotation that best aligns 1 set of unit vectors with another set of unit vectors.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stellar_opnav/giant.stellar_opnav.visualizer.html#module-giant.stellar_opnav.visualizer" title="giant.stellar_opnav.visualizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">visualizer</span></code></a></p></td>
+<td><p>This module provides utilities for visually inspecting star identification and attitude estimation results.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="stellar_opnav/stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html#giant.stellar_opnav.stellar_class.StellarOpNav" title="giant.stellar_opnav.stellar_class.StellarOpNav"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StellarOpNav</span></code></a></p></td>
+<td><p>This class serves as the main user interface for performing Stellar Optical Navigation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stellar_opnav/star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID" title="giant.stellar_opnav.star_identification.StarID"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StarID</span></code></a></p></td>
+<td><p>The StarID class operates on the result of image processing algorithms to attempt to match image points of interest with catalogue star records.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stellar_opnav/estimators/giant.stellar_opnav.estimators.DavenportQMethod.html#giant.stellar_opnav.estimators.DavenportQMethod" title="giant.stellar_opnav.estimators.DavenportQMethod"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DavenportQMethod</span></code></a></p></td>
+<td><p>This class estimates the rotation quaternion that best aligns unit vectors from one frame with unit vectors in another frame using Davenport’s Q-Method solution to Wahba’s problem.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stellar_opnav/visualizer/giant.stellar_opnav.visualizer.OutlierCallback.html#giant.stellar_opnav.visualizer.OutlierCallback" title="giant.stellar_opnav.visualizer.OutlierCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OutlierCallback</span></code></a></p></td>
+<td><p>The class is used to represent an outlier shown to the user for review via the function <code class="xref py py-func docutils literal notranslate"><span class="pre">show_outlier()</span></code> and to store the user’s choice whether or not to remove the outlier from the matched star pairs.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="stellar_opnav/visualizer/giant.stellar_opnav.visualizer.show_id_results.html#giant.stellar_opnav.visualizer.show_id_results" title="giant.stellar_opnav.visualizer.show_id_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">show_id_results</span></code></a></p></td>
+<td><p>This function generates a figure for each turned on image in <code class="docutils literal notranslate"><span class="pre">sopnav</span></code> showing the star identification results, as well as a couple figures showing the residuals between the predicted catalogue star locations and the image star locations for all images combined.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stellar_opnav/visualizer/giant.stellar_opnav.visualizer.show_outlier.html#giant.stellar_opnav.visualizer.show_outlier" title="giant.stellar_opnav.visualizer.show_outlier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">show_outlier</span></code></a></p></td>
+<td><p>This function generates a figure for a specified outlier in the given image number in <code class="docutils literal notranslate"><span class="pre">sopnav</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="opnav_class/giant.opnav_class.OpNav.update_image_processing.html" title="Previous document">OpNav.update_image_processing</a>
+        </li>
+        <li>
+          <a href="stellar_opnav/giant.stellar_opnav.stellar_class.html" title="Next document">giant.stellar_opnav.stellar_class</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/giant.stellar_opnav.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,687 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.scripts.generate_sample_data &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.scripts.generate_sample_data</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
+<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Generate sample images and camera meta-data for doing the examples included throughout the documentation.</span>
+
+<span class="sd">This script should only need to be run once per install and only if you want to work through the examples that are</span>
+<span class="sd">included in the documentation.</span>
+
+<span class="sd">This script makes a new directory called &quot;sample_data&quot; in the current directory and stores the sample images in that</span>
+<span class="sd">directory.</span>
+
+<span class="sd">This script can take a while to run so it is recommended that you use ``nohup`` and allow it to run in the background.</span>
+
+<span class="sd">.. warning::</span>
+
+<span class="sd">    This script loads/saves some results from/to python pickle files.  Pickle files can be used to execute arbitrary</span>
+<span class="sd">    code, so you should never open one from an untrusted source.  While this script should only be opening</span>
+<span class="sd">    pickle files created locally on your machine by GIANT, we wanted to warn you about the risk.  To be extra sure you</span>
+<span class="sd">    can check that &quot;./sample_data/kdtree.pickle&quot; either doesn&#39;t exist or was created by you at a recognized time stamp.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+
+<span class="kn">from</span> <span class="nn">argparse</span> <span class="kn">import</span> <span class="n">ArgumentParser</span>
+
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
+
+<span class="c1"># security risk addressed with warning</span>
+<span class="kn">import</span> <span class="nn">pickle</span>  <span class="c1"># nosec</span>
+
+<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlopen</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">giant.camera</span> <span class="kn">import</span> <span class="n">Camera</span>
+<span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">BrownModel</span>
+<span class="kn">from</span> <span class="nn">giant.image</span> <span class="kn">import</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">ExposureType</span>
+<span class="kn">from</span> <span class="nn">giant.rotations</span> <span class="kn">import</span> <span class="n">Rotation</span><span class="p">,</span> <span class="n">euler_to_rotmat</span>
+
+<span class="kn">from</span> <span class="nn">giant.catalogues.giant_catalogue</span> <span class="kn">import</span> <span class="n">GIANTCatalogue</span>
+
+<span class="kn">from</span> <span class="nn">giant.stellar_opnav.star_identification</span> <span class="kn">import</span> <span class="n">StarID</span>
+
+<span class="kn">from</span> <span class="nn">giant.image_processing</span> <span class="kn">import</span> <span class="n">ImageProcessing</span>
+<span class="kn">from</span> <span class="nn">giant.point_spread_functions</span> <span class="kn">import</span> <span class="n">Gaussian</span>
+
+<span class="kn">from</span> <span class="nn">giant.ray_tracer.kdtree</span> <span class="kn">import</span> <span class="n">KDTree</span>
+<span class="kn">from</span> <span class="nn">giant.ray_tracer.shapes</span> <span class="kn">import</span> <span class="n">Point</span>
+<span class="kn">from</span> <span class="nn">giant.ray_tracer.scene</span> <span class="kn">import</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">SceneObject</span>
+<span class="kn">from</span> <span class="nn">giant.ray_tracer.illumination</span> <span class="kn">import</span> <span class="n">McEwenIllumination</span>
+<span class="kn">from</span> <span class="nn">giant.relative_opnav.estimators.cross_correlation</span> <span class="kn">import</span> <span class="n">XCorrCenterFinding</span>
+<span class="kn">from</span> <span class="nn">giant.utilities.stereophotoclinometry</span> <span class="kn">import</span> <span class="n">ShapeModel</span>
+<span class="kn">from</span> <span class="nn">giant.ray_tracer.utilities</span> <span class="kn">import</span> <span class="n">ref_ellipse</span>
+
+
+<span class="c1"># set the seed so we always get the same things</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">52191</span><span class="p">)</span>
+
+
+<span class="n">MODEL</span> <span class="o">=</span> <span class="n">BrownModel</span><span class="p">(</span><span class="n">fx</span><span class="o">=</span><span class="mi">3470</span><span class="p">,</span> <span class="n">fy</span><span class="o">=</span><span class="mi">3470</span><span class="p">,</span> <span class="n">k1</span><span class="o">=-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">k2</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">k3</span><span class="o">=-</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">p1</span><span class="o">=</span><span class="mf">2e-5</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="mf">8e-5</span><span class="p">,</span> <span class="n">px</span><span class="o">=</span><span class="mi">1260</span><span class="p">,</span> <span class="n">py</span><span class="o">=</span><span class="mi">950</span><span class="p">,</span>
+                   <span class="n">n_rows</span><span class="o">=</span><span class="mi">1944</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">2592</span><span class="p">,</span> <span class="n">field_of_view</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>  <span class="c1"># type: BrownModel</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The camera model to translate directions in the camera frame to points on an image and vice-versa.</span>
+
+<span class="sd">This is the model used to render the sample data.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">EPOCH</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_get_parser</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">ArgumentParser</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function for the argparse extension</span>
+
+<span class="sd">    :return: A setup argument parser</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">warning</span> <span class="o">=</span> <span class="s2">&quot;WARNING: This script loads/saves some results from/to python pickle files.  &quot;</span> \
+              <span class="s2">&quot;Pickle files can be used to execute arbitrary code, &quot;</span> \
+              <span class="s2">&quot;so you should never open one from an untrusted source.&quot;</span>
+    <span class="k">return</span> <span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;Generate the sample data used for the examples in the GIANT documentation&#39;</span><span class="p">,</span>
+                          <span class="n">epilog</span><span class="o">=</span><span class="n">warning</span><span class="p">)</span>
+
+
+<span class="n">PSF</span> <span class="o">=</span> <span class="n">Gaussian</span><span class="p">(</span><span class="n">sigma_x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sigma_y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># type: Gaussian</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The camera point spread function.</span>
+
+<span class="sd">This is the PSF used to render the sample data.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">_render_stars</span><span class="p">(</span><span class="n">camera_to_render</span><span class="p">:</span> <span class="n">Camera</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render stars in an image</span>
+
+<span class="sd">    :param camera_to_render: The camera to render the stars into</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">camera_to_render</span><span class="o">.</span><span class="n">only_long_on</span><span class="p">()</span>
+
+    <span class="n">ii</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">psf</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">PSF</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">image_to_render</span> <span class="ow">in</span> <span class="n">camera_to_render</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="c1"># make the SID object to get the star locations</span>
+        <span class="n">sid</span> <span class="o">=</span> <span class="n">StarID</span><span class="p">(</span><span class="n">MODEL</span><span class="p">,</span> <span class="n">catalogue</span><span class="o">=</span><span class="n">GIANTCatalogue</span><span class="p">(),</span> <span class="n">max_magnitude</span><span class="o">=</span><span class="mf">5.5</span><span class="p">,</span>
+                     <span class="n">a_priori_rotation_cat2camera</span><span class="o">=</span><span class="n">image_to_render</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="p">,</span>
+                     <span class="n">camera_position</span><span class="o">=</span><span class="n">image_to_render</span><span class="o">.</span><span class="n">position</span><span class="p">,</span> <span class="n">camera_velocity</span><span class="o">=</span><span class="n">image_to_render</span><span class="o">.</span><span class="n">velocity</span><span class="p">)</span>
+
+        <span class="n">sid</span><span class="o">.</span><span class="n">project_stars</span><span class="p">(</span><span class="n">epoch</span><span class="o">=</span><span class="n">image_to_render</span><span class="o">.</span><span class="n">observation_date</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">image_to_render</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="n">drows</span><span class="p">,</span> <span class="n">dcols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+
+        <span class="c1"># set the reference magnitude to be 2.5, which corresponds to a dn of 2**14</span>
+        <span class="n">mref</span> <span class="o">=</span> <span class="mf">2.5</span>
+        <span class="n">inten_ref</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">14</span>
+
+        <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">point</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sid</span><span class="o">.</span><span class="n">queried_catalogue_image_points</span><span class="o">.</span><span class="n">T</span><span class="p">):</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">drows</span> <span class="o">+</span> <span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">dcols</span> <span class="o">+</span> <span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+            <span class="n">valid_check</span> <span class="o">=</span> <span class="p">(</span><span class="n">rows</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">rows</span> <span class="o">&lt;</span> <span class="n">MODEL</span><span class="o">.</span><span class="n">n_rows</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">cols</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">cols</span> <span class="o">&lt;</span> <span class="n">MODEL</span><span class="o">.</span><span class="n">n_cols</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">valid_check</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="n">use_rows</span> <span class="o">=</span> <span class="n">rows</span><span class="p">[</span><span class="n">valid_check</span><span class="p">]</span>
+                <span class="n">use_cols</span> <span class="o">=</span> <span class="n">cols</span><span class="p">[</span><span class="n">valid_check</span><span class="p">]</span>
+
+                <span class="c1"># compute the intensity</span>
+                <span class="n">inten</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">sid</span><span class="o">.</span><span class="n">queried_catalogue_star_records</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span><span class="o">.</span><span class="n">mag</span> <span class="o">-</span> <span class="n">mref</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">inten_ref</span>
+                <span class="n">psf</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="n">inten</span>
+                <span class="n">psf</span><span class="o">.</span><span class="n">centroid_x</span> <span class="o">=</span> <span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">psf</span><span class="o">.</span><span class="n">centroid_y</span> <span class="o">=</span> <span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+                <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">image_to_render</span><span class="p">,</span> <span class="p">(</span><span class="n">use_rows</span><span class="p">,</span> <span class="n">use_cols</span><span class="p">),</span> <span class="n">psf</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">use_cols</span><span class="p">,</span> <span class="n">use_rows</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rendered stars for image </span><span class="si">{}</span><span class="s1"> of </span><span class="si">{}</span><span class="s1"> in </span><span class="si">{:.3f}</span><span class="s1"> secs&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ii</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">camera_to_render</span><span class="o">.</span><span class="n">image_mask</span><span class="p">),</span>
+                                                                        <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">))</span>
+
+        <span class="n">ii</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="n">camera_to_render</span><span class="o">.</span><span class="n">all_on</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_prepare_shape</span><span class="p">(</span><span class="n">directory</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KDTree</span><span class="p">:</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;downloading shape&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">temp_file</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">/</span> <span class="s2">&quot;shape_download.txt&quot;</span>
+    <span class="c1"># the url is hard coded and not user configured therefore it should generally be safe</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://darts.isas.jaxa.jp/pub/pds3/hay-a-amica-5-itokawashape-v1.0/data/quad/quad512q.tab&#39;</span>
+    <span class="c1"># the file is only a text file and we only read it as such, so there isn&#39;t any security risk in it AFAIK</span>
+    <span class="k">with</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">as</span> <span class="n">dshape</span><span class="p">:</span>  <span class="c1"># nosec</span>
+        <span class="k">if</span> <span class="n">dshape</span><span class="o">.</span><span class="n">getcode</span><span class="p">()</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">temp_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ofile</span><span class="p">:</span>
+                <span class="n">ofile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">dshape</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t download the shape due to code </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dshape</span><span class="o">.</span><span class="n">getcode</span><span class="p">()),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;downloaded shape in </span><span class="si">{:.3f}</span><span class="s1"> seconds&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;building shape&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">ShapeModel</span><span class="p">(</span><span class="n">temp_file</span><span class="p">)</span>
+
+    <span class="n">tris</span> <span class="o">=</span> <span class="n">shape</span><span class="o">.</span><span class="n">get_triangles</span><span class="p">()</span>
+
+    <span class="n">tris</span><span class="o">.</span><span class="n">reference_ellipsoid</span> <span class="o">=</span> <span class="n">ref_ellipse</span><span class="p">(</span><span class="n">shape</span><span class="o">.</span><span class="n">vertices</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+    <span class="n">kdt</span> <span class="o">=</span> <span class="n">KDTree</span><span class="p">(</span><span class="n">tris</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+
+    <span class="n">kdt</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">print_progress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;shape built in </span><span class="si">{:.3f}</span><span class="s1"> seconds&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">kdt</span>
+
+
+<span class="k">def</span> <span class="nf">_truth_camera_position</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the inertial position of the camera at the requested time.</span>
+
+<span class="sd">    :param date: the date the position is requested</span>
+<span class="sd">    :return: the position vector from the SSB to the camera in km in the inertial frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># rates in km/sec</span>
+    <span class="n">rate_x</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">rate_y</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.005</span>
+    <span class="n">rate_z</span> <span class="o">=</span> <span class="mf">0.05</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1e10</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">20000</span><span class="p">])</span>
+
+    <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">date</span> <span class="o">-</span> <span class="n">EPOCH</span><span class="p">)</span><span class="o">/</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">rate_x</span><span class="p">,</span> <span class="n">rate_y</span><span class="p">,</span> <span class="n">rate_z</span><span class="p">])</span>
+
+
+<span class="k">def</span> <span class="nf">_truth_camera_orientation</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rotation</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the truth camera orientation from the inertial frame to the camera frame at the requested time</span>
+
+<span class="sd">    :param date: the date the orientation is requested</span>
+<span class="sd">    :return: the rotation from the inertial frame to the camera frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">rate_x</span> <span class="o">=</span> <span class="mi">5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span>
+    <span class="n">rate_y</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span>
+    <span class="n">rate_z</span> <span class="o">=</span> <span class="mf">0.2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span>
+
+    <span class="n">angle_vel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">rate_x</span><span class="p">,</span> <span class="n">rate_y</span><span class="p">,</span> <span class="n">rate_z</span><span class="p">])</span>
+
+    <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">date</span> <span class="o">-</span> <span class="n">EPOCH</span><span class="p">)</span><span class="o">/</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mf">30.</span><span class="p">])</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+    <span class="k">return</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">euler_to_rotmat</span><span class="p">(</span><span class="n">start</span><span class="o">+</span><span class="n">dt</span><span class="o">*</span><span class="n">angle_vel</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="camera_orientation"><a class="viewcode-back" href="../../../scripts/generate_sample_data/giant.scripts.generate_sample_data.camera_orientation.html#giant.scripts.generate_sample_data.camera_orientation">[docs]</a><span class="k">def</span> <span class="nf">camera_orientation</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rotation</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the a priori camera orientation from the inertial frame to the camera frame at the requested time</span>
+
+<span class="sd">    :param date: the date the orientation is requested</span>
+<span class="sd">    :return: the rotation from the inertial frame to the camera frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">Rotation</span><span class="p">(</span><span class="mf">2e-8</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span><span class="o">*</span><span class="n">_truth_camera_orientation</span><span class="p">(</span><span class="n">date</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="camera_position"><a class="viewcode-back" href="../../../scripts/generate_sample_data/giant.scripts.generate_sample_data.camera_position.html#giant.scripts.generate_sample_data.camera_position">[docs]</a><span class="k">def</span> <span class="nf">camera_position</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the inertial position of the camera at the requested time.</span>
+
+<span class="sd">    :param date: the date the position is requested</span>
+<span class="sd">    :return: the position vector from the SSB to the camera in km in the inertial frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">truth</span> <span class="o">=</span> <span class="n">_truth_camera_position</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mf">1e-3</span><span class="o">+</span><span class="n">truth</span></div>
+
+
+<span class="k">def</span> <span class="nf">_truth_relative_target_position_camera</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the relative position between Itokawa and the camera</span>
+
+<span class="sd">    :param date: the date the position is requested</span>
+<span class="sd">    :return: the position vector from the camera to itokawa in the camera frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># rates in km/sec</span>
+    <span class="n">rate_x</span> <span class="o">=</span> <span class="mf">0.001</span>
+    <span class="n">rate_y</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.005</span>
+    <span class="n">rate_z</span> <span class="o">=</span> <span class="mf">0.02</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">])</span>
+
+    <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">date</span> <span class="o">-</span> <span class="n">EPOCH</span><span class="p">)</span><span class="o">/</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">rate_x</span><span class="p">,</span> <span class="n">rate_y</span><span class="p">,</span> <span class="n">rate_z</span><span class="p">])</span>
+
+
+<span class="k">def</span> <span class="nf">_truth_relative_sun_position_camera</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the relative position between the sun and the camera</span>
+
+<span class="sd">    :param date: the date the position is requested</span>
+<span class="sd">    :return: the position vector from the camera to the sun in the camera frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># rates in km/sec</span>
+    <span class="n">rate_x</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.0001</span>
+    <span class="n">rate_y</span> <span class="o">=</span> <span class="mf">0.00005</span>
+    <span class="n">rate_z</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.2</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="mf">1e10</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)])</span>
+
+    <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">date</span> <span class="o">-</span> <span class="n">EPOCH</span><span class="p">)</span><span class="o">/</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">rate_x</span><span class="p">,</span> <span class="n">rate_y</span><span class="p">,</span> <span class="n">rate_z</span><span class="p">])</span>
+
+
+<span class="k">def</span> <span class="nf">_truth_sun_position</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the true inertial location of the sun.</span>
+
+<span class="sd">    :param date: the date the position is requested</span>
+<span class="sd">    :return: the position vector from the SSB to the sun in the inertial frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># relative truth in inertial frame</span>
+    <span class="n">relative_truth</span> <span class="o">=</span> <span class="n">_truth_camera_orientation</span><span class="p">(</span><span class="n">date</span><span class="p">)</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">T</span><span class="nd">@_truth_relative_sun_position_camera</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+
+    <span class="c1"># inertial truth in inertial frame</span>
+    <span class="k">return</span> <span class="n">relative_truth</span> <span class="o">+</span> <span class="n">_truth_camera_position</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="sun_position"><a class="viewcode-back" href="../../../scripts/generate_sample_data/giant.scripts.generate_sample_data.sun_position.html#giant.scripts.generate_sample_data.sun_position">[docs]</a><span class="k">def</span> <span class="nf">sun_position</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the a priori inertial location of the sun.</span>
+
+<span class="sd">    .. note:: This is just a simulation position, it has not real physical correspondence</span>
+
+<span class="sd">    :param date: the date the position is requested</span>
+<span class="sd">    :return: the position vector from the SSB to the sun in the inertial frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">truth</span> <span class="o">=</span> <span class="n">_truth_sun_position</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span><span class="n">truth</span></div>
+
+
+<div class="viewcode-block" id="sun_orientation"><a class="viewcode-back" href="../../../scripts/generate_sample_data/giant.scripts.generate_sample_data.sun_orientation.html#giant.scripts.generate_sample_data.sun_orientation">[docs]</a><span class="k">def</span> <span class="nf">sun_orientation</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rotation</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the rotation from the sun fixed frame to the inertial frame.</span>
+
+<span class="sd">    .. note:: This is just a simulation frame, it has not real physical correspondence</span>
+
+<span class="sd">    :param date: the date the orientation is requested</span>
+<span class="sd">    :return: the rotation from the sun fixed frome to the inertial frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">date</span>
+
+    <span class="k">return</span> <span class="n">Rotation</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span></div>
+
+
+<span class="k">def</span> <span class="nf">_truth_target_position</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the true inertial location of Itokawa.</span>
+
+<span class="sd">    :param date: the date the position is requested</span>
+<span class="sd">    :return: the position vector from the SSB to Itokawa in the inertial frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># relative truth in inertial frame</span>
+    <span class="n">relative_truth</span> <span class="o">=</span> <span class="n">_truth_camera_orientation</span><span class="p">(</span><span class="n">date</span><span class="p">)</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">T</span><span class="nd">@_truth_relative_target_position_camera</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+
+    <span class="c1"># inerital truth in inertial frame</span>
+    <span class="k">return</span> <span class="n">relative_truth</span> <span class="o">+</span> <span class="n">_truth_camera_position</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="target_position"><a class="viewcode-back" href="../../../scripts/generate_sample_data/giant.scripts.generate_sample_data.target_position.html#giant.scripts.generate_sample_data.target_position">[docs]</a><span class="k">def</span> <span class="nf">target_position</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the inertial position of Itokawa</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        This has nothing to do with the actual location of Itokawa</span>
+
+<span class="sd">    :param date: the date the position is requested</span>
+<span class="sd">    :return: the position vector from the SSB to Itokawa in the inertial frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># relative truth in inertial frame</span>
+    <span class="n">relative_truth</span> <span class="o">=</span> <span class="n">_truth_camera_orientation</span><span class="p">(</span><span class="n">date</span><span class="p">)</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">T</span><span class="nd">@_truth_relative_target_position_camera</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+
+    <span class="c1"># inerital location in inertial frame</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mf">0.05</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">relative_truth</span><span class="p">)</span><span class="o">+</span><span class="n">relative_truth</span><span class="p">)</span> <span class="o">+</span> <span class="n">_truth_camera_position</span><span class="p">(</span><span class="n">date</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_truth_target_orientation</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rotation</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the orientation of Itokawa with respect to the inertial frame</span>
+
+<span class="sd">    :param date: The date the orientation is desired</span>
+<span class="sd">    :return: the rotation from Itokawa to the inertial frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># set the rate in seconds</span>
+    <span class="n">rate_z</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span>
+
+    <span class="k">return</span> <span class="n">Rotation</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">date</span> <span class="o">-</span> <span class="n">EPOCH</span><span class="p">)</span><span class="o">/</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">rate_z</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="target_orientation"><a class="viewcode-back" href="../../../scripts/generate_sample_data/giant.scripts.generate_sample_data.target_orientation.html#giant.scripts.generate_sample_data.target_orientation">[docs]</a><span class="k">def</span> <span class="nf">target_orientation</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rotation</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the a priori knowledge of the orientation of Itokawa with respect to the inertial frame.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        This has nothing to do with the actual orientation frame of Itokawa. It is purely for simulation purposes.</span>
+
+<span class="sd">    :param date: The data the orientation is desired</span>
+<span class="sd">    :return: the rotation from Itokawa to the inertial frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">Rotation</span><span class="p">(</span><span class="mf">1e-10</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span><span class="o">*</span><span class="n">_truth_target_orientation</span><span class="p">(</span><span class="n">date</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_render_body</span><span class="p">(</span><span class="n">camera_to_render</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span> <span class="n">scene_to_render</span><span class="p">:</span> <span class="n">Scene</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render a simulated image of a target for each image in camera.</span>
+
+<span class="sd">    :param camera_to_render: The camera that is being rendered</span>
+<span class="sd">    :param scene_to_render: The scene that is being rendered</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xc</span> <span class="o">=</span> <span class="n">XCorrCenterFinding</span><span class="p">(</span><span class="n">scene_to_render</span><span class="p">,</span> <span class="n">camera_to_render</span><span class="p">,</span> <span class="n">ImageProcessing</span><span class="p">(),</span> <span class="n">McEwenIllumination</span><span class="p">())</span>
+
+    <span class="n">camera_to_render</span><span class="o">.</span><span class="n">all_on</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">limg</span> <span class="ow">in</span> <span class="n">camera_to_render</span><span class="p">:</span>
+
+        <span class="n">scene_to_render</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">limg</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">limg</span><span class="o">.</span><span class="n">exposure_type</span> <span class="o">==</span> <span class="n">ExposureType</span><span class="o">.</span><span class="n">LONG</span><span class="p">:</span>
+            <span class="n">xc</span><span class="o">.</span><span class="n">grid_size</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xc</span><span class="o">.</span><span class="n">grid_size</span> <span class="o">=</span> <span class="mi">2</span>
+
+        <span class="n">illum</span><span class="p">,</span> <span class="n">pix</span> <span class="o">=</span> <span class="n">xc</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">scene_to_render</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">temperature</span><span class="o">=</span><span class="n">limg</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">limg</span><span class="o">.</span><span class="n">exposure_type</span> <span class="o">==</span> <span class="n">ExposureType</span><span class="o">.</span><span class="n">LONG</span><span class="p">:</span>
+            <span class="n">illum</span><span class="p">[</span><span class="n">illum</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">15</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">illum</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">illum</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="c1"># noinspection PyArgumentList</span>
+            <span class="n">illum</span> <span class="o">*=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">14</span><span class="o">/</span><span class="p">(</span><span class="n">xc</span><span class="o">.</span><span class="n">grid_size</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">//</span><span class="n">illum</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="n">subs</span> <span class="o">=</span> <span class="n">pix</span><span class="o">.</span><span class="n">round</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">limg</span><span class="p">,</span> <span class="p">(</span><span class="n">subs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">subs</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">illum</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">limg</span><span class="o">.</span><span class="n">exposure_type</span> <span class="o">==</span> <span class="n">ExposureType</span><span class="o">.</span><span class="n">SHORT</span><span class="p">:</span>
+            <span class="n">limg</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">PSF</span><span class="p">(</span><span class="n">limg</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rendered image </span><span class="si">{}</span><span class="s1"> of </span><span class="si">{}</span><span class="s1"> in </span><span class="si">{:.3f}</span><span class="s1"> secs&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ind</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">camera_to_render</span><span class="o">.</span><span class="n">images</span><span class="p">),</span>
+                                                              <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parses the command line arguments and generates the images.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># need to do this to ensure that the module name is right for pickle</span>
+    <span class="c1"># noinspection PyUnresolvedReferences</span>
+    <span class="kn">from</span> <span class="nn">giant.scripts.generate_sample_data</span> <span class="kn">import</span> <span class="n">PSF</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">_get_parser</span><span class="p">()</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">87239</span><span class="p">)</span>
+
+    <span class="c1"># first, get the current working directory and create the sample_data directory to store the results</span>
+    <span class="n">cwd</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
+
+    <span class="c1"># prepare the directory</span>
+    <span class="n">output_dir</span> <span class="o">=</span> <span class="n">cwd</span> <span class="o">/</span> <span class="s2">&quot;sample_data&quot;</span>
+    <span class="n">output_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># load or create the shape model</span>
+    <span class="n">shape_file</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;kdtree.pickle&quot;</span>
+
+    <span class="n">kd</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">shape_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;The shape model does not exist yet.  Can we download it (~60MB)? (y/n)  &#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+            <span class="n">kd</span> <span class="o">=</span> <span class="n">_prepare_shape</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="n">shape_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ofile</span><span class="p">:</span>
+                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">kd</span><span class="p">,</span> <span class="n">ofile</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Unable to proceed&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">shape_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ifile</span><span class="p">:</span>
+            <span class="c1"># this is a hard coded file that is created by this program.  Someone would have to specifically change out</span>
+            <span class="c1"># the file to execute arbitrary code so I think the risk is minimal here</span>
+            <span class="n">kd</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">ifile</span><span class="p">)</span>  <span class="c1"># nosec</span>
+
+    <span class="c1"># make the camera</span>
+    <span class="n">camera</span> <span class="o">=</span> <span class="n">Camera</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">MODEL</span><span class="p">,</span> <span class="n">parse_data</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">psf</span><span class="o">=</span><span class="n">PSF</span><span class="p">)</span>
+
+    <span class="c1"># define the scene</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">SceneObject</span><span class="p">(</span><span class="n">kd</span><span class="p">,</span> <span class="n">position_function</span><span class="o">=</span><span class="n">_truth_target_position</span><span class="p">,</span>
+                         <span class="n">orientation_function</span><span class="o">=</span><span class="n">_truth_target_orientation</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Itokawa&#39;</span><span class="p">)</span>
+    <span class="n">sun</span> <span class="o">=</span> <span class="n">SceneObject</span><span class="p">(</span><span class="n">Point</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)),</span> <span class="n">position_function</span><span class="o">=</span><span class="n">_truth_sun_position</span><span class="p">,</span>
+                      <span class="n">orientation_function</span><span class="o">=</span><span class="n">sun_orientation</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Sun&#39;</span><span class="p">)</span>
+    <span class="n">scene</span> <span class="o">=</span> <span class="n">Scene</span><span class="p">(</span><span class="n">target_objs</span><span class="o">=</span><span class="p">[</span><span class="n">target</span><span class="p">],</span> <span class="n">light_obj</span><span class="o">=</span><span class="n">sun</span><span class="p">)</span>
+
+    <span class="c1"># make the first stellar image</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">+</span> <span class="mi">10</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1944</span><span class="p">,</span> <span class="mi">2592</span><span class="p">)</span>
+
+    <span class="n">true_att</span> <span class="o">=</span> <span class="n">_truth_camera_orientation</span><span class="p">(</span><span class="n">EPOCH</span><span class="p">)</span>
+
+    <span class="n">oimg</span> <span class="o">=</span> <span class="n">OpNavImage</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">observation_date</span><span class="o">=</span><span class="n">EPOCH</span><span class="p">,</span> <span class="n">exposure</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">exposure_type</span><span class="o">=</span><span class="s1">&#39;long&#39;</span><span class="p">,</span>
+                      <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">rotation_inertial_to_camera</span><span class="o">=</span><span class="n">true_att</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">_truth_camera_position</span><span class="p">(</span><span class="n">EPOCH</span><span class="p">),</span>
+                      <span class="n">velocity</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]),</span> <span class="n">saturation</span><span class="o">=</span><span class="mi">2</span> <span class="o">**</span> <span class="mi">16</span><span class="p">)</span>
+
+    <span class="n">camera</span><span class="o">.</span><span class="n">add_images</span><span class="p">([</span><span class="n">oimg</span><span class="p">])</span>
+
+    <span class="c1"># make the first short image</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">+</span> <span class="mi">10</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1944</span><span class="p">,</span> <span class="mi">2592</span><span class="p">)</span>
+
+    <span class="n">obs_date</span> <span class="o">=</span> <span class="n">EPOCH</span><span class="o">+</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+
+    <span class="n">true_att</span> <span class="o">=</span> <span class="n">_truth_camera_orientation</span><span class="p">(</span><span class="n">obs_date</span><span class="p">)</span>
+    <span class="n">true_pos</span> <span class="o">=</span> <span class="n">_truth_camera_position</span><span class="p">(</span><span class="n">obs_date</span><span class="p">)</span>
+
+    <span class="n">oimg</span> <span class="o">=</span> <span class="n">OpNavImage</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">observation_date</span><span class="o">=</span><span class="n">obs_date</span><span class="p">,</span> <span class="n">exposure</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">exposure_type</span><span class="o">=</span><span class="s1">&#39;short&#39;</span><span class="p">,</span>
+                      <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">rotation_inertial_to_camera</span><span class="o">=</span><span class="n">true_att</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">true_pos</span><span class="p">,</span>
+                      <span class="n">velocity</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]),</span> <span class="n">saturation</span><span class="o">=</span><span class="mi">2</span> <span class="o">**</span> <span class="mi">16</span><span class="p">)</span>
+
+    <span class="n">camera</span><span class="o">.</span><span class="n">add_images</span><span class="p">([</span><span class="n">oimg</span><span class="p">])</span>
+
+    <span class="c1"># make the second stellar image</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">+</span> <span class="mi">10</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1944</span><span class="p">,</span> <span class="mi">2592</span><span class="p">)</span>
+
+    <span class="n">obs_date</span> <span class="o">=</span> <span class="n">EPOCH</span><span class="o">+</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">true_att</span> <span class="o">=</span> <span class="n">_truth_camera_orientation</span><span class="p">(</span><span class="n">obs_date</span><span class="p">)</span>
+    <span class="n">true_pos</span> <span class="o">=</span> <span class="n">_truth_camera_position</span><span class="p">(</span><span class="n">obs_date</span><span class="p">)</span>
+
+    <span class="n">oimg</span> <span class="o">=</span> <span class="n">OpNavImage</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">observation_date</span><span class="o">=</span><span class="n">obs_date</span><span class="p">,</span> <span class="n">exposure</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">exposure_type</span><span class="o">=</span><span class="s1">&#39;long&#39;</span><span class="p">,</span>
+                      <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">rotation_inertial_to_camera</span><span class="o">=</span><span class="n">true_att</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">true_pos</span><span class="p">,</span>
+                      <span class="n">velocity</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]),</span> <span class="n">saturation</span><span class="o">=</span><span class="mi">2</span> <span class="o">**</span> <span class="mi">16</span><span class="p">)</span>
+
+    <span class="n">camera</span><span class="o">.</span><span class="n">add_images</span><span class="p">([</span><span class="n">oimg</span><span class="p">])</span>
+
+    <span class="c1"># make the second short image</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">+</span> <span class="mi">10</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1944</span><span class="p">,</span> <span class="mi">2592</span><span class="p">)</span>
+
+    <span class="n">obs_date</span> <span class="o">=</span> <span class="n">EPOCH</span><span class="o">+</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+
+    <span class="n">true_att</span> <span class="o">=</span> <span class="n">_truth_camera_orientation</span><span class="p">(</span><span class="n">obs_date</span><span class="p">)</span>
+    <span class="n">true_pos</span> <span class="o">=</span> <span class="n">_truth_camera_position</span><span class="p">(</span><span class="n">obs_date</span><span class="p">)</span>
+
+    <span class="n">oimg</span> <span class="o">=</span> <span class="n">OpNavImage</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">observation_date</span><span class="o">=</span><span class="n">obs_date</span><span class="p">,</span> <span class="n">exposure</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">exposure_type</span><span class="o">=</span><span class="s1">&#39;short&#39;</span><span class="p">,</span>
+                      <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">rotation_inertial_to_camera</span><span class="o">=</span><span class="n">true_att</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">true_pos</span><span class="p">,</span>
+                      <span class="n">velocity</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]),</span> <span class="n">saturation</span><span class="o">=</span><span class="mi">2</span> <span class="o">**</span> <span class="mi">16</span><span class="p">)</span>
+
+    <span class="n">camera</span><span class="o">.</span><span class="n">add_images</span><span class="p">([</span><span class="n">oimg</span><span class="p">])</span>
+
+    <span class="c1"># make the third stellar image</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">+</span> <span class="mi">10</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1944</span><span class="p">,</span> <span class="mi">2592</span><span class="p">)</span>
+
+    <span class="n">obs_date</span> <span class="o">=</span> <span class="n">EPOCH</span><span class="o">+</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">true_att</span> <span class="o">=</span> <span class="n">_truth_camera_orientation</span><span class="p">(</span><span class="n">obs_date</span><span class="p">)</span>
+    <span class="n">true_pos</span> <span class="o">=</span> <span class="n">_truth_camera_position</span><span class="p">(</span><span class="n">obs_date</span><span class="p">)</span>
+
+    <span class="n">oimg</span> <span class="o">=</span> <span class="n">OpNavImage</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">observation_date</span><span class="o">=</span><span class="n">obs_date</span><span class="p">,</span> <span class="n">exposure</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">exposure_type</span><span class="o">=</span><span class="s1">&#39;long&#39;</span><span class="p">,</span>
+                      <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">rotation_inertial_to_camera</span><span class="o">=</span><span class="n">true_att</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">true_pos</span><span class="p">,</span>
+                      <span class="n">velocity</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]),</span> <span class="n">saturation</span><span class="o">=</span><span class="mi">2</span> <span class="o">**</span> <span class="mi">16</span><span class="p">)</span>
+
+    <span class="n">camera</span><span class="o">.</span><span class="n">add_images</span><span class="p">([</span><span class="n">oimg</span><span class="p">])</span>
+
+    <span class="c1"># add stars to the image</span>
+    <span class="n">_render_stars</span><span class="p">(</span><span class="n">camera</span><span class="p">)</span>
+
+    <span class="c1"># add itokawa to the image</span>
+    <span class="n">_render_body</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="n">scene</span><span class="p">)</span>
+
+    <span class="c1"># set the perturbed attitude as the apriori</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">camera</span><span class="p">:</span>
+        <span class="n">img</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="n">camera_orientation</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span>
+
+    <span class="n">ofile</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="s1">&#39;camera.pickle&#39;</span>
+
+    <span class="k">with</span> <span class="n">ofile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ofpt</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="n">ofpt</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

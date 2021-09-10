@@ -1,0 +1,781 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>OwenModel &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="OwenModel.project_onto_image" href="giant.camera_models.owen_model.OwenModel.project_onto_image.html" />
+    <link rel="prev" title="giant.camera_models.owen_model" href="../giant.camera_models.owen_model.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.camera_models.html">giant.camera_models</a><ul>
+  <li><a href="../giant.camera_models.owen_model.html">giant.camera_models.owen_model</a><ul>
+      <li>Previous: <a href="../giant.camera_models.owen_model.html" title="previous chapter">giant.camera_models.owen_model</a></li>
+      <li>Next: <a href="giant.camera_models.owen_model.OwenModel.project_onto_image.html" title="next chapter">OwenModel.project_onto_image</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.camera_models.owen_model.html" title="Previous document">giant.camera_models.owen_model</a>
+        </li>
+        <li>
+          <a href="giant.camera_models.owen_model.OwenModel.project_onto_image.html" title="Next document">OwenModel.project_onto_image</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="owenmodel">
+<h1>OwenModel<a class="headerlink" href="#owenmodel" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.camera_models.owen_model.html#module-giant.camera_models.owen_model" title="giant.camera_models.owen_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.camera_models.owen_model</span></code></a>:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.camera_models.owen_model.</span></span><span class="sig-name descname"><span class="pre">OwenModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intrinsic_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">focal_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_of_view</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_a_priori</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distortion_coefficients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">misalignment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimation_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'basic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ky</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kxy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kyx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">px</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">py</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radial2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radial4</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tangential_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tangential_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pinwheel1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pinwheel2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e4</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e5</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e6</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature_coefficients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/giant/camera_models/owen_model.html#OwenModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../pinhole_model/giant.camera_models.pinhole_model.PinholeModel.html#giant.camera_models.pinhole_model.PinholeModel" title="giant.camera_models.pinhole_model.PinholeModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">giant.camera_models.pinhole_model.PinholeModel</span></code></a></p>
+<p>This class provides an implementation of the Owen camera model for projecting 3D points onto images and performing
+camera calibration.</p>
+<p>The <a class="reference internal" href="#giant.camera_models.owen_model.OwenModel" title="giant.camera_models.owen_model.OwenModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OwenModel</span></code></a> class is a subclass of <a class="reference internal" href="../camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraModel</span></code></a>.  This means that it includes implementations
+for all of the abstract methods defined in the <a class="reference internal" href="../camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraModel</span></code></a> class.  This also means that it can be used
+throughout GIANT as the primary camera model, including within the <a class="reference internal" href="../giant.calibration.html#module-giant.calibration" title="giant.calibration"><code class="xref py py-mod docutils literal notranslate"><span class="pre">calibration</span></code></a> subpackage.  If this class is
+going to be used with the <a class="reference internal" href="../giant.calibration.html#module-giant.calibration" title="giant.calibration"><code class="xref py py-mod docutils literal notranslate"><span class="pre">calibration</span></code></a> subpackage, the user can set which parameters are estimated and which
+are held fixed by using the <code class="docutils literal notranslate"><span class="pre">estimation_parameters</span></code> key word argument when creating an instance of the class or by
+adjusting the <a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.estimation_parameters" title="giant.camera_models.owen_model.OwenModel.estimation_parameters"><code class="xref py py-attr docutils literal notranslate"><span class="pre">estimation_parameters</span></code></a> instance variable on an instance of the class.  The
+<code class="docutils literal notranslate"><span class="pre">estimation_parameters</span></code> input/attribute is a string or list of strings specifying which parameters to estimate.
+This means that <a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.estimation_parameters" title="giant.camera_models.owen_model.OwenModel.estimation_parameters"><code class="xref py py-attr docutils literal notranslate"><span class="pre">estimation_parameters</span></code></a> could be something like <code class="docutils literal notranslate"><span class="pre">'basic'</span></code> which would indicate to estimate
+just eh usual parameters, or something like <code class="docutils literal notranslate"><span class="pre">['focal_length',</span> <span class="pre">'ky',</span> <span class="pre">'px',</span> <span class="pre">'py']</span></code> to estimate just the terms
+included in the list.</p>
+<p>In addition to the standard set of methods for a <a class="reference internal" href="../camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraModel</span></code></a> subclass, the <a class="reference internal" href="#giant.camera_models.owen_model.OwenModel" title="giant.camera_models.owen_model.OwenModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OwenModel</span></code></a> class
+provides the following additional methods which may or may not be useful to some people:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 71%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Use</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.get_projections.html#giant.camera_models.owen_model.OwenModel.get_projections" title="giant.camera_models.owen_model.OwenModel.get_projections"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_projections()</span></code></a></p></td>
+<td><p>computes the pinhole, image frame, and pixel locations of a 3D point</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.pixels_to_gnomic.html#giant.camera_models.owen_model.OwenModel.pixels_to_gnomic" title="giant.camera_models.owen_model.OwenModel.pixels_to_gnomic"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pixels_to_gnomic()</span></code></a></p></td>
+<td><p>removes distortion from a point to get the corresponding pinhole location in
+units of distance</p></td>
+</tr>
+</tbody>
+</table>
+<p>The Owen model also provides the following properties for easy getting/setting:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 72%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Property</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.field_of_view" title="giant.camera_models.owen_model.OwenModel.field_of_view"><code class="xref py py-attr docutils literal notranslate"><span class="pre">field_of_view</span></code></a></p></td>
+<td><p>the diagonal field of view of the camera in units of degrees</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.kx" title="giant.camera_models.owen_model.OwenModel.kx"><code class="xref py py-attr docutils literal notranslate"><span class="pre">kx</span></code></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(k_x\)</span>, the pixel pitch in the x direction in units of pixels/distance</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.ky" title="giant.camera_models.owen_model.OwenModel.ky"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ky</span></code></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(k_y\)</span>, the pixel pitch in the y direction in units of pixels/distance</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.kxy" title="giant.camera_models.owen_model.OwenModel.kxy"><code class="xref py py-attr docutils literal notranslate"><span class="pre">kxy</span></code></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(k_{xy}\)</span>, A alpha term for non-rectangular pixels</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.kyx" title="giant.camera_models.owen_model.OwenModel.kyx"><code class="xref py py-attr docutils literal notranslate"><span class="pre">kyx</span></code></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(k_{yx}\)</span>, A alpha term for non-rectangular pixels</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.px" title="giant.camera_models.owen_model.OwenModel.px"><code class="xref py py-attr docutils literal notranslate"><span class="pre">px</span></code></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(p_{x}\)</span>, the x axis pixel location of the principal point of the camera in
+units of pixels</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.py" title="giant.camera_models.owen_model.OwenModel.py"><code class="xref py py-attr docutils literal notranslate"><span class="pre">py</span></code></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(p_{y}\)</span>, the y axis pixel location of the principal point of the camera in
+units of pixels</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.radial2" title="giant.camera_models.owen_model.OwenModel.radial2"><code class="xref py py-attr docutils literal notranslate"><span class="pre">radial2</span></code></a>, <a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.e2" title="giant.camera_models.owen_model.OwenModel.e2"><code class="xref py py-attr docutils literal notranslate"><span class="pre">e2</span></code></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(\epsilon_2\)</span>, the radial distortion coefficient corresponding to <span class="math notranslate nohighlight">\(r^2\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.radial4" title="giant.camera_models.owen_model.OwenModel.radial4"><code class="xref py py-attr docutils literal notranslate"><span class="pre">radial4</span></code></a>, <a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.e4" title="giant.camera_models.owen_model.OwenModel.e4"><code class="xref py py-attr docutils literal notranslate"><span class="pre">e4</span></code></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(\epsilon_4\)</span>, the radial distortion coefficient corresponding to <span class="math notranslate nohighlight">\(r^4\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.tangential_y" title="giant.camera_models.owen_model.OwenModel.tangential_y"><code class="xref py py-attr docutils literal notranslate"><span class="pre">tangential_y</span></code></a>, <a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.e5" title="giant.camera_models.owen_model.OwenModel.e5"><code class="xref py py-attr docutils literal notranslate"><span class="pre">e5</span></code></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(\epsilon_5\)</span>, the tip/tilt/prism distortion coefficient corresponding to
+<span class="math notranslate nohighlight">\(y_I\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.tangential_x" title="giant.camera_models.owen_model.OwenModel.tangential_x"><code class="xref py py-attr docutils literal notranslate"><span class="pre">tangential_x</span></code></a>, <a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.e6" title="giant.camera_models.owen_model.OwenModel.e6"><code class="xref py py-attr docutils literal notranslate"><span class="pre">e6</span></code></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(\epsilon_6\)</span>, the tip/tilt/prism distortion coefficient corresponding to
+<span class="math notranslate nohighlight">\(x_I\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.pinwheel1" title="giant.camera_models.owen_model.OwenModel.pinwheel1"><code class="xref py py-attr docutils literal notranslate"><span class="pre">pinwheel1</span></code></a>, <a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.e1" title="giant.camera_models.owen_model.OwenModel.e1"><code class="xref py py-attr docutils literal notranslate"><span class="pre">e1</span></code></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(\epsilon_1\)</span>, the pinwheel distortion coefficient corresponding to <span class="math notranslate nohighlight">\(r\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.pinwheel2" title="giant.camera_models.owen_model.OwenModel.pinwheel2"><code class="xref py py-attr docutils literal notranslate"><span class="pre">pinwheel2</span></code></a>, <a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.e3" title="giant.camera_models.owen_model.OwenModel.e3"><code class="xref py py-attr docutils literal notranslate"><span class="pre">e3</span></code></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(\epsilon_3\)</span>, the pinwheel distortion coefficient corresponding to
+<span class="math notranslate nohighlight">\(r^3\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.a1" title="giant.camera_models.owen_model.OwenModel.a1"><code class="xref py py-attr docutils literal notranslate"><span class="pre">a1</span></code></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(a_1\)</span>, the linear coefficient for focal length dependent focal length</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.a2" title="giant.camera_models.owen_model.OwenModel.a2"><code class="xref py py-attr docutils literal notranslate"><span class="pre">a2</span></code></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(a_2\)</span>, the quadratic coefficient for focal length dependent focal length</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.a3" title="giant.camera_models.owen_model.OwenModel.a3"><code class="xref py py-attr docutils literal notranslate"><span class="pre">a3</span></code></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(a_3\)</span>, the cubic coefficient for focal length dependent focal length</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.intrinsic_matrix_inv" title="giant.camera_models.owen_model.OwenModel.intrinsic_matrix_inv"><code class="xref py py-attr docutils literal notranslate"><span class="pre">intrinsic_matrix_inv</span></code></a></p></td>
+<td><p>The inverse of the intrinsic matrix</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The distortion attributes are aliases over each other and refer to the same data.  Therefore setting a
+value to <a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.radial2" title="giant.camera_models.owen_model.OwenModel.radial2"><code class="xref py py-attr docutils literal notranslate"><span class="pre">radial2</span></code></a> would also change the value of <a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.e2" title="giant.camera_models.owen_model.OwenModel.e2"><code class="xref py py-attr docutils literal notranslate"><span class="pre">e2</span></code></a></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>intrinsic_matrix</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>]</em><em>]</em>) – the intrinsic matrix for the camera as a numpy shape (2, 3) array.  Note that this is
+overwritten if <code class="docutils literal notranslate"><span class="pre">kx</span></code>, <code class="docutils literal notranslate"><span class="pre">ky</span></code>, <code class="docutils literal notranslate"><span class="pre">kxy</span></code>, <code class="docutils literal notranslate"><span class="pre">kyx</span></code>, <code class="docutils literal notranslate"><span class="pre">px</span></code>, <code class="docutils literal notranslate"><span class="pre">py</span></code> are also specified.</p></li>
+<li><p><strong>focal_length</strong> (<em>numbers.Real</em>) – The focal length of the camera in units of distance</p></li>
+<li><p><strong>field_of_view</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – The field of view of the camera in units of degrees.</p></li>
+<li><p><strong>use_a_priori</strong> (<em>bool</em>) – A flag to indicate whether to include the a priori state vector in the Jacobian matrix when
+performing a calibration</p></li>
+<li><p><strong>distortion_coefficients</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>]</em><em>]</em>) – A numpy array of shape (6,) containing the six distortion coefficients in order.
+Note that this array is overwritten with any distortion coefficients that are
+specified independently.</p></li>
+<li><p><strong>misalignment</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>]</em><em>]</em>) – either a numpy array of shape (3,) or a list of numpy arrays of shape(3,) with each array
+corresponding to a single image (the list of numpy arrays is only valid when estimating
+multiple misalignments)</p></li>
+<li><p><strong>estimation_parameters</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>Sequence</em><em>]</em>) – A string or list of strings specifying which model parameters to include in the
+calibration</p></li>
+<li><p><strong>kx</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – The pixel pitch along the x axis in units of pixel/distance</p></li>
+<li><p><strong>ky</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – The pixel pitch along the y axis in units of pixel/distance</p></li>
+<li><p><strong>kxy</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – A alpha term for non-rectangular pixels</p></li>
+<li><p><strong>kyx</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – A alpha term for non-rectangular pixels</p></li>
+<li><p><strong>px</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the x component of the pixel location of the principal point in the image in units of pixels</p></li>
+<li><p><strong>py</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the y component of the pixel location of the principal point in the image in units of pixels</p></li>
+<li><p><strong>radial2</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the radial distortion coefficient corresponding to the r**2 term</p></li>
+<li><p><strong>e2</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the radial distortion coefficient corresponding to the r**2 term</p></li>
+<li><p><strong>radial4</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the radial distortion coefficient corresponding to the r**4 term</p></li>
+<li><p><strong>e4</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the radial distortion coefficient corresponding to the r**4 term</p></li>
+<li><p><strong>tangential_x</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the tangential distortion coefficient corresponding to the x term</p></li>
+<li><p><strong>e6</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the tangential distortion coefficient corresponding to the x term</p></li>
+<li><p><strong>tangential_y</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the tangential distortion coefficient corresponding to the y term</p></li>
+<li><p><strong>e5</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the tangential distortion coefficient corresponding to the y term</p></li>
+<li><p><strong>pinwheel1</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the pinwheel distortion coefficient corresponding to the r term</p></li>
+<li><p><strong>e1</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the pinwheel distortion coefficient corresponding to the r term</p></li>
+<li><p><strong>pinwheel2</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the pinwheel distortion coefficient corresponding to the r**2 term</p></li>
+<li><p><strong>e3</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the pinwheel distortion coefficient corresponding to the r**2 term</p></li>
+<li><p><strong>n_rows</strong> (<em>int</em>) – the number of rows of the active image array</p></li>
+<li><p><strong>n_cols</strong> (<em>int</em>) – the number of columns in the active image array</p></li>
+<li><p><strong>a1</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the linear coefficient of the focal length temperature dependence</p></li>
+<li><p><strong>a2</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the quadratic coefficient of the focal length temperature dependence</p></li>
+<li><p><strong>a3</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – the cubic coefficient of the focal length temperature dependence</p></li>
+<li><p><strong>temperature_coefficients</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>]</em><em>]</em>) – The temperature polynomial coefficients as a length 3 Sequence</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.n_rows">
+<span class="sig-name descname"><span class="pre">n_rows</span></span><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.n_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of rows in the active pixel array for the camera</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.n_cols">
+<span class="sig-name descname"><span class="pre">n_cols</span></span><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.n_cols" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of columns in the active pixel array for the camera</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.use_a_priori">
+<span class="sig-name descname"><span class="pre">use_a_priori</span></span><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.use_a_priori" title="Permalink to this definition">¶</a></dt>
+<dd><p>This boolean value is used to determine whether to append the identity matrix to the Jacobian matrix returned
+by <a class="reference internal" href="giant.camera_models.owen_model.OwenModel.compute_jacobian.html#giant.camera_models.owen_model.OwenModel.compute_jacobian" title="giant.camera_models.owen_model.OwenModel.compute_jacobian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_jacobian()</span></code></a> in order to include the current estimate of the camera model in the
+calibration process.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.intrinsic_matrix">
+<span class="sig-name descname"><span class="pre">intrinsic_matrix</span></span><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.intrinsic_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>The 2x3 intrinsic matrix contains the conversion from unitless gnomic locations to a location in an image with
+units of pixels.</p>
+<p>It is defined as</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\mathbf{K} = \left[\begin{array}{ccc} k_x &amp; k_{xy} &amp; p_x \\
+k_{yx} &amp; k_y &amp; p_y \end{array}\right]\end{split}\]</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.temperature_coefficients">
+<span class="sig-name descname"><span class="pre">temperature_coefficients</span></span><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.temperature_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>The coefficients for the polynomial specifying the change in the focal length as a function of temperature.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.estimate_multiple_misalignments">
+<span class="sig-name descname"><span class="pre">estimate_multiple_misalignments</span></span><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.estimate_multiple_misalignments" title="Permalink to this definition">¶</a></dt>
+<dd><p>This boolean value is used to determine whether multiple misalignments are being estimated/used per image.</p>
+<p>If set to <code class="docutils literal notranslate"><span class="pre">True</span></code> then one misalignment is estimated for each image and used for each image when projecting
+through the camera model.  When set to <code class="docutils literal notranslate"><span class="pre">False</span></code> then a single misalignment is estimated for all images and
+used for all images when projecting through the camera model.  Typically the user shouldn’t be setting this
+attribute directly as it is automatically handled when setting the <a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.estimation_parameters" title="giant.camera_models.owen_model.OwenModel.estimation_parameters"><code class="xref py py-attr docutils literal notranslate"><span class="pre">estimation_parameters</span></code></a>
+attribute.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.estimation_parameters">
+<span class="sig-name descname"><span class="pre">estimation_parameters</span></span><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.estimation_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of strings containing the parameters to estimate when performing calibration with this model.</p>
+<p>This list is used in the methods <a class="reference internal" href="giant.camera_models.owen_model.OwenModel.compute_jacobian.html#giant.camera_models.owen_model.OwenModel.compute_jacobian" title="giant.camera_models.owen_model.OwenModel.compute_jacobian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_jacobian()</span></code></a> and <a class="reference internal" href="giant.camera_models.owen_model.OwenModel.apply_update.html#giant.camera_models.owen_model.OwenModel.apply_update" title="giant.camera_models.owen_model.OwenModel.apply_update"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apply_update()</span></code></a> to
+determine which parameters are being estimated/updated. From the <a class="reference internal" href="giant.camera_models.owen_model.OwenModel.compute_jacobian.html#giant.camera_models.owen_model.OwenModel.compute_jacobian" title="giant.camera_models.owen_model.OwenModel.compute_jacobian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_jacobian()</span></code></a> method,
+only columns of the Jacobian matrix corresponding to the parameters in this list are returned.  In the
+<a class="reference internal" href="giant.camera_models.owen_model.OwenModel.apply_update.html#giant.camera_models.owen_model.OwenModel.apply_update" title="giant.camera_models.owen_model.OwenModel.apply_update"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apply_update()</span></code></a> method, the update vector elements are assumed to correspond to the order
+expressed in this list.</p>
+<p>Valid values for the elements of this list are shown in the following table.  Generally, they correspond to
+attributes of this class, with a few convenient aliases that point to a collection of attributes.</p>
+<table class="docutils align-default" id="owen-estimation-table">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 75%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Value</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'basic'</span></code></p></td>
+<td><p>estimate focal length, kyx, ky, all 6 distortion parameters, and a single misalignment
+term for all images between the camera attitude and the spacecraft’s attitude:
+<span class="math notranslate nohighlight">\(\left[\begin{array}{cccccccccc} f &amp; k_y &amp; k_{yx} &amp;
+\epsilon_1 &amp; \epsilon_2 &amp; \epsilon_3 &amp; \epsilon_4 &amp; \epsilon_5 &amp;
+\epsilon_6 &amp; \boldsymbol{\delta\theta} \end{array}\right]\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'intrinsic'</span></code></p></td>
+<td><p>estimate focal length, kx, kxy, kyx, ky, px, py, and all 6 distortion parameters:
+<span class="math notranslate nohighlight">\(\left[\begin{array}{ccccccccccccc} f &amp; k_x &amp; k_{xy} &amp; k_y &amp; k_{yx} &amp; p_x &amp;
+p_y &amp; \epsilon_1 &amp; \epsilon_2 &amp; \epsilon_3 &amp; \epsilon_4 &amp; \epsilon_5 &amp;
+\epsilon_6\end{array}\right]\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'basic</span> <span class="pre">intrinsic'</span></code></p></td>
+<td><p>estimate focal length, kyx, ky, and all 6 distortion parameters:
+<span class="math notranslate nohighlight">\(\left[\begin{array}{ccccccccc} f &amp; k_y &amp; k_{yx} &amp;
+\epsilon_1 &amp; \epsilon_2 &amp; \epsilon_3 &amp; \epsilon_4 &amp; \epsilon_5 &amp;
+\epsilon_6 \end{array}\right]\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'temperature</span> <span class="pre">dependence'</span></code></p></td>
+<td><p>estimate a 3rd order polynomial for temperature dependence:
+<span class="math notranslate nohighlight">\(\left[\begin{array}{ccc} a_1 &amp; a_2 &amp; a_3 \end{array}\right]\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'focal_length'</span></code></p></td>
+<td><p>the focal length of the camera:  <span class="math notranslate nohighlight">\(f\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'kx'</span></code></p></td>
+<td><p>pixel pitch along the x axis:  <span class="math notranslate nohighlight">\(k_x\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'kxy'</span></code></p></td>
+<td><p>alpha term for non-rectangular/rotated pixels: <span class="math notranslate nohighlight">\(k_{xy}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'kyx'</span></code></p></td>
+<td><p>alpha term for non-rectangular/rotated pixels: <span class="math notranslate nohighlight">\(k_{yx}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'ky'</span></code></p></td>
+<td><p>pixel pitch along the y axis: <span class="math notranslate nohighlight">\(k_y\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'px'</span></code></p></td>
+<td><p>x location of the principal point: <span class="math notranslate nohighlight">\(p_x\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'py'</span></code></p></td>
+<td><p>y location of the principal point: <span class="math notranslate nohighlight">\(p_y\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'radial2'</span></code>, <code class="docutils literal notranslate"><span class="pre">'e2'</span></code></p></td>
+<td><p>distortion coefficient corresponding to the <span class="math notranslate nohighlight">\(r^2\)</span> term: <span class="math notranslate nohighlight">\(\epsilon_2\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'radial4'</span></code>, <code class="docutils literal notranslate"><span class="pre">'e4'</span></code></p></td>
+<td><p>distortion coefficient corresponding to the <span class="math notranslate nohighlight">\(r^4\)</span> term: <span class="math notranslate nohighlight">\(\epsilon_4\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'tangential</span> <span class="pre">y'</span></code>, <code class="docutils literal notranslate"><span class="pre">'e5'</span></code></p></td>
+<td><p>distortion coefficient corresponding to the y tangential distortion:
+<span class="math notranslate nohighlight">\(\epsilon_5\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'tangential</span> <span class="pre">x'</span></code>, <code class="docutils literal notranslate"><span class="pre">'e6'</span></code></p></td>
+<td><p>distortion coefficient corresponding to the x tangential distortion:
+<span class="math notranslate nohighlight">\(\epsilon_6\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'pinwheel1'</span></code>, <code class="docutils literal notranslate"><span class="pre">'e1'</span></code></p></td>
+<td><p>distortion coefficient corresponding to the first order pinwheel distortion:
+<span class="math notranslate nohighlight">\(\epsilon_1\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'pinwheel2'</span></code>, <code class="docutils literal notranslate"><span class="pre">'e3'</span></code></p></td>
+<td><p>distortion coefficient corresponding to the third order pinwheel distortion:
+<span class="math notranslate nohighlight">\(\epsilon_3\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'a1'</span></code></p></td>
+<td><p>estimate the linear coefficient for the temperature dependence: <span class="math notranslate nohighlight">\(a_1\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'a2'</span></code></p></td>
+<td><p>estimate the quadratice coefficient for the temperature dependence: <span class="math notranslate nohighlight">\(a_2\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'a3'</span></code></p></td>
+<td><p>estimate the cubic coefficient for the temperature dependence: <span class="math notranslate nohighlight">\(a_3\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'single</span> <span class="pre">misalignment'</span></code></p></td>
+<td><p>estimate a single misalignment for all images: <span class="math notranslate nohighlight">\(\boldsymbol{\delta\theta}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'multiple</span> <span class="pre">misalignments'</span></code></p></td>
+<td><p>estimate a misalignment for each image:
+<span class="math notranslate nohighlight">\(\left[\begin{array}{ccc}\boldsymbol{\delta\theta}_1 &amp; \ldots &amp;
+\boldsymbol{\delta\theta}_n \end{array}\right]\)</span></p></td>
+</tr>
+</tbody>
+</table>
+<p>Note that it may not be possible to estimate all attributes simultaneously because this may result in a rank
+deficient matrix in the calibration process (for instance, without setting a priori weights, estimating
+<code class="docutils literal notranslate"><span class="pre">'px'</span></code>, <code class="docutils literal notranslate"><span class="pre">'py'</span></code>, and <code class="docutils literal notranslate"><span class="pre">'multiple</span> <span class="pre">misalignments'</span></code> together could result in a rank deficient matrix.
+Therefore, just because you can set something in this list doesn’t mean you should.</p>
+<p>For more details about calibrating a camera model, see the <a class="reference internal" href="../giant.calibration.html#module-giant.calibration" title="giant.calibration"><code class="xref py py-mod docutils literal notranslate"><span class="pre">calibration</span></code></a> package for details.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.distortion_coefficients">
+<span class="sig-name descname"><span class="pre">distortion_coefficients</span></span><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.distortion_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>The distortion coefficients array contains the distortion coefficients for the Brown model 
+[e2, e4, e5, e6, e1, e3].</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.field_of_view">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">field_of_view</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.field_of_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>A radial field of view of the camera specified in degrees.</p>
+<p>The field of view should be set to at least the half width diagonal field of view of the camera. The field of
+view is used when querying star catalogues.</p>
+<p>The diagonal field of view is defined as</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>+-----------+
+|          /|
+|         / |
+|        /  |
+|      V/   |
+|     O/    |
+|    F/     |
+|   */      |
+|  2/       |
+|  /        |
+| /         |
+|/          |
++-----------+
+</pre></div>
+</div>
+<p>If you specify this parameter to be <code class="docutils literal notranslate"><span class="pre">None</span></code>, the field of view will be computed using the camera model if
+possible.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.kxy">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">kxy</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.kxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A alpha term for non-rectangular pixels.</p>
+<p>This corresponds to the [0, 1] component of the intrinsic matrix</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.kyx">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">kyx</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.kyx" title="Permalink to this definition">¶</a></dt>
+<dd><p>A alpha term for non-rectangular pixels.</p>
+<p>This corresponds to the [1, 0] component of the intrinsic matrix</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.kx">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">kx</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.kx" title="Permalink to this definition">¶</a></dt>
+<dd><p>The inverse of the pixel pitch along the x axis in units of pix/distance.</p>
+<p>This is the conversion factor to convert from gnomic coordinates (in units of distance) to units of pixels.
+It corresponds to the [0, 0] component of the intrinsic matrix</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.ky">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">ky</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.ky" title="Permalink to this definition">¶</a></dt>
+<dd><p>The inverse of the pixel pitch along the y axis in units of pix/distance.</p>
+<p>This is the conversion factor to convert from pinhole coordinates (in units of distance) to units of pixels.
+It corresponds to the [1, 1] component of the intrinsic matrix</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.px">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">px</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.px" title="Permalink to this definition">¶</a></dt>
+<dd><p>The x pixel location of the principal point of the camera.</p>
+<p>The principal point of the camera is the point in the image where the distortion is zero (the point where the
+optical axis pierces the image).  This corresponds to the [0, 2] component of the intrinsic matrix</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.py">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">py</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.py" title="Permalink to this definition">¶</a></dt>
+<dd><p>The y pixel location of the principal point of the camera.</p>
+<p>The principal point of the camera is the point in the image where the distortion is zero (the point where the
+optical axis pierces the image).  This corresponds to the [1, 2] component of the intrinsic matrix</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.a1">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">a1</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.a1" title="Permalink to this definition">¶</a></dt>
+<dd><p>The linear coefficient for the focal length temperature dependence</p>
+<p>This is the first term in the <a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.temperature_coefficients" title="giant.camera_models.owen_model.OwenModel.temperature_coefficients"><code class="xref py py-attr docutils literal notranslate"><span class="pre">temperature_coefficients</span></code></a> array and is multiplied by the temperature.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.a2">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">a2</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.a2" title="Permalink to this definition">¶</a></dt>
+<dd><p>The quadratic coefficient for the focal length temperature dependence</p>
+<p>This is the second term in the <a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.temperature_coefficients" title="giant.camera_models.owen_model.OwenModel.temperature_coefficients"><code class="xref py py-attr docutils literal notranslate"><span class="pre">temperature_coefficients</span></code></a> array and is multiplied by the temperature
+squared.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.a3">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">a3</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.a3" title="Permalink to this definition">¶</a></dt>
+<dd><p>The cubic coefficient for the focal length temperature dependence</p>
+<p>This is the third term in the <a class="reference internal" href="#giant.camera_models.owen_model.OwenModel.temperature_coefficients" title="giant.camera_models.owen_model.OwenModel.temperature_coefficients"><code class="xref py py-attr docutils literal notranslate"><span class="pre">temperature_coefficients</span></code></a> array and is multiplied by the temperature
+cubed.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.radial2">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">radial2</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.radial2" title="Permalink to this definition">¶</a></dt>
+<dd><p>The radial distortion coefficient corresponding to the r**2 term</p>
+<p>This corresponds to the [0] index of the distortion_coefficients array</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.e2">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">e2</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.e2" title="Permalink to this definition">¶</a></dt>
+<dd><p>The radial distortion coefficient corresponding to the r**2 term</p>
+<p>This corresponds to the [0] index of the distortion_coefficients array</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.radial4">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">radial4</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.radial4" title="Permalink to this definition">¶</a></dt>
+<dd><p>The radial distortion coefficient corresponding to the r**4 term</p>
+<p>This corresponds to the [1] index of the distortion_coefficients array</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.e4">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">e4</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.e4" title="Permalink to this definition">¶</a></dt>
+<dd><p>The radial distortion coefficient corresponding to the r**4 term</p>
+<p>This corresponds to the [1] index of the distortion_coefficients array</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.tangential_x">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">tangential_x</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.tangential_x" title="Permalink to this definition">¶</a></dt>
+<dd><p>The tangential distortion coefficient corresponding to the x term</p>
+<p>this corresponds to the [3] index of the distortion_coefficients array</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.e6">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">e6</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.e6" title="Permalink to this definition">¶</a></dt>
+<dd><p>The tangential distortion coefficient corresponding to the x term</p>
+<p>this corresponds to the [3] index of the distortion_coefficients array</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.tangential_y">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">tangential_y</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.tangential_y" title="Permalink to this definition">¶</a></dt>
+<dd><p>The tangential distortion coefficient corresponding to the y term</p>
+<p>this corresponds to the [2] index of the distortion_coefficients array</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.e5">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">e5</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.e5" title="Permalink to this definition">¶</a></dt>
+<dd><p>The tangential distortion coefficient corresponding to the y term</p>
+<p>this corresponds to the [2] index of the distortion_coefficients array</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.pinwheel1">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">pinwheel1</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.pinwheel1" title="Permalink to this definition">¶</a></dt>
+<dd><p>The pinwheel distortion coefficient corresponding to the r term.</p>
+<p>This corresponds to the [4] index of the distortion_coefficients array.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.e1">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">e1</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.e1" title="Permalink to this definition">¶</a></dt>
+<dd><p>The pinwheel distortion coefficient corresponding to the r term.</p>
+<p>This corresponds to the [4] index of the distortion_coefficients array.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.pinwheel2">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">pinwheel2</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.pinwheel2" title="Permalink to this definition">¶</a></dt>
+<dd><p>The pinwheel distortion coefficient corresponding to the r**3 term.</p>
+<p>This corresponds to the [5] index of the distortion_coefficients array.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.e3">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">e3</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.e3" title="Permalink to this definition">¶</a></dt>
+<dd><p>The pinwheel distortion coefficient corresponding to the r**3 term.</p>
+<p>This corresponds to the [5] index of the distortion_coefficients array.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.intrinsic_matrix_inv">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">intrinsic_matrix_inv</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.intrinsic_matrix_inv" title="Permalink to this definition">¶</a></dt>
+<dd><p>The inverse of the intrinsic matrix.</p>
+<p>The inverse of the intrinsic matrix is used to convert from units of pixels with an origin at the upper left
+corner of the image to units of distance with an origin at the principal point of the image.</p>
+<p>The intrinsic matrix has an analytic inverse which is given by</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}d=k_xk_y-k_{xy}k_{yx} \\
+\mathbf{K}^{-1} = \left[\begin{array}{ccc} \frac{k_y}{d} &amp; -\frac{k_{xy}}{d} &amp;
+\frac{k_{xy}p_y-k_yp_x}{d} \\
+-\frac{k_{yx}}{d} &amp; \frac{k_x}{d} &amp; \frac{k_{yx}p_x-k_xp_y}{d} \end{array}\right]\end{split}\]</div>
+<dl>
+<dt>To convert from units of pixels to units of distance you would do::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">OwenModel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">OwenModel</span><span class="p">(</span><span class="n">kx</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">ky</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">px</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">py</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">((</span><span class="n">model</span><span class="o">.</span><span class="n">intrinsic_matrix_inv</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span><span class="o">@</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">300</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">600</span><span class="p">]])</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">intrinsic_matrix_inv</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+<span class="go">array([[-19.8, -19.6, 40.]</span>
+<span class="go">       [-49.6, -49.5, 10.]])</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The above code will give you distorted gnomic location, while the <a class="reference internal" href="giant.camera_models.owen_model.OwenModel.pixels_to_gnomic.html#giant.camera_models.owen_model.OwenModel.pixels_to_gnomic" title="giant.camera_models.owen_model.OwenModel.pixels_to_gnomic"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pixels_to_gnomic()</span></code></a> will give
+you undistorted gnomic locations (true pinhole points).</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Since the intrinsic matrix is defined as a <span class="math notranslate nohighlight">\(2\times 3\)</span> matrix this
+isn’t a formal inverse.  To get the true inverse you need to append a row of [0, 0, 1] to both the
+intrinsic matrix and intrinsic matrix inverse.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.project_onto_image.html#giant.camera_models.owen_model.OwenModel.project_onto_image" title="giant.camera_models.owen_model.OwenModel.project_onto_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">project_onto_image</span></code></a></p></td>
+<td><p>This method transforms 3D points or directions expressed in the camera frame into the corresponding 2D image locations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.project_directions.html#giant.camera_models.owen_model.OwenModel.project_directions" title="giant.camera_models.owen_model.OwenModel.project_directions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">project_directions</span></code></a></p></td>
+<td><p>This method transforms 3D directions expressed in the camera frame into the corresponding 2D image directions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.compute_jacobian.html#giant.camera_models.owen_model.OwenModel.compute_jacobian" title="giant.camera_models.owen_model.OwenModel.compute_jacobian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_jacobian</span></code></a></p></td>
+<td><p>Calculates the Jacobian matrix for each observation in <cite>unit_vectors_camera</cite> for each parameter to be estimated as defined in the <code class="xref py py-attr docutils literal notranslate"><span class="pre">estimation_parameters</span></code> attribute.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.compute_pixel_jacobian.html#giant.camera_models.owen_model.OwenModel.compute_pixel_jacobian" title="giant.camera_models.owen_model.OwenModel.compute_pixel_jacobian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_pixel_jacobian</span></code></a></p></td>
+<td><p>This method computes the Jacobian matrix <span class="math notranslate nohighlight">\(\partial\mathbf{x}_P/\partial\mathbf{x}_C\)</span> where <span class="math notranslate nohighlight">\(\mathbf{x}_C\)</span> is a vector in the camera frame that projects to <span class="math notranslate nohighlight">\(\mathbf{x}_P\)</span> which is the pixel location.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.compute_unit_vector_jacobian.html#giant.camera_models.owen_model.OwenModel.compute_unit_vector_jacobian" title="giant.camera_models.owen_model.OwenModel.compute_unit_vector_jacobian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_unit_vector_jacobian</span></code></a></p></td>
+<td><p>This method computes the Jacobian matrix <span class="math notranslate nohighlight">\(\partial\mathbf{x}_C/\partial\mathbf{x}_P\)</span> where <span class="math notranslate nohighlight">\(\mathbf{x}_C\)</span> is a vector in the camera frame that projects to <span class="math notranslate nohighlight">\(\mathbf{x}_P\)</span> which is the pixel location.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.apply_update.html#giant.camera_models.owen_model.OwenModel.apply_update" title="giant.camera_models.owen_model.OwenModel.apply_update"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_update</span></code></a></p></td>
+<td><p>This method takes in a delta update to camera parameters (<span class="math notranslate nohighlight">\(\Delta\mathbf{c}\)</span>) and applies the update to the current instance in place.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.pixels_to_unit.html#giant.camera_models.owen_model.OwenModel.pixels_to_unit" title="giant.camera_models.owen_model.OwenModel.pixels_to_unit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pixels_to_unit</span></code></a></p></td>
+<td><p>This method converts pixel image locations to unit vectors expressed in the camera frame.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.undistort_pixels.html#giant.camera_models.owen_model.OwenModel.undistort_pixels" title="giant.camera_models.owen_model.OwenModel.undistort_pixels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">undistort_pixels</span></code></a></p></td>
+<td><p>This method computes undistorted pixel locations (gnomic/pinhole locations) for given distorted pixel locations according to the current model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.distort_pixels.html#giant.camera_models.owen_model.OwenModel.distort_pixels" title="giant.camera_models.owen_model.OwenModel.distort_pixels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">distort_pixels</span></code></a></p></td>
+<td><p>A method that takes gnomic pixel locations in units of pixels and applies the appropriate distortion to them.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.overwrite.html#giant.camera_models.owen_model.OwenModel.overwrite" title="giant.camera_models.owen_model.OwenModel.overwrite"><code class="xref py py-obj docutils literal notranslate"><span class="pre">overwrite</span></code></a></p></td>
+<td><p>This method replaces self with the properties of <code class="docutils literal notranslate"><span class="pre">model</span></code> in place.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.distortion_map.html#giant.camera_models.owen_model.OwenModel.distortion_map" title="giant.camera_models.owen_model.OwenModel.distortion_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">distortion_map</span></code></a></p></td>
+<td><p>This method computes the value of the distortion model across an entire image for use in creating distortion  maps.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.undistort_image.html#giant.camera_models.owen_model.OwenModel.undistort_image" title="giant.camera_models.owen_model.OwenModel.undistort_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">undistort_image</span></code></a></p></td>
+<td><p>This method takes in an entire image and warps it to remove the distortion specified by the current model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.copy.html#giant.camera_models.owen_model.OwenModel.copy" title="giant.camera_models.owen_model.OwenModel.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a></p></td>
+<td><p>Returns a deep copy of this object, breaking all references with <code class="docutils literal notranslate"><span class="pre">self</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.to_elem.html#giant.camera_models.owen_model.OwenModel.to_elem" title="giant.camera_models.owen_model.OwenModel.to_elem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_elem</span></code></a></p></td>
+<td><p>Stores this camera model in an <code class="xref py py-class docutils literal notranslate"><span class="pre">etree._Element</span></code> object for storing in a GIANT xml file</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.from_elem.html#giant.camera_models.owen_model.OwenModel.from_elem" title="giant.camera_models.owen_model.OwenModel.from_elem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_elem</span></code></a></p></td>
+<td><p>This class method is used to construct a new instance of <cite>cls</cite> from an <code class="xref py py-class docutils literal notranslate"><span class="pre">etree._Element</span></code> object</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.adjust_temperature.html#giant.camera_models.owen_model.OwenModel.adjust_temperature" title="giant.camera_models.owen_model.OwenModel.adjust_temperature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">adjust_temperature</span></code></a></p></td>
+<td><p>This method adjusts a pixel location to reflect a new image temperature.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.get_temperature_scale.html#giant.camera_models.owen_model.OwenModel.get_temperature_scale" title="giant.camera_models.owen_model.OwenModel.get_temperature_scale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_temperature_scale</span></code></a></p></td>
+<td><p>This method computes the scaling to the focal length caused by a shift in temperature.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.pixels_to_gnomic.html#giant.camera_models.owen_model.OwenModel.pixels_to_gnomic" title="giant.camera_models.owen_model.OwenModel.pixels_to_gnomic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pixels_to_gnomic</span></code></a></p></td>
+<td><p>This method takes an input in pixels and computes the undistorted gnomic location in units of distance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.prepare_interp.html#giant.camera_models.owen_model.OwenModel.prepare_interp" title="giant.camera_models.owen_model.OwenModel.prepare_interp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_interp</span></code></a></p></td>
+<td><p>This method prepares a SciPy RegularGridInterpolator for converting pixels into undistorted gnomic locations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.pixels_to_gnomic_interp.html#giant.camera_models.owen_model.OwenModel.pixels_to_gnomic_interp" title="giant.camera_models.owen_model.OwenModel.pixels_to_gnomic_interp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pixels_to_gnomic_interp</span></code></a></p></td>
+<td><p>This method takes an input in pixels and approximates the undistorted gnomic location in units of distance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.get_projections.html#giant.camera_models.owen_model.OwenModel.get_projections" title="giant.camera_models.owen_model.OwenModel.get_projections"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_projections</span></code></a></p></td>
+<td><p>This method computes and returns the pinhole, and pixel locations for a set of 3D points expressed in the camera frame.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.apply_distortion.html#giant.camera_models.owen_model.OwenModel.apply_distortion" title="giant.camera_models.owen_model.OwenModel.apply_distortion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_distortion</span></code></a></p></td>
+<td><p>This method applies the distortion model to the specified pinhole (gnomic) locations in the image frame.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.get_state_labels.html#giant.camera_models.owen_model.OwenModel.get_state_labels" title="giant.camera_models.owen_model.OwenModel.get_state_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_state_labels</span></code></a></p></td>
+<td><p>Convert a list of estimation parameters into state label names.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.reset_misalignment.html#giant.camera_models.owen_model.OwenModel.reset_misalignment" title="giant.camera_models.owen_model.OwenModel.reset_misalignment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_misalignment</span></code></a></p></td>
+<td><p>This method reset the misalignment terms to all be zero (no misalignment).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.owen_model.OwenModel.get_misalignment.html#giant.camera_models.owen_model.OwenModel.get_misalignment" title="giant.camera_models.owen_model.OwenModel.get_misalignment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_misalignment</span></code></a></p></td>
+<td><p>This method returns the Rotation object for the misalignment for the requested image.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.camera_models.owen_model.html" title="Previous document">giant.camera_models.owen_model</a>
+        </li>
+        <li>
+          <a href="giant.camera_models.owen_model.OwenModel.project_onto_image.html" title="Next document">OwenModel.project_onto_image</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/owen_model/giant.camera_models.owen_model.OwenModel.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

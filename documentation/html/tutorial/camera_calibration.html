@@ -1,0 +1,800 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Performing Camera Calibration &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="Performing Optical Navigation" href="opnav.html" />
+    <link rel="prev" title="Acquiring Data for the Tutorial" href="data_prep.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../getting_started.html">Getting Started</a><ul>
+      <li>Previous: <a href="data_prep.html" title="previous chapter">Acquiring Data for the Tutorial</a></li>
+      <li>Next: <a href="opnav.html" title="next chapter">Performing Optical Navigation</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="data_prep.html" title="Previous document">Acquiring Data for the Tutorial</a>
+        </li>
+        <li>
+          <a href="opnav.html" title="Next document">Performing Optical Navigation</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="performing-camera-calibration">
+<h1>Performing Camera Calibration<a class="headerlink" href="#performing-camera-calibration" title="Permalink to this headline">¶</a></h1>
+<p>One of the first things that we will typically use GIANT for on any mission is to generate the geometric model of the
+camera.  This model is important both to GIANT, and to others, because it allows us to map points in the camera frame
+onto points in the image itself.</p>
+<p>In GIANT, camera modelling is done by processing images of star fields.  The observed stars in these images are matched
+with a catalogue of stars that provide their location in the inertial frame.  Through these matches, we can develop a
+camera model that minimizes the residuals between the projection of the catalogue defined star locations onto the image
+with the extracted star locations in the image (from image processing).</p>
+<p>Lets set up a script to do this for the Dawn Framing Camera 2 (FC2).  In the <code class="docutils literal notranslate"><span class="pre">dawn_giant/scripts</span></code> directory, create
+a script entitled <code class="docutils literal notranslate"><span class="pre">fc2_calibration.py</span></code> and open it with your favorite text editor.</p>
+<section id="initial-imports">
+<h2>Initial Imports<a class="headerlink" href="#initial-imports" title="Permalink to this headline">¶</a></h2>
+<p>As with the <code class="docutils literal notranslate"><span class="pre">dawn_giant</span></code> module, we want to begin our calibration script with the imports we will need.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># a utility for retrieving a list of files using glob patterns</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+
+<span class="c1"># the warnings utility for filtering annoying warnings that don&#39;t mean things to us right now</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="c1"># A numerical library for performing various math and linear algebra implementations in an efficient manner</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># the camera model we will use to map points from the camera frame to the image and a function to save our final model</span>
+<span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">BrownModel</span><span class="p">,</span> <span class="n">save</span>
+
+<span class="c1"># The class we will use to perform the calibration</span>
+<span class="kn">from</span> <span class="nn">giant.calibration.calibration_class</span> <span class="kn">import</span> <span class="n">Calibration</span>
+
+<span class="c1"># tools for visualizing the results of our calibration</span>
+<span class="kn">from</span> <span class="nn">giant.calibration.visualizer</span> <span class="kn">import</span> <span class="n">plot_distortion_map</span>
+<span class="kn">from</span> <span class="nn">giant.stellar_opnav.visualizer</span> <span class="kn">import</span> <span class="n">show_id_results</span><span class="p">,</span> <span class="n">residual_histograms</span><span class="p">,</span> <span class="n">plot_residuals_vs_magnitude</span>
+
+<span class="c1"># the star catalogue we will use for our &quot;truth&quot; star locations</span>
+<span class="kn">from</span> <span class="nn">giant.catalogues.giant_catalogue</span> <span class="kn">import</span> <span class="n">GIANTCatalogue</span>
+
+<span class="c1"># the Framing Camera object we defined before</span>
+<span class="kn">from</span> <span class="nn">dawn_giant</span> <span class="kn">import</span> <span class="n">DawnFCCamera</span><span class="p">,</span> <span class="n">fc2_attitude</span>
+
+<span class="c1"># the tool for reading the PDS label files</span>
+<span class="kn">import</span> <span class="nn">pvl</span>
+</pre></div>
+</div>
+</section>
+<section id="initializing-our-camera-model">
+<h2>Initializing Our Camera Model<a class="headerlink" href="#initializing-our-camera-model" title="Permalink to this headline">¶</a></h2>
+<p>The way that camera calibration works, we need to have an initial guess of the camera model available from the start.
+Typically, this initial guess is based off of the prescribed geometry of the camera and assumes a pinhole camera model
+with no distortion.  For Dawn, we can get information about the prescribed geometry from the framing camera SIS
+available <a class="reference external" href="https://sbnarchive.psi.edu/pds3/dawn/fc/DWNXFC2_1A/DOCUMENT/SIS/DAWN_FC_SIS_20160815.PDF">here</a>.</p>
+<p>For this tutorial, we will use the Brown Camera Model (<a class="reference internal" href="../brown_model/giant.camera_models.brown_model.BrownModel.html#giant.camera_models.brown_model.BrownModel" title="giant.camera_models.brown_model.BrownModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BrownModel</span></code></a>) which is a simple yet powerful model that
+can accurately model most modern cameras.  For a list of potential other camera models and more information about how
+camera models work see the <a class="reference internal" href="../giant.camera_models.html#module-giant.camera_models" title="giant.camera_models"><code class="xref py py-mod docutils literal notranslate"><span class="pre">camera_models</span></code></a> documentation.</p>
+<p>We can define our initial camera model for FC2 using the following code.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># filter some annoying warnings</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
+
+    <span class="c1"># first, we need to define our initial camera model.</span>
+    <span class="c1"># typically, we do this based off of the prescribed camera specifications.</span>
+    <span class="c1"># for the dawn framing cameras, this information is available in the DAWN_FC_SIS_20160815.PDF which is available at</span>
+    <span class="c1"># https://sbnarchive.psi.edu/pds3/dawn/fc/DWNXFC2_1A/DOCUMENT/SIS/DAWN_FC_SIS_20160815.PDF</span>
+    <span class="c1"># For this analysis we&#39;ll use a Brown camera model</span>
+
+    <span class="n">focal_length</span> <span class="o">=</span> <span class="mi">150</span>  <span class="c1"># mm</span>
+    <span class="n">pitch</span> <span class="o">=</span> <span class="mf">14e-3</span>  <span class="c1"># mm/pixel</span>
+    <span class="n">focal_length_pixels</span> <span class="o">=</span> <span class="n">focal_length</span><span class="o">/</span><span class="n">pitch</span>
+    <span class="n">fov</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># degrees (corresponds to half of diagonal FOV)</span>
+    <span class="n">nrows</span> <span class="o">=</span> <span class="mi">1024</span>  <span class="c1"># pixels</span>
+    <span class="n">ncols</span> <span class="o">=</span> <span class="mi">1024</span>  <span class="c1"># pixels</span>
+
+    <span class="n">px</span> <span class="o">=</span> <span class="p">(</span><span class="n">ncols</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>  <span class="c1"># the center of the detector in pixels</span>
+    <span class="n">py</span> <span class="o">=</span> <span class="p">(</span><span class="n">nrows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>  <span class="c1"># the center of the detector in pixels</span>
+
+    <span class="c1"># set the parameters that we want to estimate in the calibration.</span>
+    <span class="c1"># this tells giant to estimate the x and y focal lengths (fx, fy), the second, fourth, and sixth order</span>
+    <span class="c1"># radial distortion coefficients (k1-3), the tangential distortion (p1, p2), and a single attitude misalignment for</span>
+    <span class="c1"># each image.</span>
+    <span class="n">estimation_parameters</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;fx&#39;</span><span class="p">,</span> <span class="s1">&#39;fy&#39;</span><span class="p">,</span> <span class="s1">&#39;k1&#39;</span><span class="p">,</span> <span class="s1">&#39;p1&#39;</span><span class="p">,</span> <span class="s1">&#39;p2&#39;</span><span class="p">,</span> <span class="s1">&#39;multiple misalignments&#39;</span><span class="p">]</span>
+
+    <span class="n">camera_model</span> <span class="o">=</span> <span class="n">BrownModel</span><span class="p">(</span><span class="n">fx</span><span class="o">=</span><span class="n">focal_length_pixels</span><span class="p">,</span> <span class="n">fy</span><span class="o">=-</span><span class="n">focal_length_pixels</span><span class="p">,</span> <span class="n">px</span><span class="o">=</span><span class="n">px</span><span class="p">,</span> <span class="n">py</span><span class="o">=</span><span class="n">py</span><span class="p">,</span> <span class="n">n_rows</span><span class="o">=</span><span class="n">nrows</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="n">ncols</span><span class="p">,</span>
+                              <span class="n">field_of_view</span><span class="o">=</span><span class="n">fov</span><span class="p">,</span> <span class="n">estimation_parameters</span><span class="o">=</span><span class="n">estimation_parameters</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>All we are doing above is translating the prescribed camera information into the format that the Brown camera model
+expects.  We are also setting the camera model parameters that we want to estimate in our calibration.  Choosing these
+parameters takes a little bit of skill and is outside the scope of this tutorial, so trust that we have chosen the
+correct parameters for now.</p>
+</section>
+<section id="defining-a-meta-kernel">
+<h2>Defining a Meta Kernel<a class="headerlink" href="#defining-a-meta-kernel" title="Permalink to this headline">¶</a></h2>
+<p>Before we proceed further, we need to define a meta kernel to load all of the spice files so we have access to the state
+information we will need to do the calibration (and the OpNav in a later script).  This tutorial is not a tutorial on
+Spice so simply, open a new file called <code class="docutils literal notranslate"><span class="pre">meta_kernel.tm</span></code> in the <code class="docutils literal notranslate"><span class="pre">dawn_giant/scripts</span></code> directory and paste the
+following</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">KPL</span><span class="o">/</span><span class="n">MK</span>
+ \<span class="n">begindata</span>
+
+ <span class="n">PATH_VALUES</span> <span class="o">=</span> <span class="p">(</span> <span class="s1">&#39;../kernels&#39;</span> <span class="p">)</span>
+ <span class="n">PATH_SYMBOLS</span> <span class="o">=</span> <span class="p">(</span> <span class="s1">&#39;ROOT&#39;</span> <span class="p">)</span>
+
+ <span class="n">KERNELS_TO_LOAD</span> <span class="o">=</span> <span class="p">(</span> <span class="s1">&#39;$ROOT/lsk/naif0012.tls&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/pck/pck00008.tpc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/de432.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/sb_vesta_ssd_120716.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/pck/dawn_vesta_v02.tpc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/fk/dawn_v14.tf&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/fk/dawn_vesta_v00.tf&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/sclk/DAWN_203_SCLKSCET.00090.tsc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_070927-070930_081218_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_070930-071201_081218_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_071201-080205_081218_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_100208-100316_100323_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_100316-100413_100422_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_100413-100622_100830_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_100622-100824_100830_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_100824-101130_101202_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_101130-110201_110201_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_101130-110419_pred_110419-110502_110420_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_101130-110606_pred_110606-110628_110609_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_110201-110328_110328_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_110328-110419_110419_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_110328-110419_110420_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_110416-110802_110913_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_110802-110831_110922_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_110831-110928_111221_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_110928-111102_111221_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_110928-111102_120615_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_111102-111210_120618_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/spk/dawn_rec_111211-120501_120620_v1.bsp&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_fc_v3.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_071203_071209.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_071210_071216.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_071217_071223.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_071224_071230.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_071231_080106.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_100705_100711.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_100712_100718.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_100719_100725.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_100726_100801.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110502_110508.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110509_110515.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110516_110522.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110523_110529.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110530_110605.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110606_110612.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110613_110619.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110620_110626.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110627_110703.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110704_110710.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110711_110717.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110718_110724.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110725_110731.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110801_110807.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110808_110814.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110815_110821.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110822_110828.bc&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;$ROOT/ck/dawn_sc_110829_110904.bc&#39;</span>
+  <span class="p">)</span>
+
+ \<span class="n">begintext</span>
+</pre></div>
+</div>
+<p>Now, return to <code class="docutils literal notranslate"><span class="pre">fc2_calibration.py</span></code> and add the following lines to load this file.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># load the meta kernel so we have access to the state information</span>
+<span class="n">spice</span><span class="o">.</span><span class="n">furnsh</span><span class="p">(</span><span class="s1">&#39;./meta_kernel.tm&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="loading-the-images-and-creating-the-camera-instance">
+<h2>Loading the Images and Creating the Camera Instance<a class="headerlink" href="#loading-the-images-and-creating-the-camera-instance" title="Permalink to this headline">¶</a></h2>
+<p>With the camera model defined, we can now load the images we are going to use to do our calibration.  For Dawn,
+they took special images of only star fields so they could do a calibration like this.  Therefore we will use those
+images.</p>
+<p>The way that GIANT processes star images, it is usually best to try and process all images with similar exposure lengths
+at the same time.  Doing this allows you to use one set of parameters for processing these images, and typically images
+with similar exposure lengths can be processed with the same set of parameters.  Therefore, the first thing we should do
+is bin our images into groups that have similar exposure lengths.  We can do this using the following function, which
+you should place after the imports but before the <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">__name__</span> <span class="pre">==</span> <span class="pre">&quot;__main__&quot;</span></code> section of the code</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">bin_images</span><span class="p">(</span><span class="n">image_files</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A simple utility to bin the images into exposure groupd for DAWN</span>
+<span class="sd">    :param image_files: The filepaths to be binned</span>
+<span class="sd">    :return: a list of exposures and a corresponding list of lists where each list corresponds to an exposure group</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># initialize lists to store the exposure for each image</span>
+    <span class="n">images</span><span class="p">,</span> <span class="n">exposures</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">image_files</span><span class="p">:</span>
+
+        <span class="c1"># read the label file for the image</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.FIT&#39;</span><span class="p">,</span> <span class="s1">&#39;.LBL&#39;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">label</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pvl</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">))</span>
+
+        <span class="c1"># check if this is a normal image</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;DAWN:IMAGE_ACQUIRE_MODE&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;NORMAL&quot;</span><span class="p">:</span>
+            <span class="c1"># get the exposure time in seconds</span>
+            <span class="n">exposure</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;EXPOSURE_DURATION&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="o">/</span><span class="mi">1000</span>
+
+            <span class="c1"># only keep exposure values longer than 1 second</span>
+            <span class="k">if</span> <span class="n">exposure</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+
+                <span class="c1"># store the image and its exposure length</span>
+                <span class="n">images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+                <span class="n">exposures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exposure</span><span class="p">)</span>
+
+    <span class="c1"># if things met our requirements</span>
+    <span class="k">if</span> <span class="n">images</span><span class="p">:</span>
+
+        <span class="c1"># choose the unique exposures and sort them</span>
+        <span class="n">uniq_exposures</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">exposures</span><span class="p">))</span>
+
+        <span class="n">binned</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># loop through each unique exposure and see which images have that exposure length</span>
+        <span class="k">for</span> <span class="n">expo</span> <span class="ow">in</span> <span class="n">uniq_exposures</span><span class="p">:</span>
+
+            <span class="c1"># store a list of images that have this exposure length</span>
+            <span class="n">binned</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">sorted</span><span class="p">([</span><span class="n">im</span> <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">im</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">images</span><span class="p">)</span> <span class="k">if</span> <span class="n">exposures</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">==</span> <span class="n">expo</span><span class="p">]))</span>
+
+        <span class="c1"># return the results</span>
+        <span class="k">return</span> <span class="n">uniq_exposures</span><span class="p">,</span> <span class="n">binned</span>
+</pre></div>
+</div>
+<p>Now, we can use this function to bin the image and load just the first batch into the camera.  Enter the following code
+at the bottom of your file.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># now we need to load our images and create our camera instance.</span>
+<span class="c1"># first, lets bin our images into exposure groups</span>
+<span class="n">exp</span><span class="p">,</span> <span class="n">binned_images</span> <span class="o">=</span> <span class="n">bin_images</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;../cal*/*.FIT&#39;</span><span class="p">))</span>
+
+<span class="c1"># now, form our camera object with the images from the first exposure group</span>
+<span class="n">camera</span> <span class="o">=</span> <span class="n">DawnFCCamera</span><span class="p">(</span><span class="n">images</span><span class="o">=</span><span class="n">binned_images</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">model</span><span class="o">=</span><span class="n">camera_model</span><span class="p">,</span> <span class="n">attitude_function</span><span class="o">=</span><span class="n">fc2_attitude</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that we are using the <code class="docutils literal notranslate"><span class="pre">DawnFCCamera</span></code> class that we defined before, and giving it the list of the paths to the
+first group of images we want to process, the initial camera model we defined earlier, and the attitude function for the
+framing camera that we defined in our <code class="docutils literal notranslate"><span class="pre">dawn_giant</span></code> module.  The initialized camera object will contain all of this
+information and have loaded the images that we requested so that we are ready to go.</p>
+</section>
+<section id="creating-the-calibration-object">
+<h2>Creating the Calibration Object<a class="headerlink" href="#creating-the-calibration-object" title="Permalink to this headline">¶</a></h2>
+<p>With our camera defined and images loaded we can now form our <a class="reference internal" href="../calibration/calibration_class/giant.calibration.calibration_class.Calibration.html#giant.calibration.calibration_class.Calibration" title="giant.calibration.calibration_class.Calibration"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calibration</span></code></a> object.  The calibration object is
+what we will interact with to perform the calibration.  To initialize the object enter the following</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># we can build our calibration object now, which we&#39;ll use to identify the stars and then estimate an update to the</span>
+<span class="c1"># camera model</span>
+<span class="c1"># for the star id key word arguments, set the catalogue to be the GIANT catalogue</span>
+<span class="n">calib</span> <span class="o">=</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="n">star_id_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;catalogue&#39;</span><span class="p">:</span> <span class="n">GIANTCatalogue</span><span class="p">()})</span>
+</pre></div>
+</div>
+<p>We give the calibration object the camera object that we just initialized, as well as a key word argument called
+<code class="docutils literal notranslate"><span class="pre">star_identification_kwargs</span></code> which specifies that we want to use the default GIANT catalogue to get our star
+locations.  There are other things you can specify for the <a class="reference internal" href="../calibration/calibration_class/giant.calibration.calibration_class.Calibration.html#giant.calibration.calibration_class.Calibration" title="giant.calibration.calibration_class.Calibration"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calibration</span></code></a> class constructor but they are outside
+of the scope for this tutorial and you will need to consult the <a class="reference internal" href="../calibration/calibration_class/giant.calibration.calibration_class.Calibration.html#giant.calibration.calibration_class.Calibration" title="giant.calibration.calibration_class.Calibration"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calibration</span></code></a> documentation for more information
+on them.</p>
+</section>
+<section id="identifying-stars-in-an-image">
+<h2>Identifying Stars in an Image<a class="headerlink" href="#identifying-stars-in-an-image" title="Permalink to this headline">¶</a></h2>
+<p>It’s been a long journey, but we’re finally ready to start processing our images.  This is done by specifying some
+settings on the calibration class, and then calling the method <a class="reference internal" href="../calibration/calibration_class/giant.calibration.calibration_class.Calibration.id_stars.html#giant.calibration.calibration_class.Calibration.id_stars" title="giant.calibration.calibration_class.Calibration.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> to identify the stars
+in the image. Setting parameters that lead to successful star identification is something that takes some practice
+and is outside the scope of this tutorial, however, the <a class="reference internal" href="../giant.stellar_opnav.html#module-giant.stellar_opnav" title="giant.stellar_opnav"><code class="xref py py-mod docutils literal notranslate"><span class="pre">stellar_opnav</span></code></a> documentation provides a good walk
+through of how to understand these parameters and successfully identify stars.</p>
+<p>When we’re doing camera calibration, we typically identify stars in an image twice.  The first time we are fairly
+conservative in trying to only match stars that we are certain are correctly identified.  This is because we need to
+correct our initial attitude for the image before we can really try to identify a lot of stars.  Once we have that
+initial pairing, and have corrected our attitude for the images, then we can try to match more stars.</p>
+<p>For the first set of images, the following parameters work well for both the initial and full identifications</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># set the initial parameters for our first star identification</span>
+<span class="c1"># typically, we are conservative with the first star identification because we only need about 5 correctly</span>
+<span class="c1"># identified stars in each image in order to correct our attitude</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_magnitude</span> <span class="o">=</span> <span class="mf">7.0</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">poi_threshold</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">ransac_tolerance</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_combos</span> <span class="o">=</span> <span class="mi">5000</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">second_closest_check</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">unique_check</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="c1"># now we can identify our stars and estimate an update to our attitude based on these matched star pairs</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">id_stars</span><span class="p">()</span>
+
+<span class="n">calib</span><span class="o">.</span><span class="n">estimate_attitude</span><span class="p">()</span>
+
+<span class="c1"># now, since we&#39;re doing a calibration, we want to extract a lot of stars so we can fully observe the whole</span>
+<span class="c1"># field of view.  Therefore, set some less conservative parameters</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_magnitude</span> <span class="o">=</span> <span class="mf">9.0</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">poi_threshold</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_combos</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="c1"># now we just want to identify stars, since we&#39;ve already adjusted our attitude</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">id_stars</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In the above code, we set our initial star identification parameters, then we call the method
+<a class="reference internal" href="../calibration/calibration_class/giant.calibration.calibration_class.Calibration.id_stars.html#giant.calibration.calibration_class.Calibration.id_stars" title="giant.calibration.calibration_class.Calibration.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a>, then the method <a class="reference internal" href="../calibration/calibration_class/giant.calibration.calibration_class.Calibration.estimate_attitude.html#giant.calibration.calibration_class.Calibration.estimate_attitude" title="giant.calibration.calibration_class.Calibration.estimate_attitude"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate_attitude()</span></code></a>.  This corrects the attitude
+for the images.  Once that is done, we set new parameters and then call <a class="reference internal" href="../calibration/calibration_class/giant.calibration.calibration_class.Calibration.id_stars.html#giant.calibration.calibration_class.Calibration.id_stars" title="giant.calibration.calibration_class.Calibration.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> again (without
+calling <a class="reference internal" href="../calibration/calibration_class/giant.calibration.calibration_class.Calibration.estimate_attitude.html#giant.calibration.calibration_class.Calibration.estimate_attitude" title="giant.calibration.calibration_class.Calibration.estimate_attitude"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate_attitude()</span></code></a> this time.  This leads to GIANT having knowledge about all of the
+matched stars for the images we have loaded.  To see the results of our star identification you can add the line</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">show_id_results</span><span class="p">(</span><span class="n">calib</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>to your script which will show you the identified stars in each image.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>At this point, we encourage you to save the script, run it (<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">fc2_calibration.py</span></code>) and mess around with the
+parameters to see how they affect the star identification results.  You may even find a better set than what we’ve
+presented here.  Once you’re finished, you should remove the <code class="docutils literal notranslate"><span class="pre">show_id_results(calib)</span></code> line so that you don’t have
+to close all of the figure windows each time you run the script</p>
+</div>
+<p>With the first group of images out of the way we can move onto our next group of images.  We do this by first turning
+off the images we’ve already processed (so that GIANT doesn’t reprocess them but still remembers the stuff we’ve
+already done) and then loading the next image group.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># now that we have id&#39;d stars in these images, turn them off so they&#39;re no longer processed</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">all_off</span><span class="p">()</span>
+
+<span class="c1"># add the images from our second exposure group</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">add_images</span><span class="p">(</span><span class="n">binned_images</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>With the second exposure group loaded, we are going to repeat the same steps as for the first, but with different
+parameter settings.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># repeat the steps above for the second exposure group.</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_magnitude</span> <span class="o">=</span> <span class="mf">8.5</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">poi_threshold</span> <span class="o">=</span> <span class="mi">80</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">ransac_tolerance</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_combos</span> <span class="o">=</span> <span class="mi">1000</span>
+
+<span class="n">calib</span><span class="o">.</span><span class="n">id_stars</span><span class="p">()</span>
+
+<span class="n">calib</span><span class="o">.</span><span class="n">estimate_attitude</span><span class="p">()</span>
+
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_magnitude</span> <span class="o">=</span> <span class="mf">9.5</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">poi_threshold</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_combos</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">calib</span><span class="o">.</span><span class="n">id_stars</span><span class="p">()</span>
+
+<span class="n">calib</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">all_off</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Now we can load and identify stars in the final exposure group (two of the exposure groups have windowed images which
+are not very useful for calibration so we skip over them).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># and for the final exposure group (we need to throw out the third and fourth groups because the images are</span>
+<span class="c1"># windowed and thus not very useful for calibration)</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">add_images</span><span class="p">(</span><span class="n">binned_images</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_magnitude</span> <span class="o">=</span> <span class="mf">9.5</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">poi_threshold</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">ransac_tolerance</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_combos</span> <span class="o">=</span> <span class="mi">1000</span>
+
+<span class="n">calib</span><span class="o">.</span><span class="n">id_stars</span><span class="p">()</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">estimate_attitude</span><span class="p">()</span>
+
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_magnitude</span> <span class="o">=</span> <span class="mf">11.0</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">poi_threshold</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_combos</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">calib</span><span class="o">.</span><span class="n">id_stars</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="performing-calibration">
+<h2>Performing Calibration<a class="headerlink" href="#performing-calibration" title="Permalink to this headline">¶</a></h2>
+<p>With stars identified in all of our images we can now do our estimation.  First, we need to turn all of the images back
+on so that GIANT knows to use stars from all images in the calibration</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># now, turn on all of the images so they all get included in our calibration</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">all_on</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Now, we simply call the method <a class="reference internal" href="../calibration/calibration_class/giant.calibration.calibration_class.Calibration.estimate_calibration.html#giant.calibration.calibration_class.Calibration.estimate_calibration" title="giant.calibration.calibration_class.Calibration.estimate_calibration"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate_calibration()</span></code></a> and GIANT will solve for the updated camera
+model. Typically we do this twice, removing outliers after the first time, to ensure we get a really good fit. The
+<a class="reference internal" href="../calibration/calibration_class/giant.calibration.calibration_class.Calibration.remove_outliers.html#giant.calibration.calibration_class.Calibration.remove_outliers" title="giant.calibration.calibration_class.Calibration.remove_outliers"><code class="xref py py-meth docutils literal notranslate"><span class="pre">remove_outliers()</span></code></a> function allows us to automatically reject outliers whose post-fit residuals are
+greater than some specified tolerance.  We could also manually inspect outliers using the
+<a class="reference internal" href="../calibration/calibration_class/giant.calibration.calibration_class.Calibration.review_outliers.html#giant.calibration.calibration_class.Calibration.review_outliers" title="giant.calibration.calibration_class.Calibration.review_outliers"><code class="xref py py-meth docutils literal notranslate"><span class="pre">review_outliers()</span></code></a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># do the calibration once, manually check the outliers, and then do the final calibration</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">estimate_calibration</span><span class="p">()</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">remove_outliers</span><span class="p">(</span><span class="n">hard_threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">estimate_calibration</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>And that is it, the calibration is done and we have solved for an update to our camera model</p>
+</section>
+<section id="viewing-the-calibration-results">
+<h2>Viewing the Calibration Results<a class="headerlink" href="#viewing-the-calibration-results" title="Permalink to this headline">¶</a></h2>
+<p>GIANT provides a number of useful functions and methods to visualize the calibration results.  A few
+examples are provided below with comments explaining what each one does.  Be sure to close out of all open
+figures to proceed to the next visualization</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># show all of our results</span>
+<span class="c1"># a table summary of our star identification results for each image printed to stdout</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">sid_summary</span><span class="p">()</span>
+<span class="c1"># A summary of the formal uncertainties and correlation coefficients in the post fit camera model printed to stdout</span>
+<span class="n">calib</span><span class="o">.</span><span class="n">calib_summary</span><span class="p">(</span><span class="n">measurement_covariance</span><span class="o">=</span><span class="mf">0.15</span><span class="p">)</span>
+<span class="c1"># the final camera model printed to stdout</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="p">))</span>
+<span class="c1"># plots showing the star indentification results for each image and overall</span>
+<span class="n">show_id_results</span><span class="p">(</span><span class="n">calib</span><span class="p">)</span>
+<span class="c1"># the overall post-fit residuals</span>
+<span class="n">residual_histograms</span><span class="p">(</span><span class="n">calib</span><span class="p">)</span>
+<span class="c1"># the overall post-fit residuals vs magnitude</span>
+<span class="n">plot_residuals_vs_magnitude</span><span class="p">(</span><span class="n">calib</span><span class="p">)</span>
+<span class="c1"># the distortion map for the solved for camera model</span>
+<span class="n">plot_distortion_map</span><span class="p">(</span><span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="saving-the-solved-for-camera-model">
+<h2>Saving the Solved for Camera Model<a class="headerlink" href="#saving-the-solved-for-camera-model" title="Permalink to this headline">¶</a></h2>
+<p>The final step in our calibration is to save off the results so we can use it again later without having to go through
+all of these steps again.  This is done using the <a class="reference internal" href="../camera_model/giant.camera_models.camera_model.save.html#giant.camera_models.camera_model.save" title="giant.camera_models.camera_model.save"><code class="xref py py-func docutils literal notranslate"><span class="pre">save()</span></code></a> function from the <a class="reference internal" href="../giant.camera_models.html#module-giant.camera_models" title="giant.camera_models"><code class="xref py py-mod docutils literal notranslate"><span class="pre">camera_models</span></code></a> module.
+Simply specify the file that you want to save the results to, specify the name of the camera the model is for, and
+provide the model to be saved.  In the future, you can load the module using the <a class="reference internal" href="../camera_model/giant.camera_models.camera_model.load.html#giant.camera_models.camera_model.load" title="giant.camera_models.camera_model.load"><code class="xref py py-func docutils literal notranslate"><span class="pre">load()</span></code></a> function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># now save off our solved for camera model to a file</span>
+<span class="n">save</span><span class="p">(</span><span class="s1">&#39;dawn_camera_models.xml&#39;</span><span class="p">,</span> <span class="s1">&#39;FC2&#39;</span><span class="p">,</span> <span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+
+<span class="c1"># clear all of the spice kernels we loaded</span>
+<span class="n">spice</span><span class="o">.</span><span class="n">kclear</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="the-full-fc2-calibration-script">
+<h2>The Full FC2 Calibration Script<a class="headerlink" href="#the-full-fc2-calibration-script" title="Permalink to this headline">¶</a></h2>
+<p>For convenience, the full FC2 calibration script is presented here</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># a utility for retrieving a list of files using glob patterns</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+
+<span class="c1"># the warnings utility for filtering annoying warnings that don&#39;t mean things to us right now</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="c1"># A numerical library for performing various math and linear algebra implementations in an efficient manner</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># the camera model we will use to map points from the camera frame to the image and a function to save our final model</span>
+<span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">BrownModel</span><span class="p">,</span> <span class="n">save</span>
+
+<span class="c1"># The class we will use to perform the calibration</span>
+<span class="kn">from</span> <span class="nn">giant.calibration.calibration_class</span> <span class="kn">import</span> <span class="n">Calibration</span>
+
+<span class="c1"># tools for visualizing the results of our calibration</span>
+<span class="kn">from</span> <span class="nn">giant.calibration.visualizer</span> <span class="kn">import</span> <span class="n">plot_distortion_map</span>
+<span class="kn">from</span> <span class="nn">giant.stellar_opnav.visualizer</span> <span class="kn">import</span> <span class="n">show_id_results</span><span class="p">,</span> <span class="n">residual_histograms</span><span class="p">,</span> <span class="n">plot_residuals_vs_magnitude</span>
+
+<span class="c1"># the star catalogue we will use for our &quot;truth&quot; star locations</span>
+<span class="kn">from</span> <span class="nn">giant.catalogues.giant_catalogue</span> <span class="kn">import</span> <span class="n">GIANTCatalogue</span>
+
+<span class="c1"># the Framing Camera object we defined before</span>
+<span class="kn">from</span> <span class="nn">dawn_giant</span> <span class="kn">import</span> <span class="n">DawnFCCamera</span><span class="p">,</span> <span class="n">fc2_attitude</span>
+
+<span class="c1"># the tool for reading the PDS label files</span>
+<span class="kn">import</span> <span class="nn">pvl</span>
+
+<span class="c1"># A module to provide access to the NAIF Spice routines</span>
+<span class="kn">import</span> <span class="nn">spiceypy</span> <span class="k">as</span> <span class="nn">spice</span>
+
+
+<span class="k">def</span> <span class="nf">bin_images</span><span class="p">(</span><span class="n">image_files</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A simple utility to bin the images into exposure groupd for DAWN</span>
+<span class="sd">    :param image_files: The filepaths to be binned</span>
+<span class="sd">    :return: a list of exposures and a corresponding list of lists where each list corresponds to an exposure group</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># initialize lists to store the exposure for each image</span>
+    <span class="n">images</span><span class="p">,</span> <span class="n">exposures</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">image_files</span><span class="p">:</span>
+
+        <span class="c1"># read the label file for the image</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.FIT&#39;</span><span class="p">,</span> <span class="s1">&#39;.LBL&#39;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">label</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pvl</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">))</span>
+
+        <span class="c1"># check if this is a normal image</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;DAWN:IMAGE_ACQUIRE_MODE&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;NORMAL&quot;</span><span class="p">:</span>
+            <span class="c1"># get the exposure time in seconds</span>
+            <span class="n">exposure</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;EXPOSURE_DURATION&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="o">/</span><span class="mi">1000</span>
+
+            <span class="c1"># only keep exposure values longer than 1 second</span>
+            <span class="k">if</span> <span class="n">exposure</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+
+                <span class="c1"># store the image and its exposure length</span>
+                <span class="n">images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+                <span class="n">exposures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exposure</span><span class="p">)</span>
+
+    <span class="c1"># if things met our requirements</span>
+    <span class="k">if</span> <span class="n">images</span><span class="p">:</span>
+
+        <span class="c1"># choose the unique exposures and sort them</span>
+        <span class="n">uniq_exposures</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">exposures</span><span class="p">))</span>
+
+        <span class="n">binned</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># loop through each unique exposure and see which images have that exposure length</span>
+        <span class="k">for</span> <span class="n">expo</span> <span class="ow">in</span> <span class="n">uniq_exposures</span><span class="p">:</span>
+
+            <span class="c1"># store a list of images that have this exposure length</span>
+            <span class="n">binned</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">sorted</span><span class="p">([</span><span class="n">im</span> <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">im</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">images</span><span class="p">)</span> <span class="k">if</span> <span class="n">exposures</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">==</span> <span class="n">expo</span><span class="p">]))</span>
+
+        <span class="c1"># return the results</span>
+        <span class="k">return</span> <span class="n">uniq_exposures</span><span class="p">,</span> <span class="n">binned</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># filter some annoying warnings</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
+
+    <span class="c1"># first, we need to define our initial camera model.</span>
+    <span class="c1"># typically, we do this based off of the prescribed camera specifications.</span>
+    <span class="c1"># for the dawn framing cameras, this information is available in the DAWN_FC_SIS_20160815.PDF which is available at</span>
+    <span class="c1"># https://sbnarchive.psi.edu/pds3/dawn/fc/DWNXFC2_1A/DOCUMENT/SIS/DAWN_FC_SIS_20160815.PDF</span>
+    <span class="c1"># For this analysis we&#39;ll use a Brown camera model</span>
+
+    <span class="n">focal_length</span> <span class="o">=</span> <span class="mi">150</span>  <span class="c1"># mm</span>
+    <span class="n">pitch</span> <span class="o">=</span> <span class="mf">14e-3</span>  <span class="c1"># mm/pixel</span>
+    <span class="n">focal_length_pixels</span> <span class="o">=</span> <span class="n">focal_length</span><span class="o">/</span><span class="n">pitch</span>
+    <span class="n">fov</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># degrees (corresponds to half of diagonal FOV)</span>
+    <span class="n">nrows</span> <span class="o">=</span> <span class="mi">1024</span>  <span class="c1"># pixels</span>
+    <span class="n">ncols</span> <span class="o">=</span> <span class="mi">1024</span>  <span class="c1"># pixels</span>
+
+    <span class="n">px</span> <span class="o">=</span> <span class="p">(</span><span class="n">ncols</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>  <span class="c1"># the center of the detector in pixels</span>
+    <span class="n">py</span> <span class="o">=</span> <span class="p">(</span><span class="n">nrows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>  <span class="c1"># the center of the detector in pixels</span>
+
+    <span class="c1"># set the parameters that we want to estimate in the calibration.</span>
+    <span class="c1"># this tells giant to estimate the x and y focal lengths (fx, fy), the second, fourth, and sixth order</span>
+    <span class="c1"># radial distortion coefficients (k1-3), the tangential distortion (p1, p2), and a single attitude misalignment for</span>
+    <span class="c1"># each image.</span>
+    <span class="n">estimation_parameters</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;fx&#39;</span><span class="p">,</span> <span class="s1">&#39;fy&#39;</span><span class="p">,</span> <span class="s1">&#39;k1&#39;</span><span class="p">,</span> <span class="s1">&#39;p1&#39;</span><span class="p">,</span> <span class="s1">&#39;p2&#39;</span><span class="p">,</span> <span class="s1">&#39;multiple misalignments&#39;</span><span class="p">]</span>
+
+    <span class="n">camera_model</span> <span class="o">=</span> <span class="n">BrownModel</span><span class="p">(</span><span class="n">fx</span><span class="o">=</span><span class="n">focal_length_pixels</span><span class="p">,</span> <span class="n">fy</span><span class="o">=-</span><span class="n">focal_length_pixels</span><span class="p">,</span> <span class="n">px</span><span class="o">=</span><span class="n">px</span><span class="p">,</span> <span class="n">py</span><span class="o">=</span><span class="n">py</span><span class="p">,</span> <span class="n">n_rows</span><span class="o">=</span><span class="n">nrows</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="n">ncols</span><span class="p">,</span>
+                              <span class="n">field_of_view</span><span class="o">=</span><span class="n">fov</span><span class="p">,</span> <span class="n">estimation_parameters</span><span class="o">=</span><span class="n">estimation_parameters</span><span class="p">)</span>
+
+    <span class="c1"># load the meta kernel so we have access to the state information</span>
+    <span class="n">spice</span><span class="o">.</span><span class="n">furnsh</span><span class="p">(</span><span class="s1">&#39;./meta_kernel.tm&#39;</span><span class="p">)</span>
+
+    <span class="c1"># now we need to load our images and create our camera instance.</span>
+    <span class="c1"># first, lets bin our images into exposure groups</span>
+    <span class="n">exp</span><span class="p">,</span> <span class="n">binned_images</span> <span class="o">=</span> <span class="n">bin_images</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;../cal*/*.FIT&#39;</span><span class="p">))</span>
+
+    <span class="c1"># now, form our camera object with the images from the first exposure group</span>
+    <span class="n">camera</span> <span class="o">=</span> <span class="n">DawnFCCamera</span><span class="p">(</span><span class="n">images</span><span class="o">=</span><span class="n">binned_images</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">model</span><span class="o">=</span><span class="n">camera_model</span><span class="p">,</span> <span class="n">attitude_function</span><span class="o">=</span><span class="n">fc2_attitude</span><span class="p">)</span>
+
+    <span class="c1"># we can build our calibration object now, which we&#39;ll use to identify the stars and then estimate an update to the</span>
+    <span class="c1"># camera model</span>
+    <span class="c1"># for the star id key word arguments, set the catalogue to be the GIANT catalogue</span>
+    <span class="n">calib</span> <span class="o">=</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="n">star_id_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;catalogue&#39;</span><span class="p">:</span> <span class="n">GIANTCatalogue</span><span class="p">()})</span>
+
+    <span class="c1"># set the initial parameters for our first star identification</span>
+    <span class="c1"># typically, we are conservative with the first star identification because we only need about 5 correctly</span>
+    <span class="c1"># identified stars in each image in order to correct our attitude</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_magnitude</span> <span class="o">=</span> <span class="mf">7.0</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">poi_threshold</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="mi">40</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">ransac_tolerance</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_combos</span> <span class="o">=</span> <span class="mi">5000</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">second_closest_check</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">unique_check</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># now we can identify our stars and estimate an update to our attitude based on these matched star pairs</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">id_stars</span><span class="p">()</span>
+    <span class="c1"># show_id_results(calib)</span>
+
+    <span class="n">calib</span><span class="o">.</span><span class="n">estimate_attitude</span><span class="p">()</span>
+
+    <span class="c1"># now, since we&#39;re doing a calibration, we want to extract a lot of stars so we can fully observe the whole</span>
+    <span class="c1"># field of view.  Therefore, set some less conservative parameters</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_magnitude</span> <span class="o">=</span> <span class="mf">9.0</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">poi_threshold</span> <span class="o">=</span> <span class="mi">15</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_combos</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># now we just want to identify stars, since we&#39;ve already adjusted our attitude</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">id_stars</span><span class="p">()</span>
+
+    <span class="c1"># now that we have id&#39;d stars in these images, turn them off so they&#39;re no longer processed</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">all_off</span><span class="p">()</span>
+
+    <span class="c1"># add the images from our second exposure group</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">add_images</span><span class="p">(</span><span class="n">binned_images</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># repeat the steps above for the second exposure group.</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_magnitude</span> <span class="o">=</span> <span class="mf">8.5</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">poi_threshold</span> <span class="o">=</span> <span class="mi">80</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="mi">40</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">ransac_tolerance</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_combos</span> <span class="o">=</span> <span class="mi">1000</span>
+
+    <span class="n">calib</span><span class="o">.</span><span class="n">id_stars</span><span class="p">()</span>
+
+    <span class="n">calib</span><span class="o">.</span><span class="n">estimate_attitude</span><span class="p">()</span>
+
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_magnitude</span> <span class="o">=</span> <span class="mf">9.5</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">poi_threshold</span> <span class="o">=</span> <span class="mi">40</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_combos</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">calib</span><span class="o">.</span><span class="n">id_stars</span><span class="p">()</span>
+
+    <span class="n">calib</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">all_off</span><span class="p">()</span>
+
+    <span class="c1"># and for the final exposure group (we need to throw out the third and fourth groups because the images are</span>
+    <span class="c1"># windowed and thus not very useful for calibration)</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">add_images</span><span class="p">(</span><span class="n">binned_images</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_magnitude</span> <span class="o">=</span> <span class="mf">9.5</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">poi_threshold</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">ransac_tolerance</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_combos</span> <span class="o">=</span> <span class="mi">1000</span>
+
+    <span class="n">calib</span><span class="o">.</span><span class="n">id_stars</span><span class="p">()</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">estimate_attitude</span><span class="p">()</span>
+
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_magnitude</span> <span class="o">=</span> <span class="mf">11.0</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">poi_threshold</span> <span class="o">=</span> <span class="mi">40</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_combos</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">calib</span><span class="o">.</span><span class="n">id_stars</span><span class="p">()</span>
+
+    <span class="c1"># now, turn on all of the images so they all get included in our calibration</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">all_on</span><span class="p">()</span>
+
+    <span class="c1"># do the calibration once, manually check the outliers, and then do the final calibration</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">estimate_calibration</span><span class="p">()</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">remove_outliers</span><span class="p">(</span><span class="n">hard_threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">estimate_calibration</span><span class="p">()</span>
+
+    <span class="c1"># show all of our results</span>
+    <span class="c1"># a table summary of our star identification results for each image printed to stdout</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">sid_summary</span><span class="p">()</span>
+    <span class="c1"># A summary of the formal uncertainties and correlation coefficients in the post fit camera model printed to stdout</span>
+    <span class="n">calib</span><span class="o">.</span><span class="n">calib_summary</span><span class="p">(</span><span class="n">measurement_covariance</span><span class="o">=</span><span class="mf">0.15</span><span class="p">)</span>
+    <span class="c1"># the final camera model printed to stdout</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="p">))</span>
+    <span class="c1"># plots showing the star indentification results for each image and overall</span>
+    <span class="c1"># show_id_results(calib)</span>
+    <span class="c1"># the overall post-fit residuals</span>
+    <span class="n">residual_histograms</span><span class="p">(</span><span class="n">calib</span><span class="p">)</span>
+    <span class="c1"># the overall post-fit residuals vs magnitude</span>
+    <span class="n">plot_residuals_vs_magnitude</span><span class="p">(</span><span class="n">calib</span><span class="p">)</span>
+    <span class="c1"># the distortion map for the solved for camera model</span>
+    <span class="n">plot_distortion_map</span><span class="p">(</span><span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># now save off our solved for camera model to a file</span>
+    <span class="n">save</span><span class="p">(</span><span class="s1">&#39;dawn_camera_models.xml&#39;</span><span class="p">,</span> <span class="s1">&#39;FC2&#39;</span><span class="p">,</span> <span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># clear all of the spice kernels we loaded</span>
+    <span class="n">spice</span><span class="o">.</span><span class="n">kclear</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="data_prep.html" title="Previous document">Acquiring Data for the Tutorial</a>
+        </li>
+        <li>
+          <a href="opnav.html" title="Next document">Performing Optical Navigation</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/tutorial/camera_calibration.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

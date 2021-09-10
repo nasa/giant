@@ -1,0 +1,255 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>relnav_class &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="RelativeOpNav" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html" />
+    <link rel="prev" title="giant.relative_opnav" href="../giant.relative_opnav.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.relative_opnav.html">giant.relative_opnav</a><ul>
+      <li>Previous: <a href="../giant.relative_opnav.html" title="previous chapter">giant.relative_opnav</a></li>
+      <li>Next: <a href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html" title="next chapter">RelativeOpNav</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.relative_opnav.html" title="Previous document">giant.relative_opnav</a>
+        </li>
+        <li>
+          <a href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html" title="Next document">RelativeOpNav</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.relative_opnav.relnav_class">
+<span id="relnav-class"></span><h1>relnav_class<a class="headerlink" href="#module-giant.relative_opnav.relnav_class" title="Permalink to this headline">¶</a></h1>
+<p>This module provides a subclass of the <a class="reference internal" href="../opnav_class/giant.opnav_class.OpNav.html#giant.opnav_class.OpNav" title="giant.opnav_class.OpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpNav</span></code></a> class for performing relative OpNav.</p>
+<section id="interface-description">
+<h2>Interface Description<a class="headerlink" href="#interface-description" title="Permalink to this headline">¶</a></h2>
+<p>In GIANT, Relative OpNav refers to the process of identifying targets of interest in an image.  These targets can be
+natural bodies, surface features on natural bodies, or even man made objects.  Typically the result of identifying
+these targets in images is line-of-sight or bearing measurements to the target in the image, which, when coupled with
+the knowledge of the camera inertial pointing (possibly from the <a class="reference internal" href="../giant.stellar_opnav.html#module-giant.stellar_opnav" title="giant.stellar_opnav"><code class="xref py py-mod docutils literal notranslate"><span class="pre">stellar_opnav</span></code></a> module) gives inertial bearing
+measurements that can be ingested in a navigation filter.  A couple of techniques result in different types of
+observations, but these are discussed in more detail for the appropriate techniques.</p>
+<p>The <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class is the primary interface for performing relative OpNav in GIANT, and in general is what
+the user will interact with to process images.  It provides direct access to all of the estimators for doing different
+types of RelNav for editing settings, and additionally provides <code class="docutils literal notranslate"><span class="pre">{technique}_estimate</span></code> methods which process each
+requested image by updating the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav.scene" title="giant.relative_opnav.relnav_class.RelativeOpNav.scene"><code class="xref py py-attr docutils literal notranslate"><span class="pre">scene</span></code></a> to reflect the <strong>a priori</strong> conditions at the image time,
+applying the specified technique to the image to extract the observables, and then storing the extracted observations
+and details about those observations for you. The typical scheme for these methods is <code class="docutils literal notranslate"><span class="pre">{module_name}_estimate</span></code> for
+instance <code class="docutils literal notranslate"><span class="pre">cross_correlation_estimate</span></code>. In addition to these methods, this class also provides a <code class="xref py py-meth docutils literal notranslate"><span class="pre">auto_estimate()</span></code>
+method, which attempts to automatically pick the appropriate RelNav technique to use for each image based on the type of
+target being identified and the <strong>a priori</strong> knowledge of the apparent diameter of the object in the image.
+Specifically, this method chooses from the 5 most typical RelNav techniques, <a class="reference internal" href="estimators/giant.relative_opnav.estimators.unresolved.html#module-giant.relative_opnav.estimators.unresolved" title="giant.relative_opnav.estimators.unresolved"><code class="xref py py-mod docutils literal notranslate"><span class="pre">unresolved</span></code></a>,
+<a class="reference internal" href="estimators/giant.relative_opnav.estimators.moment_algorithm.html#module-giant.relative_opnav.estimators.moment_algorithm" title="giant.relative_opnav.estimators.moment_algorithm"><code class="xref py py-mod docutils literal notranslate"><span class="pre">moment_algorithm</span></code></a>, <a class="reference internal" href="estimators/giant.relative_opnav.estimators.cross_correlation.html#module-giant.relative_opnav.estimators.cross_correlation" title="giant.relative_opnav.estimators.cross_correlation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cross_correlation</span></code></a>, <a class="reference internal" href="estimators/giant.relative_opnav.estimators.limb_matching.html#module-giant.relative_opnav.estimators.limb_matching" title="giant.relative_opnav.estimators.limb_matching"><code class="xref py py-mod docutils literal notranslate"><span class="pre">limb_matching</span></code></a>, and <a class="reference internal" href="estimators/giant.relative_opnav.estimators.sfn.html#module-giant.relative_opnav.estimators.sfn" title="giant.relative_opnav.estimators.sfn"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sfn</span></code></a>. More details on how this
+decision is made are provided in the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate.html#giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate" title="giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">auto_estimate()</span></code></a> documentation.  For typical users, this method is all that
+they will need for doing RelNav, however, the lower-level methods for force choosing the method are provided for more
+advanced analysis.</p>
+<p>For example, we could do something like the following (from the directory containing <code class="docutils literal notranslate"><span class="pre">sample_data</span></code> as generated by a
+call to <a class="reference internal" href="../scripts/giant.scripts.generate_sample_data.html#module-giant.scripts.generate_sample_data" title="giant.scripts.generate_sample_data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">generate_sample_data</span></code></a>):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pickle</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.relative_opnav</span> <span class="kn">import</span> <span class="n">RelativeOpNav</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;sample_data/camera.pickle&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">input_file</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">camera</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;sample_data/kdtree.pickle&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">input_file</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">target</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.scripts.generate_sample_data</span> <span class="kn">import</span> <span class="p">(</span><span class="n">target_position</span><span class="p">,</span> <span class="n">target_orientation</span><span class="p">,</span>
+<span class="gp">... </span>                                                <span class="n">sun_position</span><span class="p">,</span> <span class="n">sun_orientation</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.ray_tracer.scene</span> <span class="kn">import</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">SceneObject</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.ray_tracer.shapes</span> <span class="kn">import</span> <span class="n">Point</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">only_short_on</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scene</span> <span class="o">=</span> <span class="n">Scene</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="n">SceneObject</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">position_function</span><span class="o">=</span><span class="n">target_position</span><span class="p">,</span> <span class="n">orientation_function</span><span class="o">=</span><span class="n">target_orientation</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Itokawa&#39;</span><span class="p">),</span>
+<span class="gp">... </span>                  <span class="n">light_obj</span><span class="o">=</span><span class="n">SceneObject</span><span class="p">(</span><span class="n">Point</span><span class="p">,</span> <span class="n">position_function</span><span class="o">=</span><span class="n">sun_position</span><span class="p">,</span> <span class="n">orientation_function</span><span class="o">=</span><span class="n">sun_orientation</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Sun&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_relnav</span> <span class="o">=</span> <span class="n">RelativeOpNav</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="n">scene</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_relnav</span><span class="o">.</span><span class="n">auto_estimate</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>To generate RelNav observables for each short exposure image in the camera.</p>
+</section>
+<section id="extending-relativeopnav-with-new-techniques">
+<h2>Extending RelativeOpNav With New Techniques<a class="headerlink" href="#extending-relativeopnav-with-new-techniques" title="Permalink to this headline">¶</a></h2>
+<p>In addition to the built in techniques from GIANT it is possible to extend the :class:’.RelativeOpNav` object with new
+techniques using the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.register.html#giant.relative_opnav.relnav_class.RelativeOpNav.register" title="giant.relative_opnav.relnav_class.RelativeOpNav.register"><code class="xref py py-meth docutils literal notranslate"><span class="pre">RelativeOpNav.register()</span></code></a> class method/decorator.  Using this method to register a new
+technique creates all the typical attributes/methods for the technique in the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class without
+having to subclass it, including <code class="docutils literal notranslate"><span class="pre">{technique}_estimate</span></code>, <code class="docutils literal notranslate"><span class="pre">{technique}_details</span></code> replacing <code class="docutils literal notranslate"><span class="pre">{technique}</span></code> with the
+name of the technique.  It will also package the results for you into the appropriate attribute (
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">center_finding_results</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">relative_position_results</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">landmark_results</span></code>’, <code class="xref py py-attr docutils literal notranslate"><span class="pre">limb_results</span></code>,
+and <code class="xref py py-attr docutils literal notranslate"><span class="pre">saved_templates</span></code>) depending on the type of observables generated.</p>
+<p>Therefore, to register a new template we could do something like</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@RelativeOpNav</span><span class="o">.</span><span class="n">register</span>
+<span class="k">class</span> <span class="nc">MyNewTechnique</span><span class="p">(</span><span class="n">RelNavEstimator</span><span class="p">):</span>
+    <span class="n">technique</span> <span class="o">=</span> <span class="s2">&quot;my_new_technique&quot;</span>
+    <span class="n">observable_type</span> <span class="o">=</span> <span class="p">[</span><span class="n">RelNavObservablesType</span><span class="o">.</span><span class="n">CENTER_FINDING</span><span class="p">,</span> <span class="n">RelNavObservablesType</span><span class="o">.</span><span class="n">RELATIVE_POSITION</span><span class="p">]</span>
+    <span class="n">generates_templates</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">include_targets</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="c1"># do the thing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">computed_positions</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observed_positions</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">details</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s2">&quot;we did the thing!&quot;</span><span class="p">}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">taget_objs</span><span class="p">))]</span>
+</pre></div>
+</div>
+<p>which would register <code class="docutils literal notranslate"><span class="pre">MyNewTechnique</span></code> to name <code class="docutils literal notranslate"><span class="pre">my_new_technique</span></code> so that we could do something like
+<code class="docutils literal notranslate"><span class="pre">relnav.my_new_technique_estimate()</span></code> where <code class="docutils literal notranslate"><span class="pre">relnav</span></code> is an instance of <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a>.  Note that the
+registration must be done before creating an instance of <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a>. Therefore, the code containing the
+above example would needs to be imported before intializing the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a>.</p>
+<p>For a more general description of the steps needed to perform relative navigation, refer to the <a class="reference internal" href="../giant.relative_opnav.html#module-giant.relative_opnav" title="giant.relative_opnav"><code class="xref py py-mod docutils literal notranslate"><span class="pre">relative_opnav</span></code></a>
+documentation.  For a more in-depth examination of the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class, continue through the following
+class documentation. For more details on adding new techniques to the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class, see the
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">relnav_estimators</span></code> documentation.</p>
+</section>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a></p></td>
+<td><p>This class serves as the main user interface for performing relative optical navigation.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Constants</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RESULTS_DTYPE.html#giant.relative_opnav.relnav_class.RESULTS_DTYPE" title="giant.relative_opnav.relnav_class.RESULTS_DTYPE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RESULTS_DTYPE</span></code></a></p></td>
+<td><p>The numpy structured datatype used to package most RelNav observables.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.relative_opnav.html" title="Previous document">giant.relative_opnav</a>
+        </li>
+        <li>
+          <a href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html" title="Next document">RelativeOpNav</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/relative_opnav/giant.relative_opnav.relnav_class.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

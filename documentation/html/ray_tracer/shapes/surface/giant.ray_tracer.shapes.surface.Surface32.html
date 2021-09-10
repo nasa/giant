@@ -1,0 +1,286 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Surface32 &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="next" title="Surface32.compute_bounding_box" href="giant.ray_tracer.shapes.surface.Surface32.compute_bounding_box.html" />
+    <link rel="prev" title="RawSurface.translate" href="giant.ray_tracer.shapes.surface.RawSurface.translate.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../giant.html">API Reference</a><ul>
+  <li><a href="../../../giant.ray_tracer.html">ray_tracer</a><ul>
+  <li><a href="../../giant.ray_tracer.shapes.html">shapes</a><ul>
+  <li><a href="../giant.ray_tracer.shapes.surface.html">surface</a><ul>
+      <li>Previous: <a href="giant.ray_tracer.shapes.surface.RawSurface.translate.html" title="previous chapter">RawSurface.translate</a></li>
+      <li>Next: <a href="giant.ray_tracer.shapes.surface.Surface32.compute_bounding_box.html" title="next chapter">Surface32.compute_bounding_box</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.ray_tracer.shapes.surface.RawSurface.translate.html" title="Previous document">RawSurface.translate</a>
+        </li>
+        <li>
+          <a href="giant.ray_tracer.shapes.surface.Surface32.compute_bounding_box.html" title="Next document">Surface32.compute_bounding_box</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="surface32">
+<h1>Surface32<a class="headerlink" href="#surface32" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.ray_tracer.shapes.surface.html#module-giant.ray_tracer.shapes.surface" title="giant.ray_tracer.shapes.surface"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.ray_tracer.shapes.surface</span></code></a>:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.ray_tracer.shapes.surface.Surface32">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.ray_tracer.shapes.surface.</span></span><span class="sig-name descname"><span class="pre">Surface32</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">albedos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compute_bounding_box</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounding_box</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compute_reference_ellipsoid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_ellipsoid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giant.ray_tracer.shapes.surface.Surface32" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class serves as the backbone for surfaces in GIANT represented using single precision.</p>
+<p>As such it provides the default <code class="xref py py-meth docutils literal notranslate"><span class="pre">__init__()</span></code>,
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">__reduce__()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">__eq__()</span></code>, <a class="reference internal" href="giant.ray_tracer.shapes.surface.Surface32.merge.html#giant.ray_tracer.shapes.surface.Surface32.merge" title="giant.ray_tracer.shapes.surface.Surface32.merge"><code class="xref py py-meth docutils literal notranslate"><span class="pre">merge()</span></code></a>, <a class="reference internal" href="giant.ray_tracer.shapes.surface.Surface32.rotate.html#giant.ray_tracer.shapes.surface.Surface32.rotate" title="giant.ray_tracer.shapes.surface.Surface32.rotate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">rotate()</span></code></a>, <a class="reference internal" href="giant.ray_tracer.shapes.surface.Surface32.translate.html#giant.ray_tracer.shapes.surface.Surface32.translate" title="giant.ray_tracer.shapes.surface.Surface32.translate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">translate()</span></code></a>, <a class="reference internal" href="giant.ray_tracer.shapes.surface.Surface32.compute_bounding_box.html#giant.ray_tracer.shapes.surface.Surface32.compute_bounding_box" title="giant.ray_tracer.shapes.surface.Surface32.compute_bounding_box"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_bounding_box()</span></code></a>,
+and <a class="reference internal" href="giant.ray_tracer.shapes.surface.Surface32.compute_reference_ellipsoid.html#giant.ray_tracer.shapes.surface.Surface32.compute_reference_ellipsoid" title="giant.ray_tracer.shapes.surface.Surface32.compute_reference_ellipsoid"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_reference_ellipsoid()</span></code></a> methods which are generally shared by all surfaces.  It additionally
+provides properties <a class="reference internal" href="#giant.ray_tracer.shapes.surface.Surface32.facets" title="giant.ray_tracer.shapes.surface.Surface32.facets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">facets</span></code></a>, <a class="reference internal" href="#giant.ray_tracer.shapes.surface.Surface32.albedos" title="giant.ray_tracer.shapes.surface.Surface32.albedos"><code class="xref py py-attr docutils literal notranslate"><span class="pre">albedos</span></code></a>, <a class="reference internal" href="#giant.ray_tracer.shapes.surface.Surface32.vertices" title="giant.ray_tracer.shapes.surface.Surface32.vertices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">vertices</span></code></a>, <a class="reference internal" href="#giant.ray_tracer.shapes.surface.Surface32.normals" title="giant.ray_tracer.shapes.surface.Surface32.normals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">normals</span></code></a>, <a class="reference internal" href="#giant.ray_tracer.shapes.surface.Surface32.stacked_vertices" title="giant.ray_tracer.shapes.surface.Surface32.stacked_vertices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">stacked_vertices</span></code></a>,
+and <a class="reference internal" href="#giant.ray_tracer.shapes.surface.Surface32.num_faces" title="giant.ray_tracer.shapes.surface.Surface32.num_faces"><code class="xref py py-attr docutils literal notranslate"><span class="pre">num_faces</span></code></a> which are commonly shared.</p>
+<p>You should only use this class when developing a new surface in GIANT using single precision vertices.  Beyond that
+this shouldn’t even be used as an instance check.  For an example of how to implement a new surface, examine the
+<a class="reference internal" href="../triangle/giant.ray_tracer.shapes.triangle.Triangle32.html#giant.ray_tracer.shapes.triangle.Triangle32" title="giant.ray_tracer.shapes.triangle.Triangle32"><code class="xref py py-class docutils literal notranslate"><span class="pre">Triangle32</span></code></a> class code.  If you want to develop a new surface using single precision vertices then look
+at the <a class="reference internal" href="#giant.ray_tracer.shapes.surface.Surface32" title="giant.ray_tracer.shapes.surface.Surface32"><code class="xref py py-class docutils literal notranslate"><span class="pre">Surface32</span></code></a> and <a class="reference internal" href="../triangle/giant.ray_tracer.shapes.triangle.Triangle32.html#giant.ray_tracer.shapes.triangle.Triangle32" title="giant.ray_tracer.shapes.triangle.Triangle32"><code class="xref py py-class docutils literal notranslate"><span class="pre">Triangle32</span></code></a> classes.  Though you can technically initialize an instance of
+this class, there’s not real reason to since the tracing interface is undefined making the instance mostly
+worthless.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vertices</strong> (<em>ARRAY_LIKE</em>) – The vertices for the surface as a n by 3 array</p></li>
+<li><p><strong>albedos</strong> (<em>Union</em><em>[</em><em>ARRAY_LIKE</em><em>, </em><em>float</em><em>]</em>) – The albedo(s) for the surface as either a scalar or a length n array</p></li>
+<li><p><strong>facets</strong> (<em>ARRAY_LIKE</em>) – The connectivity map for the surface as a mxp array where m is the number of faces, p is the
+number of vertices for each face, and each element is an index into the <code class="docutils literal notranslate"><span class="pre">vertices</span></code> array</p></li>
+<li><p><strong>normals</strong> (<em>Optional</em><em>[</em><em>ARRAY_LIKE</em><em>]</em>) – The normal vectors for each face of the surface.  If <code class="docutils literal notranslate"><span class="pre">None</span></code> then the normals will be computed</p></li>
+<li><p><strong>compute_bounding_box</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../axis_aligned_bounding_box/giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox.html#giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox" title="giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox"><em>AxisAlignedBoundingBox</em></a><em>]</em>) – A flag specifying whether to compute the axis aligned bounding box for the surface</p></li>
+<li><p><strong>bounding_box</strong> – The axis aligned bounding box for the surface.  This will be overwritten if
+<code class="docutils literal notranslate"><span class="pre">compute_bounding_box</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><strong>compute_reference_ellipsoid</strong> (<em>bool</em>) – A flag specifying whether to compute the reference ellipsoid for the
+surface.</p></li>
+<li><p><strong>reference_ellipsoid</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../ellipsoid/giant.ray_tracer.shapes.ellipsoid.Ellipsoid.html#giant.ray_tracer.shapes.ellipsoid.Ellipsoid" title="giant.ray_tracer.shapes.ellipsoid.Ellipsoid"><em>Ellipsoid</em></a><em>]</em>) – The reference ellipsoid for the surface.  If <code class="docutils literal notranslate"><span class="pre">compute_reference_ellipsoid</span></code> is
+<code class="docutils literal notranslate"><span class="pre">True</span></code> this will be overwritten</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.ray_tracer.shapes.surface.Surface32.bounding_box">
+<span class="sig-name descname"><span class="pre">bounding_box</span></span><em class="property"><span class="pre">:</span> <span class="pre">AxisAlignedBoundingBox</span></em><a class="headerlink" href="#giant.ray_tracer.shapes.surface.Surface32.bounding_box" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="../axis_aligned_bounding_box/giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox.html#giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox" title="giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox"><code class="xref py py-class docutils literal notranslate"><span class="pre">AxisAlignedBoundingBox</span></code></a> that fully contains this solid.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.ray_tracer.shapes.surface.Surface32.reference_ellipsoid">
+<span class="sig-name descname"><span class="pre">reference_ellipsoid</span></span><em class="property"><span class="pre">:</span> <span class="pre">Ellipsoid</span></em><a class="headerlink" href="#giant.ray_tracer.shapes.surface.Surface32.reference_ellipsoid" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="../ellipsoid/giant.ray_tracer.shapes.ellipsoid.Ellipsoid.html#giant.ray_tracer.shapes.ellipsoid.Ellipsoid" title="giant.ray_tracer.shapes.ellipsoid.Ellipsoid"><code class="xref py py-class docutils literal notranslate"><span class="pre">Ellipsoid</span></code></a> that best represents the surface.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.ray_tracer.shapes.surface.Surface32.albedos">
+<span class="sig-name descname"><span class="pre">albedos</span></span><a class="headerlink" href="#giant.ray_tracer.shapes.surface.Surface32.albedos" title="Permalink to this definition">¶</a></dt>
+<dd><p>This property represents the albedo for the surface.</p>
+<p>The albedo can either be a scalar, if there is a single albedo for the entire array, or an array of length n
+if there is a different albedo value for each vertex.  Both are accessed through this property</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.ray_tracer.shapes.surface.Surface32.facets">
+<span class="sig-name descname"><span class="pre">facets</span></span><a class="headerlink" href="#giant.ray_tracer.shapes.surface.Surface32.facets" title="Permalink to this definition">¶</a></dt>
+<dd><p>This property returns the facets for the surfaces(s) as a mxp ndarray where each face has p vertices and
+there are m faces overall.</p>
+<p>The facet elements are indices into the <a class="reference internal" href="#giant.ray_tracer.shapes.surface.Surface32.vertices" title="giant.ray_tracer.shapes.surface.Surface32.vertices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">vertices</span></code></a> array.  They must be positive.</p>
+<p>Each row of this array corresponds to the same row of the <a class="reference internal" href="#giant.ray_tracer.shapes.surface.Surface32.normals" title="giant.ray_tracer.shapes.surface.Surface32.normals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">normals</span></code></a> array</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.ray_tracer.shapes.surface.Surface32.normals">
+<span class="sig-name descname"><span class="pre">normals</span></span><a class="headerlink" href="#giant.ray_tracer.shapes.surface.Surface32.normals" title="Permalink to this definition">¶</a></dt>
+<dd><p>This property returns the normals for the surfaces(s) as a mx3 ndarray where there are m surfaces contained</p>
+<p>Each row of this array corresponds to the same row in the <a class="reference internal" href="#giant.ray_tracer.shapes.surface.Surface32.facets" title="giant.ray_tracer.shapes.surface.Surface32.facets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">facets</span></code></a> array.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.ray_tracer.shapes.surface.Surface32.num_faces">
+<span class="sig-name descname"><span class="pre">num_faces</span></span><a class="headerlink" href="#giant.ray_tracer.shapes.surface.Surface32.num_faces" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of faces in this surface.</p>
+<p>This is the length of the first axis of the <a class="reference internal" href="#giant.ray_tracer.shapes.surface.Surface32.facets" title="giant.ray_tracer.shapes.surface.Surface32.facets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">facets</span></code></a> array.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.ray_tracer.shapes.surface.Surface32.stacked_vertices">
+<span class="sig-name descname"><span class="pre">stacked_vertices</span></span><a class="headerlink" href="#giant.ray_tracer.shapes.surface.Surface32.stacked_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>This property returns the vertices for the surfaces(s) as a mx3xp ndarray where each surface has p vertices and
+there are m surfaces overall.</p>
+<p>This returns self.vertices[self.facets].swapaxes(-1, -2).  Note that this will always produce a copy, so be
+cautious about using this property frequently</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.ray_tracer.shapes.surface.Surface32.vertices">
+<span class="sig-name descname"><span class="pre">vertices</span></span><a class="headerlink" href="#giant.ray_tracer.shapes.surface.Surface32.vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>This property returns the vertices for the surfaces as a nx3 ndarray where there are n vertices.</p>
+<p>The <a class="reference internal" href="#giant.ray_tracer.shapes.surface.Surface32.facets" title="giant.ray_tracer.shapes.surface.Surface32.facets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">facets</span></code></a> array indexes into the row axis of this array</p>
+</dd></dl>
+
+</dd></dl>
+
+<p class="rubric">Summary of Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.ray_tracer.shapes.surface.Surface32.compute_bounding_box.html#giant.ray_tracer.shapes.surface.Surface32.compute_bounding_box" title="giant.ray_tracer.shapes.surface.Surface32.compute_bounding_box"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_bounding_box</span></code></a></p></td>
+<td><p>This method computes the bounding box that contains all of the vertices.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.ray_tracer.shapes.surface.Surface32.compute_intersect.html#giant.ray_tracer.shapes.surface.Surface32.compute_intersect" title="giant.ray_tracer.shapes.surface.Surface32.compute_intersect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_intersect</span></code></a></p></td>
+<td><p>This method computes the intersects between a single ray and the surface describe by this object.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.ray_tracer.shapes.surface.Surface32.compute_limb_jacobian.html#giant.ray_tracer.shapes.surface.Surface32.compute_limb_jacobian" title="giant.ray_tracer.shapes.surface.Surface32.compute_limb_jacobian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_limb_jacobian</span></code></a></p></td>
+<td><p>This method computes the linear change in the limb location given a change in the relative position between the surface and the observer.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.ray_tracer.shapes.surface.Surface32.compute_reference_ellipsoid.html#giant.ray_tracer.shapes.surface.Surface32.compute_reference_ellipsoid" title="giant.ray_tracer.shapes.surface.Surface32.compute_reference_ellipsoid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_reference_ellipsoid</span></code></a></p></td>
+<td><p>This method computes the reference ellipsoid that best represents the vertices.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.ray_tracer.shapes.surface.Surface32.find_limbs.html#giant.ray_tracer.shapes.surface.Surface32.find_limbs" title="giant.ray_tracer.shapes.surface.Surface32.find_limbs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_limbs</span></code></a></p></td>
+<td><p>This method determines the limb points for a surface (visible edge of the surface) that would be visible for an observer located at <code class="docutils literal notranslate"><span class="pre">observer_position</span></code> looking toward <code class="docutils literal notranslate"><span class="pre">scan_center_dir</span></code> along the directions given by <code class="docutils literal notranslate"><span class="pre">scan_dirs</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.ray_tracer.shapes.surface.Surface32.merge.html#giant.ray_tracer.shapes.surface.Surface32.merge" title="giant.ray_tracer.shapes.surface.Surface32.merge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge</span></code></a></p></td>
+<td><p>This method is used to merge two surface collections together.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.ray_tracer.shapes.surface.Surface32.rotate.html#giant.ray_tracer.shapes.surface.Surface32.rotate" title="giant.ray_tracer.shapes.surface.Surface32.rotate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate</span></code></a></p></td>
+<td><p>This method rotates the surface into a new frame.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.ray_tracer.shapes.surface.Surface32.trace.html#giant.ray_tracer.shapes.surface.Surface32.trace" title="giant.ray_tracer.shapes.surface.Surface32.trace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace</span></code></a></p></td>
+<td><p>This python method provides an easy interface to trace a number of Rays through the surface.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.ray_tracer.shapes.surface.Surface32.translate.html#giant.ray_tracer.shapes.surface.Surface32.translate" title="giant.ray_tracer.shapes.surface.Surface32.translate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">translate</span></code></a></p></td>
+<td><p>This method translates the surface</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.ray_tracer.shapes.surface.RawSurface.translate.html" title="Previous document">RawSurface.translate</a>
+        </li>
+        <li>
+          <a href="giant.ray_tracer.shapes.surface.Surface32.compute_bounding_box.html" title="Next document">Surface32.compute_bounding_box</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../../_sources/ray_tracer/shapes/surface/giant.ray_tracer.shapes.surface.Surface32.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

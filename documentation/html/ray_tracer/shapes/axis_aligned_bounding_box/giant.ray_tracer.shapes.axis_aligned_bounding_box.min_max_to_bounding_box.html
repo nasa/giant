@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>min_max_to_bounding_box &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="next" title="ellipsoid" href="../giant.ray_tracer.shapes.ellipsoid.html" />
+    <link rel="prev" title="AxisAlignedBoundingBox.translate" href="giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox.translate.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../giant.html">API Reference</a><ul>
+  <li><a href="../../../giant.ray_tracer.html">ray_tracer</a><ul>
+  <li><a href="../../giant.ray_tracer.shapes.html">shapes</a><ul>
+  <li><a href="../giant.ray_tracer.shapes.axis_aligned_bounding_box.html">axis_aligned_bounding_box</a><ul>
+      <li>Previous: <a href="giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox.translate.html" title="previous chapter">AxisAlignedBoundingBox.translate</a></li>
+      <li>Next: <a href="../giant.ray_tracer.shapes.ellipsoid.html" title="next chapter">ellipsoid</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox.translate.html" title="Previous document">AxisAlignedBoundingBox.translate</a>
+        </li>
+        <li>
+          <a href="../giant.ray_tracer.shapes.ellipsoid.html" title="Next document">ellipsoid</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="min-max-to-bounding-box">
+<h1>min_max_to_bounding_box<a class="headerlink" href="#min-max-to-bounding-box" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.ray_tracer.shapes.axis_aligned_bounding_box.html#module-giant.ray_tracer.shapes.axis_aligned_bounding_box" title="giant.ray_tracer.shapes.axis_aligned_bounding_box"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.ray_tracer.shapes.axis_aligned_bounding_box</span></code></a>:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="giant.ray_tracer.shapes.axis_aligned_bounding_box.min_max_to_bounding_box">
+<span class="sig-prename descclassname"><span class="pre">giant.ray_tracer.shapes.axis_aligned_bounding_box.</span></span><span class="sig-name descname"><span class="pre">min_max_to_bounding_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_sides</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_sides</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giant.ray_tracer.shapes.axis_aligned_bounding_box.min_max_to_bounding_box" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function provides a python interface to the internal c function.</p>
+<p>It determines the vertices of the bounding box given the min/max values for each axis.</p>
+<p>The vertices are returned as an array of shape 3x6 where each column represents a new vertex. column 0 is the origin
+(min) of the AABB, column 1 is +x, column 2 is +y, column 3 is +z, column 4 is +xy, column 5 is +yz,
+column 6 is +xz, and column 7 is +xyz.</p>
+<p>These will be returned in the un-rotated frame of the bounding box.  To get the vertices in the current frame see
+<a class="reference internal" href="giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox.html#giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox.vertices" title="giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox.vertices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">AxisAlignedBoundingBox.vertices</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_sides</strong> (<em>np.ndarray</em>) – the minimum sides of the bounding box as a length 3 array</p></li>
+<li><p><strong>max_sides</strong> (<em>np.ndarray</em>) – the maximum sides of the bounding box as a length 3 array</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a 3x8 array of the vertices of the bounding box in the translated but not rotated frame.  The data type
+will always be double precision</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox.translate.html" title="Previous document">AxisAlignedBoundingBox.translate</a>
+        </li>
+        <li>
+          <a href="../giant.ray_tracer.shapes.ellipsoid.html" title="Next document">ellipsoid</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../../_sources/ray_tracer/shapes/axis_aligned_bounding_box/giant.ray_tracer.shapes.axis_aligned_bounding_box.min_max_to_bounding_box.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

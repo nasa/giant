@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>IterativeNonlinearLSTSQ.estimate &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="IterativeNonlinearLSTSQ.reset" href="giant.calibration.estimators.IterativeNonlinearLSTSQ.reset.html" />
+    <link rel="prev" title="IterativeNonlinearLSTSQ.compute_residuals" href="giant.calibration.estimators.IterativeNonlinearLSTSQ.compute_residuals.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.calibration.html">giant.calibration</a><ul>
+  <li><a href="../giant.calibration.estimators.html">giant.calibration.estimators</a><ul>
+  <li><a href="giant.calibration.estimators.IterativeNonlinearLSTSQ.html">giant.calibration.estimators.IterativeNonlinearLSTSQ</a><ul>
+      <li>Previous: <a href="giant.calibration.estimators.IterativeNonlinearLSTSQ.compute_residuals.html" title="previous chapter">IterativeNonlinearLSTSQ.compute_residuals</a></li>
+      <li>Next: <a href="giant.calibration.estimators.IterativeNonlinearLSTSQ.reset.html" title="next chapter">IterativeNonlinearLSTSQ.reset</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.calibration.estimators.IterativeNonlinearLSTSQ.compute_residuals.html" title="Previous document">IterativeNonlinearLSTSQ.compute_residuals</a>
+        </li>
+        <li>
+          <a href="giant.calibration.estimators.IterativeNonlinearLSTSQ.reset.html" title="Next document">IterativeNonlinearLSTSQ.reset</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="iterativenonlinearlstsq-estimate">
+<h1>IterativeNonlinearLSTSQ.estimate<a class="headerlink" href="#iterativenonlinearlstsq-estimate" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.calibration.estimators.html#module-giant.calibration.estimators" title="giant.calibration.estimators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.calibration.estimators</span></code></a>:</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.calibration.estimators.IterativeNonlinearLSTSQ.estimate">
+<span class="sig-prename descclassname"><span class="pre">IterativeNonlinearLSTSQ.</span></span><span class="sig-name descname"><span class="pre">estimate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/calibration/estimators.html#IterativeNonlinearLSTSQ.estimate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.calibration.estimators.IterativeNonlinearLSTSQ.estimate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimates an updated camera model that better transforms the camera frame directions into pixel locations to
+minimize the residuals between the observed and the predicted star locations.</p>
+<p>Upon successful completion, the updated camera model is stored in the <a class="reference internal" href="giant.calibration.estimators.IterativeNonlinearLSTSQ.html#giant.calibration.estimators.IterativeNonlinearLSTSQ.model" title="giant.calibration.estimators.IterativeNonlinearLSTSQ.model"><code class="xref py py-attr docutils literal notranslate"><span class="pre">model</span></code></a> attribute, the
+<a class="reference internal" href="giant.calibration.estimators.IterativeNonlinearLSTSQ.html#giant.calibration.estimators.IterativeNonlinearLSTSQ.successful" title="giant.calibration.estimators.IterativeNonlinearLSTSQ.successful"><code class="xref py py-attr docutils literal notranslate"><span class="pre">successful</span></code></a> will return <code class="docutils literal notranslate"><span class="pre">True</span></code>, and <a class="reference internal" href="giant.calibration.estimators.IterativeNonlinearLSTSQ.html#giant.calibration.estimators.IterativeNonlinearLSTSQ.postfit_residuals" title="giant.calibration.estimators.IterativeNonlinearLSTSQ.postfit_residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">postfit_residuals</span></code></a> and <a class="reference internal" href="giant.calibration.estimators.IterativeNonlinearLSTSQ.html#giant.calibration.estimators.IterativeNonlinearLSTSQ.postfit_covariance" title="giant.calibration.estimators.IterativeNonlinearLSTSQ.postfit_covariance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">postfit_covariance</span></code></a> should
+both be not None.  If estimation is unsuccessful, then <a class="reference internal" href="giant.calibration.estimators.IterativeNonlinearLSTSQ.html#giant.calibration.estimators.IterativeNonlinearLSTSQ.successful" title="giant.calibration.estimators.IterativeNonlinearLSTSQ.successful"><code class="xref py py-attr docutils literal notranslate"><span class="pre">successful</span></code></a> should be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<p>The estimation is done using nonlinear iterative least squares, as discussed in the class documentation
+(<a class="reference internal" href="giant.calibration.estimators.IterativeNonlinearLSTSQ.html#giant.calibration.estimators.IterativeNonlinearLSTSQ" title="giant.calibration.estimators.IterativeNonlinearLSTSQ"><code class="xref py py-class docutils literal notranslate"><span class="pre">IterativeNonlinearLSTSQ</span></code></a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if <a class="reference internal" href="giant.calibration.estimators.IterativeNonlinearLSTSQ.html#giant.calibration.estimators.IterativeNonlinearLSTSQ.model" title="giant.calibration.estimators.IterativeNonlinearLSTSQ.model"><code class="xref py py-attr docutils literal notranslate"><span class="pre">model</span></code></a>, <a class="reference internal" href="giant.calibration.estimators.IterativeNonlinearLSTSQ.html#giant.calibration.estimators.IterativeNonlinearLSTSQ.measurements" title="giant.calibration.estimators.IterativeNonlinearLSTSQ.measurements"><code class="xref py py-attr docutils literal notranslate"><span class="pre">measurements</span></code></a>, or <a class="reference internal" href="giant.calibration.estimators.IterativeNonlinearLSTSQ.html#giant.calibration.estimators.IterativeNonlinearLSTSQ.camera_frame_directions" title="giant.calibration.estimators.IterativeNonlinearLSTSQ.camera_frame_directions"><code class="xref py py-attr docutils literal notranslate"><span class="pre">camera_frame_directions</span></code></a> are <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.calibration.estimators.IterativeNonlinearLSTSQ.compute_residuals.html" title="Previous document">IterativeNonlinearLSTSQ.compute_residuals</a>
+        </li>
+        <li>
+          <a href="giant.calibration.estimators.IterativeNonlinearLSTSQ.reset.html" title="Next document">IterativeNonlinearLSTSQ.reset</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/calibration/estimators/giant.calibration.estimators.IterativeNonlinearLSTSQ.estimate.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

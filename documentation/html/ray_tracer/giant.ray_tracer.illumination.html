@@ -1,0 +1,239 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>illumination &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="AshikhminShirleyDiffuseIllumination" href="illumination/giant.ray_tracer.illumination.AshikhminShirleyDiffuseIllumination.html" />
+    <link rel="prev" title="giant.ray_tracer.scene.SPEED_OF_LIGHT" href="scene/giant.ray_tracer.scene.SPEED_OF_LIGHT.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.ray_tracer.html">ray_tracer</a><ul>
+      <li>Previous: <a href="scene/giant.ray_tracer.scene.SPEED_OF_LIGHT.html" title="previous chapter">giant.ray_tracer.scene.SPEED_OF_LIGHT</a></li>
+      <li>Next: <a href="illumination/giant.ray_tracer.illumination.AshikhminShirleyDiffuseIllumination.html" title="next chapter">AshikhminShirleyDiffuseIllumination</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="scene/giant.ray_tracer.scene.SPEED_OF_LIGHT.html" title="Previous document">giant.ray_tracer.scene.SPEED_OF_LIGHT</a>
+        </li>
+        <li>
+          <a href="illumination/giant.ray_tracer.illumination.AshikhminShirleyDiffuseIllumination.html" title="Next document">AshikhminShirleyDiffuseIllumination</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.ray_tracer.illumination">
+<span id="illumination"></span><h1>illumination<a class="headerlink" href="#module-giant.ray_tracer.illumination" title="Permalink to this headline">¶</a></h1>
+<p>This module defines the illumination functions that are used to convert ray traced geometry into intensity values when
+rendering.</p>
+<p>In GIANT, an illumination model is typically a callable that converts an array of ray traced geometry with dtype
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">ILLUM_DTYPE</span></code> (typically generated by <a class="reference internal" href="scene/giant.ray_tracer.scene.Scene.get_illumination_inputs.html#giant.ray_tracer.scene.Scene.get_illumination_inputs" title="giant.ray_tracer.scene.Scene.get_illumination_inputs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Scene.get_illumination_inputs()</span></code></a>) into an array of floats giving the
+intensity that would be expected to be returned along that ray.  You can then add these values to a 2D image to create
+a rendered image. Note that this does not take into account camera electronics or actual photon counts or anything
+like that, since this is typically not important in OpNav.  You could conceivably roll your own solution using the
+provided components to do something like that if you so desired.</p>
+<p>The typical workflow goes as follows:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.ray_tracer.illumination</span> <span class="kn">import</span> <span class="n">McEwenIllumination</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.ray_tracer.scene</span> <span class="kn">import</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">SceneObject</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.ray_tracer.shapes</span> <span class="kn">import</span> <span class="n">Ellipsoid</span><span class="p">,</span> <span class="n">Point</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.ray_tracer.rays</span> <span class="kn">import</span> <span class="n">compute_rays</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">PinholeModel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># define the camera model</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">PinholeModel</span><span class="p">(</span><span class="n">focal_length</span><span class="o">=</span><span class="mf">7.2</span><span class="p">,</span> <span class="n">kx</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="mf">2.2e-3</span><span class="p">,</span> <span class="n">ky</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="mf">2.2e-3</span><span class="p">,</span> <span class="n">n_rows</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">px</span><span class="o">=</span><span class="mf">511.5</span><span class="p">,</span> <span class="n">py</span><span class="o">=</span><span class="mf">511.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># set up the target that we want to render</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">SceneObject</span><span class="p">(</span><span class="n">Ellipsoid</span><span class="p">(</span><span class="n">principal_axes</span><span class="o">=</span><span class="p">[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># move the target along the camera frame z axis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">target</span><span class="o">.</span><span class="n">translate</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># create the sun</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sun</span> <span class="o">=</span> <span class="n">SceneObject</span><span class="p">(</span><span class="n">Point</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># put the sun behind and to the right of the camera</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sun</span><span class="o">.</span><span class="n">translate</span><span class="p">([</span><span class="mi">800</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">400</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># create the scene</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scene</span> <span class="o">=</span> <span class="n">Scene</span><span class="p">(</span><span class="n">target_objs</span><span class="o">=</span><span class="p">[</span><span class="n">target</span><span class="p">],</span> <span class="n">light_obj</span><span class="o">=</span><span class="n">sun</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># get the rays to trace through the scene  (for the entire image)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rays</span><span class="p">,</span> <span class="n">pix</span> <span class="o">=</span> <span class="n">compute_rays</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">n_rows</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">n_cols</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># get the illumination inputs using the scene and the rays</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">illum_inputs</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">get_illumination_inputs</span><span class="p">(</span><span class="n">rays</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># use the illumination function to convert the illumination inputs into intensity values</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">intensity</span> <span class="o">=</span> <span class="n">McEwenIllumination</span><span class="p">()(</span><span class="n">illum_inputs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># create the image array</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">model</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">n_cols</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># set up the subscripts where we need to add the intensity values to the image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">subs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">pix</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># add the intensity values to the image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="n">subs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">subs</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">intensity</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># show it</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The most commonly used illumination function for OpNav purposes is the <a class="reference internal" href="illumination/giant.ray_tracer.illumination.McEwenIllumination.html#giant.ray_tracer.illumination.McEwenIllumination" title="giant.ray_tracer.illumination.McEwenIllumination"><code class="xref py py-class docutils literal notranslate"><span class="pre">McEwenIllumination</span></code></a>, which is a linear
+weighting of the Lommel-Seeliger and Lambertian functions.  All of the illumination models in this module are classes,
+which when initialized create callables that are then used for the conversion.  A couple also provide other methods, as
+discussed, which may be useful in some specific circumstances.</p>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="illumination/giant.ray_tracer.illumination.AshikhminShirleyDiffuseIllumination.html#giant.ray_tracer.illumination.AshikhminShirleyDiffuseIllumination" title="giant.ray_tracer.illumination.AshikhminShirleyDiffuseIllumination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AshikhminShirleyDiffuseIllumination</span></code></a></p></td>
+<td><p>This illumination model computes the intensity values according to the Ashikhmin Shirley diffuse law</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="illumination/giant.ray_tracer.illumination.GaskellIllumination.html#giant.ray_tracer.illumination.GaskellIllumination" title="giant.ray_tracer.illumination.GaskellIllumination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GaskellIllumination</span></code></a></p></td>
+<td><p>This illumination model computes the intensity values as the weighted sum between the Lommel-Seeliger and Lambertian models, weighted using the phase angle.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="illumination/giant.ray_tracer.illumination.IlluminationModel.html#giant.ray_tracer.illumination.IlluminationModel" title="giant.ray_tracer.illumination.IlluminationModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IlluminationModel</span></code></a></p></td>
+<td><p>This abstract base class specifies the minimum interface expected of an illumination model in GIANT.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="illumination/giant.ray_tracer.illumination.LambertianIllumination.html#giant.ray_tracer.illumination.LambertianIllumination" title="giant.ray_tracer.illumination.LambertianIllumination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LambertianIllumination</span></code></a></p></td>
+<td><p>This basic illumination model computes the intensity values as simply the cosine of the incidence angle times the albedo.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="illumination/giant.ray_tracer.illumination.LommelSeeligerIllumination.html#giant.ray_tracer.illumination.LommelSeeligerIllumination" title="giant.ray_tracer.illumination.LommelSeeligerIllumination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LommelSeeligerIllumination</span></code></a></p></td>
+<td><p>This basic illumination model computes the intensity values as simply the cosine of the incidence angle divided by the cosine of the incidence angle plus the exidence angle times the albedo.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="illumination/giant.ray_tracer.illumination.McEwenIllumination.html#giant.ray_tracer.illumination.McEwenIllumination" title="giant.ray_tracer.illumination.McEwenIllumination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">McEwenIllumination</span></code></a></p></td>
+<td><p>This illumination model computes the intensity values as the weighted sum between the Lommel-Seeliger and Lambertian models, weighted using the phase angle.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Constants</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="illumination/giant.ray_tracer.illumination.ILLUM_DTYPE.html#giant.ray_tracer.illumination.ILLUM_DTYPE" title="giant.ray_tracer.illumination.ILLUM_DTYPE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ILLUM_DTYPE</span></code></a></p></td>
+<td><p>The numpy datatype expected by the illumination functions in this module as input for conversion to intensity values.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="scene/giant.ray_tracer.scene.SPEED_OF_LIGHT.html" title="Previous document">giant.ray_tracer.scene.SPEED_OF_LIGHT</a>
+        </li>
+        <li>
+          <a href="illumination/giant.ray_tracer.illumination.AshikhminShirleyDiffuseIllumination.html" title="Next document">AshikhminShirleyDiffuseIllumination</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/ray_tracer/giant.ray_tracer.illumination.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

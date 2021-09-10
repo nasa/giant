@@ -1,0 +1,180 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>KernelBasedApply1DPSF &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="KernelBasedApply1DPSF.apply_1d_sized" href="giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.apply_1d_sized.html" />
+    <link rel="prev" title="KernelBasedCallPSF.__call__" href="giant.point_spread_functions.psf_meta.KernelBasedCallPSF.__call__.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.point_spread_functions.html">giant.point_spread_functions</a><ul>
+  <li><a href="../giant.point_spread_functions.psf_meta.html">giant.point_spread_functions.psf_meta</a><ul>
+      <li>Previous: <a href="giant.point_spread_functions.psf_meta.KernelBasedCallPSF.__call__.html" title="previous chapter">KernelBasedCallPSF.__call__</a></li>
+      <li>Next: <a href="giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.apply_1d_sized.html" title="next chapter">KernelBasedApply1DPSF.apply_1d_sized</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.point_spread_functions.psf_meta.KernelBasedCallPSF.__call__.html" title="Previous document">KernelBasedCallPSF.__call__</a>
+        </li>
+        <li>
+          <a href="giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.apply_1d_sized.html" title="Next document">KernelBasedApply1DPSF.apply_1d_sized</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="kernelbasedapply1dpsf">
+<h1>KernelBasedApply1DPSF<a class="headerlink" href="#kernelbasedapply1dpsf" title="Permalink to this headline">¶</a></h1>
+<p>In addition to the methods and attributes from <a class="reference internal" href="giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="giant.point_spread_functions.psf_meta.PointSpreadFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PointSpreadFunction</span></code></a>, <a class="reference internal" href="#giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF" title="giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF"><code class="xref py py-class docutils literal notranslate"><span class="pre">KernelBasedApply1DPSF</span></code></a> implements
+the following:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.point_spread_functions.psf_meta.</span></span><span class="sig-name descname"><span class="pre">KernelBasedApply1DPSF</span></span><a class="reference internal" href="../../_modules/giant/point_spread_functions/psf_meta.html#KernelBasedApply1DPSF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="giant.point_spread_functions.psf_meta.PointSpreadFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">giant.point_spread_functions.psf_meta.PointSpreadFunction</span></code></a></p>
+<p>This ABC adds concrete common functionality for applying the initialized PSF to 1D scan lines to
+<a class="reference internal" href="giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="giant.point_spread_functions.psf_meta.PointSpreadFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PointSpreadFunction</span></code></a>.</p>
+<p>The implementation that is shared by most PSFs for 1D scan lines is stored in <a class="reference internal" href="giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.apply_1d_sized.html#giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.apply_1d_sized" title="giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.apply_1d_sized"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apply_1d_sized()</span></code></a>.  This method,
+which isn’t part of the actual interface GIANT expects, is used for applying the specified PSF to 1D scan lines
+if the size of the required kernel is known.  Therefore, when implementing method:<cite>apply_1d</cite>, all you need to do is
+calculate the required size of the 1D kernel and then dispatch to <a class="reference internal" href="giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.apply_1d_sized.html#giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.apply_1d_sized" title="giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.apply_1d_sized"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apply_1d_sized()</span></code></a>.  An example of this can
+be seen in <a class="reference internal" href="../../giant.point_spread_functions.html#giant.point_spread_functions.Gaussian" title="giant.point_spread_functions.Gaussian"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gaussian</span></code></a>.</p>
+</dd></dl>
+
+<p class="rubric">Summary of Added/Modified Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.apply_1d_sized.html#giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.apply_1d_sized" title="giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.apply_1d_sized"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_1d_sized</span></code></a></p></td>
+<td><p>Applies the defined PSF using the stored parameters to the 1D image scans provided with a given kernel size.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.point_spread_functions.psf_meta.KernelBasedCallPSF.__call__.html" title="Previous document">KernelBasedCallPSF.__call__</a>
+        </li>
+        <li>
+          <a href="giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.apply_1d_sized.html" title="Next document">KernelBasedApply1DPSF.apply_1d_sized</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

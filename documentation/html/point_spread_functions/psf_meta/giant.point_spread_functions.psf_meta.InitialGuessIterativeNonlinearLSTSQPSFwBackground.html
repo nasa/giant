@@ -1,0 +1,214 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>InitialGuessIterativeNonlinearLSTSQPSFwBackground &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq" href="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq.html" />
+    <link rel="prev" title="InitialGuessIterativeNonlinearLSTSQPSF.fit_lstsq" href="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSF.fit_lstsq.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.point_spread_functions.html">giant.point_spread_functions</a><ul>
+  <li><a href="../giant.point_spread_functions.psf_meta.html">giant.point_spread_functions.psf_meta</a><ul>
+      <li>Previous: <a href="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSF.fit_lstsq.html" title="previous chapter">InitialGuessIterativeNonlinearLSTSQPSF.fit_lstsq</a></li>
+      <li>Next: <a href="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq.html" title="next chapter">InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSF.fit_lstsq.html" title="Previous document">InitialGuessIterativeNonlinearLSTSQPSF.fit_lstsq</a>
+        </li>
+        <li>
+          <a href="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq.html" title="Next document">InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="initialguessiterativenonlinearlstsqpsfwbackground">
+<h1>InitialGuessIterativeNonlinearLSTSQPSFwBackground<a class="headerlink" href="#initialguessiterativenonlinearlstsqpsfwbackground" title="Permalink to this headline">¶</a></h1>
+<p>In addition to the methods and attributes from <a class="reference internal" href="giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="giant.point_spread_functions.psf_meta.PointSpreadFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PointSpreadFunction</span></code></a> and
+<a class="reference internal" href="giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground.html#giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground" title="giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground"><code class="xref py py-class docutils literal notranslate"><span class="pre">IterativeNonlinearLSTSQwBackground</span></code></a>, <a class="reference internal" href="#giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground" title="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground"><code class="xref py py-class docutils literal notranslate"><span class="pre">InitialGuessIterativeNonlinearLSTSQPSFwBackground</span></code></a> implements
+the following.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.point_spread_functions.psf_meta.</span></span><span class="sig-name descname"><span class="pre">InitialGuessIterativeNonlinearLSTSQPSFwBackground</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bg_b_coef</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bg_c_coef</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bg_d_coef</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/point_spread_functions/psf_meta.html#InitialGuessIterativeNonlinearLSTSQPSFwBackground"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground.html#giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground" title="giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground"><code class="xref py py-class docutils literal notranslate"><span class="pre">giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground</span></code></a></p>
+<p>This class provides a fit class method which generates the initial guess from a subclass and then converges to a
+better solution using iterative Nonlinear LSTSQ including a background gradient.</p>
+<p>This class is designed to work where you have a non-iterative but biased class for estimating the defined PSF (as
+is done with Gaussian PSFs by using a logarithmic transformation).  If that is the case, and the unbiased estimator
+class uses the same attributes and the biased estimator class, then you can use this as is to add the ability to get
+the biased estimate and then correct it along with the background gradient.  Otherwise you will need to do things
+yourself and shouldn’t bother with this class.</p>
+<p>To use this class, override the <a class="reference internal" href="giant.point_spread_functions.psf_meta.PointSpreadFunction.fit.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.fit" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a> method, and then call
+<code class="docutils literal notranslate"><span class="pre">super().fit_lstsq(x,</span> <span class="pre">y,</span> <span class="pre">z)</span></code></p>
+<p>This also adds 2 instance attributes <a class="reference internal" href="#giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground._residuals" title="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground._residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">_residuals</span></code></a> and <a class="reference internal" href="#giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground._covariance" title="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground._covariance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">_covariance</span></code></a> which store the covariance and
+residuals of the fit if requested.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bg_b_coef</strong> (<em>float</em>) – The x slope of the background gradient</p></li>
+<li><p><strong>bg_c_coef</strong> (<em>float</em>) – They y slope of the background gradient</p></li>
+<li><p><strong>bg_d_coef</strong> (<em>float</em>) – The constant offset of the background gradient</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground._covariance">
+<span class="sig-name descname"><span class="pre">_covariance</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground._covariance" title="Permalink to this definition">¶</a></dt>
+<dd><p>The covariance of the fit as a nxn array (for n state elements) or None, depending on if
+<a class="reference internal" href="giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_residuals</span></code></a> is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground._residuals">
+<span class="sig-name descname"><span class="pre">_residuals</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground._residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>The residuals of the fit as a length m array (for m observations) or None, depending on if
+<a class="reference internal" href="giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_residuals</span></code></a> is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p class="rubric">Summary of Added/Modified Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq.html#giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq" title="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_lstsq</span></code></a></p></td>
+<td><p>This fits a PSF to a surface using iterative non-linear least squares estimation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.compute_jacobian_all.html#giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.compute_jacobian_all" title="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.compute_jacobian_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_jacobian_all</span></code></a></p></td>
+<td><p>This method computes the Jacobian of the PSF with respect to a change in the state.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.evaluate.html#giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.evaluate" title="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.evaluate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code></a></p></td>
+<td><p>This method evaluates the PSF at the given x and y.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSF.fit_lstsq.html" title="Previous document">InitialGuessIterativeNonlinearLSTSQPSF.fit_lstsq</a>
+        </li>
+        <li>
+          <a href="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq.html" title="Next document">InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

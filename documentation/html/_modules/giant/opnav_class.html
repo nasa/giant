@@ -1,0 +1,333 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.opnav_class &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.opnav_class</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
+<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The opnav_class module provides an OpNav object that serves as the foundation for other high-level user</span>
+<span class="sd">interface objects throughout GIANT.</span>
+
+<span class="sd">Essentially, the OpNav class serves as a container for both a :class:`.Camera` and</span>
+<span class="sd">:class:`.ImageProcessing` instance, and then provides aliases (in the way of properties) to be able to access a few</span>
+<span class="sd">of the attributes of these instances directly from the OpNav class instance.</span>
+
+<span class="sd">Example</span>
+<span class="sd">_______</span>
+
+<span class="sd">In general, the OpNav class is not used directly in any setups.  Instead, it is used as the super class for other high</span>
+<span class="sd">level user interface classes, such as :class:`.StellarOpNav` and :class:`.RelativeOpNav`.  For instance, say we want to</span>
+<span class="sd">create a new high-level interface class called MyAwesomeNewOpNav.  If we subclass the OpNav class when creating this</span>
+<span class="sd">new class then we automatically get a ``camera`` attribute, a ``image_processing`` attribute, and a few aliases to the</span>
+<span class="sd">attributes of the camera and image processing instances</span>
+
+<span class="sd">    &gt;&gt;&gt; from giant.opnav_class import OpNav</span>
+<span class="sd">    &gt;&gt;&gt; from giant.camera import Camera</span>
+<span class="sd">    &gt;&gt;&gt; class MyAwesomeNewOpNav(OpNav):</span>
+<span class="sd">    ...     def __init__(self, camera, image_processing, image_processing_kwargs):</span>
+<span class="sd">    ...         super().__init__(camera, image_processing=image_processing,</span>
+<span class="sd">    ...                          image_processing_kwargs=image_processing_kwargs)</span>
+<span class="sd">    ...         self.new_attribute = 2</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; inst = MyAwesomeNewOpNav(Camera())</span>
+<span class="sd">    &gt;&gt;&gt; hasattr(inst, &#39;camera&#39;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; hasattr(inst, &#39;image_processing&#39;)</span>
+<span class="sd">    True</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">giant._typing</span> <span class="kn">import</span> <span class="n">ARRAY_LIKE_2D</span><span class="p">,</span> <span class="n">PATH</span>
+<span class="kn">from</span> <span class="nn">giant.image_processing</span> <span class="kn">import</span> <span class="n">ImageProcessing</span>
+<span class="kn">from</span> <span class="nn">giant.camera</span> <span class="kn">import</span> <span class="n">Camera</span>
+<span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">CameraModel</span>
+
+
+<div class="viewcode-block" id="OpNav"><a class="viewcode-back" href="../../opnav_class/giant.opnav_class.OpNav.html#giant.opnav_class.OpNav">[docs]</a><span class="k">class</span> <span class="nc">OpNav</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This serves as a container for :class:`.Camera` and :class:`.ImageProcessing` instances and provides aliases to</span>
+<span class="sd">    quickly access their attributes from an instance of this class.</span>
+
+<span class="sd">    This class is rarely used as is, and instead is used as a super class for new OpNav user interfaces.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span>
+                 <span class="n">image_processing</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ImageProcessing</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">image_processing_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param camera: An instance of :class:`.Camera` that is to have OpNav performed on it</span>
+<span class="sd">        :param image_processing: An already initialized instance of :class:`.ImageProcessing` (or a subclass).  If not</span>
+<span class="sd">                                 ``None`` then ``image_processing_kwargs`` are ignored.</span>
+<span class="sd">        :param image_processing_kwargs: The keyword arguments to pass to the :class:`.ImageProcessing` class</span>
+<span class="sd">                                        constructor.  These are ignored if argument ``image_processing`` is not ``None``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_camera</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">camera</span> <span class="o">=</span> <span class="n">camera</span>
+
+        <span class="k">if</span> <span class="n">image_processing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">image_processing_kwargs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_image_processing</span> <span class="o">=</span> <span class="n">ImageProcessing</span><span class="p">(</span><span class="o">**</span><span class="n">image_processing_kwargs</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_image_processing</span> <span class="o">=</span> <span class="n">ImageProcessing</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_image_processing</span> <span class="o">=</span> <span class="n">image_processing</span>
+
+        <span class="c1"># store the initial image processing key_word_arguments</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_image_processing_kwargs</span> <span class="o">=</span> <span class="n">image_processing_kwargs</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+
+        <span class="n">ip_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_processing</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
+                <span class="n">ip_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span>
+                <span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_camera</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;, image_processing_kwargs=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ip_dict</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">ip_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_processing</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Callable</span><span class="p">):</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">value</span><span class="o">.</span><span class="vm">__name__</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
+                <span class="n">ip_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span>
+                <span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_camera</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;, image_processing_kwargs=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ip_dict</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
+
+    <span class="c1"># ____________________________________________Camera Properties____________________________________________</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">camera</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Camera</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The camera instance to perform OpNav on.</span>
+
+<span class="sd">        This should be an instance of the :class:`.Camera` class or one of its subclasses.</span>
+
+<span class="sd">        See the :class:`.Camera` class documentation for more details</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_camera</span>
+
+    <span class="nd">@camera</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">camera</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">Camera</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_camera</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;The camera should probably be an object that subclasses the Camera class</span><span class="se">\n</span><span class="s2">&quot;</span>
+                          <span class="s2">&quot;We&#39;ll assume you know what you&#39;re doing for now but &quot;</span>
+                          <span class="s2">&quot;see the Camera documentation for details&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_camera</span> <span class="o">=</span> <span class="n">val</span>
+
+<div class="viewcode-block" id="OpNav.add_images"><a class="viewcode-back" href="../../opnav_class/giant.opnav_class.OpNav.add_images.html#giant.opnav_class.OpNav.add_images">[docs]</a>    <span class="k">def</span> <span class="nf">add_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">PATH</span><span class="p">,</span> <span class="n">ARRAY_LIKE_2D</span><span class="p">]],</span> <span class="n">PATH</span><span class="p">,</span> <span class="n">ARRAY_LIKE_2D</span><span class="p">],</span>
+                   <span class="n">parse_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">preprocessor</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method adds new images to be processed.</span>
+
+<span class="sd">        Generally this is an alias to the :meth:`.Camera.add_images` method.  In some implementations, however, this</span>
+<span class="sd">        method adds some functionality to the original method as well. (such as in the :class:`.StellarOpNav` class)</span>
+
+<span class="sd">        See :meth:`.Camera.add_images` for a description of the valid input for `data`</span>
+
+<span class="sd">        :param data:  The image data to be stored in the :attr:`.images` list</span>
+<span class="sd">        :param parse_data:  A flag to specify whether to attempt to parse the metadata automatically for the images</span>
+<span class="sd">        :param preprocessor: A flag to specify whether to run the preprocessor after loading an image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">add_images</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">parse_data</span><span class="o">=</span><span class="n">parse_data</span><span class="p">,</span> <span class="n">preprocessor</span><span class="o">=</span><span class="n">preprocessor</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CameraModel</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This alias returns the current camera model from the camera attribute.</span>
+
+<span class="sd">        It is provided for convenience since the camera model is used frequently.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_camera</span><span class="o">.</span><span class="n">model</span>
+
+    <span class="nd">@model</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">CameraModel</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_camera</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="c1"># ____________________________________________ImageProcessing Aliases____________________________________________</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">image_processing</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageProcessing</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The ImageProcessing instance to use when doing image processing on the images</span>
+
+<span class="sd">        This must be an instance of the :class:`.ImageProcessing` class.</span>
+
+<span class="sd">        See the :class:`.ImageProcessing` class documentation for more details</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_processing</span>
+
+    <span class="nd">@image_processing</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">image_processing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">ImageProcessing</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_image_processing</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;The image_processing object should probably subclass the ImageProcessing class</span><span class="se">\n</span><span class="s2">&quot;</span>
+                          <span class="s2">&quot;We&#39;ll assume you know what you&#39;re doing for now, but &quot;</span>
+                          <span class="s2">&quot;see the ImageProcessing documentation for details&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_image_processing</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="c1"># ____________________________________________METHODS____________________________________________</span>
+
+<div class="viewcode-block" id="OpNav.reset_image_processing"><a class="viewcode-back" href="../../opnav_class/giant.opnav_class.OpNav.reset_image_processing.html#giant.opnav_class.OpNav.reset_image_processing">[docs]</a>    <span class="k">def</span> <span class="nf">reset_image_processing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method replaces the existing image processing instance with a new instance</span>
+<span class="sd">        using the initial ``image_processing_kwargs`` argument passed to the constructor.</span>
+
+<span class="sd">        A new instance of the object is created, therefore there is no backwards reference whatsoever to the state</span>
+<span class="sd">        before a call to this method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_image_processing_kwargs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_image_processing</span> <span class="o">=</span> <span class="n">ImageProcessing</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_image_processing_kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_image_processing</span> <span class="o">=</span> <span class="n">ImageProcessing</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OpNav.update_image_processing"><a class="viewcode-back" href="../../opnav_class/giant.opnav_class.OpNav.update_image_processing.html#giant.opnav_class.OpNav.update_image_processing">[docs]</a>    <span class="k">def</span> <span class="nf">update_image_processing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_processing_update</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method updates the attributes of the :attr:`image_processing` instance.</span>
+
+<span class="sd">        See the :class:`.ImageProcessing` class for accepted attribute values.</span>
+
+<span class="sd">        If a supplied attribute is not found in the :attr:`image_processing` attribute then this will print a warning</span>
+<span class="sd">        and ignore the attribute. Any attributes that are not supplied are left alone.</span>
+
+<span class="sd">        :param image_processing_update: A dictionary of attribute-&gt;value pairs to update the attributes of the</span>
+<span class="sd">                                        :attr:`image_processing` attribute with.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">image_processing_update</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">image_processing_update</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_image_processing</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_image_processing</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;The attribute </span><span class="si">{0}</span><span class="s2"> was not found.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                  <span class="s2">&quot;Cannot update ImageProcessing instance&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span></div></div>
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

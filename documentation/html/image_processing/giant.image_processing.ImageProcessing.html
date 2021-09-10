@@ -1,0 +1,427 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>ImageProcessing &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="ImageProcessing.flatten_image_and_get_noise_level" href="giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level.html" />
+    <link rel="prev" title="giant.image_processing" href="../giant.image_processing.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.image_processing.html">giant.image_processing</a><ul>
+      <li>Previous: <a href="../giant.image_processing.html" title="previous chapter">giant.image_processing</a></li>
+      <li>Next: <a href="giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level.html" title="next chapter">ImageProcessing.flatten_image_and_get_noise_level</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.image_processing.html" title="Previous document">giant.image_processing</a>
+        </li>
+        <li>
+          <a href="giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level.html" title="Next document">ImageProcessing.flatten_image_and_get_noise_level</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="imageprocessing">
+<h1>ImageProcessing<a class="headerlink" href="#imageprocessing" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.image_processing.html#module-giant.image_processing" title="giant.image_processing"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.image_processing</span></code></a>:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.image_processing.</span></span><span class="sig-name descname"><span class="pre">ImageProcessing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">centroiding=&lt;class</span> <span class="pre">'giant.point_spread_functions.gaussians.Gaussian'&gt;</span></em>, <em class="sig-param"><span class="pre">image_denoising=&lt;built-in</span> <span class="pre">function</span> <span class="pre">GaussianBlur&gt;</span></em>, <em class="sig-param"><span class="pre">denoising_args=((3</span></em>, <em class="sig-param"><span class="pre">3)</span></em>, <em class="sig-param"><span class="pre">0)</span></em>, <em class="sig-param"><span class="pre">denoising_kwargs=None</span></em>, <em class="sig-param"><span class="pre">denoise_flag=False</span></em>, <em class="sig-param"><span class="pre">pae_threshold=40</span></em>, <em class="sig-param"><span class="pre">pae_order=2</span></em>, <em class="sig-param"><span class="pre">centroid_size=1</span></em>, <em class="sig-param"><span class="pre">correlator=&lt;function</span> <span class="pre">cv2_correlator_2d&gt;</span></em>, <em class="sig-param"><span class="pre">correlator_kwargs=None</span></em>, <em class="sig-param"><span class="pre">poi_min_size=2</span></em>, <em class="sig-param"><span class="pre">poi_max_size=50</span></em>, <em class="sig-param"><span class="pre">poi_threshold=8</span></em>, <em class="sig-param"><span class="pre">reject_saturation=True</span></em>, <em class="sig-param"><span class="pre">subpixel_method=SubpixelEdgeMethods.PAE</span></em>, <em class="sig-param"><span class="pre">save_psf=False</span></em>, <em class="sig-param"><span class="pre">return_stats=False</span></em>, <em class="sig-param"><span class="pre">zernike_edge_width=0.5</span></em>, <em class="sig-param"><span class="pre">otsu_levels=2</span></em>, <em class="sig-param"><span class="pre">minimum_segment_area=10</span></em>, <em class="sig-param"><span class="pre">minimum_segment_dn=200</span></em>, <em class="sig-param"><span class="pre">image_flattening_noise_approximation=ImageFlatteningNoiseApprox.GLOBAL</span></em>, <em class="sig-param"><span class="pre">flattening_kernel_size=7</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/giant/image_processing.html#ImageProcessing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.image_processing.ImageProcessing" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class is a collection of various image processing techniques used throughout GIANT.</p>
+<p>All image processing techniques for the GIANT algorithms are contained in this class.  This includes
+centroiding algorithms for stars and unresolved bodies, algorithms for extracting bright spots from an image
+(particularly useful in the detection of stars and unresolved bodies), denoising algorithms,
+and edge detection algorithms.  The class essentially works as a container for the various options required for
+each technique.  It also makes it easier to pass data between different functions that may be required for
+individual algorithms.</p>
+<p>In general, users will not directly interact with this class, as it is used internally by many other GIANT
+routines.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>centroiding</strong> (<a class="reference internal" href="../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="giant.point_spread_functions.psf_meta.PointSpreadFunction"><em>giant.point_spread_functions.psf_meta.PointSpreadFunction</em></a>) – A callable object which takes 3 positional arguments and estimates the centers of a ROI</p></li>
+<li><p><strong>image_denoising</strong> (<em>Callable</em>) – A callable object with takes an image as the first positional argument and returns the
+denoised image</p></li>
+<li><p><strong>denoising_args</strong> (<em>Optional</em><em>[</em><em>Tuple</em><em>]</em>) – The rest of the positional arguments for the image_denoising callable</p></li>
+<li><p><strong>denoising_kwargs</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – the keyword arguments for the image_denoising callable as a dictionary</p></li>
+<li><p><strong>denoise_flag</strong> (<em>bool</em>) – A flag to indicate whether to denoise the image before applying the other techniques</p></li>
+<li><p><strong>pae_threshold</strong> (<em>Union</em><em>[</em><em>float</em><em>, </em><em>int</em><em>]</em>) – The threshold for identifying pixel level edges in the PAE method</p></li>
+<li><p><strong>pae_order</strong> (<em>int</em>) – The order of fit for the PAE refinement (must be 1 or 2)</p></li>
+<li><p><strong>centroid_size</strong> (<em>int</em>) – half of the area passed to the centroiding function for refining the poi positions</p></li>
+<li><p><strong>correlator</strong> (<em>Callable</em>) – The cross correlation function to use</p></li>
+<li><p><strong>correlator_kwargs</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – Key word arguments to pass to the correlator function</p></li>
+<li><p><strong>poi_min_size</strong> (<em>int</em>) – The minimum size for blobs to be considered points of interest</p></li>
+<li><p><strong>poi_max_size</strong> (<em>int</em>) – The maximum size for blobs to be considered points of interest</p></li>
+<li><p><strong>poi_threshold</strong> (<em>Union</em><em>[</em><em>float</em><em>, </em><em>int</em><em>]</em>) – The threshold for coarsely identifying potential points of interest</p></li>
+<li><p><strong>reject_saturation</strong> (<em>bool</em>) – A flag indicating whether to reject blobs that contain saturated pixels when
+performing poi identification.  Note that the saturation dn value must be stored in
+a <cite>saturation</cite> attribute for each image object being considered</p></li>
+<li><p><strong>subpixel_method</strong> (<a class="reference internal" href="giant.image_processing.SubpixelEdgeMethods.html#giant.image_processing.SubpixelEdgeMethods" title="giant.image_processing.SubpixelEdgeMethods"><em>giant.image_processing.SubpixelEdgeMethods</em></a>) – An enumeration specifying which method to use for identifying subpixel edges</p></li>
+<li><p><strong>save_psf</strong> (<em>bool</em>) – A flag specifying whether to save the fit psf in the centroiding methods</p></li>
+<li><p><strong>return_stats</strong> (<em>bool</em>) – A flag specifying whether to return stats about each point of interest in the locate_poi
+methods</p></li>
+<li><p><strong>zernike_edge_width</strong> (<em>float</em>) – The expected width of the edges for the zernike ramp edge method.</p></li>
+<li><p><strong>otsu_levels</strong> (<em>int</em>) – The number of levels to attempt to split the histogram by for Otsu thresholding.</p></li>
+<li><p><strong>minimum_segment_dn</strong> (<em>numbers.Real</em>) – The minimum average DN for a segment to be considered foreground instead of
+background</p></li>
+<li><p><strong>minimum_segment_area</strong> (<em>int</em>) – The minimum area for a segment to be considered foreground instead of
+noise in pixels squared.</p></li>
+<li><p><strong>image_flattening_noise_approximation</strong> (<a class="reference internal" href="giant.image_processing.ImageFlatteningNoiseApprox.html#giant.image_processing.ImageFlatteningNoiseApprox" title="giant.image_processing.ImageFlatteningNoiseApprox"><em>giant.image_processing.ImageFlatteningNoiseApprox</em></a>) – A</p></li>
+<li><p><strong>flattening_kernel_size</strong> (<em>int</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.centroiding">
+<span class="sig-name descname"><span class="pre">centroiding</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="giant.point_spread_functions.psf_meta.PointSpreadFunction"><span class="pre">giant.point_spread_functions.psf_meta.PointSpreadFunction</span></a></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.centroiding" title="Permalink to this definition">¶</a></dt>
+<dd><p>The PSF object that estimates the center of a region of interest.</p>
+<p>This should be of the form:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">res</span> <span class="o">=</span> <span class="n">centroiding</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">illums</span><span class="p">)</span>
+<span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">centroid</span>
+</pre></div>
+</div>
+<p>where x0, y0 is the subpixel center of the blob, […] are optional outputs containing information about the 
+fit, x, y are arrays of the column and row locations corresponding to illums, and illums are the illumination 
+values at x, y.</p>
+<p>There are a few built in options for centroiding in the <a class="reference internal" href="../giant.point_spread_functions.html#module-giant.point_spread_functions" title="giant.point_spread_functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">point_spread_functions</span></code></a> package or you can build
+your own.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.save_psf">
+<span class="sig-name descname"><span class="pre">save_psf</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.save_psf" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean flag specifying whether to save the point spread function fit.</p>
+<p>If this parameter is set to <code class="docutils literal notranslate"><span class="pre">true</span></code> then resulting PSF object from the <a class="reference internal" href="#giant.image_processing.ImageProcessing.centroiding" title="giant.image_processing.ImageProcessing.centroiding"><code class="xref py py-attr docutils literal notranslate"><span class="pre">centroiding</span></code></a> attribute is saved
+in addition to just the centroid.  To ensure that the fit statistics are also saved for each PSF
+ensure the <a class="reference internal" href="../giant.point_spread_functions.html#giant.point_spread_functions.PointSpreadFunction.save_residuals" title="giant.point_spread_functions.PointSpreadFunction.save_residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_residuals</span></code></a> class attribute on the PSF object is set to <code class="docutils literal notranslate"><span class="pre">True</span></code> as
+well.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.image_denoising">
+<span class="sig-name descname"><span class="pre">image_denoising</span></span><em class="property"><span class="pre">:</span> <span class="pre">Callable</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.image_denoising" title="Permalink to this definition">¶</a></dt>
+<dd><p>A callable that is used to decrease the effects of noise in an image.</p>
+<p>This should take the form of:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">denoised_image</span> <span class="o">=</span> <span class="n">image_denoising</span><span class="p">(</span><span class="n">original_image</span><span class="p">,</span> <span class="o">*</span><span class="n">denoising_args</span><span class="p">,</span> <span class="o">*</span><span class="n">denoising_kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">original_image</span></code> is the original 2D grayscale image as a numpy array, <code class="docutils literal notranslate"><span class="pre">denoising_args</span></code> are additional
+positional arguments to the image_denoising callable in a list, denoising_kwargs are a dictionary of key word
+arguments to pass to the image_denoising method, and denoised_image is a grayscale 2D image containing
+the noise suppressed version of the input image.</p>
+<p>By default this applies a 2D Gaussian blurring kernel of size 3, 3 to the image to suppress the noise effects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.subpixel_method">
+<span class="sig-name descname"><span class="pre">subpixel_method</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="giant.image_processing.SubpixelEdgeMethods.html#giant.image_processing.SubpixelEdgeMethods" title="giant.image_processing.SubpixelEdgeMethods"><span class="pre">giant.image_processing.SubpixelEdgeMethods</span></a></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.subpixel_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enumeration (string) specifying what subpixel edge refinement method to use.</p>
+<p>This can specified as an attribute of the <a class="reference internal" href="giant.image_processing.SubpixelEdgeMethods.html#giant.image_processing.SubpixelEdgeMethods" title="giant.image_processing.SubpixelEdgeMethods"><code class="xref py py-class docutils literal notranslate"><span class="pre">SubpixelEdgeMethods</span></code></a> enumeration directly or as a string
+that corresponds to that enumeration.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.zernike_edge_width">
+<span class="sig-name descname"><span class="pre">zernike_edge_width</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.zernike_edge_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>A tuning parameter for the Zernike Ramp method specifying half the total edge width in pixels.</p>
+<p>Typically this is set to 1.66*sigma where sigma is the point spread function full width half maximum for the 
+camera.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.denoising_args">
+<span class="sig-name descname"><span class="pre">denoising_args</span></span><em class="property"><span class="pre">:</span> <span class="pre">list</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.denoising_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of additional arguments to pass to the <a class="reference internal" href="#giant.image_processing.ImageProcessing.image_denoising" title="giant.image_processing.ImageProcessing.image_denoising"><code class="xref py py-attr docutils literal notranslate"><span class="pre">image_denoising</span></code></a> callable after the image.</p>
+<p>This list is expanded using the typical python expansion.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.denoising_kwargs">
+<span class="sig-name descname"><span class="pre">denoising_kwargs</span></span><em class="property"><span class="pre">:</span> <span class="pre">dict</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.denoising_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary of keyword arguments to pass to the <a class="reference internal" href="#giant.image_processing.ImageProcessing.image_denoising" title="giant.image_processing.ImageProcessing.image_denoising"><code class="xref py py-attr docutils literal notranslate"><span class="pre">image_denoising</span></code></a> callable after the image.</p>
+<p>This dictionary is expanded using the typical python expansion.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.denoise_flag">
+<span class="sig-name descname"><span class="pre">denoise_flag</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.denoise_flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean specifying whether to apply the <a class="reference internal" href="#giant.image_processing.ImageProcessing.image_denoising" title="giant.image_processing.ImageProcessing.image_denoising"><code class="xref py py-attr docutils literal notranslate"><span class="pre">image_denoising</span></code></a> callable before applying other image 
+processing routines to an image.</p>
+<p>Set this attribute to True to apply the denoising routine and False to not apply the denoising routine.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.correlator">
+<span class="sig-name descname"><span class="pre">correlator</span></span><em class="property"><span class="pre">:</span> <span class="pre">Callable</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.correlator" title="Permalink to this definition">¶</a></dt>
+<dd><p>A callable that is used to perform cross correlation between an image and a template</p>
+<p>This should take the image as the first argument, the template as the second argument, and
+correlator_kwargs as the key word arguments.  That is, it should be of the form:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cor_surf</span> <span class="o">=</span> <span class="n">correlator</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="o">**</span><span class="n">correlator_kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where cor_surf is the correlation surface.  By default this is set to <a class="reference internal" href="giant.image_processing.cv2_correlator_2d.html#giant.image_processing.cv2_correlator_2d" title="giant.image_processing.cv2_correlator_2d"><code class="xref py py-func docutils literal notranslate"><span class="pre">cv2_correlator_2d()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.correlator_kwargs">
+<span class="sig-name descname"><span class="pre">correlator_kwargs</span></span><em class="property"><span class="pre">:</span> <span class="pre">dict</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.correlator_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary of keyword arguments to pass to the <a class="reference internal" href="#giant.image_processing.ImageProcessing.correlator" title="giant.image_processing.ImageProcessing.correlator"><code class="xref py py-attr docutils literal notranslate"><span class="pre">correlator</span></code></a> callable after the image and the template.</p>
+<p>This dictionary is expanded using the typical python expansion.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.pae_threshold">
+<span class="sig-name descname"><span class="pre">pae_threshold</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.pae_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>This tuning parameter specifies the minimum absolute image gradient for a location in an image to be considered 
+an edge for the Partial Area Effect Method.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.pae_order">
+<span class="sig-name descname"><span class="pre">pae_order</span></span><em class="property"><span class="pre">:</span> <span class="pre">int</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.pae_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>This specifies whether to fit a linear (1) or quadratic (2) to the limb in the PAE method.</p>
+<p>Typically quadratic produces the best results.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.centroid_size">
+<span class="sig-name descname"><span class="pre">centroid_size</span></span><em class="property"><span class="pre">:</span> <span class="pre">int</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.centroid_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>This specifies how many pixels to include when identifying a centroid in a region of interest.</p>
+<p>This sets the +/- number from the peak brightness pixel in both axes (so that a value of 1 means
+a 3x3 grid will be considered, a value of 2 will result in a 5x5 grid, etc).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.poi_threshold">
+<span class="sig-name descname"><span class="pre">poi_threshold</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.poi_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>This specifies the sigma multiplier to use when identifying a pixel as a point of interest.</p>
+<p>The sigma multiplier is applied to a rough noise estimate of the image (see 
+<a class="reference internal" href="giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level.html#giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level" title="giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flatten_image_and_get_noise_level()</span></code></a>) and then any pixels above this DN value are labeled as interesting 
+pixels that require further processing (see <a class="reference internal" href="giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi.html#giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi" title="giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi"><code class="xref py py-meth docutils literal notranslate"><span class="pre">locate_subpixel_poi_in_roi()</span></code></a>).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.poi_min_size">
+<span class="sig-name descname"><span class="pre">poi_min_size</span></span><em class="property"><span class="pre">:</span> <span class="pre">int</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.poi_min_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>This specifies the minimum number of pixels that must be connected for a blob to be considered a point of 
+interest.</p>
+<p>Individual pixels are clumped using a connected components algorithm, and then the size of each blob is compared
+against this value.  See <a class="reference internal" href="giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi.html#giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi" title="giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi"><code class="xref py py-meth docutils literal notranslate"><span class="pre">locate_subpixel_poi_in_roi()</span></code></a> for more details.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.poi_max_size">
+<span class="sig-name descname"><span class="pre">poi_max_size</span></span><em class="property"><span class="pre">:</span> <span class="pre">int</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.poi_max_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>This specifies the maximum number of pixels that must be connected for a blob to be considered a point of 
+interest.</p>
+<p>Individual pixels are clumped using a connected components algorithm, and then the size of each blob is compared
+against this value.  see <a class="reference internal" href="giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi.html#giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi" title="giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi"><code class="xref py py-meth docutils literal notranslate"><span class="pre">locate_subpixel_poi_in_roi()</span></code></a> for more details.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.reject_saturation">
+<span class="sig-name descname"><span class="pre">reject_saturation</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.reject_saturation" title="Permalink to this definition">¶</a></dt>
+<dd><p>This boolean flag specifies whether to ignore clumps of pixels that contain saturated DN values when identifying 
+points of interest in an image.</p>
+<p>Set to True to reject any clumps containing saturated pixels.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.return_stats">
+<span class="sig-name descname"><span class="pre">return_stats</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.return_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>This boolean flag specifies whether to return statistics about each blob when identifying points of interest in 
+the image.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.image_flattening_noise_approximation">
+<span class="sig-name descname"><span class="pre">image_flattening_noise_approximation</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="giant.image_processing.ImageFlatteningNoiseApprox.html#giant.image_processing.ImageFlatteningNoiseApprox" title="giant.image_processing.ImageFlatteningNoiseApprox"><span class="pre">giant.image_processing.ImageFlatteningNoiseApprox</span></a></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.image_flattening_noise_approximation" title="Permalink to this definition">¶</a></dt>
+<dd><p>This specifies whether to globally flatten the image and compute a single noise level or to locally do so.</p>
+<p>Generally global is sufficient for star identification purposes.  If you are trying to extract very dim stars 
+(or particles) then you may need to use the <code class="docutils literal notranslate"><span class="pre">'LOCAL'</span></code> option, which is much better for low SNR targets but 
+much slower.</p>
+<p>This is used in <a class="reference internal" href="giant.image_processing.ImageProcessing.find_poi_in_roi.html#giant.image_processing.ImageProcessing.find_poi_in_roi" title="giant.image_processing.ImageProcessing.find_poi_in_roi"><code class="xref py py-meth docutils literal notranslate"><span class="pre">find_poi_in_roi()</span></code></a> and <a class="reference internal" href="giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level.html#giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level" title="giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flatten_image_and_get_noise_level()</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.ImageProcessing.flattening_kernel_size">
+<span class="sig-name descname"><span class="pre">flattening_kernel_size</span></span><em class="property"><span class="pre">:</span> <span class="pre">int</span></em><a class="headerlink" href="#giant.image_processing.ImageProcessing.flattening_kernel_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>This specifies the half size of the kernel to use when locally flattening an image.</p>
+<p>If you are using global flattening of an image this is ignored.</p>
+<p>The size of the kernel/region used in flattening the image will be <code class="docutils literal notranslate"><span class="pre">2*flattening_kernel_size+1</span></code>.</p>
+<p>This is used in <a class="reference internal" href="giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level.html#giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level" title="giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flatten_image_and_get_noise_level()</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p class="rubric">Summary of Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level.html#giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level" title="giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flatten_image_and_get_noise_level</span></code></a></p></td>
+<td><p>This method is used to sample the noise level of an image, as well as return a flattened version of the image.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.image_processing.ImageProcessing.corners_to_roi.html#giant.image_processing.ImageProcessing.corners_to_roi" title="giant.image_processing.ImageProcessing.corners_to_roi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">corners_to_roi</span></code></a></p></td>
+<td><p>This method provides a convenient way to convert a set of corners to a region of interest that can be passed to <code class="xref py py-meth docutils literal notranslate"><span class="pre">find_poi_in_roi()</span></code> and <code class="xref py py-meth docutils literal notranslate"><span class="pre">locate_subpixel_poi_in_roi()</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.image_processing.ImageProcessing.find_poi_in_roi.html#giant.image_processing.ImageProcessing.find_poi_in_roi" title="giant.image_processing.ImageProcessing.find_poi_in_roi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_poi_in_roi</span></code></a></p></td>
+<td><p>This method identifies pixel level centers for all points of interest inside of some region of interest.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.image_processing.ImageProcessing.refine_locations.html#giant.image_processing.ImageProcessing.refine_locations" title="giant.image_processing.ImageProcessing.refine_locations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refine_locations</span></code></a></p></td>
+<td><p>This method is used to estimate the subpixel centers of blobs in an image given the pixel level location of the blobs.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi.html#giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi" title="giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">locate_subpixel_poi_in_roi</span></code></a></p></td>
+<td><p>This method identifies the subpixel locations of points of interest in an image.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.image_processing.ImageProcessing.denoise_image.html#giant.image_processing.ImageProcessing.denoise_image" title="giant.image_processing.ImageProcessing.denoise_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">denoise_image</span></code></a></p></td>
+<td><p>This method is used to optionally denoise the image before a number of the other techniques contained in this class.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.image_processing.ImageProcessing.correlate.html#giant.image_processing.ImageProcessing.correlate" title="giant.image_processing.ImageProcessing.correlate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correlate</span></code></a></p></td>
+<td><p>This method generates a cross correlation surface between template and image.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.image_processing.ImageProcessing.identify_subpixel_limbs.html#giant.image_processing.ImageProcessing.identify_subpixel_limbs" title="giant.image_processing.ImageProcessing.identify_subpixel_limbs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">identify_subpixel_limbs</span></code></a></p></td>
+<td><p>This method identifies illuminated limbs in an image to sub-pixel accuracy.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.image_processing.ImageProcessing.identify_pixel_edges.html#giant.image_processing.ImageProcessing.identify_pixel_edges" title="giant.image_processing.ImageProcessing.identify_pixel_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">identify_pixel_edges</span></code></a></p></td>
+<td><p>This method determines pixel level edges in an image by thresholding the image gradients.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.image_processing.ImageProcessing.pae_edges.html#giant.image_processing.ImageProcessing.pae_edges" title="giant.image_processing.ImageProcessing.pae_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pae_edges</span></code></a></p></td>
+<td><p>This method locates edges in an image with subpixel accuracy.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.image_processing.ImageProcessing.refine_edges_pae.html#giant.image_processing.ImageProcessing.refine_edges_pae" title="giant.image_processing.ImageProcessing.refine_edges_pae"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refine_edges_pae</span></code></a></p></td>
+<td><p>This method refines pixel level edges to subpixel level using the PAE method.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.image_processing.ImageProcessing.refine_edges_zernike_ramp.html#giant.image_processing.ImageProcessing.refine_edges_zernike_ramp" title="giant.image_processing.ImageProcessing.refine_edges_zernike_ramp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refine_edges_zernike_ramp</span></code></a></p></td>
+<td><p>This method refines edge locations using the Zernike Ramp method described in <a class="reference external" href="https://arc.aiaa.org/doi/full/10.2514/1.A33692?mobileUi=0">https://arc.aiaa.org/doi/full/10.2514/1.A33692?mobileUi=0</a>.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.image_processing.html" title="Previous document">giant.image_processing</a>
+        </li>
+        <li>
+          <a href="giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level.html" title="Next document">ImageProcessing.flatten_image_and_get_noise_level</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/image_processing/giant.image_processing.ImageProcessing.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

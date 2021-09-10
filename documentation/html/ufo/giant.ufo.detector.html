@@ -1,0 +1,198 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>giant.ufo.detector &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="Detector" href="detector/giant.ufo.detector.Detector.html" />
+    <link rel="prev" title="SharedCounter.increment" href="clearable_queue/giant.ufo.clearable_queue.SharedCounter.increment.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.ufo.html">giant.ufo</a><ul>
+      <li>Previous: <a href="clearable_queue/giant.ufo.clearable_queue.SharedCounter.increment.html" title="previous chapter">SharedCounter.increment</a></li>
+      <li>Next: <a href="detector/giant.ufo.detector.Detector.html" title="next chapter">Detector</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="clearable_queue/giant.ufo.clearable_queue.SharedCounter.increment.html" title="Previous document">SharedCounter.increment</a>
+        </li>
+        <li>
+          <a href="detector/giant.ufo.detector.Detector.html" title="Next document">Detector</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.ufo.detector">
+<span id="giant-ufo-detector"></span><h1>giant.ufo.detector<a class="headerlink" href="#module-giant.ufo.detector" title="Permalink to this headline">¶</a></h1>
+<p>This module provides a class for identifying possible unresolved UFOs in a monocular image.</p>
+<section id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>UFO identification is done through the usual <a class="reference internal" href="../giant.stellar_opnav.html#module-giant.stellar_opnav" title="giant.stellar_opnav"><code class="xref py py-mod docutils literal notranslate"><span class="pre">stellar_opnav</span></code></a> process, but instead of being concerned with the
+identified stars, we are concerned with the points that were not matched to stars in the image.  As such, the
+<a class="reference internal" href="detector/giant.ufo.detector.Detector.html#giant.ufo.detector.Detector" title="giant.ufo.detector.Detector"><code class="xref py py-class docutils literal notranslate"><span class="pre">Detector</span></code></a> class provided in this module simply serves as a wrapper around the <a class="reference internal" href="../stellar_opnav/stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html#giant.stellar_opnav.stellar_class.StellarOpNav" title="giant.stellar_opnav.stellar_class.StellarOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">StellarOpNav</span></code></a> class
+to combine some steps together and to collect all of the unidentified results and package them into a manageable format.
+For a more detailed description of what happens you can refer to the paper at
+<a class="reference external" href="https://agupubs.onlinelibrary.wiley.com/doi/pdf/10.1029/2019EA000843">https://agupubs.onlinelibrary.wiley.com/doi/pdf/10.1029/2019EA000843</a></p>
+</section>
+<section id="use">
+<h2>Use<a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h2>
+<p>To identify potential UFOs, simply initialize the <a class="reference internal" href="detector/giant.ufo.detector.Detector.html#giant.ufo.detector.Detector" title="giant.ufo.detector.Detector"><code class="xref py py-class docutils literal notranslate"><span class="pre">Detector</span></code></a> class with the required inputs, then call
+<a class="reference internal" href="detector/giant.ufo.detector.Detector.update_attitude.html#giant.ufo.detector.Detector.update_attitude" title="giant.ufo.detector.Detector.update_attitude"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_attitude()</span></code></a> to estimate the updated attitude of the images (which can be important when trying to identify
+dim detections), <a class="reference internal" href="detector/giant.ufo.detector.Detector.find_ufos.html#giant.ufo.detector.Detector.find_ufos" title="giant.ufo.detector.Detector.find_ufos"><code class="xref py py-meth docutils literal notranslate"><span class="pre">find_ufos()</span></code></a> to identify possible ufos in the images, <a class="reference internal" href="detector/giant.ufo.detector.Detector.package_results.html#giant.ufo.detector.Detector.package_results" title="giant.ufo.detector.Detector.package_results"><code class="xref py py-meth docutils literal notranslate"><span class="pre">package_results()</span></code></a> to package all of
+the detections into a dataframe and to compute some extra information about each detection, and
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">remove_duplicates()</span></code> which attempts to identify points were we accidentally identified the same point twice (which
+can happen when 2 detection are very close together).  Once you have called these methods, you can call
+<a class="reference internal" href="detector/giant.ufo.detector.Detector.save_results.html#giant.ufo.detector.Detector.save_results" title="giant.ufo.detector.Detector.save_results"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Detector.save_results()</span></code></a> to dump the results to (a) csv file(s).</p>
+<p>For discussion on Tuning for successful UFO identification, refer to the <a class="reference internal" href="../giant.ufo.html#module-giant.ufo" title="giant.ufo"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ufo</span></code></a> package documentation.</p>
+<p>You may also be interested in using the <a class="reference internal" href="ufo_class/giant.ufo.ufo_class.UFO.html#giant.ufo.ufo_class.UFO" title="giant.ufo.ufo_class.UFO"><code class="xref py py-class docutils literal notranslate"><span class="pre">UFO</span></code></a> class which combines both detection and tracking into a single
+interface rather than using this class directly.</p>
+</section>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="detector/giant.ufo.detector.Detector.html#giant.ufo.detector.Detector" title="giant.ufo.detector.Detector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Detector</span></code></a></p></td>
+<td><p>This class is used to identify possible non-cooperative unresolved targets in optical images.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Function</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="detector/giant.ufo.detector.unit_to_radec_jacobian.html#giant.ufo.detector.unit_to_radec_jacobian" title="giant.ufo.detector.unit_to_radec_jacobian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unit_to_radec_jacobian</span></code></a></p></td>
+<td><p>This function computes the Jacobian matrix for going from a unit vector to a right ascension/declination in degrees.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="clearable_queue/giant.ufo.clearable_queue.SharedCounter.increment.html" title="Previous document">SharedCounter.increment</a>
+        </li>
+        <li>
+          <a href="detector/giant.ufo.detector.Detector.html" title="Next document">Detector</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/ufo/giant.ufo.detector.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,313 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.point_spread_functions.moments &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.point_spread_functions.moments</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
+<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Defines a PSF object for estimating centroids using a moment (center-of-illumination) algorithm.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">.psf_meta</span> <span class="kn">import</span> <span class="n">PointSpreadFunction</span>
+
+<span class="kn">from</span> <span class="nn">.._typing</span> <span class="kn">import</span> <span class="n">NONENUM</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">Real</span><span class="p">,</span> <span class="n">NONEARRAY</span>
+
+
+<div class="viewcode-block" id="Moment"><a class="viewcode-back" href="../../../point_spread_functions/moments/giant.point_spread_functions.moments.Moment.html#giant.point_spread_functions.Moment">[docs]</a><span class="k">class</span> <span class="nc">Moment</span><span class="p">(</span><span class="n">PointSpreadFunction</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class implements a moment based (center of illumination) algorithm for locating the centroid of a PSF.</span>
+
+<span class="sd">    This class implements a fully functional PSF object for GIANT, however, because it does not actually model how light</span>
+<span class="sd">    is spread out, if applied to an image or scan lines it just returns the input unaltered.  Also, since this isn&#39;t</span>
+<span class="sd">    actually an estimation, the covariance and residuals are undefined so these are always set to NaN.</span>
+
+<span class="sd">    :Note: This object can be biased toward the center of an image if it is applied naively.  You must be careful in</span>
+<span class="sd">           selecting which points to pass to this function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">centroid_x</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">centroid_y</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param centroid_x: The x component of the centroid in pixels</span>
+<span class="sd">        :param centroid_y: The y component of the centroid in pixels</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_x</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># type: float</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The x location of the centroid</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_y</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># type: float</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The y location of the centroid</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">centroid_x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">centroid_x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">centroid_x</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">centroid_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">centroid_y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">centroid_y</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Moment.__call__"><a class="viewcode-back" href="../../../point_spread_functions/moments/giant.point_spread_functions.moments.Moment.__call__.html#giant.point_spread_functions.Moment.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Just returns the input image as an array</span>
+
+<span class="sd">        :param image: The image to apply the psf to</span>
+<span class="sd">        :return: the unaltered image as an array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">image</span></div>
+
+<div class="viewcode-block" id="Moment.apply_1d"><a class="viewcode-back" href="../../../point_spread_functions/moments/giant.point_spread_functions.moments.Moment.apply_1d.html#giant.point_spread_functions.Moment.apply_1d">[docs]</a>    <span class="k">def</span> <span class="nf">apply_1d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_1d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">step</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Just returns the input scan lines as is.</span>
+
+<span class="sd">        :param image_1d: the scan lines to apply the PSF to</span>
+<span class="sd">        :param direction: the direction of the scan lines</span>
+<span class="sd">        :param step: the step size of the scan lines</span>
+<span class="sd">        :return: the unaltered scan lines</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">image_1d</span></div>
+
+<div class="viewcode-block" id="Moment.generate_kernel"><a class="viewcode-back" href="../../../point_spread_functions/moments/giant.point_spread_functions.moments.Moment.generate_kernel.html#giant.point_spread_functions.Moment.generate_kernel">[docs]</a>    <span class="k">def</span> <span class="nf">generate_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a 3x3 array of zeros except the center which is one because this does nothing.</span>
+
+<span class="sd">        :return: The nothing kernel</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span></div>
+
+<div class="viewcode-block" id="Moment.evaluate"><a class="viewcode-back" href="../../../point_spread_functions/moments/giant.point_spread_functions.moments.Moment.evaluate.html#giant.point_spread_functions.Moment.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns an array of zeros the same shape of ``x``/``y``.</span>
+
+<span class="sd">        :param x: The x values to evaluate at</span>
+<span class="sd">        :param y: The y values to evaluate at</span>
+<span class="sd">        :return: An array of zeros</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Moment.fit"><a class="viewcode-back" href="../../../point_spread_functions/moments/giant.point_spread_functions.moments.Moment.fit.html#giant.point_spread_functions.Moment.fit">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="vm">__qualname__</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function identifies the centroid of the PSF for the input data using a moment algorithm (center of</span>
+<span class="sd">        illumination).</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            x_0 = \frac{\sum{\mathbf{x}\mathbf{I}}}{\sum{\mathbf{I}}} \qquad</span>
+<span class="sd">            y_0 = \frac{\sum{\mathbf{y}\mathbf{I}}}{\sum{\mathbf{I}}}</span>
+
+<span class="sd">        :param x: The x values underlying the surface the PSF is to be fit to</span>
+<span class="sd">        :param y: The y values underlying the surface the PSF is to be fit to</span>
+<span class="sd">        :param z: The z or &quot;height&quot; values of the surface the PSF is to be fit to</span>
+<span class="sd">        :return: An instance of the PSF that best fits the provided data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># make sure the inputs are flattened numpy arrays</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+        <span class="c1"># perform the moment algorithm</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">y0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">centroid_x</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">centroid_y</span><span class="o">=</span><span class="n">y0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">out</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">centroid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The location of the center of the PSF as an (x, y) length 2 numpy array.</span>
+
+<span class="sd">        This property is used to enable the PSF class to be used in identifying the center of</span>
+<span class="sd">        illumination in image processing (see :attr:`.ImageProcessing.centroiding`).</span>
+
+<span class="sd">        :return: The (x, y) location of the peak of the PSF as a 1D numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_y</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">residual_rss</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NONENUM</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The rss of the residuals (undefined).</span>
+
+<span class="sd">        :return: NaN or ``None`` since this is undefined.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_residuals</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">residual_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NONENUM</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The mean of the residuals (undefined).</span>
+
+<span class="sd">        :return: NaN or ``None`` since this is undefined.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_residuals</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">residual_std</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NONENUM</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The standard deviation of the residuals (undefined).</span>
+
+<span class="sd">        :return: NaN or ``None`` since this is undefined.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_residuals</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NONEARRAY</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The covariance of the fit (undefined).</span>
+
+<span class="sd">        :return: A 2x2 array of NaN or ``None`` since this is undefined.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_residuals</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Moment.volume"><a class="viewcode-back" href="../../../giant.point_spread_functions.html#giant.point_spread_functions.Moment.volume">[docs]</a>    <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The volume is undefined for a moment PSF so just return 0</span>
+
+<span class="sd">        :return: 0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mf">0.0</span></div></div>
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

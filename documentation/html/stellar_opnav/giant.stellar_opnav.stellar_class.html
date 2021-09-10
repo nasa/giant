@@ -1,0 +1,194 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>giant.stellar_opnav.stellar_class &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="StellarOpNav" href="stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html" />
+    <link rel="prev" title="giant.stellar_opnav" href="../giant.stellar_opnav.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.stellar_opnav.html">giant.stellar_opnav</a><ul>
+      <li>Previous: <a href="../giant.stellar_opnav.html" title="previous chapter">giant.stellar_opnav</a></li>
+      <li>Next: <a href="stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html" title="next chapter">StellarOpNav</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.stellar_opnav.html" title="Previous document">giant.stellar_opnav</a>
+        </li>
+        <li>
+          <a href="stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html" title="Next document">StellarOpNav</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.stellar_opnav.stellar_class">
+<span id="giant-stellar-opnav-stellar-class"></span><h1>giant.stellar_opnav.stellar_class<a class="headerlink" href="#module-giant.stellar_opnav.stellar_class" title="Permalink to this headline">¶</a></h1>
+<p>This module provides a subclass of the <a class="reference internal" href="../opnav_class/giant.opnav_class.OpNav.html#giant.opnav_class.OpNav" title="giant.opnav_class.OpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpNav</span></code></a> class for performing stellar OpNav.</p>
+<section id="interface-description">
+<h2>Interface Description<a class="headerlink" href="#interface-description" title="Permalink to this headline">¶</a></h2>
+<p>In GIANT, Stellar OpNav refers to the process of identifying stars in an image and then extracting the attitude
+information from those stars.  This module combines these two processes into the single process of Stellar OpNav.</p>
+<p>The <a class="reference internal" href="stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html#giant.stellar_opnav.stellar_class.StellarOpNav" title="giant.stellar_opnav.stellar_class.StellarOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">StellarOpNav</span></code></a> class is the main interface for performing stellar OpNav in GIANT, and in general is all
+the user will need to interact with in order to process the images.  It provides direct access to the
+<a class="reference internal" href="../image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a>, <a class="reference internal" href="../giant.calibration.html#giant.calibration.StarID" title="giant.calibration.StarID"><code class="xref py py-class docutils literal notranslate"><span class="pre">StarID</span></code></a>, and <a class="reference internal" href="giant.stellar_opnav.estimators.html#module-giant.stellar_opnav.estimators" title="giant.stellar_opnav.estimators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">stellar_opnav.estimators</span></code></a> objects and automatically performs the
+required data transfer between the objects for you.  To begin you simply provide the <a class="reference internal" href="stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html#giant.stellar_opnav.stellar_class.StellarOpNav" title="giant.stellar_opnav.stellar_class.StellarOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">StellarOpNav</span></code></a> constructor
+a <a class="reference internal" href="../camera/giant.camera.Camera.html#giant.camera.Camera" title="giant.camera.Camera"><code class="xref py py-class docutils literal notranslate"><span class="pre">Camera</span></code></a> instance, a <a class="reference internal" href="../image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a> instance or the keyword arguments to creation one,
+a <a class="reference internal" href="../giant.calibration.html#giant.calibration.StarID" title="giant.calibration.StarID"><code class="xref py py-class docutils literal notranslate"><span class="pre">StarID</span></code></a> instance or the keyword arguments to creation one, and the attitude estimation object you wish to use
+to perform the attitude estimation. You can then use the <a class="reference internal" href="stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html#giant.stellar_opnav.stellar_class.StellarOpNav" title="giant.stellar_opnav.stellar_class.StellarOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">StellarOpNav</span></code></a> instance to perform all of the aspects of
+stellar OpNav with never having to interact with the internal objects again.</p>
+<p>For example, we could do something like the following (from the directory containing <code class="docutils literal notranslate"><span class="pre">sample_data</span></code> as generated by a
+call to <a class="reference internal" href="../scripts/giant.scripts.generate_sample_data.html#module-giant.scripts.generate_sample_data" title="giant.scripts.generate_sample_data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">generate_sample_data</span></code></a>):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pickle</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.stellar_opnav</span> <span class="kn">import</span> <span class="n">StellarOpNav</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;sample_data/camera.pickle&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">camera</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">only_long_on</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_sid</span> <span class="o">=</span> <span class="n">StellarOpNav</span><span class="p">(</span><span class="n">camera</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_sid</span><span class="o">.</span><span class="n">id_stars</span><span class="p">()</span>  <span class="c1"># id the stars for each image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_sid</span><span class="o">.</span><span class="n">sid_summary</span><span class="p">()</span>  <span class="c1"># print out a summary of the star identification success for each image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_sid</span><span class="o">.</span><span class="n">estimate_attitude</span><span class="p">()</span>  <span class="c1"># estimate an updated attitude for each image</span>
+</pre></div>
+</div>
+<p>In order to identify stars and estimate the image attitude based off of those stars for all of our images.</p>
+<p>For a more general description of the steps needed to perform stellar OpNav, refer to the <a class="reference internal" href="../giant.stellar_opnav.html#module-giant.stellar_opnav" title="giant.stellar_opnav"><code class="xref py py-mod docutils literal notranslate"><span class="pre">stellar_opnav</span></code></a>
+documentation.  For a more in-depth examination of the <a class="reference internal" href="stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html#giant.stellar_opnav.stellar_class.StellarOpNav" title="giant.stellar_opnav.stellar_class.StellarOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">StellarOpNav</span></code></a> class continue through the following class
+documentation.</p>
+</section>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html#giant.stellar_opnav.stellar_class.StellarOpNav" title="giant.stellar_opnav.stellar_class.StellarOpNav"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StellarOpNav</span></code></a></p></td>
+<td><p>This class serves as the main user interface for performing Stellar Optical Navigation.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.stellar_opnav.html" title="Previous document">giant.stellar_opnav</a>
+        </li>
+        <li>
+          <a href="stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html" title="Next document">StellarOpNav</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/stellar_opnav/giant.stellar_opnav.stellar_class.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

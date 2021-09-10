@@ -1,0 +1,271 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>giant.point_spread_functions.psf_meta &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="PointSpreadFunction" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html" />
+    <link rel="prev" title="giant.point_spread_functions" href="../giant.point_spread_functions.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.point_spread_functions.html">giant.point_spread_functions</a><ul>
+      <li>Previous: <a href="../giant.point_spread_functions.html" title="previous chapter">giant.point_spread_functions</a></li>
+      <li>Next: <a href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html" title="next chapter">PointSpreadFunction</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.point_spread_functions.html" title="Previous document">giant.point_spread_functions</a>
+        </li>
+        <li>
+          <a href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html" title="Next document">PointSpreadFunction</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.point_spread_functions.psf_meta">
+<span id="giant-point-spread-functions-psf-meta"></span><h1>giant.point_spread_functions.psf_meta<a class="headerlink" href="#module-giant.point_spread_functions.psf_meta" title="Permalink to this headline">¶</a></h1>
+<p>Provides abstract base classes for the construction of Point Spread Function classes for GIANT.</p>
+<p>In this module there are a number of abstract base classes (ABCs) that define the interface for and provide some common
+functionality for point spread functions (PSFs) in GIANT.  In general, most users will not interact with these directly,
+and will instead use a predefined implementation of a PSF, however, if you wish to define a new PSF for GIANT to use
+then you will likely benefit from what is available in this module.</p>
+<p>To define a new PSF you will most likely want to subclass at least one of the ABCs defined in this module, which will
+help you to be sure you’ve defined all the interfaces GIANT expects and possibly add some shared functionality so that
+you don’t need to reinvent the wheel.  However, this is not strictly necessary.  While type checkers will complain if
+you don’t at least inherit from <a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="giant.point_spread_functions.psf_meta.PointSpreadFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PointSpreadFunction</span></code></a>, GIANT will not actually error so long as you have defined
+all the appropriate interfaces (so called duck typing).</p>
+<section id="use">
+<h2>Use<a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h2>
+<p>To implement a fully function custom PSF for GIANT you must at minimum implement the following methods and attributes</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 59%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Method/Attribute</p></th>
+<th class="head"><p>Use</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_residuals</span></code></a></p></td>
+<td><p>A class attribute which determines whether to save information about
+the residuals from attempting to fit the PSF to data.  If <code class="docutils literal notranslate"><span class="pre">True</span></code>
+then you should save the residual statistics and formal fit
+covariance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.__call__.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.__call__" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.__call__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__call__()</span></code></a></p></td>
+<td><p>The built in call method for the class.  This method should apply the
+defined PSF in the current instance to a 2D image, returning the image
+after the PSF has been applied.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.apply_1d.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.apply_1d" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.apply_1d"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apply_1d()</span></code></a></p></td>
+<td><p>An analogous method to <a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.__call__.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.__call__" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.__call__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__call__()</span></code></a> but for
+applying the PSF to (a) 1D scan line(s) instead of a 2D image.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.generate_kernel.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.generate_kernel" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.generate_kernel"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate_kernel()</span></code></a></p></td>
+<td><p>A method that generates a square unit kernel (sums to 1) of the
+current instance of the PSF.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.evaluate.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.evaluate" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.evaluate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">evaluate()</span></code></a></p></td>
+<td><p>A method that evaluates the current instance of the PSF at provided
+x and y locations</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.fit.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.fit" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a></p></td>
+<td><p>A class method which fits an instance of the PSF to supplied data and
+returns and initialized version of the PSF with the fit parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.centroid" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.centroid"><code class="xref py py-attr docutils literal notranslate"><span class="pre">centroid</span></code></a></p></td>
+<td><p>A property which returns the location of the peak of the PSF as a
+as a length 2 numpy array.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.residual_rss" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.residual_rss"><code class="xref py py-attr docutils literal notranslate"><span class="pre">residual_rss</span></code></a></p></td>
+<td><p>A property which returns the root sum of squares of the rss of the fit
+of the PSF iff the current instance was made by a call to
+<a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.fit.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.fit" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a> and
+<a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_residuals</span></code></a> is <code class="docutils literal notranslate"><span class="pre">True</span></code>.  If either of
+these are not True then returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.residual_std" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.residual_std"><code class="xref py py-attr docutils literal notranslate"><span class="pre">residual_std</span></code></a></p></td>
+<td><p>A property which returns the standard deviation of the rss of the fit
+of the PSF iff the current instance was made by a call to
+<a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.fit.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.fit" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a> and
+<a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_residuals</span></code></a> is <code class="docutils literal notranslate"><span class="pre">True</span></code>.  If either of
+these are not True then returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.covariance" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.covariance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">covariance</span></code></a></p></td>
+<td><p>A property which returns the formal covariance of the fit
+of the PSF iff the current instance was made by a call to
+<a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.fit.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.fit" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a> and
+<a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_residuals</span></code></a> is <code class="docutils literal notranslate"><span class="pre">True</span></code>.  If either of
+these are not True then returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">volume</span></code></p></td>
+<td><p>A method which computes the total volume under the PSF (integral from
+<span class="math notranslate nohighlight">\(-\inf\)</span> to <span class="math notranslate nohighlight">\(\inf\)</span>)</p></td>
+</tr>
+</tbody>
+</table>
+<p>Implementing these, plus whatever else is needed internally for the functionality of the PSF, will result in a PSF class
+that can be used throughout GIANT.</p>
+<p>For examples of how this is done, refer to the pre-defined PSFs in <a class="reference internal" href="giant.point_spread_functions.gaussians.html#module-giant.point_spread_functions.gaussians" title="giant.point_spread_functions.gaussians"><code class="xref py py-mod docutils literal notranslate"><span class="pre">gaussians</span></code></a>.</p>
+</section>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="giant.point_spread_functions.psf_meta.PointSpreadFunction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PointSpreadFunction</span></code></a></p></td>
+<td><p>This abstract base class serves as the template for implementing a point spread function in GIANT.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.SizedPSF.html#giant.point_spread_functions.psf_meta.SizedPSF" title="giant.point_spread_functions.psf_meta.SizedPSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SizedPSF</span></code></a></p></td>
+<td><p>This ABC adds common functionality for a PSF where the required size can be determine algorithmically.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.KernelBasedCallPSF.html#giant.point_spread_functions.psf_meta.KernelBasedCallPSF" title="giant.point_spread_functions.psf_meta.KernelBasedCallPSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KernelBasedCallPSF</span></code></a></p></td>
+<td><p>This ABC adds concrete common functionality for applying the initialized PSF to 2D images to <a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="giant.point_spread_functions.psf_meta.PointSpreadFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PointSpreadFunction</span></code></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.html#giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF" title="giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KernelBasedApply1DPSF</span></code></a></p></td>
+<td><p>This ABC adds concrete common functionality for applying the initialized PSF to 1D scan lines to <a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="giant.point_spread_functions.psf_meta.PointSpreadFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PointSpreadFunction</span></code></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQPSF.html#giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQPSF" title="giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQPSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IterativeNonlinearLSTSQPSF</span></code></a></p></td>
+<td><p>This ABC defines common attributes, properties, and methods for Iterative Non-linear least squares estimation of a Point Spread function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground.html#giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground" title="giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IterativeNonlinearLSTSQwBackground</span></code></a></p></td>
+<td><p>This class provides support for estimating the superposition of the PSF and a linear background gradient.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSF.html#giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSF" title="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InitialGuessIterativeNonlinearLSTSQPSF</span></code></a></p></td>
+<td><p>This class provides a fit class method which generates the initial guess from a subclass and then converges to a better solution using iterative Nonlinear LSTSQ.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="psf_meta/giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.html#giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground" title="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InitialGuessIterativeNonlinearLSTSQPSFwBackground</span></code></a></p></td>
+<td><p>This class provides a fit class method which generates the initial guess from a subclass and then converges to a better solution using iterative Nonlinear LSTSQ including a background gradient.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.point_spread_functions.html" title="Previous document">giant.point_spread_functions</a>
+        </li>
+        <li>
+          <a href="psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html" title="Next document">PointSpreadFunction</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/point_spread_functions/giant.point_spread_functions.psf_meta.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

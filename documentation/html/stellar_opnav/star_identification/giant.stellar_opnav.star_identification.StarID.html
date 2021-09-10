@@ -1,0 +1,515 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>StarID &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="StarID.id_stars" href="giant.stellar_opnav.star_identification.StarID.id_stars.html" />
+    <link rel="prev" title="giant.stellar_opnav.star_identification" href="../giant.stellar_opnav.star_identification.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.stellar_opnav.html">giant.stellar_opnav</a><ul>
+  <li><a href="../giant.stellar_opnav.star_identification.html">giant.stellar_opnav.star_identification</a><ul>
+      <li>Previous: <a href="../giant.stellar_opnav.star_identification.html" title="previous chapter">giant.stellar_opnav.star_identification</a></li>
+      <li>Next: <a href="giant.stellar_opnav.star_identification.StarID.id_stars.html" title="next chapter">StarID.id_stars</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.stellar_opnav.star_identification.html" title="Previous document">giant.stellar_opnav.star_identification</a>
+        </li>
+        <li>
+          <a href="giant.stellar_opnav.star_identification.StarID.id_stars.html" title="Next document">StarID.id_stars</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="starid">
+<h1>StarID<a class="headerlink" href="#starid" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.stellar_opnav.star_identification.html#module-giant.stellar_opnav.star_identification" title="giant.stellar_opnav.star_identification"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.stellar_opnav.star_identification</span></code></a>:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.stellar_opnav.star_identification.</span></span><span class="sig-name descname"><span class="pre">StarID</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extracted_image_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">catalogue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_magnitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_magnitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_combos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_priori_rotation_cat2camera</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ransac_tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">second_closest_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_velocity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_mp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lost_in_space_catalogue_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/stellar_opnav/star_identification.html#StarID"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID" title="Permalink to this definition">¶</a></dt>
+<dd><p>The StarID class operates on the result of image processing algorithms to attempt to match image points of interest
+with catalogue star records.</p>
+<p>This is a necessary step in all forms of stellar OpNav and is a critical component of
+GIANT.</p>
+<p>In general, the user will not directly interface with the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID" title="giant.stellar_opnav.star_identification.StarID"><code class="xref py py-class docutils literal notranslate"><span class="pre">StarID</span></code></a> class and instead will use the
+<a class="reference internal" href="../stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html#giant.stellar_opnav.stellar_class.StellarOpNav" title="giant.stellar_opnav.stellar_class.StellarOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">StellarOpNav</span></code></a> class.  Below we give a brief description of how to use this class directly for users who
+are just curious or need more direct control over the class.</p>
+<p>There are a couple things that the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID" title="giant.stellar_opnav.star_identification.StarID"><code class="xref py py-class docutils literal notranslate"><span class="pre">StarID</span></code></a> class needs to operate.  The first is a camera model, which
+should be a subclass of <a class="reference internal" href="../../camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraModel</span></code></a>.  The camera model is used to both project catalogue star locations
+onto the image, as well as generate unit vectors through the image points of interest in the camera frame.  The
+next thing the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID" title="giant.stellar_opnav.star_identification.StarID"><code class="xref py py-class docutils literal notranslate"><span class="pre">StarID</span></code></a> class needs is a star catalogue to query.  This should come from the
+<a class="reference internal" href="../../giant.catalogues.html#module-giant.catalogues" title="giant.catalogues"><code class="xref py py-mod docutils literal notranslate"><span class="pre">catalogues</span></code></a> package and provides all of the necessary information for retrieving and projecting the expected
+stars in an image. Both the star catalogue and camera model are generally set at the construction of the class
+and apply to every image being considered, so they are rarely updated.  The camera model is stored in the
+<a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.model" title="giant.stellar_opnav.star_identification.StarID.model"><code class="xref py py-attr docutils literal notranslate"><span class="pre">model</span></code></a> attribute and is also specified as the first positional argument for the class constructor.  The
+catalogue is stored in the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.catalogue" title="giant.stellar_opnav.star_identification.StarID.catalogue"><code class="xref py py-attr docutils literal notranslate"><span class="pre">catalogue</span></code></a> attribute and can also be specified in the class constructor as a
+keyword argument of the same name.</p>
+<p>The <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID" title="giant.stellar_opnav.star_identification.StarID"><code class="xref py py-class docutils literal notranslate"><span class="pre">StarID</span></code></a> class also needs some information about the current image being considered.  This information
+includes points of interest for the image that need to be matched to stars, the <em>a priori</em> attitude of the image,
+and the position/velocity of the camera at the time the image was captured.  The points of interest are generally
+returned from the <a class="reference internal" href="../../image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a> routines, although they don’t need to be.  The camera attitude,
+position, and velocity are generally passed from the <a class="reference internal" href="../../image/giant.image.OpNavImage.html#giant.image.OpNavImage" title="giant.image.OpNavImage"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpNavImage</span></code></a> metadata.  The image attitude is used for
+querying the catalogue and rotating the catalogue stars into the image frame.  The camera positions and velocity
+are used for correcting the star locations for parallax and stellar aberration. The camera position and velocity are
+not required but are generally recommended as they will give a more accurate representation.  All of these
+attributes need to be updated for each new image being considered (the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID" title="giant.stellar_opnav.star_identification.StarID"><code class="xref py py-class docutils literal notranslate"><span class="pre">StarID</span></code></a> class does not directly
+operate on the <a class="reference internal" href="../../image/giant.image.OpNavImage.html#giant.image.OpNavImage" title="giant.image.OpNavImage"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpNavImage</span></code></a> objects).  The image points of interest are stored and updated in the
+<a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.extracted_image_points" title="giant.stellar_opnav.star_identification.StarID.extracted_image_points"><code class="xref py py-attr docutils literal notranslate"><span class="pre">extracted_image_points</span></code></a> attribute, the camera attitude is stored in the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.a_priori_rotation_cat2camera" title="giant.stellar_opnav.star_identification.StarID.a_priori_rotation_cat2camera"><code class="xref py py-attr docutils literal notranslate"><span class="pre">a_priori_rotation_cat2camera</span></code></a>
+attribute, and the camera position and velocity are stored in the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.camera_position" title="giant.stellar_opnav.star_identification.StarID.camera_position"><code class="xref py py-attr docutils literal notranslate"><span class="pre">camera_position</span></code></a> and
+<a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.camera_velocity" title="giant.stellar_opnav.star_identification.StarID.camera_velocity"><code class="xref py py-attr docutils literal notranslate"><span class="pre">camera_velocity</span></code></a> attributes respectively.  They can also be specified in the class constructor as keyword
+arguments of the same name.</p>
+<p>Finally, there are a number of tuning parameters that need set.  These parameters are discussed in depth in the
+<a class="reference internal" href="../giant.stellar_opnav.star_identification.html#tuning-parameters-table"><span class="std std-ref">Tuning Parameters Table</span></a>.</p>
+<p>When everything is correctly set in an instance of <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID" title="giant.stellar_opnav.star_identification.StarID"><code class="xref py py-class docutils literal notranslate"><span class="pre">StarID</span></code></a>, then generally all that needs to be called
+is the <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.id_stars.html#giant.stellar_opnav.star_identification.StarID.id_stars" title="giant.stellar_opnav.star_identification.StarID.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> method, which accepts the observation date of the image being considered as an
+optional <code class="docutils literal notranslate"><span class="pre">epoch</span></code> keyword argument.  This method will go through the whole processed detailed above, storing the
+results in a number of attributes that are detailed below.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This class will load data for the lost in space catalogue.  The lost is space catalogue is a pickle file. Pickle
+files can be used to execute arbitrary code, so you should never open one from an untrusted source.  While this
+code should only be reading pickle files generated by GIANT itself that are safe, you should verify that the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">lost_in_space_catalogue_file</span></code> and the file it points to have not been tampered with to be absolutely
+sure.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<a class="reference internal" href="../../camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><em>giant.camera_models.camera_model.CameraModel</em></a>) – The camera model to use to relate vectors in the camera frame with points on the image</p></li>
+<li><p><strong>extracted_image_points</strong> (<em>numpy.ndarray</em>) – A 2xn array of the image points of interest to be identified.  The first row
+should correspond to the y locations (rows) and the second row should correspond
+to the x locations (columns).</p></li>
+<li><p><strong>catalogue</strong> (<a class="reference internal" href="../../catalogues/meta_catalogue/giant.catalogues.meta_catalogue.Catalogue.html#giant.catalogues.meta_catalogue.Catalogue" title="giant.catalogues.meta_catalogue.Catalogue"><em>giant.catalogues.meta_catalogue.Catalogue</em></a>) – The catalogue object to use to query for potential stars in an image.</p></li>
+<li><p><strong>max_magnitude</strong> (<em>numbers.Real</em>) – the maximum magnitude to return when querying the star catalogue</p></li>
+<li><p><strong>min_magnitude</strong> (<em>numbers.Real</em>) – the minimum magnitude to return when querying the star catalogue</p></li>
+<li><p><strong>max_combos</strong> (<em>int</em>) – The maximum number of random samples to try in the RANSAC routine</p></li>
+<li><p><strong>tolerance</strong> (<em>numbers.Real</em>) – The maximum distance between a catalogue star and a image point of interest for a potential
+pair to be formed before the RANSAC algorithm</p></li>
+<li><p><strong>a_priori_rotation_cat2camera</strong> (<a class="reference internal" href="../../rotations/giant.rotations.Rotation.html#giant.rotations.Rotation" title="giant.rotations.Rotation"><em>giant.rotations.Rotation</em></a>) – The rotation matrix to go from the inertial frame to the camera frame</p></li>
+<li><p><strong>ransac_tolerance</strong> (<em>numbers.Real</em>) – The maximum distance between a catalogue star and an image point of interest after
+correcting the attitude for a pair to be considered an inlier in the RANSAC algorithm.</p></li>
+<li><p><strong>second_closest_check</strong> (<em>bool</em>) – A flag specifying whether to reject pairs where 2 catalogue stars are close to an
+image point of interest</p></li>
+<li><p><strong>camera_velocity</strong> (<em>numpy.ndarray</em>) – The velocity of the camera in km/s with respect to the solar system barycenter in the
+inertial frame at the time the image was taken</p></li>
+<li><p><strong>camera_position</strong> (<em>numpy.ndarray</em>) – The position of the camera in km with respect to the solar system barycenter in the
+inertial frame at the time the image was taken</p></li>
+<li><p><strong>unique_check</strong> (<em>bool</em>) – A flag specifying whether to allow a single catalogue star to be potentially paired with
+multiple image points of interest</p></li>
+<li><p><strong>use_mp</strong> (<em>bool</em>) – A flag specifying whether to use the multi-processing library to accelerate the RANSAC algorithm</p></li>
+<li><p><strong>lost_in_space_catalogue_file</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>pathlib.Path</em><em>, </em><em>str</em><em>]</em><em>]</em>) – The file containing the lost in space catalogue</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.model">
+<span class="sig-name descname"><span class="pre">model</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="../../camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><span class="pre">giant.camera_models.camera_model.CameraModel</span></a></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>The camera model which relates points in the camera frame to points in the image and vice-versa.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.camera_position">
+<span class="sig-name descname"><span class="pre">camera_position</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.camera_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>The position of the camera with respect to the solar system barycenter in the inertial frame at the time the 
+image was captured as a length 3 numpy array of floats.</p>
+<p>Typically this is stored in the <a class="reference internal" href="../../image/giant.image.OpNavImage.html#giant.image.OpNavImage.position" title="giant.image.OpNavImage.position"><code class="xref py py-attr docutils literal notranslate"><span class="pre">OpNavImage.position</span></code></a> attribute</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.camera_velocity">
+<span class="sig-name descname"><span class="pre">camera_velocity</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.camera_velocity" title="Permalink to this definition">¶</a></dt>
+<dd><p>The velocity of the camera with respect to the solar system barycenter in the inertial frame at the time the 
+image was captured as a length 3 numpy array of floats.</p>
+<p>Typically this is stored in the <a class="reference internal" href="../../image/giant.image.OpNavImage.html#giant.image.OpNavImage.velocity" title="giant.image.OpNavImage.velocity"><code class="xref py py-attr docutils literal notranslate"><span class="pre">OpNavImage.velocity</span></code></a> attribute</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.extracted_image_points">
+<span class="sig-name descname"><span class="pre">extracted_image_points</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.extracted_image_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>a 2xn array of the image points of interest to be paired with catalogue stars.</p>
+<p>the first row should correspond to the x locations (columns) and the second row should correspond
+to the y locations (rows).</p>
+<p>typically this is retrieved from a call to <a class="reference internal" href="../../image_processing/giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi.html#giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi" title="giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ImageProcessing.locate_subpixel_poi_in_roi()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.catalogue">
+<span class="sig-name descname"><span class="pre">catalogue</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="../../catalogues/meta_catalogue/giant.catalogues.meta_catalogue.Catalogue.html#giant.catalogues.meta_catalogue.Catalogue" title="giant.catalogues.meta_catalogue.Catalogue"><span class="pre">giant.catalogues.meta_catalogue.Catalogue</span></a></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.catalogue" title="Permalink to this definition">¶</a></dt>
+<dd><p>The star catalogue to use when pairing image points with star locations.</p>
+<p>This typically should be a subclass of the <a class="reference internal" href="../../catalogues/meta_catalogue/giant.catalogues.meta_catalogue.Catalogue.html#giant.catalogues.meta_catalogue.Catalogue" title="giant.catalogues.meta_catalogue.Catalogue"><code class="xref py py-class docutils literal notranslate"><span class="pre">Catalogue</span></code></a> class.  It defaults to the 
+<a class="reference internal" href="../../catalogues/giant_catalogue/giant.catalogues.giant_catalogue.GIANTCatalogue.html#giant.catalogues.giant_catalogue.GIANTCatalogue" title="giant.catalogues.giant_catalogue.GIANTCatalogue"><code class="xref py py-class docutils literal notranslate"><span class="pre">GIANTCatalogue</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.a_priori_rotation_cat2camera">
+<span class="sig-name descname"><span class="pre">a_priori_rotation_cat2camera</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="../../rotations/giant.rotations.Rotation.html#giant.rotations.Rotation" title="giant.rotations.Rotation"><span class="pre">giant.rotations.Rotation</span></a></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.a_priori_rotation_cat2camera" title="Permalink to this definition">¶</a></dt>
+<dd><p>This contains the a priori rotation knowledge from the catalogue frame (typically the inertial frame) to the
+camera frame at the time of the image.</p>
+<p>This typically is stored as the <a class="reference internal" href="../../image/giant.image.OpNavImage.html#giant.image.OpNavImage.rotation_inertial_to_camera" title="giant.image.OpNavImage.rotation_inertial_to_camera"><code class="xref py py-attr docutils literal notranslate"><span class="pre">OpNavImage.rotation_inertial_to_camera</span></code></a> attribute.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.max_magnitude">
+<span class="sig-name descname"><span class="pre">max_magnitude</span></span><em class="property"><span class="pre">:</span> <span class="pre">numbers.Real</span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.max_magnitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum star magnitude to query from the star catalogue.</p>
+<p>This specifies how dim stars are expected to be in the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.extracted_image_points" title="giant.stellar_opnav.star_identification.StarID.extracted_image_points"><code class="xref py py-attr docutils literal notranslate"><span class="pre">extracted_image_points</span></code></a> data set.  This is 
+typically dependent on both the detector and the exposure length of the image under consideration.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.min_magnitude">
+<span class="sig-name descname"><span class="pre">min_magnitude</span></span><em class="property"><span class="pre">:</span> <span class="pre">numbers.Real</span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.min_magnitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>The minimum star magnitude to query from the star catalogue.</p>
+<p>This specifies how dim stars are expected to be in the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.extracted_image_points" title="giant.stellar_opnav.star_identification.StarID.extracted_image_points"><code class="xref py py-attr docutils literal notranslate"><span class="pre">extracted_image_points</span></code></a> data set.  This is 
+typically dependent on both the detector and the exposure length of the image under consideration.</p>
+<p>Generally this should be left alone unless you are worried about over exposed stars (in which case 
+<a class="reference internal" href="../../image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.reject_saturation" title="giant.image_processing.ImageProcessing.reject_saturation"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageProcessing.reject_saturation</span></code></a> may be more useful) or you are doing some special analysis.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.tolerance">
+<span class="sig-name descname"><span class="pre">tolerance</span></span><em class="property"><span class="pre">:</span> <span class="pre">numbers.Real</span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.tolerance" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum distance in units of pixels between a projected catalogue location and an extracted image point
+for a possible pairing to be made for consideration in the RANSAC algorithm.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.max_combos">
+<span class="sig-name descname"><span class="pre">max_combos</span></span><em class="property"><span class="pre">:</span> <span class="pre">int</span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.max_combos" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum number of random combinations to try in the RANSAC algorithm.</p>
+<p>If the total possible number of combinations is less than this attribute then an exhaustive search will be 
+performed instead</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.ransac_tolerance">
+<span class="sig-name descname"><span class="pre">ransac_tolerance</span></span><em class="property"><span class="pre">:</span> <span class="pre">numbers.Real</span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.ransac_tolerance" title="Permalink to this definition">¶</a></dt>
+<dd><p>The tolerance that is required after correcting for attitude errors for a pair to be considered an inlier
+in the RANSAC algorithm in units of pixels.</p>
+<p>This should always be less than the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.tolerance" title="giant.stellar_opnav.star_identification.StarID.tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">tolerance</span></code></a> attribute.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.second_closest_check">
+<span class="sig-name descname"><span class="pre">second_closest_check</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.second_closest_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean specifying whether to ignore extracted image points where multiple catalogue points are within the
+specified tolerance.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.unique_check">
+<span class="sig-name descname"><span class="pre">unique_check</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.unique_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean specifying whether to ignore possible catalogue to image point pairs where multiple image points are 
+within the specified tolerance of a single catalogue point.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.use_mp">
+<span class="sig-name descname"><span class="pre">use_mp</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.use_mp" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean flag specifying whether to use multi-processing to speed up the RANSAC process.</p>
+<p>If this is set to True then all available CPU cores will be utilized to parallelize the RANSAC algorithm 
+computations.  For small combinations, the overhead associated with this can swamp any benefit that may be 
+realized.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.queried_catalogue_image_points">
+<span class="sig-name descname"><span class="pre">queried_catalogue_image_points</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.queried_catalogue_image_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>A 2xn numpy array of points containing the projected image points for all catalogue stars that were queried from 
+the star catalogue  with x (columns) in the first row and y (rows) in the second row.</p>
+<p>Each column corresponds to the same row in <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.queried_catalogue_star_records" title="giant.stellar_opnav.star_identification.StarID.queried_catalogue_star_records"><code class="xref py py-attr docutils literal notranslate"><span class="pre">queried_catalogue_star_records</span></code></a>.</p>
+<p>Until <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.project_stars.html#giant.stellar_opnav.star_identification.StarID.project_stars" title="giant.stellar_opnav.star_identification.StarID.project_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">project_stars()</span></code></a> is called this will be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.queried_catalogue_star_records">
+<span class="sig-name descname"><span class="pre">queried_catalogue_star_records</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.queried_catalogue_star_records" title="Permalink to this definition">¶</a></dt>
+<dd><p>A pandas DataFrame of all the catalogue star records that were queried.</p>
+<p>See the <a class="reference internal" href="../../catalogues/meta_catalogue/giant.catalogues.meta_catalogue.Catalogue.html#giant.catalogues.meta_catalogue.Catalogue" title="giant.catalogues.meta_catalogue.Catalogue"><code class="xref py py-class docutils literal notranslate"><span class="pre">Catalogue</span></code></a> class for a description of the columns of the dataframe.</p>
+<p>Until <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.project_stars.html#giant.stellar_opnav.star_identification.StarID.project_stars" title="giant.stellar_opnav.star_identification.StarID.project_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">project_stars()</span></code></a> is called this will be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.queried_catalogue_unit_vectors">
+<span class="sig-name descname"><span class="pre">queried_catalogue_unit_vectors</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.queried_catalogue_unit_vectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>A 3xn numpy array of unit vectors in the inertial frame for all catalogue stars that were queried from 
+the star catalogue.</p>
+<p>Each column corresponds to the same row in <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.queried_catalogue_star_records" title="giant.stellar_opnav.star_identification.StarID.queried_catalogue_star_records"><code class="xref py py-attr docutils literal notranslate"><span class="pre">queried_catalogue_star_records</span></code></a>.</p>
+<p>Until <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.project_stars.html#giant.stellar_opnav.star_identification.StarID.project_stars" title="giant.stellar_opnav.star_identification.StarID.project_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">project_stars()</span></code></a> is called this will be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.queried_weights_inertial">
+<span class="sig-name descname"><span class="pre">queried_weights_inertial</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.queried_weights_inertial" title="Permalink to this definition">¶</a></dt>
+<dd><p>This contains the formal total uncertainty for each unit vector from the queried catalogue stars.</p>
+<p>Each element in this array corresponds to the same row in the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.queried_catalogue_star_records" title="giant.stellar_opnav.star_identification.StarID.queried_catalogue_star_records"><code class="xref py py-attr docutils literal notranslate"><span class="pre">queried_catalogue_star_records</span></code></a>.</p>
+<p>Until <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.id_stars.html#giant.stellar_opnav.star_identification.StarID.id_stars" title="giant.stellar_opnav.star_identification.StarID.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> is called this will be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.queried_weights_picture">
+<span class="sig-name descname"><span class="pre">queried_weights_picture</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.queried_weights_picture" title="Permalink to this definition">¶</a></dt>
+<dd><p>This contains the formal total uncertainty for each projected pixel location from the queried catalogue stars in
+units of pixels..</p>
+<p>Each element in this array corresponds to the same row in the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.queried_catalogue_star_records" title="giant.stellar_opnav.star_identification.StarID.queried_catalogue_star_records"><code class="xref py py-attr docutils literal notranslate"><span class="pre">queried_catalogue_star_records</span></code></a>.</p>
+<p>Until <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.id_stars.html#giant.stellar_opnav.star_identification.StarID.id_stars" title="giant.stellar_opnav.star_identification.StarID.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> is called this will be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.unmatched_catalogue_image_points">
+<span class="sig-name descname"><span class="pre">unmatched_catalogue_image_points</span></span><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.unmatched_catalogue_image_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>A 2xn numpy array of points containing the projected image points for all catalogue stars that not matched
+with an extracted image point, with x (columns) in the first row and y (rows) in the second row.</p>
+<p>Each column corresponds to the same row in <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.unmatched_catalogue_star_records" title="giant.stellar_opnav.star_identification.StarID.unmatched_catalogue_star_records"><code class="xref py py-attr docutils literal notranslate"><span class="pre">unmatched_catalogue_star_records</span></code></a>.</p>
+<p>Until <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.id_stars.html#giant.stellar_opnav.star_identification.StarID.id_stars" title="giant.stellar_opnav.star_identification.StarID.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> is called this will be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.unmatched_catalogue_star_records">
+<span class="sig-name descname"><span class="pre">unmatched_catalogue_star_records</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.unmatched_catalogue_star_records" title="Permalink to this definition">¶</a></dt>
+<dd><p>A pandas DataFrame of all the catalogue star records that were not matched to an extracted image point in the 
+star identification routine.</p>
+<p>See the <a class="reference internal" href="../../catalogues/meta_catalogue/giant.catalogues.meta_catalogue.Catalogue.html#giant.catalogues.meta_catalogue.Catalogue" title="giant.catalogues.meta_catalogue.Catalogue"><code class="xref py py-class docutils literal notranslate"><span class="pre">Catalogue</span></code></a> class for a description of the columns of the dataframe.</p>
+<p>Until <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.id_stars.html#giant.stellar_opnav.star_identification.StarID.id_stars" title="giant.stellar_opnav.star_identification.StarID.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> is called this will be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.unmatched_catalogue_unit_vectors">
+<span class="sig-name descname"><span class="pre">unmatched_catalogue_unit_vectors</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.unmatched_catalogue_unit_vectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>A 3xn numpy array of unit vectors in the inertial frame for all catalogue stars that were not matched to an
+extracted image point in the star identification routine.</p>
+<p>Each column corresponds to the same row in <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.matched_catalogue_star_records" title="giant.stellar_opnav.star_identification.StarID.matched_catalogue_star_records"><code class="xref py py-attr docutils literal notranslate"><span class="pre">matched_catalogue_star_records</span></code></a>.</p>
+<p>Until <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.id_stars.html#giant.stellar_opnav.star_identification.StarID.id_stars" title="giant.stellar_opnav.star_identification.StarID.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> is called this will be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.unmatched_weights_inertial">
+<span class="sig-name descname"><span class="pre">unmatched_weights_inertial</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.unmatched_weights_inertial" title="Permalink to this definition">¶</a></dt>
+<dd><p>This contains the formal total uncertainty for each unit vector from the queried catalogue stars
+that were not matched with an extracted image point.</p>
+<p>Each element in this array corresponds to the same row in the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.unmatched_catalogue_star_records" title="giant.stellar_opnav.star_identification.StarID.unmatched_catalogue_star_records"><code class="xref py py-attr docutils literal notranslate"><span class="pre">unmatched_catalogue_star_records</span></code></a>.</p>
+<p>Until method <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.id_stars.html#giant.stellar_opnav.star_identification.StarID.id_stars" title="giant.stellar_opnav.star_identification.StarID.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> is called this will be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.unmatched_weights_picture">
+<span class="sig-name descname"><span class="pre">unmatched_weights_picture</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.unmatched_weights_picture" title="Permalink to this definition">¶</a></dt>
+<dd><p>This contains the formal total uncertainty for each projected pixel location from the queried catalogue stars 
+that were not matched with an extracted image point in units of pixels.</p>
+<p>Each element in this array corresponds to the same row in the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.unmatched_catalogue_star_records" title="giant.stellar_opnav.star_identification.StarID.unmatched_catalogue_star_records"><code class="xref py py-attr docutils literal notranslate"><span class="pre">unmatched_catalogue_star_records</span></code></a>.</p>
+<p>Until method <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.id_stars.html#giant.stellar_opnav.star_identification.StarID.id_stars" title="giant.stellar_opnav.star_identification.StarID.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> is called this will be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.matched_catalogue_image_points">
+<span class="sig-name descname"><span class="pre">matched_catalogue_image_points</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.matched_catalogue_image_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>A 2xn numpy array of points containing the projected image points for all catalogue stars that were matched
+with an extracted image point, with x (columns) in the first row and y (rows) in the second row.</p>
+<p>Each column corresponds to the same row in <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.matched_catalogue_star_records" title="giant.stellar_opnav.star_identification.StarID.matched_catalogue_star_records"><code class="xref py py-attr docutils literal notranslate"><span class="pre">matched_catalogue_star_records</span></code></a>.</p>
+<p>Until <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.id_stars.html#giant.stellar_opnav.star_identification.StarID.id_stars" title="giant.stellar_opnav.star_identification.StarID.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> is called this will be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.matched_catalogue_star_records">
+<span class="sig-name descname"><span class="pre">matched_catalogue_star_records</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.matched_catalogue_star_records" title="Permalink to this definition">¶</a></dt>
+<dd><p>A pandas DataFrame of all the catalogue star records that were matched to an extracted image point in the 
+star identification routine.</p>
+<p>See the <a class="reference internal" href="../../catalogues/meta_catalogue/giant.catalogues.meta_catalogue.Catalogue.html#giant.catalogues.meta_catalogue.Catalogue" title="giant.catalogues.meta_catalogue.Catalogue"><code class="xref py py-class docutils literal notranslate"><span class="pre">Catalogue</span></code></a> class for a description of the columns of the dataframe.</p>
+<p>Each row of the dataframe corresponds to the same column index in the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.matched_extracted_image_points" title="giant.stellar_opnav.star_identification.StarID.matched_extracted_image_points"><code class="xref py py-attr docutils literal notranslate"><span class="pre">matched_extracted_image_points</span></code></a>.</p>
+<p>Until <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.id_stars.html#giant.stellar_opnav.star_identification.StarID.id_stars" title="giant.stellar_opnav.star_identification.StarID.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> is called this will be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.matched_catalogue_unit_vectors">
+<span class="sig-name descname"><span class="pre">matched_catalogue_unit_vectors</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.matched_catalogue_unit_vectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>A 3xn numpy array of unit vectors in the inertial frame for all catalogue stars that were matched to an
+extracted image point in the star identification routine.</p>
+<p>Each column corresponds to the same row in <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.matched_catalogue_star_records" title="giant.stellar_opnav.star_identification.StarID.matched_catalogue_star_records"><code class="xref py py-attr docutils literal notranslate"><span class="pre">matched_catalogue_star_records</span></code></a>.</p>
+<p>Until <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.id_stars.html#giant.stellar_opnav.star_identification.StarID.id_stars" title="giant.stellar_opnav.star_identification.StarID.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> is called this will be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.matched_extracted_image_points">
+<span class="sig-name descname"><span class="pre">matched_extracted_image_points</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.matched_extracted_image_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>A 2xn array of the image points of interest that were not paired with a catalogue star in the star 
+identification routine.</p>
+<p>The first row contains to the x locations (columns) and the second row contains to the y locations (rows).</p>
+<p>Each column corresponds to the same row in the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.matched_catalogue_star_records" title="giant.stellar_opnav.star_identification.StarID.matched_catalogue_star_records"><code class="xref py py-attr docutils literal notranslate"><span class="pre">matched_catalogue_star_records</span></code></a> for its pairing.</p>
+<p>Until <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.id_stars.html#giant.stellar_opnav.star_identification.StarID.id_stars" title="giant.stellar_opnav.star_identification.StarID.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> is called this will be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.matched_weights_inertial">
+<span class="sig-name descname"><span class="pre">matched_weights_inertial</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.matched_weights_inertial" title="Permalink to this definition">¶</a></dt>
+<dd><p>This contains the formal total uncertainty for each unit vector from the queried catalogue stars
+that were matched with an extracted image point.</p>
+<p>Each element in this array corresponds to the same row in the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.matched_catalogue_star_records" title="giant.stellar_opnav.star_identification.StarID.matched_catalogue_star_records"><code class="xref py py-attr docutils literal notranslate"><span class="pre">matched_catalogue_star_records</span></code></a>.</p>
+<p>Until methods <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.id_stars.html#giant.stellar_opnav.star_identification.StarID.id_stars" title="giant.stellar_opnav.star_identification.StarID.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> is called this will be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.stellar_opnav.star_identification.StarID.matched_weights_picture">
+<span class="sig-name descname"><span class="pre">matched_weights_picture</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.stellar_opnav.star_identification.StarID.matched_weights_picture" title="Permalink to this definition">¶</a></dt>
+<dd><p>This contains the formal total uncertainty for each projected pixel location from the queried catalogue stars 
+that were matched with an extracted image point in units of pixels.</p>
+<p>Each element in this array corresponds to the same row in the <a class="reference internal" href="#giant.stellar_opnav.star_identification.StarID.matched_catalogue_star_records" title="giant.stellar_opnav.star_identification.StarID.matched_catalogue_star_records"><code class="xref py py-attr docutils literal notranslate"><span class="pre">matched_catalogue_star_records</span></code></a>.</p>
+<p>Until method <a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.id_stars.html#giant.stellar_opnav.star_identification.StarID.id_stars" title="giant.stellar_opnav.star_identification.StarID.id_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">id_stars()</span></code></a> is called this will be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p class="rubric">Summary of Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.id_stars.html#giant.stellar_opnav.star_identification.StarID.id_stars" title="giant.stellar_opnav.star_identification.StarID.id_stars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">id_stars</span></code></a></p></td>
+<td><p>This method attempts to match the image points of interest with catalogue stars.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.ransac.html#giant.stellar_opnav.star_identification.StarID.ransac" title="giant.stellar_opnav.star_identification.StarID.ransac"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ransac</span></code></a></p></td>
+<td><p>This method performs RANSAC on the image poi-catalogue location pairs.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.compute_pointing.html#giant.stellar_opnav.star_identification.StarID.compute_pointing" title="giant.stellar_opnav.star_identification.StarID.compute_pointing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_pointing</span></code></a></p></td>
+<td><p>This method computes the right ascension and declination of an axis of the camera frame in units of degrees.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.project_stars.html#giant.stellar_opnav.star_identification.StarID.project_stars" title="giant.stellar_opnav.star_identification.StarID.project_stars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">project_stars</span></code></a></p></td>
+<td><p>This method queries the star catalogue for predicted stars within the field of view and projects those stars onto the image using the camera model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.query_catalogue.html#giant.stellar_opnav.star_identification.StarID.query_catalogue" title="giant.stellar_opnav.star_identification.StarID.query_catalogue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">query_catalogue</span></code></a></p></td>
+<td><p>This method queries stars from the catalogue within the field of view.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.stellar_opnav.star_identification.StarID.ransac_iter_test.html#giant.stellar_opnav.star_identification.StarID.ransac_iter_test" title="giant.stellar_opnav.star_identification.StarID.ransac_iter_test"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ransac_iter_test</span></code></a></p></td>
+<td><p>This performs a single ransac iteration.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.stellar_opnav.star_identification.html" title="Previous document">giant.stellar_opnav.star_identification</a>
+        </li>
+        <li>
+          <a href="giant.stellar_opnav.star_identification.StarID.id_stars.html" title="Next document">StarID.id_stars</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/stellar_opnav/star_identification/giant.stellar_opnav.star_identification.StarID.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

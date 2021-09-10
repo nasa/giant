@@ -1,0 +1,848 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.catalogues.giant_catalogue &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.catalogues.giant_catalogue</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
+<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module defines the interface to the default GIANT star catalogue.</span>
+
+<span class="sd">Catalogue Description</span>
+<span class="sd">=====================</span>
+
+<span class="sd">The default GIANT star catalogue is a blending of the UCAC4 and Tycho2 catalogues into a stripped down sqlite3 database.</span>
+<span class="sd">This makes retrieval of stars very fast instead of using the UCAC4 or Tycho2 catalogue files themselves and also</span>
+<span class="sd">includes blended stars (stars that are so close together they will appear as a single star in most cameras).  This</span>
+<span class="sd">catalogue includes stars down to about 16th magnitude and should be sufficient for nearly all stellar OpNav needs.</span>
+
+<span class="sd">The current implementation of the database storing this catalogue is a single table with a primary index column of rnm,</span>
+<span class="sd">which contains the unique ID of the provided star from the UCAC4 catalogue.  For blended stars, the index number becomes</span>
+<span class="sd">the negative of the unique ID of the brightest star in the group.  In addition to the index, the following columns are</span>
+<span class="sd">provided</span>
+
+<span class="sd">================= ====== ======== ======================================================================================</span>
+<span class="sd">Column            Units  Type     Description</span>
+<span class="sd">================= ====== ======== ======================================================================================</span>
+<span class="sd">source            N/A    string   The original catalogue source of the star (UCAC4 or Tycho2)</span>
+<span class="sd">zone              N/A    integer  The UCAC4 zone number for the star, if applicable</span>
+<span class="sd">rnz               N/A    integer  The star number in the UCAC4 zone if applicable</span>
+<span class="sd">ra                deg    double   The right ascension of the star in degrees</span>
+<span class="sd">dec               deg    double   The declination of the star in degrees</span>
+<span class="sd">distance          km     double   The distance to the star in km.  If not known then this is replaced with the average</span>
+<span class="sd">                                  distance to a star</span>
+<span class="sd">ra_proper_motion  deg/yr double   The proper motion of the right ascension of the star in degrees per SI year</span>
+<span class="sd">dec_proper_motion deg/yr double   The proper motion of the declination of the star in degrees per SI year</span>
+<span class="sd">mag               mag    double   The visual magnitude of the star.  This is the APASM_V magnitude if available,</span>
+<span class="sd">                                  otherwise the MAGM (model magnitude) from the UCAC4 catalogue.</span>
+<span class="sd">ra_sigma          deg    double   The right ascension uncertainty in units of degrees</span>
+<span class="sd">dec_sigma         deg    double   The declination uncertainty in units of degrees</span>
+<span class="sd">distance_sigma    km     double   The distance uncertainty in units of kilometers.  For stars for which this is not</span>
+<span class="sd">                                  known it is set to a large number</span>
+<span class="sd">ra_pm_sigma       deg/yr double   The right ascension proper motion uncertainty in degrees per SI year.</span>
+<span class="sd">dec_pm_sigma      deg/yr double   The declination proper motion uncertainty in degrees per SI year.</span>
+<span class="sd">================= ====== ======== ======================================================================================</span>
+
+<span class="sd">While this implementation mirrors the :attr:`.GIANT_COLUMNS` currently, and probably will in the future, it isn&#39;t</span>
+<span class="sd">guaranteed to stay that way.  In addition, while this is currently a blend of the UCAC4 and Tycho2 catalogues, in the</span>
+<span class="sd">future it will likely be built from the GAIA DR2 catalogue since this provides much more accurate stars</span>
+<span class="sd">positions/magnitudes for many more stars.</span>
+
+<span class="sd">Use</span>
+<span class="sd">===</span>
+
+<span class="sd">The GIANT catalogue can be used anywhere that a star catalogue is required in GIANT and is generally the default</span>
+<span class="sd">catalogue that is used if you do not override it.  It is stored in a sqlite file in a directory called data in the same</span>
+<span class="sd">directory hosting this file, though it is possible to override this if desired (which you may want to do if you need</span>
+<span class="sd">different versions of the catalogue for different cameras). To access the default catalogue simply initialize this class</span>
+<span class="sd">with no arguments and then call :meth:`~.GIANTCatalogue.query_catalogue` to retrieve the star records that you want.</span>
+
+<span class="sd">This implementation also provides 2 helper methods that can retrieve the original star record from either the Tycho 2 or</span>
+<span class="sd">UCAC4 catalogue (if the star exists in them and is not a blended star).  These are</span>
+<span class="sd">:meth:`~.GIANTCatalogue.get_ucac4_record` and :meth:`~.GIANTCatalogue.get_tycho2_record`.  They take in a pandas</span>
+<span class="sd">DataFrame of stars retrieved from this catalogue and return a dataframe with the original records for those stars.</span>
+<span class="sd">This can be useful if you need more information about a star than what GIANT typically considers.  Just note that these</span>
+<span class="sd">methods will require that the entire UCAC4/Tycho2 star catalogues be downloaded if they aren&#39;t already.</span>
+
+<span class="sd">This module also provides a few functions that can be used to build a new version of this catalogue,</span>
+<span class="sd">:func:`build_catalogue`, :func:`find_star_pairs`, and :func:`blend_stars`.  Typically you won&#39;t interact with these</span>
+<span class="sd">directly and instead will use the script :mod:`~.scripts.build_catalogue` which provides a command line interface,</span>
+<span class="sd">however they&#39;re provided for those who are interested in what they do or in doing some more advanced things.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">repeat</span><span class="p">,</span> <span class="n">starmap</span>
+
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">filterwarnings</span><span class="p">,</span> <span class="n">catch_warnings</span>
+
+<span class="kn">import</span> <span class="nn">sqlite3</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">cKDTree</span>
+
+<span class="kn">from</span> <span class="nn">giant.catalogues.utilities</span> <span class="kn">import</span> <span class="n">radec_to_unit</span><span class="p">,</span> <span class="n">apply_proper_motion</span><span class="p">,</span> <span class="n">radec_distance</span><span class="p">,</span> <span class="n">DEG2RAD</span>
+<span class="kn">from</span> <span class="nn">giant.catalogues.meta_catalogue</span> <span class="kn">import</span> <span class="n">Catalogue</span>
+<span class="kn">from</span> <span class="nn">giant._typing</span> <span class="kn">import</span> <span class="n">PATH</span><span class="p">,</span> <span class="n">Real</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span>
+
+
+<span class="n">DEFAULT_CAT_FILE</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s1">&#39;giant_cat.db&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This specifies the default location of the sqlite3 database file that contains the data for this catalogue.</span>
+
+<span class="sd">This is stored as Path object.  It defaults to a file called &quot;giant_cat.db&quot; in a &quot;data&quot; directory in the same directory </span>
+<span class="sd">containing this file. If you wish to use a different catalogue, typically you should simply provide a key</span>
+<span class="sd">word argument to the class constructor instead of modifying this module attribute.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="n">_STARS_TABLE_SQL</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;CREATE TABLE IF NOT EXISTS &quot;stars&quot; (</span>
+<span class="s1">  &quot;rnm&quot; INTEGER UNIQUE PRIMARY KEY NOT NULL ON CONFLICT REPLACE,</span>
+<span class="s1">  &quot;source&quot; TEXT,</span>
+<span class="s1">  &quot;zone&quot; INTEGER,</span>
+<span class="s1">  &quot;rnz&quot; INTEGER,</span>
+<span class="s1">  &quot;ra&quot; REAL,</span>
+<span class="s1">  &quot;dec&quot; REAL,</span>
+<span class="s1">  &quot;distance&quot; REAL,</span>
+<span class="s1">  &quot;ra_proper_motion&quot; REAL,</span>
+<span class="s1">  &quot;dec_proper_motion&quot; REAL,</span>
+<span class="s1">  &quot;mag&quot; REAL,</span>
+<span class="s1">  &quot;ra_sigma&quot; REAL,</span>
+<span class="s1">  &quot;dec_sigma&quot; REAL,</span>
+<span class="s1">  &quot;distance_sigma&quot; REAL,</span>
+<span class="s1">  &quot;ra_pm_sigma&quot; REAL,</span>
+<span class="s1">  &quot;dec_pm_sigma&quot; REAL</span>
+<span class="s1">)&#39;&#39;&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This SQL command creates a new table in the sqlite3 database file called stars for storing the GIANT catalogue</span>
+
+<span class="sd">This shouldn&#39;t be used by the user and may change without notice.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="build_catalogue"><a class="viewcode-back" href="../../../catalogues/giant_catalogue/giant.catalogues.giant_catalogue.build_catalogue.html#giant.catalogues.giant_catalogue.build_catalogue">[docs]</a><span class="k">def</span> <span class="nf">build_catalogue</span><span class="p">(</span><span class="n">database_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PATH</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">limiting_magnitude</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">number_of_stars</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+                    <span class="n">use_tycho_mag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">limiting_separation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.04</span><span class="p">,</span> <span class="n">blending_magnitude</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
+                    <span class="n">ucac_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PATH</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build a sqlite3 catalogue from the UCAC catalogue for faster query times.</span>
+
+<span class="sd">    This function can be used to build a new GIANT catalogue (or overwrite an old one) from the UCAC4/Tycho2 star</span>
+<span class="sd">    catalogues.  Typically a user will not use this directly and instead will use the command line utility</span>
+<span class="sd">    :mod:`~.scripts.build_catalogue`.</span>
+
+<span class="sd">    If you want to use this function, you can adjust how (and where) the catalogue is built by adjusting the key word</span>
+<span class="sd">    arguments.  Note that this will require downloading the UCAC4 catalogue (if it isn&#39;t already available) and possibly</span>
+<span class="sd">    the Tycho2 Catalogue.  In addition, building the catalogue can take a long time, so you will want to have a period</span>
+<span class="sd">    where you can leave this run for a while without interruption to ensure that the catalogue is built successfully and</span>
+<span class="sd">    not corrupted.</span>
+
+<span class="sd">    :param database_file: The file to save the catalogue database to</span>
+<span class="sd">    :param limiting_magnitude: The maximum magnitude to include in the catalogue</span>
+<span class="sd">    :param number_of_stars: The maximum number of stars that can be blended together in any group.  To turn off star</span>
+<span class="sd">                            blending, set this to 0.</span>
+<span class="sd">    :param use_tycho_mag: A flag specifying whether to replace the UCAC4/APASM_V magnitudes with the Tycho VT magnitude.</span>
+<span class="sd">                          The Tycho VTMag is more accurate, but this can make things take even longer to compile so by</span>
+<span class="sd">                          default it is not used.</span>
+<span class="sd">    :param limiting_separation: The maximum separation between stars for them to be considered for blending in degrees.</span>
+<span class="sd">                                Typically this should be set to around the IFOV on the detector you are considering.</span>
+<span class="sd">    :param blending_magnitude: The magnitude of the blended star for it to be included as a blended star in the</span>
+<span class="sd">                               catalogue.</span>
+<span class="sd">    :param ucac_dir: The directory containing the UCAC4 data files.  This is passed to the :class:`.UCAC4` class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">with</span> <span class="n">catch_warnings</span><span class="p">:</span>
+        <span class="c1"># ignore dumb warnings</span>
+        <span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s1">&#39;The requested UCAC4&#39;</span><span class="p">)</span>
+
+        <span class="c1"># import the UCAC4 interface and default directory</span>
+        <span class="kn">from</span> <span class="nn">giant.catalogues.ucac</span> <span class="kn">import</span> <span class="n">UCAC4</span><span class="p">,</span> <span class="n">UCAC_DIR</span>
+
+        <span class="c1"># use the default if the user didn&#39;t specify</span>
+        <span class="k">if</span> <span class="n">database_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">database_file</span> <span class="o">=</span> <span class="n">DEFAULT_CAT_FILE</span>
+
+        <span class="c1"># connect to the database</span>
+        <span class="n">db_con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">database_file</span><span class="p">))</span>
+
+        <span class="c1"># get the UCAC instance</span>
+        <span class="k">if</span> <span class="n">ucac_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ucac</span> <span class="o">=</span> <span class="n">UCAC4</span><span class="p">(</span><span class="n">UCAC_DIR</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ucac</span> <span class="o">=</span> <span class="n">UCAC4</span><span class="p">(</span><span class="n">ucac_dir</span><span class="p">)</span>
+
+        <span class="c1"># determine the magnitude to query from the catalogue</span>
+        <span class="k">if</span> <span class="n">number_of_stars</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">blend_mag</span> <span class="o">=</span> <span class="o">-</span><span class="mf">4.0</span>
+            <span class="n">query_mag</span> <span class="o">=</span> <span class="n">limiting_magnitude</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">blend_mag</span> <span class="o">=</span> <span class="n">blending_magnitude</span> <span class="o">+</span> <span class="p">(</span><span class="mf">2.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">number_of_stars</span><span class="p">))</span>
+            <span class="n">query_mag</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">limiting_magnitude</span><span class="p">,</span> <span class="n">blend_mag</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Query mag </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query_mag</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Create the table/indices in the database</span>
+        <span class="n">db_con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;DROP TABLE IF EXISTS stars&quot;</span><span class="p">)</span>
+        <span class="n">db_con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">_STARS_TABLE_SQL</span><span class="p">)</span>
+        <span class="n">db_con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;CREATE UNIQUE INDEX idx_rnm on stars(rnm)&quot;</span><span class="p">)</span>
+        <span class="n">db_con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;CREATE INDEX idx_ra on stars(ra)&quot;</span><span class="p">)</span>
+        <span class="n">db_con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;CREATE INDEX idx_dec on stars(dec)&quot;</span><span class="p">)</span>
+        <span class="n">db_con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;CREATE INDEX idx_mag on stars(mag)&quot;</span><span class="p">)</span>
+        <span class="n">db_con</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;creating database&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">number_of_stars</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># dump the UCAC4 stars to the database</span>
+            <span class="n">ucac</span><span class="o">.</span><span class="n">dump_to_sqlite</span><span class="p">(</span><span class="n">db_con</span><span class="p">,</span> <span class="n">limiting_mag</span><span class="o">=</span><span class="n">query_mag</span><span class="p">,</span> <span class="n">use_tycho_mag</span><span class="o">=</span><span class="n">use_tycho_mag</span><span class="p">,</span>
+                                <span class="n">return_locations</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># dump the UCAC4 stars to the database</span>
+            <span class="n">records</span> <span class="o">=</span> <span class="n">ucac</span><span class="o">.</span><span class="n">dump_to_sqlite</span><span class="p">(</span><span class="n">db_con</span><span class="p">,</span> <span class="n">limiting_mag</span><span class="o">=</span><span class="n">query_mag</span><span class="p">,</span> <span class="n">use_tycho_mag</span><span class="o">=</span><span class="n">use_tycho_mag</span><span class="p">,</span>
+                                          <span class="n">return_locations</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_mag</span><span class="o">=</span><span class="n">blend_mag</span><span class="p">)</span>
+
+            <span class="c1"># pair the stars based on distance</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;finding close star pairs&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">pairs</span> <span class="o">=</span> <span class="n">find_star_pairs</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="n">limiting_separation</span><span class="p">)</span>
+
+            <span class="c1"># get rid of the old dataframe for memory reasons</span>
+            <span class="k">del</span> <span class="n">records</span>
+
+            <span class="c1"># blend the stars together</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;blending stars&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">combined_stars</span> <span class="o">=</span> <span class="n">blend_stars</span><span class="p">(</span><span class="n">pairs</span><span class="p">,</span> <span class="n">db_con</span><span class="p">,</span> <span class="n">limiting_magnitude</span><span class="p">)</span>
+
+            <span class="c1"># rename the index column</span>
+            <span class="n">combined_stars</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;rnm&#39;</span>
+
+            <span class="c1"># dump to the stars table in the database</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;adding blended stars to db&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">combined_stars</span><span class="o">.</span><span class="n">to_sql</span><span class="p">(</span><span class="s1">&#39;stars&#39;</span><span class="p">,</span> <span class="n">db_con</span><span class="p">,</span> <span class="n">if_exists</span><span class="o">=</span><span class="s1">&#39;append&#39;</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_repair</span><span class="p">(</span><span class="n">star_records</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pairs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This helper function combines multiple pairs and gets rid of duplicates</span>
+
+<span class="sd">    Don&#39;t use this yourself.</span>
+
+<span class="sd">    :param star_records: The dataframe of star records</span>
+<span class="sd">    :param pairs: The dataframe specifying groups of stars</span>
+<span class="sd">    :return: The dataframe specifying groups of stars after correcting the groupings</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get the unique right hand sides</span>
+    <span class="n">unique_others</span> <span class="o">=</span> <span class="n">pairs</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+
+    <span class="n">paired_dict</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pairs</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+    <span class="n">removes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">initial</span><span class="p">,</span> <span class="n">others</span> <span class="ow">in</span> <span class="n">paired_dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="n">sets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">starts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># look for where initial is also paired to another star</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">initial</span> <span class="ow">in</span> <span class="n">unique_others</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">initial</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">removes</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">local_initial</span><span class="p">,</span> <span class="n">local_others</span> <span class="ow">in</span> <span class="n">paired_dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">local_initial</span> <span class="o">==</span> <span class="n">initial</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">elif</span> <span class="n">initial</span> <span class="ow">in</span> <span class="n">local_others</span><span class="p">:</span>
+                    <span class="c1"># if the others is a subset of the first group we don&#39;t need to do anything</span>
+                    <span class="k">if</span> <span class="n">others</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">local_others</span><span class="p">):</span>
+                        <span class="c1"># should we also remove local_initial here?</span>
+                        <span class="k">continue</span>
+                    <span class="c1"># otherwise store them for use</span>
+                    <span class="n">sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">local_others</span><span class="p">)</span>
+                    <span class="n">starts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">local_initial</span><span class="p">)</span>
+            <span class="c1"># if anything needs modified</span>
+            <span class="k">if</span> <span class="n">starts</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">local_initial</span><span class="p">,</span> <span class="n">local_others</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">sets</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">starts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="c1"># keep which ever has the higher magnitude on the left hand side and discard the other</span>
+                        <span class="k">if</span> <span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">local_initial</span><span class="p">,</span> <span class="s2">&quot;mag&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">initial</span><span class="p">,</span> <span class="s2">&quot;mag&quot;</span><span class="p">]:</span>
+                            <span class="n">local_others</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">others</span><span class="p">)</span>
+                            <span class="n">removes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">initial</span><span class="p">)</span>
+
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">others</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">local_others</span><span class="p">)</span>
+                            <span class="n">removes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">local_initial</span><span class="p">)</span>
+
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># keep the brightest magnitude</span>
+                        <span class="n">best</span> <span class="o">=</span> <span class="n">initial</span>
+                        <span class="n">best_mag</span> <span class="o">=</span> <span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">initial</span><span class="p">,</span> <span class="s2">&quot;mag&quot;</span><span class="p">]</span>
+                        <span class="n">best_set</span> <span class="o">=</span> <span class="n">others</span>
+                        <span class="k">for</span> <span class="n">o</span><span class="p">,</span> <span class="n">ls</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">sets</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">best_mag</span> <span class="o">&gt;</span> <span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">o</span><span class="p">,</span> <span class="s2">&quot;mag&quot;</span><span class="p">]:</span>
+                                <span class="n">best_mag</span> <span class="o">=</span> <span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">o</span><span class="p">,</span> <span class="s2">&quot;mag&quot;</span><span class="p">]</span>
+                                <span class="n">best</span> <span class="o">=</span> <span class="n">o</span>
+                                <span class="n">best_set</span> <span class="o">=</span> <span class="n">ls</span>
+
+                        <span class="c1"># get rid of whichever aren&#39;t the brightest and feed it</span>
+                        <span class="k">if</span> <span class="n">best</span> <span class="o">!=</span> <span class="n">initial</span><span class="p">:</span>
+                            <span class="n">removes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">initial</span><span class="p">)</span>
+                            <span class="n">best_set</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">others</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">local_local_initial</span><span class="p">,</span> <span class="n">local_local_others</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">sets</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">local_local_initial</span> <span class="o">==</span> <span class="n">best</span><span class="p">:</span>
+                                <span class="k">continue</span>
+                            <span class="n">best_set</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">local_local_others</span><span class="p">)</span>
+                            <span class="n">removes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">local_local_initial</span><span class="p">)</span>
+
+    <span class="c1"># get rid of the bad ones</span>
+    <span class="k">return</span> <span class="n">paired_dict</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">removes</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="find_star_pairs"><a class="viewcode-back" href="../../../catalogues/giant_catalogue/giant.catalogues.giant_catalogue.find_star_pairs.html#giant.catalogues.giant_catalogue.find_star_pairs">[docs]</a><span class="k">def</span> <span class="nf">find_star_pairs</span><span class="p">(</span><span class="n">star_records</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">max_separation</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This identifies possible star pairs based on separation.</span>
+
+<span class="sd">    Stars are paired if their max separation is less that the input ``max_separation`` in degrees. This is done by</span>
+<span class="sd">    creating unit vectors for all of the stars and then doing a pair query using a KDTree.  The pairs are sorted based</span>
+<span class="sd">    on magnitude so that the first star in each pair is brighter.</span>
+
+<span class="sd">    The result of this function will be a dataframe where the first column &quot;a&quot; is the primary star and the second column</span>
+<span class="sd">    &quot;b&quot; is a set of stars that should be combined with &quot;a&quot;.</span>
+
+<span class="sd">    Generally this is not used directly by the user.  Instead see :func:`build_catalogue` or script</span>
+<span class="sd">    :mod:`~.scripts.build_catalogue`.</span>
+
+<span class="sd">    :param star_records: The dataframe containing the stars that are to be paired</span>
+<span class="sd">    :param max_separation: The maximum separation in degrees between stars for them to be paired</span>
+<span class="sd">    :return: A dataframe specifying stars to pair together.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># get the unit vectors</span>
+    <span class="n">units</span> <span class="o">=</span> <span class="n">radec_to_unit</span><span class="p">(</span><span class="n">star_records</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">values</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">,</span> <span class="n">star_records</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">values</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># build the kdtree</span>
+    <span class="c1"># noinspection PyArgumentList</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">cKDTree</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="n">compact_nodes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">balanced_tree</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># find the pairs.  Tell pycharm to stop complaining because numpy/scipy don&#39;t document right</span>
+    <span class="c1"># noinspection PyArgumentList,PyUnresolvedReferences</span>
+    <span class="n">pairs</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">query_pairs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">max_separation</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">360</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">output_type</span><span class="o">=</span><span class="s1">&#39;ndarray&#39;</span><span class="p">)</span>
+
+    <span class="c1"># get the pairs</span>
+    <span class="n">pairs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">star_records</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">pairs</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">])</span>
+
+    <span class="c1"># sort the pairs on magnitude</span>
+    <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="o">.</span><span class="n">itertuples</span><span class="p">():</span>
+
+        <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pair</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="s2">&quot;mag&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="nb">float</span><span class="p">(</span><span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pair</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="s2">&quot;mag&quot;</span><span class="p">]):</span>
+            <span class="n">pairs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pair</span><span class="o">.</span><span class="n">Index</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">b</span>
+            <span class="n">pairs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pair</span><span class="o">.</span><span class="n">Index</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">a</span>
+
+    <span class="c1"># condense pairs so that stars aren&#39;t in multiple pairs</span>
+    <span class="k">return</span> <span class="n">_repair</span><span class="p">(</span><span class="n">star_records</span><span class="p">,</span> <span class="n">pairs</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_blend_stars</span><span class="p">(</span><span class="n">input_group</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">database_connection</span><span class="p">:</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
+                 <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">limiting_mag</span><span class="p">:</span> <span class="n">Real</span><span class="p">,</span> <span class="n">reference_mag</span><span class="p">:</span> <span class="n">Real</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This helper function computes a blended star from the input star indices.</span>
+
+<span class="sd">    This function queries the star records from the database for memory reasons (so that we can use multiprocessing).</span>
+
+<span class="sd">    The stars are blended into a single record with a combined magnitude, right ascension, declination, and proper</span>
+<span class="sd">    motion (distance is not considered).  This is based off of an internal note on blending stars that Sean Semper sent.</span>
+
+<span class="sd">    :param input_group: The group of stars to be blended</span>
+<span class="sd">    :param database_connection: The database connection to retrieve the star records from</span>
+<span class="sd">    :param index: The index of the group of stars that we&#39;re working on.  Purely for printing purposed</span>
+<span class="sd">    :param limiting_mag: The magnitude that the blended stars must reach for them to be included</span>
+<span class="sd">    :param reference_mag: The reference magnitude to use when blending the stars.</span>
+<span class="sd">    :return: A series with the blended star, or ``None`` if the limiting magnitude wasn&#39;t met</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># interpret the group</span>
+    <span class="n">initial</span> <span class="o">=</span> <span class="n">input_group</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">group</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">input_group</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+    <span class="c1"># all the ids we need to query</span>
+    <span class="n">star_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">initial</span><span class="p">]</span> <span class="o">+</span> <span class="n">group</span>
+    <span class="c1"># the security risk is minimized here by calling int on all of the elements in the star_ids list</span>
+    <span class="c1"># its already minimal because a user should never be directly interacting with this function anyway</span>
+    <span class="n">star_records</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s1">&#39;select * from stars where rnm in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">star_ids</span><span class="p">))),</span>  <span class="c1"># nosec</span>
+                               <span class="n">database_connection</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="s1">&#39;rnm&#39;</span><span class="p">)</span>
+
+    <span class="c1"># get the initial star from the dataframe</span>
+    <span class="n">initial_star</span> <span class="o">=</span> <span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">initial</span><span class="p">]</span>
+    <span class="c1"># get the rest of the stars from the dataframe</span>
+    <span class="n">other_stars</span> <span class="o">=</span> <span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">group</span><span class="p">]</span>
+
+    <span class="c1"># compute the weights for each star</span>
+    <span class="n">initial_weight</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="mf">0.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">initial_star</span><span class="o">.</span><span class="n">mag</span> <span class="o">-</span> <span class="n">reference_mag</span><span class="p">)))</span>
+    <span class="n">other_weights</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="mf">0.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">other_stars</span><span class="o">.</span><span class="n">mag</span><span class="o">.</span><span class="n">values</span> <span class="o">-</span> <span class="n">reference_mag</span><span class="p">)))</span>
+
+    <span class="c1"># determine the reference declination from the brightest star</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">initial_star</span><span class="o">.</span><span class="n">mag</span> <span class="o">&lt;=</span> <span class="n">other_stars</span><span class="o">.</span><span class="n">mag</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="n">ref_dec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">initial_star</span><span class="o">.</span><span class="n">dec</span><span class="o">*</span><span class="n">DEG2RAD</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ref_dec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">other_stars</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">other_stars</span><span class="o">.</span><span class="n">mag</span> <span class="o">==</span> <span class="n">other_stars</span><span class="o">.</span><span class="n">mag</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="s2">&quot;dec&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">DEG2RAD</span><span class="p">)</span>
+
+    <span class="c1"># compute the combined magnitude</span>
+    <span class="n">combined_mag</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">((</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.4</span> <span class="o">*</span> <span class="n">initial_star</span><span class="o">.</span><span class="n">mag</span><span class="p">)</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.4</span> <span class="o">*</span> <span class="n">other_stars</span><span class="o">.</span><span class="n">mag</span><span class="o">.</span><span class="n">values</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+
+    <span class="c1"># if the blended star is too dim stop here</span>
+    <span class="k">if</span> <span class="n">combined_mag</span> <span class="o">&gt;</span> <span class="n">limiting_mag</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1"># make the Series to return</span>
+    <span class="n">combined_star</span> <span class="o">=</span> <span class="n">initial_star</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="c1"># set the blended magnitude</span>
+    <span class="n">combined_star</span><span class="o">.</span><span class="n">mag</span> <span class="o">=</span> <span class="n">combined_mag</span>
+    <span class="c1"># update the RNM to be negative</span>
+    <span class="n">combined_star</span><span class="o">.</span><span class="n">name</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="c1"># compute the combined position</span>
+    <span class="n">denominator</span> <span class="o">=</span> <span class="n">initial_weight</span> <span class="o">+</span> <span class="n">other_weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">combined_star</span><span class="o">.</span><span class="n">ra</span> <span class="o">=</span> <span class="p">(</span><span class="n">initial_weight</span> <span class="o">*</span> <span class="n">initial_star</span><span class="o">.</span><span class="n">ra</span> <span class="o">*</span> <span class="n">ref_dec</span> <span class="o">+</span>
+                        <span class="p">(</span><span class="n">other_weights</span> <span class="o">*</span> <span class="n">other_stars</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">values</span> <span class="o">*</span> <span class="n">ref_dec</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">/</span> <span class="n">denominator</span> <span class="o">/</span> <span class="n">ref_dec</span>
+    <span class="n">combined_star</span><span class="o">.</span><span class="n">dec</span> <span class="o">=</span> <span class="p">(</span><span class="n">initial_weight</span> <span class="o">*</span> <span class="n">initial_star</span><span class="o">.</span><span class="n">dec</span> <span class="o">+</span>
+                         <span class="p">(</span><span class="n">other_weights</span> <span class="o">*</span> <span class="n">other_stars</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">/</span> <span class="n">denominator</span>
+    <span class="n">combined_star</span><span class="o">.</span><span class="n">ra_proper_motion</span> <span class="o">=</span> <span class="p">((</span><span class="n">initial_weight</span> <span class="o">*</span> <span class="n">initial_star</span><span class="o">.</span><span class="n">ra_proper_motion</span> <span class="o">*</span> <span class="n">ref_dec</span> <span class="o">+</span>
+                                      <span class="p">(</span><span class="n">other_weights</span> <span class="o">*</span> <span class="n">other_stars</span><span class="o">.</span><span class="n">ra_proper_motion</span><span class="o">.</span><span class="n">values</span> <span class="o">*</span> <span class="n">ref_dec</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">/</span>
+                                      <span class="n">denominator</span> <span class="o">/</span> <span class="n">ref_dec</span><span class="p">)</span>
+    <span class="n">combined_star</span><span class="o">.</span><span class="n">dec_proper_motion</span> <span class="o">=</span> <span class="p">((</span><span class="n">initial_weight</span> <span class="o">*</span> <span class="n">initial_star</span><span class="o">.</span><span class="n">dec_proper_motion</span> <span class="o">+</span>
+                                        <span class="p">(</span><span class="n">other_weights</span> <span class="o">*</span> <span class="n">other_stars</span><span class="o">.</span><span class="n">dec_proper_motion</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">/</span> <span class="n">denominator</span><span class="p">)</span>
+
+    <span class="c1"># give a status</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Pair </span><span class="si">{}</span><span class="s1"> blended in </span><span class="si">{:.3f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">combined_star</span>
+
+
+<div class="viewcode-block" id="blend_stars"><a class="viewcode-back" href="../../../catalogues/giant_catalogue/giant.catalogues.giant_catalogue.blend_stars.html#giant.catalogues.giant_catalogue.blend_stars">[docs]</a><span class="k">def</span> <span class="nf">blend_stars</span><span class="p">(</span><span class="n">groups</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">database_connection</span><span class="p">:</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">limiting_mag</span><span class="p">:</span> <span class="n">Real</span><span class="p">,</span>
+                <span class="n">ref_mag</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Blends groups of stars together into a single &quot;apparent&quot; star as viewed by a camera.</span>
+
+<span class="sd">    Star magnitude, right ascension, declination, and proper motion are all blended in the final product.  The blending</span>
+<span class="sd">    is based off of an internal memo by Sean Semper.</span>
+
+<span class="sd">    The groups input should provide 2 columns, the first column &quot;a&quot; should provide the primary (brightest) star in each</span>
+<span class="sd">    group.  The second column &quot;b&quot; should provide a set of all of the stars that are to be blended to each other an &quot;a&quot;.</span>
+<span class="sd">    This is what is returned by :func:`find_star_pairs`.  This function uses the database to retrieve the individual</span>
+<span class="sd">    star records for memory purposes.</span>
+
+<span class="sd">    The blended star is given an id that is the negative of the brightest star in the group.  The blended stars are</span>
+<span class="sd">    returned as a pandas dataframe.</span>
+
+<span class="sd">    Typically this is not used directly by the user.  Instead se :func:`build_catalogue` or script</span>
+<span class="sd">    :mod:`.scripts.build_catalogue`.</span>
+
+<span class="sd">    :param groups: The dataframe specifying the groups to blend</span>
+<span class="sd">    :param database_connection: The connection to the sqlite3 database to retrieve the stars from</span>
+<span class="sd">    :param limiting_mag: The limiting magnitude that blended stars must achieve for them to be included</span>
+<span class="sd">    :param ref_mag: The reference magnitude to use when blending the stars</span>
+<span class="sd">    :return: The dataframe of the blended apparent stars</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># get the number of groups we need to blend for reporting purposes</span>
+    <span class="n">number_of_groups</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span>
+
+    <span class="c1"># notify the user</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> stars to blend&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">number_of_groups</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># combine the stars.  Perhaps can use multiprocessing for this</span>
+    <span class="n">combined_stars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">starmap</span><span class="p">(</span><span class="n">_blend_stars</span><span class="p">,</span>
+                                  <span class="nb">zip</span><span class="p">(</span><span class="n">groups</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(),</span>
+                                      <span class="n">repeat</span><span class="p">(</span><span class="n">database_connection</span><span class="p">),</span>
+                                      <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">number_of_groups</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                                      <span class="n">repeat</span><span class="p">(</span><span class="n">limiting_mag</span><span class="p">),</span>
+                                      <span class="n">repeat</span><span class="p">(</span><span class="n">ref_mag</span><span class="p">))))</span>
+
+    <span class="c1"># return the dataframe by concatenating the individual blended series.  This will ignore Nones</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">combined_stars</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">T</span></div>
+
+
+<div class="viewcode-block" id="GIANTCatalogue"><a class="viewcode-back" href="../../../catalogues/giant_catalogue/giant.catalogues.giant_catalogue.GIANTCatalogue.html#giant.catalogues.giant_catalogue.GIANTCatalogue">[docs]</a><span class="k">class</span> <span class="nc">GIANTCatalogue</span><span class="p">(</span><span class="n">Catalogue</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class provides access to the default GIANT star catalogue built from the UCAC4 and Tycho2 Catalogues.</span>
+
+<span class="sd">    This class is a fully functional catalogue for GIANT and can be used anywhere that GIANT expects a star catalogue.</span>
+<span class="sd">    As such, it implements the :attr:`include_proper_motion` to turn proper motion on or off as well as the method</span>
+<span class="sd">    :meth:`query_catalogue` which is how stars are queried into the GIANT format.  In addition, this catalogue provides</span>
+<span class="sd">    2 additional methods :meth:`get_ucac4_record` and :meth:`get_tycho2_record` to get the original record that was</span>
+<span class="sd">    used to create the GIANT catalogue record.  These methods aren&#39;t used anywhere by GIANT itself, but may be useful if</span>
+<span class="sd">    you are doing some advanced analysis.</span>
+
+<span class="sd">    To use this class simply initialize it, pointing to the file where the database is stored (if you are using one that</span>
+<span class="sd">    is different from the default).  If the catalogue file does not exist it will ask you if you want to build it, and</span>
+<span class="sd">    if you answer yes, it will dispatch to :func:`build_catalogue` (which takes a long time in most instances).  Once</span>
+<span class="sd">    the class is initialized, you can query stars from it using :meth:`query_catalogue` which will return a dataframe of</span>
+<span class="sd">    the star records with :attr:`.GIANT_COLUMNS` columns.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_file</span><span class="p">:</span> <span class="n">PATH</span> <span class="o">=</span> <span class="n">DEFAULT_CAT_FILE</span><span class="p">,</span> <span class="n">include_proper_motion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param db_file: The file containing the sqlite3 database that the stars are stored in</span>
+<span class="sd">        :param include_proper_motion: A boolean flag specifying whether to apply proper motion when retrieving the stars</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">include_proper_motion</span><span class="o">=</span><span class="n">include_proper_motion</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">catalogue_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The path to the catalogue file containing the database</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_catalogue</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">sqlite3</span><span class="o">.</span><span class="n">Connection</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The sqlite3 catalogue connection </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">db_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_catalogue</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">catalogue_path</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;GIANT catalogue not found at </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">db_file</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">user_response</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Would you like to build the GIANT catalogue from the UCAC catalogue (y/n)?</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                  <span class="s2">&quot;    WARNING: THIS MAY TAKE A LONG TIME AND WILL USE UP 600 MB OF SPACE!</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">user_response</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+                <span class="n">build_catalogue</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">_catalogue</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">catalogue_path</span><span class="p">))</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s1">&#39;The GIANT catalogue database file cannot be found&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">catalogue_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_proper_motion</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">catalogue</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Connection</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is a sqlite3 connection object which is used to read from the catalogue.</span>
+
+<span class="sd">        It should not be used externally unless you really know what you&#39;re doing...</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_catalogue</span>
+
+    <span class="nd">@catalogue</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">catalogue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">err</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;You cannot set the catalogue directly.  It is purely for internal use.</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                             <span class="s1">&#39;If you really know what you are doing, you can set the catalogue file by accessing</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                             <span class="s1">&#39;the _catalogue attribute, however this is highly warned against.&#39;</span><span class="p">)</span>
+
+    <span class="nd">@catalogue</span><span class="o">.</span><span class="n">deleter</span>
+    <span class="k">def</span> <span class="nf">catalogue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_catalogue</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<div class="viewcode-block" id="GIANTCatalogue.query_catalogue"><a class="viewcode-back" href="../../../catalogues/giant_catalogue/giant.catalogues.giant_catalogue.GIANTCatalogue.query_catalogue.html#giant.catalogues.giant_catalogue.GIANTCatalogue.query_catalogue">[docs]</a>    <span class="k">def</span> <span class="nf">query_catalogue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ARRAY_LIKE</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">min_ra</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">max_ra</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">360</span><span class="p">,</span>
+                        <span class="n">min_dec</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">90</span><span class="p">,</span> <span class="n">min_mag</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="n">max_mag</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+                        <span class="n">search_center</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ARRAY_LIKE</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">search_radius</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">new_epoch</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">datetime</span><span class="p">,</span> <span class="n">Real</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method queries stars from the catalogue that meet specified constraints and returns them as a DataFrame</span>
+<span class="sd">        with columns of :attr:`.GIANT_COLUMNS`.</span>
+
+<span class="sd">        Stars can either be queried by ID directly or by right ascension/declination/magnitude. You cannot filter using</span>
+<span class="sd">        both with this method.  If :attr:`apply_proper_motion` is ``True`` then this will shift the stars to the new</span>
+<span class="sd">        epoch input by the user (``new_epoch``) using proper motion.</span>
+
+<span class="sd">        :param ids: A sequence of star ids to retrieve from the catalogue.  What these ids are vary from catalogue to</span>
+<span class="sd">                    catalogue so see the catalogue documentation for details.</span>
+<span class="sd">        :param min_ra: The minimum ra bound to query stars from in degrees</span>
+<span class="sd">        :param max_ra: The maximum ra bound to query stars from in degrees</span>
+<span class="sd">        :param min_dec: The minimum declination to query stars from in degrees</span>
+<span class="sd">        :param max_dec: The maximum declination to query stars from in degrees</span>
+<span class="sd">        :param min_mag: The minimum magnitude to query stars from.  Recall that magnitude is inverse (so lower</span>
+<span class="sd">                        magnitude is a dimmer star)</span>
+<span class="sd">        :param max_mag: The maximum magnitude to query stars from.  Recall that magnitude is inverse (so higher</span>
+<span class="sd">                        magnitude is a dimmer star)</span>
+<span class="sd">        :param search_center: The center of a search cone as a ra/dec pair.</span>
+<span class="sd">        :param search_radius: The radius about the center of the search cone</span>
+<span class="sd">        :param new_epoch: The epoch to translate the stars to using proper motion if :attr:`apply_proper_motion` is</span>
+<span class="sd">                          turned on</span>
+<span class="sd">        :return: A Pandas dataframe with columns :attr:`GIANT_COLUMNS`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">records</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_from_ids</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">records</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_all_with_criteria</span><span class="p">(</span><span class="n">min_ra</span><span class="o">=</span><span class="n">min_ra</span><span class="p">,</span> <span class="n">max_ra</span><span class="o">=</span><span class="n">max_ra</span><span class="p">,</span> <span class="n">min_dec</span><span class="o">=</span><span class="n">min_dec</span><span class="p">,</span> <span class="n">max_dec</span><span class="o">=</span><span class="n">max_dec</span><span class="p">,</span>
+                                                 <span class="n">min_mag</span><span class="o">=</span><span class="n">min_mag</span><span class="p">,</span> <span class="n">max_mag</span><span class="o">=</span><span class="n">max_mag</span><span class="p">,</span>
+                                                 <span class="n">search_center</span><span class="o">=</span><span class="n">search_center</span><span class="p">,</span> <span class="n">search_radius</span><span class="o">=</span><span class="n">search_radius</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_proper_motion</span> <span class="ow">and</span> <span class="p">(</span><span class="n">new_epoch</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">apply_proper_motion</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="n">new_epoch</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">records</span></div>
+
+<div class="viewcode-block" id="GIANTCatalogue.get_from_ids"><a class="viewcode-back" href="../../../catalogues/giant_catalogue/giant.catalogues.giant_catalogue.GIANTCatalogue.get_from_ids.html#giant.catalogues.giant_catalogue.GIANTCatalogue.get_from_ids">[docs]</a>    <span class="k">def</span> <span class="nf">get_from_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method queries star records from the database based off of ID (``rnm`` in the database).</span>
+
+<span class="sd">        This can be used if you are interested in a particular set of stars.  The stars are returned in the GIANT</span>
+<span class="sd">        DataFrame format according the :attr:`.GIANT_COLUMNS`.</span>
+
+<span class="sd">        Note that this does not apply proper motion.  If you need to apply proper motion see :meth:`query_catalogue`</span>
+
+<span class="sd">        :param ids: The ids of the stars to retrieve as an iterable</span>
+<span class="sd">        :return: The dataframe of stars according to :attr:`.GIANT_COLUMNS`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># map(int, ids) protects against sql injection</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;select * from stars where rnm in </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">ids</span><span class="p">))</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_catalogue</span><span class="p">,</span>  <span class="c1"># nosec</span>
+                           <span class="n">index_col</span><span class="o">=</span><span class="s1">&#39;rnm&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GIANTCatalogue.get_all_with_criteria"><a class="viewcode-back" href="../../../catalogues/giant_catalogue/giant.catalogues.giant_catalogue.GIANTCatalogue.get_all_with_criteria.html#giant.catalogues.giant_catalogue.GIANTCatalogue.get_all_with_criteria">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_with_criteria</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_ra</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">max_ra</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">360</span><span class="p">,</span>
+                              <span class="n">min_dec</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">90</span><span class="p">,</span> <span class="n">min_mag</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="n">max_mag</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+                              <span class="n">search_center</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ARRAY_LIKE</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="n">search_radius</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method queries star records from the database based off of location and magnitude requirements.</span>
+
+<span class="sd">        Note that this does not apply proper motion.  If you need to apply proper motion see :meth:`query_catalogue`.</span>
+
+<span class="sd">        :param min_ra: The minimum ra bound to query stars from in degrees</span>
+<span class="sd">        :param max_ra: The maximum ra bound to query stars from in degrees</span>
+<span class="sd">        :param min_dec: The minimum declination to query stars from in degrees</span>
+<span class="sd">        :param max_dec: The maximum declination to query stars from in degrees</span>
+<span class="sd">        :param min_mag: The minimum magnitude to query stars from.  Recall that magnitude is inverse (so lower</span>
+<span class="sd">                        magnitude is a dimmer star)</span>
+<span class="sd">        :param max_mag: The maximum magnitude to query stars from.  Recall that magnitude is inverse (so higher</span>
+<span class="sd">                        magnitude is a dimmer star)</span>
+<span class="sd">        :param search_center: The center of a search cone as a ra/dec pair.</span>
+<span class="sd">        :param search_radius: The radius about the center of the search cone</span>
+<span class="sd">        :return: A Pandas dataframe with columns :attr:`GIANT_COLUMNS`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># make sure everything is a float (a) to validate input and (b) to protect against sql injection attacks</span>
+        <span class="n">min_ra</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">min_ra</span><span class="p">)</span>
+        <span class="n">max_ra</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_ra</span><span class="p">)</span>
+        <span class="n">min_dec</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">min_dec</span><span class="p">)</span>
+        <span class="n">max_dec</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_dec</span><span class="p">)</span>
+        <span class="n">min_mag</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">min_mag</span><span class="p">)</span>
+        <span class="n">max_mag</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_mag</span><span class="p">)</span>
+
+        <span class="c1"># determine what the rectangular bounds should look like for the search center/radius</span>
+        <span class="k">if</span> <span class="n">search_center</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">min_ra</span> <span class="o">=</span> <span class="n">search_center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">search_radius</span>
+            <span class="n">max_ra</span> <span class="o">=</span> <span class="n">search_center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">search_radius</span>
+
+            <span class="n">min_dec</span> <span class="o">=</span> <span class="n">search_center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">search_radius</span>
+            <span class="n">max_dec</span> <span class="o">=</span> <span class="n">search_center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">search_radius</span>
+
+        <span class="c1"># adjust for if we are at a corner case</span>
+        <span class="k">if</span> <span class="n">min_dec</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">90</span><span class="p">:</span>
+            <span class="n">min_dec</span> <span class="o">=</span> <span class="o">-</span><span class="mi">90</span>
+            <span class="n">min_ra</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">max_ra</span> <span class="o">=</span> <span class="mi">360</span>
+
+        <span class="k">elif</span> <span class="n">max_dec</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">:</span>
+            <span class="n">max_dec</span> <span class="o">=</span> <span class="mi">90</span>
+            <span class="n">min_ra</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">max_ra</span> <span class="o">=</span> <span class="mi">360</span>
+
+        <span class="c1"># determine what the query should look like based on the rectangular bounds</span>
+        <span class="c1"># the security risk is non-existent here due to calling float on all of the values before they are used as</span>
+        <span class="c1"># parameters</span>
+        <span class="k">if</span> <span class="n">min_ra</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;SELECT * FROM stars WHERE ((ra &gt;= </span><span class="si">{}</span><span class="s1"> AND ra &lt;= </span><span class="si">{}</span><span class="s1">) OR (ra &gt;= </span><span class="si">{}</span><span class="s1"> AND ra &lt;= </span><span class="si">{}</span><span class="s1">)) &#39;</span>   <span class="c1"># nosec</span>
+                     <span class="s1">&#39;AND dec &gt;= </span><span class="si">{}</span><span class="s1"> AND dec &lt;= </span><span class="si">{}</span><span class="s1"> AND mag &lt;=</span><span class="si">{}</span><span class="s1"> &#39;</span> 
+                     <span class="s1">&#39;AND mag &gt;= </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">min_ra</span> <span class="o">+</span> <span class="mi">360</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">max_ra</span><span class="p">,</span> <span class="n">min_dec</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">,</span> <span class="n">max_mag</span><span class="p">,</span> <span class="n">min_mag</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="n">max_ra</span> <span class="o">&gt;</span> <span class="mi">360</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;SELECT * FROM stars WHERE ((ra &gt;= </span><span class="si">{}</span><span class="s1"> AND ra &lt;= </span><span class="si">{}</span><span class="s1">) OR (ra &gt;= </span><span class="si">{}</span><span class="s1"> AND ra &lt;= </span><span class="si">{}</span><span class="s1">)) &#39;</span>   <span class="c1"># nosec</span>
+                     <span class="s1">&#39;AND dec &gt;= </span><span class="si">{}</span><span class="s1"> AND dec &lt;= </span><span class="si">{}</span><span class="s1"> AND mag &lt;=</span><span class="si">{}</span><span class="s1"> &#39;</span> 
+                     <span class="s1">&#39;AND mag &gt;= </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">min_ra</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">max_ra</span> <span class="o">-</span> <span class="mi">360</span><span class="p">,</span> <span class="n">min_dec</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">,</span> <span class="n">max_mag</span><span class="p">,</span> <span class="n">min_mag</span><span class="p">))</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;SELECT * FROM stars WHERE ra &gt;= </span><span class="si">{}</span><span class="s1"> AND ra &lt;= </span><span class="si">{}</span><span class="s1"> &#39;</span>  <span class="c1"># nosec</span>
+                     <span class="s1">&#39;AND dec &gt;= </span><span class="si">{}</span><span class="s1"> AND dec &lt;= </span><span class="si">{}</span><span class="s1"> AND mag &lt;=</span><span class="si">{}</span><span class="s1"> &#39;</span>
+                     <span class="s1">&#39;AND mag &gt;= </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">min_ra</span><span class="p">,</span> <span class="n">max_ra</span><span class="p">,</span> <span class="n">min_dec</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">,</span> <span class="n">max_mag</span><span class="p">,</span> <span class="n">min_mag</span><span class="p">))</span>
+
+        <span class="c1"># query the results from the database</span>
+        <span class="n">records</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="s1">&#39;rnm&#39;</span><span class="p">)</span>
+
+        <span class="c1"># now do the real radial search if it is needed</span>
+        <span class="k">if</span> <span class="n">search_center</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">records</span> <span class="o">=</span> <span class="n">records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">radec_distance</span><span class="p">(</span><span class="n">records</span><span class="o">.</span><span class="n">ra</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">,</span> <span class="n">records</span><span class="o">.</span><span class="n">dec</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">,</span>
+                                                 <span class="n">search_center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">,</span> <span class="n">search_center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">)</span> <span class="o">&lt;=</span>
+                                  <span class="p">(</span><span class="n">search_radius</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="s2">&quot;epoch&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">records</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">records</span> <span class="o">=</span> <span class="n">records</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">epoch</span><span class="o">=</span><span class="mf">2000.0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">records</span></div>
+
+<div class="viewcode-block" id="GIANTCatalogue.get_tycho2_record"><a class="viewcode-back" href="../../../catalogues/giant_catalogue/giant.catalogues.giant_catalogue.GIANTCatalogue.get_tycho2_record.html#giant.catalogues.giant_catalogue.GIANTCatalogue.get_tycho2_record">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_tycho2_record</span><span class="p">(</span><span class="n">stars</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">ucac_directory</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PATH</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">tycho_directory</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PATH</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method can be used to retrieve the corresponding full (not GIANT) Tycho 2 records for a set of GIANT</span>
+<span class="sd">        catalogue stars.</span>
+
+<span class="sd">        This method requires that the UCAC4 and Tycho 2 catalogues be available, and will request to download them if</span>
+<span class="sd">        they are not available (which takes a long time).  For a description of the columns refer to the Tycho 2</span>
+<span class="sd">        documentation.</span>
+
+<span class="sd">        Note that these records are not directly usable for GIANT, therefore only use this if you need the raw records</span>
+<span class="sd">        yourself.</span>
+
+<span class="sd">        Any stars that are not available in the Tycho 2 catalogue (blended stars or stars that are too dim) will be</span>
+<span class="sd">        included in the output dataframe but with NANs for all columns</span>
+
+<span class="sd">        :param stars: The stars to retrieve the Tycho records for</span>
+<span class="sd">        :param ucac_directory: The directory containing the UCAC4 star catalogue files (or None to use the default)</span>
+<span class="sd">        :param tycho_directory: The directory containing the Tycho 2 star catalogue files (or None to use the default)</span>
+<span class="sd">        :return: The raw Tycho 2 records</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="kn">from</span> <span class="nn">giant.catalogues.ucac</span> <span class="kn">import</span> <span class="n">UCAC4</span>
+        <span class="kn">from</span> <span class="nn">giant.catalogues.tycho</span> <span class="kn">import</span> <span class="n">Tycho2</span>
+
+        <span class="n">ucac</span> <span class="o">=</span> <span class="n">UCAC4</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">ucac_directory</span><span class="p">)</span>
+
+        <span class="n">tycho</span> <span class="o">=</span> <span class="n">Tycho2</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">tycho_directory</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ucac</span><span class="o">.</span><span class="n">cross_ref_tycho</span><span class="p">(</span><span class="n">stars</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;zone&#39;</span><span class="p">,</span> <span class="s1">&#39;rnz&#39;</span><span class="p">]],</span> <span class="n">tycho_cat</span><span class="o">=</span><span class="n">tycho</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GIANTCatalogue.get_ucac4_record"><a class="viewcode-back" href="../../../catalogues/giant_catalogue/giant.catalogues.giant_catalogue.GIANTCatalogue.get_ucac4_record.html#giant.catalogues.giant_catalogue.GIANTCatalogue.get_ucac4_record">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_ucac4_record</span><span class="p">(</span><span class="n">stars</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">ucac_directory</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PATH</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method can be used to retrieve the corresponding full (not GIANT) UCAC4 records for a set of GIANT</span>
+<span class="sd">        catalogue stars.</span>
+
+<span class="sd">        This method requires that the UCAC4 catalogue be available, and will request to download it if it is not (which</span>
+<span class="sd">        takes a long time).  For a description of the columns refer to the UCAC4 documentation.</span>
+
+<span class="sd">        Note that these records are not directly usable for GIANT, therefore only use this if you need the raw records</span>
+<span class="sd">        yourself.</span>
+
+<span class="sd">        Any stars that are not available in the UCAC4 catalogue (blended stars) will be included in the output dataframe</span>
+<span class="sd">        but with NANs for all columns</span>
+
+<span class="sd">        :param stars: The UCAC4 records for the stars</span>
+<span class="sd">        :param ucac_directory: The directory containing the UCAC4 star catalogue files (or None to use the default)</span>
+<span class="sd">        :return: The raw UCAC4 records</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="kn">from</span> <span class="nn">giant.catalogues.ucac</span> <span class="kn">import</span> <span class="n">UCAC4</span>
+
+        <span class="n">ucac</span> <span class="o">=</span> <span class="n">UCAC4</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">ucac_directory</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ucac</span><span class="o">.</span><span class="n">query_catalogue_raw</span><span class="p">(</span><span class="n">ids</span><span class="o">=</span><span class="n">stars</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;zone&#39;</span><span class="p">,</span> <span class="s1">&#39;rnz&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">itertuples</span><span class="p">(</span><span class="kc">False</span><span class="p">),</span> <span class="n">generator</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

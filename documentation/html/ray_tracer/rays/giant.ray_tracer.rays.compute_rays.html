@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>compute_rays &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="giant.ray_tracer.rays.INTERSECT_DTYPE" href="giant.ray_tracer.rays.INTERSECT_DTYPE.html" />
+    <link rel="prev" title="Rays.translate" href="giant.ray_tracer.rays.Rays.translate.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.ray_tracer.html">ray_tracer</a><ul>
+  <li><a href="../giant.ray_tracer.rays.html">rays</a><ul>
+      <li>Previous: <a href="giant.ray_tracer.rays.Rays.translate.html" title="previous chapter">Rays.translate</a></li>
+      <li>Next: <a href="giant.ray_tracer.rays.INTERSECT_DTYPE.html" title="next chapter">giant.ray_tracer.rays.INTERSECT_DTYPE</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.ray_tracer.rays.Rays.translate.html" title="Previous document">Rays.translate</a>
+        </li>
+        <li>
+          <a href="giant.ray_tracer.rays.INTERSECT_DTYPE.html" title="Next document">giant.ray_tracer.rays.INTERSECT_DTYPE</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="compute-rays">
+<h1>compute_rays<a class="headerlink" href="#compute-rays" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.ray_tracer.rays.html#module-giant.ray_tracer.rays" title="giant.ray_tracer.rays"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.ray_tracer.rays</span></code></a>:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="giant.ray_tracer.rays.compute_rays">
+<span class="sig-prename descclassname"><span class="pre">giant.ray_tracer.rays.</span></span><span class="sig-name descname"><span class="pre">compute_rays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/ray_tracer/rays.html#compute_rays"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.ray_tracer.rays.compute_rays" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute rays passing through the given row, col pairs for the given camera in the camera frame.</p>
+<p>The rays are assumed to start at the origin of the camera frame (0, 0, 0).  The directions are formed by calls to
+<a class="reference internal" href="../../camera_model/giant.camera_models.camera_model.CameraModel.pixels_to_unit.html#giant.camera_models.camera_model.CameraModel.pixels_to_unit" title="giant.camera_models.camera_model.CameraModel.pixels_to_unit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CameraModel.pixels_to_unit()</span></code></a> and are generate all at once.  The pixel values corresponding to the generated
+rays are returned second as a 2xn array.</p>
+<p>When creating the rays, you can specify how many rays per pixel you want to generate (evenly distributed in a square
+subpixel pattern) using the <code class="docutils literal notranslate"><span class="pre">grid_size</span></code> argument.  The result will be</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>   <span class="mi">1</span>  <span class="mi">2</span>        <span class="n">grid_size</span>
+<span class="o">+------</span> <span class="o">...</span> <span class="o">------+</span>
+<span class="o">|</span>                 <span class="o">|</span>
+<span class="o">|</span>                 <span class="o">|</span>
+<span class="o">|</span>  <span class="n">x</span>  <span class="n">x</span> <span class="o">...</span> <span class="n">x</span>  <span class="n">x</span>  <span class="o">|</span> <span class="mi">1</span>
+<span class="o">|</span>                 <span class="o">|</span>
+<span class="o">|</span>                 <span class="o">|</span>
+<span class="o">|</span>  <span class="n">x</span>  <span class="n">x</span> <span class="o">...</span> <span class="n">x</span>  <span class="n">x</span>  <span class="o">|</span> <span class="mi">2</span>
+<span class="o">...</span>             <span class="o">...</span>
+<span class="o">|</span>  <span class="n">x</span>  <span class="n">x</span> <span class="o">...</span> <span class="n">x</span>  <span class="n">x</span>  <span class="o">|</span> <span class="n">grid_size</span> <span class="o">-</span><span class="mi">1</span>
+<span class="o">|</span>                 <span class="o">|</span>
+<span class="o">|</span>                 <span class="o">|</span>
+<span class="o">|</span>  <span class="n">x</span>  <span class="n">x</span> <span class="o">...</span> <span class="n">x</span>  <span class="n">x</span>  <span class="o">|</span> <span class="n">grid_size</span>
+<span class="o">|</span>                 <span class="o">|</span>
+<span class="o">|</span>                 <span class="o">|</span>
+<span class="o">+------</span> <span class="o">...</span> <span class="o">------+</span>
+</pre></div>
+</div>
+<p>where +-| indicates the bounds of the pixel, and x indices subpixel locations for the rays (with even spacing
+between each sub-pixel location and the edges of the pixel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<a class="reference internal" href="../../camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><em>giant.camera_models.camera_model.CameraModel</em></a>) – A camera model object which is used to set the direction for the rays</p></li>
+<li><p><strong>rows</strong> (<em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>]</em>) – An array like list of rows to generate rays through (paired with cols).  If there are only 2 elements
+then it is assumed that this is a min, max pair (inclusive on both sides)  and you want to generate
+rays for every pixel between min and max</p></li>
+<li><p><strong>cols</strong> (<em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>]</em>) – An array like list of cols to generate rays through (paired with rows).  If there are only 2 elements
+then it is assumed that this is a min, max pair (inclusive on both sides)  and you want to generate
+rays for every pixel between min and max</p></li>
+<li><p><strong>grid_size</strong> (<em>int</em>) – The number of rays per edge of pixel (sqrt of number of rays).  There will be
+<code class="docutils literal notranslate"><span class="pre">grid_size*grid_size</span></code> rays evenly distributed through the area of each pixel pair requested</p></li>
+<li><p><strong>temperature</strong> (<em>numbers.Real</em>) – The temperature of the image the rays are being computed for passed to
+<a class="reference internal" href="../../camera_model/giant.camera_models.camera_model.CameraModel.pixels_to_unit.html#giant.camera_models.camera_model.CameraModel.pixels_to_unit" title="giant.camera_models.camera_model.CameraModel.pixels_to_unit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CameraModel.pixels_to_unit()</span></code></a></p></li>
+<li><p><strong>image_number</strong> (<em>int</em>) – The number of the image the rays are being created for pass to
+<a class="reference internal" href="../../camera_model/giant.camera_models.camera_model.CameraModel.pixels_to_unit.html#giant.camera_models.camera_model.CameraModel.pixels_to_unit" title="giant.camera_models.camera_model.CameraModel.pixels_to_unit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CameraModel.pixels_to_unit()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The rays passing through the requested pixels in the camera frame and the subpixel locations</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[<a class="reference internal" href="giant.ray_tracer.rays.Rays.html#giant.ray_tracer.rays.Rays" title="giant.ray_tracer.rays.Rays">giant.ray_tracer.rays.Rays</a>, numpy.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.ray_tracer.rays.Rays.translate.html" title="Previous document">Rays.translate</a>
+        </li>
+        <li>
+          <a href="giant.ray_tracer.rays.INTERSECT_DTYPE.html" title="Next document">giant.ray_tracer.rays.INTERSECT_DTYPE</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/ray_tracer/rays/giant.ray_tracer.rays.compute_rays.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,292 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>ray_tracer &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/logo.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="next" title="rays" href="ray_tracer/giant.ray_tracer.rays.html" />
+    <link rel="prev" title="plot_alignment_residuals" href="calibration/visualizer/giant.calibration.visualizer.plot_alignment_residuals.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="giant.html">API Reference</a><ul>
+      <li>Previous: <a href="calibration/visualizer/giant.calibration.visualizer.plot_alignment_residuals.html" title="previous chapter">plot_alignment_residuals</a></li>
+      <li>Next: <a href="ray_tracer/giant.ray_tracer.rays.html" title="next chapter">rays</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="calibration/visualizer/giant.calibration.visualizer.plot_alignment_residuals.html" title="Previous document">plot_alignment_residuals</a>
+        </li>
+        <li>
+          <a href="ray_tracer/giant.ray_tracer.rays.html" title="Next document">rays</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.ray_tracer">
+<span id="ray-tracer"></span><h1>ray_tracer<a class="headerlink" href="#module-giant.ray_tracer" title="Permalink to this headline">¶</a></h1>
+<p>This subpackage provides the ray tracing and rendering capabilities for GIANT.</p>
+<section id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>In GIANT rendering is primarily done using single bounce ray tracing, where a ray is traced from the camera, to a
+surface and then bounced to the light source.  This tells us a number of things.  First, is the geometry of the ray
+trace, including the exidence, incidence, and normal vectors and the albedo at the intersect location.  It also tells us
+if the surface is shadowed where we initially intersected.  Based on this information, we can then compute the intensity
+for each ray and then use those intensities to render an image.  Because space imagery typically has a single collimated
+illumination source (the sun) and most bodies we are doing OpNav with respect to are airless (and thus there is no
+atmospheric scattering) the single bounce ray trace is a very accurate way to render synthetic images.</p>
+<p>There are 2 primary ways to represent a surface in GIANT.  The first is as a triaxial <a class="reference internal" href="ray_tracer/shapes/ellipsoid/giant.ray_tracer.shapes.ellipsoid.Ellipsoid.html#giant.ray_tracer.shapes.ellipsoid.Ellipsoid" title="giant.ray_tracer.shapes.ellipsoid.Ellipsoid"><code class="xref py py-class docutils literal notranslate"><span class="pre">Ellipsoid</span></code></a>.  This is
+useful for many larger celestial bodies (planets, moons, and large asteroids/comets) and is very efficient for ray u
+tracing since only a single object needs to be intersected.  The second primary way is as a <a class="reference internal" href="ray_tracer/shapes/surface/giant.ray_tracer.shapes.surface.Surface.html#giant.ray_tracer.shapes.surface.Surface" title="giant.ray_tracer.shapes.surface.Surface"><code class="xref py py-class docutils literal notranslate"><span class="pre">Surface</span></code></a> object.
+Using this we represent the surface as a tesselation of small planar geometry primitives (usually triangles,
+<a class="reference internal" href="ray_tracer/shapes/triangle/giant.ray_tracer.shapes.triangle.Triangle32.html#giant.ray_tracer.shapes.triangle.Triangle32" title="giant.ray_tracer.shapes.triangle.Triangle32"><code class="xref py py-class docutils literal notranslate"><span class="pre">Triangle32</span></code></a> and <a class="reference internal" href="ray_tracer/shapes/triangle/giant.ray_tracer.shapes.triangle.Triangle64.html#giant.ray_tracer.shapes.triangle.Triangle64" title="giant.ray_tracer.shapes.triangle.Triangle64"><code class="xref py py-class docutils literal notranslate"><span class="pre">Triangle64</span></code></a>) where we then have to check our rays intersections against every geometry
+primitive in the surface.  This allows us to represent arbitrary topography with arbitrary resolution, but because it
+normally takes many many geometry primitives for a single surface tracing can be very slow.  Therefore, we also provide
+an acceleration structure in the form of a <a class="reference internal" href="ray_tracer/kdtree/giant.ray_tracer.kdtree.KDTree.html#giant.ray_tracer.kdtree.KDTree" title="giant.ray_tracer.kdtree.KDTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">KDTree</span></code></a> which limits the number of triangles we need to check each
+ray against using <a class="reference internal" href="ray_tracer/shapes/axis_aligned_bounding_box/giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox.html#giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox" title="giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox"><code class="xref py py-class docutils literal notranslate"><span class="pre">AxisAlignedBoundingBox</span></code></a>.</p>
+<p>Once a surface is represented in GIANT it is usually wrapped in a <a class="reference internal" href="ray_tracer/scene/giant.ray_tracer.scene.SceneObject.html#giant.ray_tracer.scene.SceneObject" title="giant.ray_tracer.scene.SceneObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">SceneObject</span></code></a> and added to a <a class="reference internal" href="ray_tracer/scene/giant.ray_tracer.scene.Scene.html#giant.ray_tracer.scene.Scene" title="giant.ray_tracer.scene.Scene"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scene</span></code></a>.
+The <a class="reference internal" href="ray_tracer/scene/giant.ray_tracer.scene.Scene.html#giant.ray_tracer.scene.Scene" title="giant.ray_tracer.scene.Scene"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scene</span></code></a> in GIANT is used to define the locations and orientations of multiple objects with respect to each
+other.  It also provides functionality for automatically updating these locations and orientations for a new time and
+for doing the single bounce ray trace for rendering.  Once the ray trace is complete, the subclasses of
+<a class="reference internal" href="ray_tracer/illumination/giant.ray_tracer.illumination.IlluminationModel.html#giant.ray_tracer.illumination.IlluminationModel" title="giant.ray_tracer.illumination.IlluminationModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">IlluminationModel</span></code></a> are used to convert the ray trace geometry into intensity values for each ray (typically)
+the <a class="reference internal" href="ray_tracer/illumination/giant.ray_tracer.illumination.McEwenIllumination.html#giant.ray_tracer.illumination.McEwenIllumination" title="giant.ray_tracer.illumination.McEwenIllumination"><code class="xref py py-class docutils literal notranslate"><span class="pre">McEwenIllumination</span></code></a> class).</p>
+<p>When creating a surface in GIANT, you will usually use the <a class="reference internal" href="scripts/giant.scripts.ingest_shape.html#module-giant.scripts.ingest_shape" title="giant.scripts.ingest_shape"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ingest_shape</span></code></a> script which will create the surface and
+build the acceleration structure automatically for you.</p>
+<p>For more details, please refer to the following module documentation, which provides much more detail.</p>
+</section>
+<p class="rubric">Modules</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="ray_tracer/giant.ray_tracer.rays.html#module-giant.ray_tracer.rays" title="giant.ray_tracer.rays"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rays</span></code></a></p></td>
+<td><p>This module defines a class for representing rays in GIANT, a function to generate them from a camera model, and the numpy structured data type used to store the results of a ray trace.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ray_tracer/giant.ray_tracer.shapes.html#module-giant.ray_tracer.shapes" title="giant.ray_tracer.shapes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shapes</span></code></a></p></td>
+<td><p>This subpackage defines all shapes that are used throughout GIANT.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ray_tracer/giant.ray_tracer.kdtree.html#module-giant.ray_tracer.kdtree" title="giant.ray_tracer.kdtree"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kdtree</span></code></a></p></td>
+<td><p>This cython module provides the ability to accelerate ray tracing of <a class="reference internal" href="ray_tracer/shapes/surface/giant.ray_tracer.shapes.surface.RawSurface.html#giant.ray_tracer.shapes.surface.RawSurface" title="giant.ray_tracer.shapes.surface.RawSurface"><code class="xref py py-class docutils literal notranslate"><span class="pre">RawSurface</span></code></a> objects in GIANT.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ray_tracer/giant.ray_tracer.scene.html#module-giant.ray_tracer.scene" title="giant.ray_tracer.scene"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scene</span></code></a></p></td>
+<td><p>This module provides scene functionality for rendering in GIANT.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ray_tracer/giant.ray_tracer.illumination.html#module-giant.ray_tracer.illumination" title="giant.ray_tracer.illumination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">illumination</span></code></a></p></td>
+<td><p>This module defines the illumination functions that are used to convert ray traced geometry into intensity values when rendering.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ray_tracer/giant.ray_tracer.utilities.html#module-giant.ray_tracer.utilities" title="giant.ray_tracer.utilities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">utilities</span></code></a></p></td>
+<td><p>This module provides some basic utilities for working with the ray tracer in GIANT.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="ray_tracer/rays/giant.ray_tracer.rays.Rays.html#giant.ray_tracer.rays.Rays" title="giant.ray_tracer.rays.Rays"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Rays</span></code></a></p></td>
+<td><p>A class to store/manipulate rays.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ray_tracer/scene/giant.ray_tracer.scene.SceneObject.html#giant.ray_tracer.scene.SceneObject" title="giant.ray_tracer.scene.SceneObject"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SceneObject</span></code></a></p></td>
+<td><p>This class provides a quick and easy interface for changing the position and orientation of various objects.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ray_tracer/scene/giant.ray_tracer.scene.Scene.html#giant.ray_tracer.scene.Scene" title="giant.ray_tracer.scene.Scene"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Scene</span></code></a></p></td>
+<td><p>This is a container for <code class="xref py py-class docutils literal notranslate"><span class="pre">SceneObject</span></code> instances that provides an easy interface for tracing and rendering.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ray_tracer/scene/giant.ray_tracer.scene.CorrectionsType.html#giant.ray_tracer.scene.CorrectionsType" title="giant.ray_tracer.scene.CorrectionsType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CorrectionsType</span></code></a></p></td>
+<td><p>This enumeration provides options for the different corrections that can be used when calculating the apparent position of an object in a scene</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ray_tracer/illumination/giant.ray_tracer.illumination.IlluminationModel.html#giant.ray_tracer.illumination.IlluminationModel" title="giant.ray_tracer.illumination.IlluminationModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IlluminationModel</span></code></a></p></td>
+<td><p>This abstract base class specifies the minimum interface expected of an illumination model in GIANT.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ray_tracer/illumination/giant.ray_tracer.illumination.McEwenIllumination.html#giant.ray_tracer.illumination.McEwenIllumination" title="giant.ray_tracer.illumination.McEwenIllumination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">McEwenIllumination</span></code></a></p></td>
+<td><p>This illumination model computes the intensity values as the weighted sum between the Lommel-Seeliger and Lambertian models, weighted using the phase angle.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ray_tracer/illumination/giant.ray_tracer.illumination.LambertianIllumination.html#giant.ray_tracer.illumination.LambertianIllumination" title="giant.ray_tracer.illumination.LambertianIllumination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LambertianIllumination</span></code></a></p></td>
+<td><p>This basic illumination model computes the intensity values as simply the cosine of the incidence angle times the albedo.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ray_tracer/illumination/giant.ray_tracer.illumination.LommelSeeligerIllumination.html#giant.ray_tracer.illumination.LommelSeeligerIllumination" title="giant.ray_tracer.illumination.LommelSeeligerIllumination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LommelSeeligerIllumination</span></code></a></p></td>
+<td><p>This basic illumination model computes the intensity values as simply the cosine of the incidence angle divided by the cosine of the incidence angle plus the exidence angle times the albedo.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ray_tracer/illumination/giant.ray_tracer.illumination.AshikhminShirleyDiffuseIllumination.html#giant.ray_tracer.illumination.AshikhminShirleyDiffuseIllumination" title="giant.ray_tracer.illumination.AshikhminShirleyDiffuseIllumination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AshikhminShirleyDiffuseIllumination</span></code></a></p></td>
+<td><p>This illumination model computes the intensity values according to the Ashikhmin Shirley diffuse law</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ray_tracer/illumination/giant.ray_tracer.illumination.GaskellIllumination.html#giant.ray_tracer.illumination.GaskellIllumination" title="giant.ray_tracer.illumination.GaskellIllumination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GaskellIllumination</span></code></a></p></td>
+<td><p>This illumination model computes the intensity values as the weighted sum between the Lommel-Seeliger and Lambertian models, weighted using the phase angle.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ray_tracer/shapes/triangle/giant.ray_tracer.shapes.triangle.Triangle64.html#giant.ray_tracer.shapes.triangle.Triangle64" title="giant.ray_tracer.shapes.triangle.Triangle64"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Triangle64</span></code></a></p></td>
+<td><p>This class represents surfaces as tessellated triangles, storing the vertices, albedos, and normal vectors using double precision.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ray_tracer/shapes/triangle/giant.ray_tracer.shapes.triangle.Triangle32.html#giant.ray_tracer.shapes.triangle.Triangle32" title="giant.ray_tracer.shapes.triangle.Triangle32"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Triangle32</span></code></a></p></td>
+<td><p>This class represents surfaces as tessellated triangles, storing the vertices, albedos, and normal vectors using single precision.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ray_tracer/shapes/ellipsoid/giant.ray_tracer.shapes.ellipsoid.Ellipsoid.html#giant.ray_tracer.shapes.ellipsoid.Ellipsoid" title="giant.ray_tracer.shapes.ellipsoid.Ellipsoid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ellipsoid</span></code></a></p></td>
+<td><p>A shape for modelling spheres and triaxial ellipsoidal bodies.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ray_tracer/shapes/surface/giant.ray_tracer.shapes.surface.Surface.html#giant.ray_tracer.shapes.surface.Surface" title="giant.ray_tracer.shapes.surface.Surface"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Surface</span></code></a></p></td>
+<td><p>This defines the basic interface expected of all surfaces in GIANT.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ray_tracer/shapes/surface/giant.ray_tracer.shapes.surface.Surface32.html#giant.ray_tracer.shapes.surface.Surface32" title="giant.ray_tracer.shapes.surface.Surface32"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Surface32</span></code></a></p></td>
+<td><p>This class serves as the backbone for surfaces in GIANT represented using single precision.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ray_tracer/shapes/surface/giant.ray_tracer.shapes.surface.Surface64.html#giant.ray_tracer.shapes.surface.Surface64" title="giant.ray_tracer.shapes.surface.Surface64"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Surface64</span></code></a></p></td>
+<td><p>This class serves as the backbone for surfaces in GIANT represented using double precision.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ray_tracer/shapes/solid/giant.ray_tracer.shapes.solid.Solid.html#giant.ray_tracer.shapes.solid.Solid" title="giant.ray_tracer.shapes.solid.Solid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Solid</span></code></a></p></td>
+<td><p>A solid represents an 3D object that can be mathematically represented without resorting to tesselation (for instance a tri-axial ellipsoid).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ray_tracer/shapes/shape/giant.ray_tracer.shapes.shape.Shape.html#giant.ray_tracer.shapes.shape.Shape" title="giant.ray_tracer.shapes.shape.Shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Shape</span></code></a></p></td>
+<td><p>This represents the minimum required interface for an object to be considered traceable in GIANT.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ray_tracer/shapes/point/giant.ray_tracer.shapes.point.Point.html#giant.ray_tracer.shapes.point.Point" title="giant.ray_tracer.shapes.point.Point"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Point</span></code></a></p></td>
+<td><p>Represents a single, unrenderable point.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ray_tracer/shapes/axis_aligned_bounding_box/giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox.html#giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox" title="giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AxisAlignedBoundingBox</span></code></a></p></td>
+<td><p>This class provides an efficient implementation of an axis aligned bounding box.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="ray_tracer/kdtree/giant.ray_tracer.kdtree.KDTree.html#giant.ray_tracer.kdtree.KDTree" title="giant.ray_tracer.kdtree.KDTree"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KDTree</span></code></a></p></td>
+<td><p>A KD Tree representation for accelerated tracing of surface objects with many geometry primitives using axis aligned bounding box acceleration.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Constants</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="ray_tracer/illumination/giant.ray_tracer.illumination.ILLUM_DTYPE.html#giant.ray_tracer.illumination.ILLUM_DTYPE" title="giant.ray_tracer.illumination.ILLUM_DTYPE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ILLUM_DTYPE</span></code></a></p></td>
+<td><p>The numpy datatype expected by the illumination functions in this module as input for conversion to intensity values.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="ray_tracer/rays/giant.ray_tracer.rays.INTERSECT_DTYPE.html#giant.ray_tracer.rays.INTERSECT_DTYPE" title="giant.ray_tracer.rays.INTERSECT_DTYPE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">INTERSECT_DTYPE</span></code></a></p></td>
+<td><p>The numpy datatype returned when rays are traced with a <a class="reference internal" href="ray_tracer/giant.ray_tracer.shapes.html#module-giant.ray_tracer.shapes" title="giant.ray_tracer.shapes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">shapes</span></code></a> or <a class="reference internal" href="ray_tracer/kdtree/giant.ray_tracer.kdtree.KDTree.html#giant.ray_tracer.kdtree.KDTree" title="giant.ray_tracer.kdtree.KDTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">KDTree</span></code></a> in GIANT.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="calibration/visualizer/giant.calibration.visualizer.plot_alignment_residuals.html" title="Previous document">plot_alignment_residuals</a>
+        </li>
+        <li>
+          <a href="ray_tracer/giant.ray_tracer.rays.html" title="Next document">rays</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/giant.ray_tracer.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

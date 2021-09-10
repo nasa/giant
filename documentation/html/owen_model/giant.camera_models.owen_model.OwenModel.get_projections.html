@@ -1,0 +1,212 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>OwenModel.get_projections &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="OwenModel.apply_distortion" href="giant.camera_models.owen_model.OwenModel.apply_distortion.html" />
+    <link rel="prev" title="OwenModel.pixels_to_gnomic_interp" href="giant.camera_models.owen_model.OwenModel.pixels_to_gnomic_interp.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.camera_models.html">giant.camera_models</a><ul>
+  <li><a href="../giant.camera_models.owen_model.html">giant.camera_models.owen_model</a><ul>
+  <li><a href="giant.camera_models.owen_model.OwenModel.html">OwenModel</a><ul>
+      <li>Previous: <a href="giant.camera_models.owen_model.OwenModel.pixels_to_gnomic_interp.html" title="previous chapter">OwenModel.pixels_to_gnomic_interp</a></li>
+      <li>Next: <a href="giant.camera_models.owen_model.OwenModel.apply_distortion.html" title="next chapter">OwenModel.apply_distortion</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.camera_models.owen_model.OwenModel.pixels_to_gnomic_interp.html" title="Previous document">OwenModel.pixels_to_gnomic_interp</a>
+        </li>
+        <li>
+          <a href="giant.camera_models.owen_model.OwenModel.apply_distortion.html" title="Next document">OwenModel.apply_distortion</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="owenmodel-get-projections">
+<h1>OwenModel.get_projections<a class="headerlink" href="#owenmodel-get-projections" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.camera_models.owen_model.html#module-giant.camera_models.owen_model" title="giant.camera_models.owen_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.camera_models.owen_model</span></code></a>:</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.get_projections">
+<span class="sig-prename descclassname"><span class="pre">OwenModel.</span></span><span class="sig-name descname"><span class="pre">get_projections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points_in_camera_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/giant/camera_models/owen_model.html#OwenModel.get_projections"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.get_projections" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method computes and returns the pinhole, and pixel locations for a set of
+3D points expressed in the camera frame.</p>
+<p>In general the user will not use this method and the higher level <a class="reference internal" href="giant.camera_models.owen_model.OwenModel.project_onto_image.html#giant.camera_models.owen_model.OwenModel.project_onto_image" title="giant.camera_models.owen_model.OwenModel.project_onto_image"><code class="xref py py-meth docutils literal notranslate"><span class="pre">project_onto_image()</span></code></a> will be used
+instead.  In cases where it is desirable to use this method, the camera points should be input as a shape (2,)
+or shape (2, n) array of points expressed in the camera frame (units don’t matter)  This method will then return
+the gnomic locations in units of distance as a shape (2,) or (2, n) numpy array and the pixel locations of the
+points as a shape (2,) or (2, n) numpy array with units of pixels as a length 2 tuple.</p>
+<p>The optional image flag specifies which image you are projecting the points onto.  This is only important if you
+have the estimate_multiple_misalignments flag set to true, and have a different alignment set for each image.
+In general, the optional input image should be ignored except during calibration.</p>
+<p>The optional temperature input specifies the temperature to perform the projection at.  This is only import when
+your focal length is dependent on temperature and you have entered or calibrated for the temperature dependency
+coefficients.</p>
+<dl>
+<dt>You can specify the directions to be input as either a shape (3,) or shape (3, n) array::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">OwenModel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">OwenModel</span><span class="p">(</span><span class="n">kx</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">ky</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">px</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">py</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">focal_length</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">a1</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">a2</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">radial2</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                  <span class="n">misalignment</span><span class="o">=</span><span class="p">[[</span><span class="mf">1e-12</span><span class="p">,</span> <span class="o">-</span><span class="mf">2e-14</span><span class="p">,</span> <span class="mf">3e-10</span><span class="p">],</span> <span class="p">[</span><span class="mf">2e-15</span><span class="p">,</span> <span class="mf">1e-13</span><span class="p">,</span> <span class="mf">3e-10</span><span class="p">]],</span>
+<span class="gp">&gt;&gt;&gt; </span>                  <span class="n">estimation_parameters</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;multiple misalignments&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">get_projections</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">12000</span><span class="p">])</span>
+<span class="go">(array([ 0.00083333,  0.00166667]), array([0.00112269, 0.00224537]), array([500.33680555, 500.89814814]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">get_projections</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">12000</span><span class="p">,</span> <span class="mi">13000</span><span class="p">,</span> <span class="mi">9000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">]],</span> <span class="n">image</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">(array([[0.00083333, 0.00153846, 0.00333333, 0.008     ],</span>
+<span class="go">        [0.00166667, 0.00384615, 0.00666667, 0.014     ]]),</span>
+<span class="go"> array([[0.00112269, 0.00417843, 0.02185185, 0.216     ],</span>
+<span class="go">        [0.00224537, 0.01044606, 0.0437037 , 0.378     ]]),</span>
+<span class="go"> array([[500.33680556, 501.25352754, 506.55555555, 564.79999998],</span>
+<span class="go">        [500.89814815, 504.17842513, 517.48148149, 651.20000003]]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">get_projections</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">12000</span><span class="p">,</span> <span class="mi">13000</span><span class="p">,</span> <span class="mi">9000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">]],</span> <span class="n">temperature</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">(array([[0.00083333, 0.00153846, 0.00333333, 0.008     ],</span>
+<span class="go">        [0.00166667, 0.00384615, 0.00666667, 0.014     ]]),</span>
+<span class="go"> array([[0.00112268, 0.00417839, 0.02185166, 0.21599806],</span>
+<span class="go">        [0.00224535, 0.01044597, 0.04370331, 0.3779966 ]]),</span>
+<span class="go"> array([[500.33680252, 501.25351625, 506.55549654, 564.7994167 ],</span>
+<span class="go">        [500.89814006, 504.1783875 , 517.48132409, 651.19863896]]))</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points_in_camera_frame</strong> (<em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>]</em>) – a shape (3,) or shape (3, n) array of points to project</p></li>
+<li><p><strong>image</strong> (<em>int</em>) – The index of the image being projected onto (only applicable with multiple misalignments)</p></li>
+<li><p><strong>temperature</strong> (<em>numbers.Real</em>) – The temperature to project the points at</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A tuple of the pinhole, distorted pinhole, and pixel locations for a set of 3D points
+expressed in the camera frame</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.camera_models.owen_model.OwenModel.pixels_to_gnomic_interp.html" title="Previous document">OwenModel.pixels_to_gnomic_interp</a>
+        </li>
+        <li>
+          <a href="giant.camera_models.owen_model.OwenModel.apply_distortion.html" title="Next document">OwenModel.apply_distortion</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/owen_model/giant.camera_models.owen_model.OwenModel.get_projections.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

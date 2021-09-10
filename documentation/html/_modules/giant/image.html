@@ -1,0 +1,597 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.image &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.image</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
+<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides the OpNavImage class, which is the primary image type used by GIANT.</span>
+
+<span class="sd">The OpNavImage class is a container to store both an image itself (raw DN values) as well as metadata about the image</span>
+<span class="sd">that is required in various routines.  The metadata includes information like the observation_date and time the image</span>
+<span class="sd">was taken, the name of the camera used to capture the image, the position, velocity, and orientation at the time the</span>
+<span class="sd">image was captured, among other things (see the :class:`OpNavImage` documentation for more thorough details).</span>
+
+<span class="sd">The :class:`OpNavImage` class is a subclass of the numpy </span>
+<span class="sd">`ndarray &lt;https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html&gt;`_ class, with the image data itself</span>
+<span class="sd">being stored in the array (so that you can use all of the usual numpy indexing/ufuncs as if it was just an ndarray) and</span>
+<span class="sd">the metadata being stored as extra attributes.  As such, the image data can be any type (float, int, etc) but be aware</span>
+<span class="sd">that many of the GIANT routines cast the images to float type internally.</span>
+
+<span class="sd">In general, you should not use this class directly, but rather subclass it so that you can automatically parse the </span>
+<span class="sd">metadata for an image instead of having to manually specify it each time (by overriding the NotImplemented </span>
+<span class="sd">:meth:`.parse_data` method).  This also allows you to specify custom image loading routines if your project uses a</span>
+<span class="sd">non-default image format (by overriding the :meth:`.load_image` method).  As an example, check out the</span>
+<span class="sd">:ref:`getting started &lt;getting-started&gt;` page.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">astropy.io.fits</span> <span class="k">as</span> <span class="nn">pf</span>
+
+<span class="kn">from</span> <span class="nn">giant._typing</span> <span class="kn">import</span> <span class="n">ARRAY_LIKE_2D</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">PATH</span><span class="p">,</span> <span class="n">Real</span>
+<span class="kn">from</span> <span class="nn">giant.rotations</span> <span class="kn">import</span> <span class="n">Rotation</span>
+
+
+<div class="viewcode-block" id="ExposureType"><a class="viewcode-back" href="../../image/giant.image.ExposureType.html#giant.image.ExposureType">[docs]</a><span class="k">class</span> <span class="nc">ExposureType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This enumeration provides options for the different ways an image can be be classified in GIANT</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">SHORT</span> <span class="o">=</span> <span class="s2">&quot;short&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A short exposure image to be used for relative navigation (center finding, limbs, SFN, etc).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">LONG</span> <span class="o">=</span> <span class="s2">&quot;long&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A long exposure image to be used for star based navigation (attitude estimation and camera calibration).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">DUAL</span> <span class="o">=</span> <span class="s2">&quot;dual&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A dual purpose image to be used for both star based and relative navigation</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<span class="c1"># noinspection PyAttributeOutsideInit</span>
+<div class="viewcode-block" id="OpNavImage"><a class="viewcode-back" href="../../image/giant.image.OpNavImage.html#giant.image.OpNavImage">[docs]</a><span class="k">class</span> <span class="nc">OpNavImage</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is a subclass of a numpy array for images which adds various parameters to the ndarray class necessary for the</span>
+<span class="sd">    GIANT algorithms as well as some helper methods for loading in an image.</span>
+
+<span class="sd">    The OpNavImage class is primarily a numpy ndarray which stores the illumination values of an image.  In addition</span>
+<span class="sd">    to the illumination data (which is used as you would normally use a numpy array) this class has some extra</span>
+<span class="sd">    attributes which are used throughout the GIANT routines.  These attributes are metadata for the image, including</span>
+<span class="sd">    the location the image was taken, the observation_date the image was taken, the camera used the take the image,</span>
+<span class="sd">    the spacecraft hosting the camera used to take the image, the attitude of the camera at the time the image was</span>
+<span class="sd">    taken, the velocity of the camera at the time the image was taken, the file the image was loaded from, and the</span>
+<span class="sd">    length of exposure used to generate the image.</span>
+
+<span class="sd">    The OpNavImage class also provides helper methods for loading the data from an image file.  There is the</span>
+<span class="sd">    :meth:`.load_image` static method which will read in a number of standard image formats and return a numpy array</span>
+<span class="sd">    of the illumination data.  There is also the :meth:`parse_data` method which attempts to extract pertinent</span>
+<span class="sd">    information about an image to fill the metadata of the OpNavImage class.  The :meth:`.parse_data` method is</span>
+<span class="sd">    not implemented here and most be implemented by the user if it is desired to be used (by subclassing the OpNavImage</span>
+<span class="sd">    class).  It is possible to use the OpNavImage class without subclassing and defining the :meth:`parse_data` method</span>
+<span class="sd">    by manually specifying the required metadata in the class initialization and setting the **parse_data** flag to</span>
+<span class="sd">    False in the class initialization, but in general this is not recommended.</span>
+
+<span class="sd">    You can initialize this class by either passing in a path to the image file name (*recommended*) or by passing in</span>
+<span class="sd">    an array-like object of the illumination data.  The metadata can be specified as keyword arguments to the class</span>
+<span class="sd">    initialization or can be loaded by overriding the :meth:`parse_data` method.</span>
+<span class="sd">    </span>
+<span class="sd">    Note that if you have overridden the :meth:`parse_data` method, specified ``parse_data=True``, and specify one </span>
+<span class="sd">    of the other optional inputs, what you have specified manually will overwrite anything filled by :meth:`parse_data`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">PATH</span><span class="p">,</span> <span class="n">ARRAY_LIKE_2D</span><span class="p">],</span>
+                <span class="n">observation_date</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">datetime</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">rotation_inertial_to_camera</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Rotation</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">temperature</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">velocity</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">exposure_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ExposureType</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">saturation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">PATH</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">parse_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">dark_pixels</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">instrument</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">spacecraft</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">target</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param data: The image data to be formed into an OpNavImage either as a path to an image file or the</span>
+<span class="sd">                     illumination data directly</span>
+<span class="sd">        :param observation_date: The observation_date the image was captured</span>
+<span class="sd">        :param rotation_inertial_to_camera: the rotation to go from the inertial frame to the camera frame at the time</span>
+<span class="sd">                                            the image was taken</span>
+<span class="sd">        :param temperature: The temperature of the camera when the image was captured</span>
+<span class="sd">        :param position: the inertial position of the camera at the time the image was taken</span>
+<span class="sd">        :param velocity: The inertial velocity of the camera at the time the image was taken</span>
+<span class="sd">        :param exposure_type: The type of exposure for the image (&#39;short&#39; or &#39;long&#39;)</span>
+<span class="sd">        :param saturation: The saturation level for the image</span>
+<span class="sd">        :param file:  The file the illumination data came from.  Generally required if parse_data is to be used and the</span>
+<span class="sd">                      data was entered as an array like value</span>
+<span class="sd">        :param parse_data: A flag whether to try the parse_data method.  The parse_data method must be defined by the</span>
+<span class="sd">                           user.</span>
+<span class="sd">        :param exposure: The exposure time used to capture the image.  This isn&#39;t actually used in GIANT (in favor of</span>
+<span class="sd">                         :attr:`exposure_type` attribute) so it is provided for convenience and for manual inspection</span>
+<span class="sd">        :param dark_pixels: An array of dark pixels to be used in estimating the noise level of the image (this</span>
+<span class="sd">                            generally refers to a set of pixels that are active but specifically not exposed to light</span>
+<span class="sd">        :param instrument: The camera used to capture the image.  This is not used internally by GIANT and is provided</span>
+<span class="sd">                           for convenience and for manual inspection</span>
+<span class="sd">        :param spacecraft: The spacecraft hosting the camera. This is not used internally by GIANT and is provided</span>
+<span class="sd">                           for convenience and for manual inspection</span>
+<span class="sd">        :param target: The target that the camera is pointed towards. This is not used internally by GIANT and is</span>
+<span class="sd">                       provided for convenience and for manual inspection</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
+            <span class="n">image_data</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">load_image</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+
+            <span class="n">image_data</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">data</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">image_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+            <span class="n">image_data</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># initialize all the fields</span>
+        <span class="n">image_data</span><span class="o">.</span><span class="n">_observation_date</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">image_data</span><span class="o">.</span><span class="n">_rotation_inertial_to_camera</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">image_data</span><span class="o">.</span><span class="n">_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">image_data</span><span class="o">.</span><span class="n">_velocity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">image_data</span><span class="o">.</span><span class="n">_exposure_type</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">image_data</span><span class="o">.</span><span class="n">_saturation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">max</span>
+        <span class="n">image_data</span><span class="o">.</span><span class="n">_temperature</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">image_data</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">image_data</span><span class="o">.</span><span class="n">dark_pixels</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">image_data</span><span class="o">.</span><span class="n">instrument</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">image_data</span><span class="o">.</span><span class="n">spacecraft</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">image_data</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image_data</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">file</span>
+
+        <span class="c1"># parse the data if requested</span>
+        <span class="k">if</span> <span class="n">parse_data</span><span class="p">:</span>
+            <span class="n">image_data</span><span class="o">.</span><span class="n">parse_data</span><span class="p">()</span>
+
+        <span class="c1"># overwrite any data we&#39;ve already loaded/parsed with what the User has specified</span>
+        <span class="k">if</span> <span class="n">observation_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image_data</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">=</span> <span class="n">observation_date</span>
+        <span class="k">if</span> <span class="n">instrument</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image_data</span><span class="o">.</span><span class="n">instrument</span> <span class="o">=</span> <span class="n">instrument</span>
+        <span class="k">if</span> <span class="n">spacecraft</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image_data</span><span class="o">.</span><span class="n">spacecraft</span> <span class="o">=</span> <span class="n">spacecraft</span>
+        <span class="k">if</span> <span class="n">rotation_inertial_to_camera</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image_data</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="n">rotation_inertial_to_camera</span>
+        <span class="k">if</span> <span class="n">position</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image_data</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">position</span>
+        <span class="k">if</span> <span class="n">velocity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image_data</span><span class="o">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="n">velocity</span>
+        <span class="k">if</span> <span class="n">exposure</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image_data</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">exposure</span>
+        <span class="k">if</span> <span class="n">exposure_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image_data</span><span class="o">.</span><span class="n">exposure_type</span> <span class="o">=</span> <span class="n">exposure_type</span>
+        <span class="k">if</span> <span class="n">saturation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image_data</span><span class="o">.</span><span class="n">saturation</span> <span class="o">=</span> <span class="n">saturation</span>
+        <span class="k">if</span> <span class="n">dark_pixels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image_data</span><span class="o">.</span><span class="n">dark_pixels</span> <span class="o">=</span> <span class="n">dark_pixels</span>
+        <span class="k">if</span> <span class="n">temperature</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image_data</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">temperature</span>
+        <span class="k">if</span> <span class="n">target</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image_data</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
+
+        <span class="k">return</span> <span class="n">image_data</span>
+
+    <span class="k">def</span> <span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),),</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span>
+
+    <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="c1"># super().__setstate__(state, *args, **kwargs)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__array_finalize__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;OpNavImage&#39;</span><span class="p">]):</span>
+
+        <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;file&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;observation_date&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instrument</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;instrument&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spacecraft</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;spacecraft&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;rotation_inertial_to_camera&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;position&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;velocity&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dark_pixels</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;dark_pixels&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;exposure&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;exposure_type&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saturation</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;saturation&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;target&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+        <span class="n">odict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
+                <span class="n">odict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="n">data</span> <span class="o">+</span>
+                <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">=</span><span class="si">{!r}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">odict</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+        <span class="n">odict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
+                <span class="n">odict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="n">data</span> <span class="o">+</span>
+                <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">=</span><span class="si">{!s}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">odict</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">observation_date</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">datetime</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The observation_date specifies when the image was captured (normally set to the middle of the exposure period).</span>
+
+<span class="sd">        This is used for tagging observations with timestamps, updating attitude knowledge in short exposure images</span>
+<span class="sd">        using long exposure images, and updating a scene to how it is expected to be at the time an image is captured.</span>
+
+<span class="sd">        Typically this attribute is a python datetime object, however, you can make it a different object if you want</span>
+<span class="sd">        as long as the different object implements ``isoformat``, ``__add__``, and ``__sub__`` methods.  You can also</span>
+<span class="sd">        set this attribute to None but this will break some functionality in GIANT so it is not recommended.  If you</span>
+<span class="sd">        really want to set this to something else you will need to set the ``_observation_date`` attribute directly, but</span>
+<span class="sd">        again this is likely to break other functionality in GIANT so it is not recommended.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observation_date</span>
+
+    <span class="nd">@observation_date</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">observation_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]):</span>
+
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_observation_date</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">datetime</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_observation_date</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s2">&quot;isoformat&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s2">&quot;__sub__&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s2">&quot;__add__&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_observation_date</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;We can&#39;t use the value you set for observation_date.  Please consider using a datetime &quot;</span>
+                             <span class="s2">&quot;object, or if you really know what you&#39;re doing you can directly set the &quot;</span>
+                             <span class="s2">&quot;_observation_date attribute&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">rotation_inertial_to_camera</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Rotation</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The rotation_inertial_to_camera attribute encodes the rotation to transform from the inertial frame to the</span>
+<span class="sd">        camera frame at the time of the image.</span>
+
+<span class="sd">        This is used extensively throughout GIANT.  It is updated when using stars to estimate an updated attitude, when</span>
+<span class="sd">        doing relative navigation to predict where points in the scene project to points in the image, and also in</span>
+<span class="sd">        relative navigation to predict where points in the image project to in inertial space.</span>
+
+<span class="sd">        This attribute should be set to a :class:`.Rotation` object, or something that the Rotation object can</span>
+<span class="sd">        interpret. When you set this value, it will be converted to an :class:`.Rotation` object. You can also set this</span>
+<span class="sd">        attribute to None but this will break a significant portion of the functionality in GIANT so it is not</span>
+<span class="sd">        recommended. If you really want to set this to something else you will need to set the</span>
+<span class="sd">        ``_rotation_inertial_to_camera`` attribute directly, but again this is likely to break other functionality in</span>
+<span class="sd">        GIANT so it is not recommended.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_to_camera</span>
+
+    <span class="nd">@rotation_inertial_to_camera</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">rotation_inertial_to_camera</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_to_camera</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_to_camera</span> <span class="o">=</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">velocity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The velocity attribute encodes the inertial velocity of the camera at the time the image was captured.</span>
+
+<span class="sd">        This must be the inertial velocity with respect to the solar system barycenter and is used when</span>
+<span class="sd">        to compute the stellar aberration correction to stars and targets.  To ignore stellar aberration you can set</span>
+<span class="sd">        this to the zero vector.</span>
+
+<span class="sd">        This attribute should be set to a length 3 array like object and it will be converted into a double numpy</span>
+<span class="sd">        ndarray.  If you try to set this value to None then it will be reset to a vector of zeros.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_velocity</span>
+
+    <span class="nd">@velocity</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">velocity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_velocity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_velocity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The position attribute encodes the inertial position of the camera at the time the image was captured.</span>
+
+<span class="sd">        Typically this is the inertial position from the solar system barycenter to the spacecraft and is used when</span>
+<span class="sd">        updating an :class:`.Scene` to place objects in the camera frame at the time of the image.  You can</span>
+<span class="sd">        optionally put this in another frame or with another central body as long as you know what you are doing and</span>
+<span class="sd">        understand how the :class:`.Scene` works.</span>
+
+<span class="sd">        This attribute should be set to a length 3 array like object and it will be converted into a double numpy</span>
+<span class="sd">        ndarray.  If you try to set this value to None then it will be reset to a vector of zeros.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position</span>
+
+    <span class="nd">@position</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">exposure_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">ExposureType</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The exposure type specifies what type of processing to use on this image.</span>
+
+<span class="sd">        ``short`` exposure images are used for relative navigation like center finding.</span>
+<span class="sd">        ``long`` exposure images are used for star based navigation like attitude estimation.</span>
+<span class="sd">        ``dual`` exposure images are used for both star based and relative navigation.</span>
+
+<span class="sd">        this property should be set to an :class:`.ExposureType` value or a string.  It can also be set to None but this</span>
+<span class="sd">        can break some other functionality of GIANT so it is not recommended.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_type</span>
+
+    <span class="nd">@exposure_type</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">exposure_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_type</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_type</span> <span class="o">=</span> <span class="n">ExposureType</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Real</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The temperature of the camera at the time the image was captured</span>
+
+<span class="sd">        This property is used by the camera model to apply temperature dependent focal length changes.  It should be</span>
+<span class="sd">        a ``Real`` and convertible to a float by using the ``float`` function.  You can set this value to None but it</span>
+<span class="sd">        will break things in the camera model so that is not recommended.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_temperature</span>
+
+    <span class="nd">@temperature</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_temperature</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_temperature</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unable to convert </span><span class="si">{}</span><span class="s1"> to a float.  The temperature must be a number that is &#39;</span>
+                                 <span class="s1">&#39;convertible to a float&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">saturation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Real</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The saturation value of the camera.</span>
+
+<span class="sd">        This attribute is used when determining if a pixel is saturated or not in image processing.  It may be set to a</span>
+<span class="sd">        very high number to effectively ignore the check.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_saturation</span>
+
+    <span class="nd">@saturation</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">saturation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_saturation</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">val</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_saturation</span> <span class="o">=</span> <span class="n">val</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The saturation must be a number that supports comparisons with numbers&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OpNavImage.parse_data"><a class="viewcode-back" href="../../image/giant.image.OpNavImage.parse_data.html#giant.image.OpNavImage.parse_data">[docs]</a>    <span class="k">def</span> <span class="nf">parse_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method should fill in the metadata for an OpNavImage.</span>
+
+<span class="sd">        This method must be implemented by the user.</span>
+<span class="sd">        </span>
+<span class="sd">        :raises: NotImplementedError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;This method needs to be implemented by the user.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpNavImage.load_image"><a class="viewcode-back" href="../../image/giant.image.OpNavImage.load_image.html#giant.image.OpNavImage.load_image">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">load_image</span><span class="p">(</span><span class="n">image_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method reads in a number of standard image formats using OpenCV and pyfits and converts it to grayscale</span>
+<span class="sd">        if it is in color.</span>
+
+<span class="sd">        :param image_path: The path to the image file to be read.</span>
+<span class="sd">        :type image_path: str</span>
+<span class="sd">        :return: The illumination data from the image file</span>
+<span class="sd">        :rtype: np.ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cv_ext</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;.bmp&#39;</span><span class="p">,</span> <span class="s1">&#39;.dib&#39;</span><span class="p">,</span> <span class="s1">&#39;.jpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;.jpe&#39;</span><span class="p">,</span> <span class="s1">&#39;.jp2&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;.png&#39;</span><span class="p">,</span> <span class="s1">&#39;.webp&#39;</span><span class="p">,</span> <span class="s1">&#39;.pbm&#39;</span><span class="p">,</span> <span class="s1">&#39;.pgm&#39;</span><span class="p">,</span> <span class="s1">&#39;.ppm&#39;</span><span class="p">,</span> <span class="s1">&#39;.sr&#39;</span><span class="p">,</span> <span class="s1">&#39;.ras&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;.tiff&#39;</span><span class="p">,</span> <span class="s1">&#39;.tif&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">image_path</span><span class="p">):</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="s1">&#39;.fits&#39;</span><span class="p">:</span>
+
+                <span class="k">with</span> <span class="n">pf</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">image_file</span><span class="p">:</span>
+
+                    <span class="n">image</span> <span class="o">=</span> <span class="n">image_file</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+
+                        <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                            <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                            <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                        <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2GRAY</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;uint8&#39;</span><span class="p">,</span> <span class="s1">&#39;uint16&#39;</span><span class="p">,</span> <span class="s1">&#39;float32&#39;</span><span class="p">]:</span>
+                        <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+
+                    <span class="k">return</span> <span class="n">image</span>
+
+            <span class="k">elif</span> <span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">cv_ext</span><span class="p">:</span>
+
+                <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">IMREAD_GRAYSCALE</span><span class="p">)</span>
+
+                <span class="k">return</span> <span class="n">image</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The file you specified (</span><span class="si">{0:s}</span><span class="s1">) is not a recognizable image.</span><span class="se">\n</span><span class="s1">&#39;</span>
+                                 <span class="s1">&#39;Please try again.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">image_path</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The file you specified(</span><span class="si">{0:s}</span><span class="s1">) does not exist.</span><span class="se">\n</span><span class="s1">&#39;</span>
+                             <span class="s1">&#39;Please try again&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">image_path</span><span class="p">))</span></div></div>
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,203 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>PinholeModel.compute_unit_vector_jacobian &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="PinholeModel.apply_update" href="giant.camera_models.pinhole_model.PinholeModel.apply_update.html" />
+    <link rel="prev" title="PinholeModel.compute_pixel_jacobian" href="giant.camera_models.pinhole_model.PinholeModel.compute_pixel_jacobian.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.camera_models.html">giant.camera_models</a><ul>
+  <li><a href="../giant.camera_models.pinhole_model.html">giant.camera_models.pinhole_model</a><ul>
+  <li><a href="giant.camera_models.pinhole_model.PinholeModel.html">PinholeModel</a><ul>
+      <li>Previous: <a href="giant.camera_models.pinhole_model.PinholeModel.compute_pixel_jacobian.html" title="previous chapter">PinholeModel.compute_pixel_jacobian</a></li>
+      <li>Next: <a href="giant.camera_models.pinhole_model.PinholeModel.apply_update.html" title="next chapter">PinholeModel.apply_update</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.camera_models.pinhole_model.PinholeModel.compute_pixel_jacobian.html" title="Previous document">PinholeModel.compute_pixel_jacobian</a>
+        </li>
+        <li>
+          <a href="giant.camera_models.pinhole_model.PinholeModel.apply_update.html" title="Next document">PinholeModel.apply_update</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="pinholemodel-compute-unit-vector-jacobian">
+<h1>PinholeModel.compute_unit_vector_jacobian<a class="headerlink" href="#pinholemodel-compute-unit-vector-jacobian" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.camera_models.pinhole_model.html#module-giant.camera_models.pinhole_model" title="giant.camera_models.pinhole_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.camera_models.pinhole_model</span></code></a>:</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.camera_models.pinhole_model.PinholeModel.compute_unit_vector_jacobian">
+<span class="sig-prename descclassname"><span class="pre">PinholeModel.</span></span><span class="sig-name descname"><span class="pre">compute_unit_vector_jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pixel_locations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/giant/camera_models/pinhole_model.html#PinholeModel.compute_unit_vector_jacobian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.camera_models.pinhole_model.PinholeModel.compute_unit_vector_jacobian" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method computes the Jacobian matrix <span class="math notranslate nohighlight">\(\partial\mathbf{x}_C/\partial\mathbf{x}_P\)</span> where
+<span class="math notranslate nohighlight">\(\mathbf{x}_C\)</span> is a vector in the camera frame that projects to <span class="math notranslate nohighlight">\(\mathbf{x}_P\)</span> which is the
+pixel location.</p>
+<p>This method is used in the <code class="xref py py-class docutils literal notranslate"><span class="pre">LimbScanning</span></code> process in order to predict the change in the unit vector that
+projects to a pixel location with respect to a change in the pixel location.  The
+<code class="docutils literal notranslate"><span class="pre">pixel_locations</span></code> input should be a 2xn array of vectors which the Jacobian is to be computed for.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pixel_locations</strong> (<em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>]</em>) – The pixel locations to compute the Jacobian at</p></li>
+<li><p><strong>image</strong> (<em>int</em>) – The number of the image we are computing the Jacobian for</p></li>
+<li><p><strong>temperature</strong> (<em>numbers.Real</em>) – The temperature to compute the Jacobian at</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The Jacobian matrix as a nx3x2 array</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Mathematically this Jacobian is defined as</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial\mathbf{x}_C}{\partial\mathbf{x}_P} =
+\frac{\partial\mathbf{x}_C}{\partial\mathbf{x}_C'}
+\frac{\partial\mathbf{x}_C'}{\partial\mathbf{x}_I}
+\frac{\partial\mathbf{x}_I}{\partial\mathbf{x}_P}\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\begin{gather}
+\frac{\partial\mathbf{x}_C}{\partial\mathbf{x}_C'} = \mathbf{T}_{\boldsymbol{\delta\theta}}^T\\
+\frac{\partial\mathbf{x}_C'}{\partial\mathbf{x}_I} = \left[\begin{array}{cc}
+1/v &amp; 0 \\ 0 &amp; 1/v \\ 0 &amp; 0\end{array}\right] -
+\frac{1}{v^3}\left[\begin{array}{c} \mathbf{x}_I \\ f \end{array}\right]\mathbf{x}_I^T \\
+\frac{\partial\mathbf{x}_I}{\partial\mathbf{x}_P} = \frac{\mathbf{K}^{-1}}{1+a_1T+a_2T^2+a_3T^3}
+\end{gather}</div><p><span class="math notranslate nohighlight">\(\mathbf{x}_C'\)</span> is the camera frame point after applying the misalignment,
+<span class="math notranslate nohighlight">\(\boldsymbol{\delta\theta}\)</span> is the misalignment vector, <span class="math notranslate nohighlight">\(\mathbf{x}_C\)</span> is the camera frame point
+before misalignment is applied,
+<span class="math notranslate nohighlight">\(\mathbf{x}_P\)</span> is the pixel location, <span class="math notranslate nohighlight">\(\mathbf{x}_I\)</span> is the gnomic location,
+<span class="math notranslate nohighlight">\(a_{1-3}\)</span> are the temperature coefficients, <span class="math notranslate nohighlight">\(T\)</span> is the temperature, <span class="math notranslate nohighlight">\(k_x\)</span> is the inverse of
+the pixel pitch in the x direction,  <span class="math notranslate nohighlight">\(k_y\)</span> is the inverse of the pixel pitch in the y direction,
+<span class="math notranslate nohighlight">\(f\)</span> is the focal length, <span class="math notranslate nohighlight">\(\mathbf{T}_{\boldsymbol{\delta\theta}}\)</span> is the rotation matrix
+corresponding to rotation vector <span class="math notranslate nohighlight">\(\boldsymbol{\delta\theta}\)</span>,
+<span class="math notranslate nohighlight">\(v=\sqrt{\mathbf{x}_I^T\mathbf{x}_I + f^2}\)</span>, and <span class="math notranslate nohighlight">\(\mathbf{K}^{-1}\)</span> is the inverse intrinsic matrix.</p>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.camera_models.pinhole_model.PinholeModel.compute_pixel_jacobian.html" title="Previous document">PinholeModel.compute_pixel_jacobian</a>
+        </li>
+        <li>
+          <a href="giant.camera_models.pinhole_model.PinholeModel.apply_update.html" title="Next document">PinholeModel.apply_update</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/pinhole_model/giant.camera_models.pinhole_model.PinholeModel.compute_unit_vector_jacobian.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

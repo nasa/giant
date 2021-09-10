@@ -1,0 +1,505 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.ray_tracer.utilities &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.ray_tracer.utilities</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
+<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides some basic utilities for working with the ray tracer in GIANT.</span>
+
+<span class="sd">Use</span>
+<span class="sd">---</span>
+
+<span class="sd">In general you won&#39;t use the utilities provided herein directly, as they are dispersed throughout the ray tracer in the</span>
+<span class="sd">areas where they are needed already.  That being said, everything in here should be useable with clear documentation if</span>
+<span class="sd">you have some non-typical use.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">giant.ray_tracer.rays</span> <span class="kn">import</span> <span class="n">Rays</span>
+
+<span class="kn">from</span> <span class="nn">giant.ray_tracer.shapes.ellipsoid</span> <span class="kn">import</span> <span class="n">Ellipsoid</span>
+<span class="kn">from</span> <span class="nn">giant.ray_tracer.shapes.triangle</span> <span class="kn">import</span> <span class="n">Triangle64</span><span class="p">,</span> <span class="n">Triangle32</span>
+<span class="kn">from</span> <span class="nn">giant.ray_tracer.shapes.shape</span> <span class="kn">import</span> <span class="n">Shape</span>
+<span class="kn">from</span> <span class="nn">giant._typing</span> <span class="kn">import</span> <span class="n">Real</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span>
+
+
+<div class="viewcode-block" id="find_limbs"><a class="viewcode-back" href="../../../ray_tracer/utilities/giant.ray_tracer.utilities.find_limbs.html#giant.ray_tracer.utilities.find_limbs">[docs]</a><span class="k">def</span> <span class="nf">find_limbs</span><span class="p">(</span><span class="n">shape</span><span class="p">:</span> <span class="n">Shape</span><span class="p">,</span> <span class="n">scan_center_dir</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">scan_dirs</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span>
+               <span class="n">observer_position</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ARRAY_LIKE</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">initial_step</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">25</span><span class="p">,</span>
+               <span class="n">rtol</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="n">atol</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mf">1e-12</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This helper function determines the limb points for any traceable shape (visible edge of the shape) that would be</span>
+<span class="sd">    visible for an observer located at ``observer_position`` looking toward ``scan_center_dir`` along the</span>
+<span class="sd">    directions given by ``scan_dirs``.</span>
+
+<span class="sd">    Typically it is assumed that the location of the observer is at the origin of the current frame and therefore</span>
+<span class="sd">    ``observer_position`` can be left as ``None``.</span>
+
+<span class="sd">    The limb for the surface is found iteratively by tracing rays from the observer to the shape.  First, the</span>
+<span class="sd">    rays are traced along the scan center direction, which should beg guaranteed to strike the shape.  Then, we</span>
+<span class="sd">    adjust the direction of the rays so that they no longer intersect the surface using ``initial_step``.</span>
+<span class="sd">    We then proceed by tracing rays with directions half way between the left rays (guaranteed to strike the surface)</span>
+<span class="sd">    and the right rays (guaranteed to not strike the surface) updating the left and right rays based on the result of</span>
+<span class="sd">    the last trace.  This continues for a maximum of ``max_iterations`` or until the tolerances specified by ``rtol``</span>
+<span class="sd">    and ``atol`` are met for the change in the estimate of the limb location.  The returned limb location is the last</span>
+<span class="sd">    ray intersect location that hit the surface for each ``scan_dirs``.</span>
+
+<span class="sd">    The returned limbs are expressed as vectors from the observer to the limb point in the current frame as a 3xn</span>
+<span class="sd">    numpy array.</span>
+
+<span class="sd">    :param shape: The target shape that we are to find the limb points for as a :class:`.Shape`</span>
+<span class="sd">    :param scan_center_dir: the unit vector which the scan is to begin at in the current frame as a length 3 array</span>
+<span class="sd">                            A ray cast along this unit vector from the ``observer_position`` should be guaranteed</span>
+<span class="sd">                            to strike the surface and ideally should be towards the center of figure of the surface</span>
+<span class="sd">    :param scan_dirs: the unit vectors along with the scan is to proceed as a 3xn array in the current frame where</span>
+<span class="sd">                      each column represents a new limb point we wish to find (should be nearly orthogonal to the</span>
+<span class="sd">                      ``scan_center_dir`` in most cases).</span>
+<span class="sd">    :param observer_position: The location of the observer in the current frame.  If ``None`` then it is assumed</span>
+<span class="sd">                              the observer is at the origin of the current frame</span>
+<span class="sd">    :param initial_step: The size of the initial step to take along the ``scan_dirs`` direction.  This should be</span>
+<span class="sd">                         guaranteed to result in rays that do not strike the body.</span>
+<span class="sd">    :param max_iterations: The maximum number of iteration steps to take when locating the limbs</span>
+<span class="sd">    :param rtol: The relative tolerance of the change in the limb location from one iteration to the next that</span>
+<span class="sd">                 indicates convergence.</span>
+<span class="sd">    :param atol: the absolute tolerance of the change int he limb location from one iteration to the next that</span>
+<span class="sd">                 indicates convergence.</span>
+<span class="sd">    :return: the vectors from the observer to the limbs in the current frame as a 3xn array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">observer_position</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">single_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">observer_position</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">single_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">single_start</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">scan_dirs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="n">left_rays</span> <span class="o">=</span> <span class="n">Rays</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">scan_center_dir</span><span class="p">]</span> <span class="o">*</span> <span class="n">scan_dirs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+    <span class="n">right_rays</span> <span class="o">=</span> <span class="n">Rays</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">scan_center_dir</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">scan_dirs</span> <span class="o">*</span> <span class="n">initial_step</span><span class="p">)</span>
+
+    <span class="n">res</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">shape</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">left_rays</span><span class="p">)</span>
+    <span class="n">old_res</span> <span class="o">=</span> <span class="n">res</span>
+
+    <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iterations</span><span class="p">):</span>
+
+        <span class="n">trace_rays</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">left_rays</span><span class="p">)</span>
+
+        <span class="n">trace_rays</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">left_rays</span><span class="o">.</span><span class="n">direction</span> <span class="o">+</span> <span class="p">(</span><span class="n">right_rays</span><span class="o">.</span><span class="n">direction</span> <span class="o">-</span> <span class="n">left_rays</span><span class="o">.</span><span class="n">direction</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="n">shape</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">trace_rays</span><span class="p">)</span>
+
+        <span class="n">keep_right</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;check&quot;</span><span class="p">]</span>
+
+        <span class="n">left_rays</span><span class="o">.</span><span class="n">direction</span><span class="p">[:,</span> <span class="n">keep_right</span><span class="p">]</span> <span class="o">=</span> <span class="n">trace_rays</span><span class="o">.</span><span class="n">direction</span><span class="p">[:,</span> <span class="n">keep_right</span><span class="p">]</span>
+        <span class="n">right_rays</span><span class="o">.</span><span class="n">direction</span><span class="p">[:,</span> <span class="o">~</span><span class="n">keep_right</span><span class="p">]</span> <span class="o">=</span> <span class="n">trace_rays</span><span class="o">.</span><span class="n">direction</span><span class="p">[:,</span> <span class="o">~</span><span class="n">keep_right</span><span class="p">]</span>
+
+        <span class="n">converged</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+
+        <span class="n">converged</span><span class="p">[</span><span class="n">keep_right</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">old_res</span><span class="p">[</span><span class="n">keep_right</span><span class="p">]</span> <span class="o">-</span> <span class="n">res</span><span class="p">[</span><span class="n">keep_right</span><span class="p">])</span> <span class="o">&lt;=</span>
+                                 <span class="n">atol</span> <span class="o">+</span> <span class="n">rtol</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="n">keep_right</span><span class="p">]))</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">converged</span><span class="p">[</span><span class="o">~</span><span class="n">keep_right</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">right_rays</span><span class="o">.</span><span class="n">direction</span><span class="p">[:,</span> <span class="o">~</span><span class="n">keep_right</span><span class="p">]</span> <span class="o">-</span> <span class="n">left_rays</span><span class="o">.</span><span class="n">direction</span><span class="p">[:,</span> <span class="o">~</span><span class="n">keep_right</span><span class="p">])</span> <span class="o">&lt;=</span>
+                                  <span class="n">atol</span> <span class="o">+</span> <span class="n">rtol</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">left_rays</span><span class="o">.</span><span class="n">direction</span><span class="p">[:,</span> <span class="o">~</span><span class="n">keep_right</span><span class="p">]))</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">converged</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">break</span>
+
+    <span class="n">final_rays</span> <span class="o">=</span> <span class="n">left_rays</span><span class="p">[</span><span class="o">~</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;check&quot;</span><span class="p">]]</span>
+
+    <span class="n">final_res</span> <span class="o">=</span> <span class="n">shape</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">final_rays</span><span class="p">)</span>
+
+    <span class="n">res</span><span class="p">[</span><span class="s2">&quot;intersect&quot;</span><span class="p">][</span><span class="o">~</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;check&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">final_res</span><span class="p">[</span><span class="s2">&quot;intersect&quot;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;intersect&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">T</span> <span class="o">-</span> <span class="n">observer_position</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="compute_com"><a class="viewcode-back" href="../../../ray_tracer/utilities/giant.ray_tracer.utilities.compute_com.html#giant.ray_tracer.utilities.compute_com">[docs]</a><span class="k">def</span> <span class="nf">compute_com</span><span class="p">(</span><span class="n">tris</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Triangle64</span><span class="p">,</span> <span class="n">Triangle32</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function computes the center of mass assuming uniform density for a triangle tesselated surface.</span>
+
+<span class="sd">    The center of mass is found by finding the center of volume (since with uniform density this is equivalent to the</span>
+<span class="sd">    center of mass).  This is done by computing the volume of each tetrahedron formed by a face connected to the center</span>
+<span class="sd">    of figure of the shape (note that therefore very irregular shapes cannot be analyzed by this function).  These</span>
+<span class="sd">    volumes are then used in the usual center of mass equation (multiply the volumes times the volume centroids, take</span>
+<span class="sd">    the sum, and divide by the sum of the volumes).</span>
+
+<span class="sd">    :param tris: the triangular tessellated surface which we are to compute the uniform density center of mass for</span>
+<span class="sd">    :return: the center of mass of the surface as a length 3 numpy array expressed in the current frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># compute the volume of each pyramid</span>
+
+    <span class="c1"># D = (x0-x).T@n where x0 is a vertex from the triangle (in this case vertex 0),</span>
+    <span class="c1"># x is the point we want the surface for (in this case the origin),</span>
+    <span class="c1"># and n is the normal vector</span>
+    <span class="n">sv</span> <span class="o">=</span> <span class="n">tris</span><span class="o">.</span><span class="n">stacked_vertices</span>
+    <span class="n">heights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">sv</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">tris</span><span class="o">.</span><span class="n">normals</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="c1"># determine the area of each triangle</span>
+    <span class="n">areas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">tris</span><span class="o">.</span><span class="n">sides</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">tris</span><span class="o">.</span><span class="n">sides</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+
+    <span class="n">volumes</span> <span class="o">=</span> <span class="n">areas</span> <span class="o">*</span> <span class="n">heights</span><span class="o">/</span><span class="mi">3</span>
+
+    <span class="c1"># determine the centroid of each triangle</span>
+    <span class="n">tri_cents</span> <span class="o">=</span> <span class="n">sv</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span>
+
+    <span class="c1"># determine the centroid of each pyramid</span>
+    <span class="c1"># this is 3/4 of the distance from the apex (origin) to the centeroid of the base</span>
+    <span class="n">pyr_cents</span> <span class="o">=</span> <span class="mi">3</span><span class="o">/</span><span class="mi">4</span> <span class="o">*</span> <span class="n">tri_cents</span>
+
+    <span class="c1"># determine the centroid of the body</span>
+    <span class="n">com</span> <span class="o">=</span> <span class="p">(</span><span class="n">pyr_cents</span> <span class="o">*</span> <span class="n">volumes</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="n">volumes</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">com</span></div>
+
+
+<div class="viewcode-block" id="ref_ellipse"><a class="viewcode-back" href="../../../ray_tracer/utilities/giant.ray_tracer.utilities.ref_ellipse.html#giant.ray_tracer.utilities.ref_ellipse">[docs]</a><span class="k">def</span> <span class="nf">ref_ellipse</span><span class="p">(</span><span class="n">verts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Ellipsoid</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function finds the best fit ellipsoid to a set of vertices  (minimizing the algebraic distance residuals).</span>
+
+<span class="sd">    This is done by solving the least squares equation</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \left[\begin{array}{ccccccccc} \mathbf{x}^2+\mathbf{y}^2-2\mathbf{z}^2 &amp;</span>
+<span class="sd">        \mathbf{x}^2 + \mathbf{z}^2 - 2\mathbf{y}^2 &amp;</span>
+<span class="sd">        2\mathbf{x}*\mathbf{y} &amp;</span>
+<span class="sd">        2\mathbf{x}*\mathbf{z} &amp;</span>
+<span class="sd">        2\mathbf{y}*\mathbf{z} &amp;</span>
+<span class="sd">        2\mathbf{x} &amp;</span>
+<span class="sd">        2\mathbf{y} &amp;</span>
+<span class="sd">        2\mathbf{z} &amp;</span>
+<span class="sd">        \mathbf{1} \end{array}\right]\left[\begin{array}{c} A\\ B \\ C \\ D \\ E \\ F \\ G \\ H \\ I\end{array}\right] =</span>
+<span class="sd">        \mathbf{x}^2+\mathbf{y}^2+\mathbf{z}^2</span>
+
+<span class="sd">    Given the solution, we then form the matrix</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \mathbf{A} = \left[\begin{array}{cccc} A+B+C-1 &amp; C &amp; D &amp; F \\</span>
+<span class="sd">        C &amp; A-2B-1 &amp; E &amp; G \\</span>
+<span class="sd">        D &amp; E &amp; B-2A-1 &amp; H \\</span>
+<span class="sd">        F &amp; G &amp; H &amp; I \end{array}\right]</span>
+
+<span class="sd">    We then have that the center of the ellipse is found by solving the 3x3 system</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        -\mathbf{A}_{0:2,0:2}\mathbf{c} = \left[\begin{array}{ccc} F \\ G \\ H \end{array}\right]</span>
+
+<span class="sd">    and the ellipsoid matrix is found according to</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \mathbf{T} = \left[\begin{array}{cccc} 1 &amp; 0 &amp; 0 &amp; 0 \\</span>
+<span class="sd">        0 &amp; 1 &amp; 0 &amp; 0 \\</span>
+<span class="sd">        0 &amp; 0 &amp; 1 &amp; 0 \\</span>
+<span class="sd">        c_0 &amp; c_1 &amp; c_2 &amp; 1\end{array}\right] \\</span>
+<span class="sd">        \mathbf{R} = \mathbf{T}\mathbf{A}\mathbf{T}^T \\</span>
+<span class="sd">        \mathbf{E} = -\frac{\mathbf{R}_{0:3,0:3}}{r_{3,3}}</span>
+
+<span class="sd">    where :math:`\mathbf{E}` is the ellipsoid matrix.</span>
+
+<span class="sd">    :param verts: The vertices to fit the ellipsoid to as a (n x 3) array of points</span>
+<span class="sd">    :return: An :class:`.Ellipsoid` object that represents the best fit to the supplied vertices</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">verts</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">x2</span> <span class="o">=</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">y2</span> <span class="o">=</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">z2</span> <span class="o">=</span> <span class="n">z</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">xy</span> <span class="o">=</span> <span class="n">x</span><span class="o">*</span><span class="n">y</span>
+    <span class="n">xz</span> <span class="o">=</span> <span class="n">x</span><span class="o">*</span><span class="n">z</span>
+    <span class="n">yz</span> <span class="o">=</span> <span class="n">y</span><span class="o">*</span><span class="n">z</span>
+
+    <span class="n">hmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">x2</span> <span class="o">+</span> <span class="n">y2</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">z2</span><span class="p">,</span>
+                      <span class="n">x2</span> <span class="o">+</span> <span class="n">z2</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">y2</span><span class="p">,</span>
+                      <span class="mi">2</span><span class="o">*</span><span class="n">xy</span><span class="p">,</span>
+                      <span class="mi">2</span><span class="o">*</span><span class="n">xz</span><span class="p">,</span>
+                      <span class="mi">2</span><span class="o">*</span><span class="n">yz</span><span class="p">,</span>
+                      <span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="p">,</span>
+                      <span class="mi">2</span><span class="o">*</span><span class="n">y</span><span class="p">,</span>
+                      <span class="mi">2</span><span class="o">*</span><span class="n">z</span><span class="p">,</span>
+                      <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)])</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">rhs</span> <span class="o">=</span> <span class="n">x2</span> <span class="o">+</span> <span class="n">y2</span> <span class="o">+</span> <span class="n">z2</span>
+
+    <span class="n">solu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">hmat</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">coefs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">solu</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">coefs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">solu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">solu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">coefs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">solu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">solu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">coefs</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span> <span class="o">=</span> <span class="n">solu</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+
+    <span class="n">amat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">coefs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">6</span><span class="p">]],</span>
+                     <span class="p">[</span><span class="n">coefs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">7</span><span class="p">]],</span>
+                     <span class="p">[</span><span class="n">coefs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">8</span><span class="p">]],</span>
+                     <span class="p">[</span><span class="n">coefs</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">9</span><span class="p">]]])</span>
+
+    <span class="n">center</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">amat</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">6</span><span class="p">:</span><span class="mi">9</span><span class="p">])</span>
+
+    <span class="n">tmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">tmat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">center</span>
+
+    <span class="n">rmat</span> <span class="o">=</span> <span class="n">tmat</span><span class="nd">@amat@tmat</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">ellipsmat</span> <span class="o">=</span> <span class="o">-</span><span class="n">rmat</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">/</span> <span class="n">rmat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">Ellipsoid</span><span class="p">(</span><span class="n">center</span><span class="o">=</span><span class="n">center</span><span class="p">,</span> <span class="n">ellipsoid_matrix</span><span class="o">=</span><span class="n">ellipsmat</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="to_block"><a class="viewcode-back" href="../../../ray_tracer/utilities/giant.ray_tracer.utilities.to_block.html#giant.ray_tracer.utilities.to_block">[docs]</a><span class="k">def</span> <span class="nf">to_block</span><span class="p">(</span><span class="n">vals</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This helper function takes a list of lists/arrays and puts them all into a single contiguous array</span>
+
+<span class="sd">    This is used when ray tracing rays that have ignore lists of different lengths.  It works by iterating through,</span>
+<span class="sd">    determining the maximum length of the &quot;rows&quot;, creating a new array of -1 with this many columns, and then assigning</span>
+<span class="sd">    each row to this new array.</span>
+
+<span class="sd">    For instance, an input of the form</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        [[1, 2, 3], [0, 1], [7, 8, 3, 4]]</span>
+
+<span class="sd">    will be converted to</span>
+
+<span class="sd">    .. code::</span>
+
+<span class="sd">        np.array([[1, 2, 3, -1], [0, 1, -1, -1], [7, 8, 3, 4]])</span>
+
+<span class="sd">    :param vals: A ragged list of lists or arrays that is to be converted into a single contiguous array</span>
+<span class="sd">    :return: the contiguous block</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># check to see if we already have a contiguous array</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">vals</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+
+            <span class="k">return</span> <span class="n">vals</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">vals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+    <span class="c1"># determine how many rows there are</span>
+    <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+
+    <span class="c1"># make each row a 1d numpy array</span>
+    <span class="n">vals_one_d</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">,</span> <span class="n">vals</span><span class="p">))</span>
+
+    <span class="c1"># determine the maximum number of columns in any row</span>
+    <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">vals_one_d</span><span class="p">)</span>
+
+    <span class="c1"># create an output array that is n_rows x n_cols</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+    <span class="c1"># copy each row into the appropriate columns in the output array</span>
+    <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vals_one_d</span><span class="p">):</span>
+        <span class="n">out</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="p">:</span><span class="n">row</span><span class="o">.</span><span class="n">size</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="compute_stats"><a class="viewcode-back" href="../../../ray_tracer/utilities/giant.ray_tracer.utilities.compute_stats.html#giant.ray_tracer.utilities.compute_stats">[docs]</a><span class="k">def</span> <span class="nf">compute_stats</span><span class="p">(</span><span class="n">tris</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Triangle64</span><span class="p">,</span> <span class="n">Triangle32</span><span class="p">],</span> <span class="n">mass</span><span class="p">:</span> <span class="n">Real</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                                                                            <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute statistics on a shape tessellated using Triangles.</span>
+
+<span class="sd">    The statistics computed include the center of mass, total volume, surface area, Inertia matrix, center of mass</span>
+<span class="sd">    relative inertia matrix, moments of inertia, and rotation matrix to the inertia frame.  These are only valid for</span>
+<span class="sd">    mostly-regular bodies, where the tetrahedrons formed by connecting each face to the center of figure of the shape</span>
+<span class="sd">    is contained entirely within the shape.</span>
+
+<span class="sd">    :param tris: The GIANT triangle objects to compute the statistics on</span>
+<span class="sd">    :param mass: The mass of the object in kg</span>
+<span class="sd">    :return: A tuple of the statistics in the order mentioned above</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># compute the volume of each pyramid</span>
+
+    <span class="c1"># D = (x0-x).T@n where x0 is a vertex from the triangle (in this case vertex 0),</span>
+    <span class="c1"># x is the point we want the surface for (in this case the origin),</span>
+    <span class="c1"># and n is the normal vector</span>
+    <span class="n">sv</span> <span class="o">=</span> <span class="n">tris</span><span class="o">.</span><span class="n">stacked_vertices</span>
+    <span class="n">heights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">sv</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">tris</span><span class="o">.</span><span class="n">normals</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="c1"># determine the area of each triangle</span>
+    <span class="n">areas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">tris</span><span class="o">.</span><span class="n">sides</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">tris</span><span class="o">.</span><span class="n">sides</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="n">volumes</span> <span class="o">=</span> <span class="n">areas</span> <span class="o">*</span> <span class="n">heights</span> <span class="o">/</span> <span class="mi">3</span>
+
+    <span class="c1"># determine the centroid of each triangle</span>
+    <span class="n">tri_cents</span> <span class="o">=</span> <span class="n">sv</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+
+    <span class="c1"># determine the centroid of each pyramid</span>
+    <span class="c1"># this is 3/4 of the distance from the apex (origin) to the centeroid of the base</span>
+    <span class="n">pyr_cents</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">tri_cents</span>
+
+    <span class="c1"># determine the centroid of the body</span>
+    <span class="n">volume</span> <span class="o">=</span> <span class="n">volumes</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">com</span> <span class="o">=</span> <span class="p">(</span><span class="n">pyr_cents</span> <span class="o">*</span> <span class="n">volumes</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">volume</span>
+
+    <span class="c1"># determine the density for the object</span>
+    <span class="n">density</span> <span class="o">=</span> <span class="n">mass</span> <span class="o">/</span> <span class="n">volume</span>
+
+    <span class="c1"># determine the product of inertia for each facet</span>
+    <span class="n">vert0</span> <span class="o">=</span> <span class="n">sv</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">vert1</span> <span class="o">=</span> <span class="n">sv</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">vert2</span> <span class="o">=</span> <span class="n">sv</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># compute the outer products between the sides</span>
+    <span class="n">op00</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,jk-&gt;jik&#39;</span><span class="p">,</span> <span class="n">vert0</span><span class="p">,</span> <span class="n">vert0</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">op11</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,jk-&gt;jik&#39;</span><span class="p">,</span> <span class="n">vert1</span><span class="p">,</span> <span class="n">vert1</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">op22</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,jk-&gt;jik&#39;</span><span class="p">,</span> <span class="n">vert2</span><span class="p">,</span> <span class="n">vert2</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">op01</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,jk-&gt;jik&#39;</span><span class="p">,</span> <span class="n">vert0</span><span class="p">,</span> <span class="n">vert1</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">op10</span> <span class="o">=</span> <span class="n">op01</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">op02</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,jk-&gt;jik&#39;</span><span class="p">,</span> <span class="n">vert0</span><span class="p">,</span> <span class="n">vert2</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">op20</span> <span class="o">=</span> <span class="n">op02</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">op12</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,jk-&gt;jik&#39;</span><span class="p">,</span> <span class="n">vert1</span><span class="p">,</span> <span class="n">vert2</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">op21</span> <span class="o">=</span> <span class="n">op12</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">i_product</span> <span class="o">=</span> <span class="p">(</span><span class="n">volumes</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">op00</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">op11</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">op22</span> <span class="o">+</span> <span class="n">op01</span> <span class="o">+</span>
+                                              <span class="n">op10</span> <span class="o">+</span> <span class="n">op02</span> <span class="o">+</span> <span class="n">op20</span> <span class="o">+</span> <span class="n">op12</span> <span class="o">+</span> <span class="n">op21</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">density</span> <span class="o">/</span> <span class="mi">20</span>
+
+    <span class="c1"># compute the moments of inertia</span>
+    <span class="n">ixx</span> <span class="o">=</span> <span class="n">i_product</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">iyy</span> <span class="o">=</span> <span class="n">i_product</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">izz</span> <span class="o">=</span> <span class="n">i_product</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">ixy</span> <span class="o">=</span> <span class="n">iyx</span> <span class="o">=</span> <span class="o">-</span><span class="n">i_product</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">ixz</span> <span class="o">=</span> <span class="n">izx</span> <span class="o">=</span> <span class="o">-</span><span class="n">i_product</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">iyz</span> <span class="o">=</span> <span class="n">izy</span> <span class="o">=</span> <span class="o">-</span><span class="n">i_product</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+    <span class="c1"># form the inertia matrix</span>
+    <span class="n">i_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">ixx</span><span class="p">,</span> <span class="n">ixy</span><span class="p">,</span> <span class="n">ixz</span><span class="p">],</span> <span class="p">[</span><span class="n">iyx</span><span class="p">,</span> <span class="n">iyy</span><span class="p">,</span> <span class="n">iyz</span><span class="p">],</span> <span class="p">[</span><span class="n">izx</span><span class="p">,</span> <span class="n">izy</span><span class="p">,</span> <span class="n">izz</span><span class="p">]])</span>
+
+    <span class="c1"># determine the inertia matrix with respect to the center of mass</span>
+    <span class="n">i_matrix_com</span> <span class="o">=</span> <span class="n">i_matrix</span> <span class="o">-</span> <span class="n">mass</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([(</span><span class="n">com</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">com</span><span class="p">,</span> <span class="n">com</span><span class="p">))</span>
+
+    <span class="c1"># determine the moments and rotation matrix</span>
+    <span class="n">moments</span><span class="p">,</span> <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">i_matrix_com</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">com</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">areas</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">i_matrix</span><span class="p">,</span> <span class="n">i_matrix_com</span><span class="p">,</span> <span class="n">moments</span><span class="p">,</span> <span class="n">rotation_matrix</span></div>
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

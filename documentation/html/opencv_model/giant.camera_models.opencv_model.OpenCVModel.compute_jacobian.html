@@ -1,0 +1,290 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>OpenCVModel.compute_jacobian &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="OpenCVModel.compute_pixel_jacobian" href="giant.camera_models.opencv_model.OpenCVModel.compute_pixel_jacobian.html" />
+    <link rel="prev" title="OpenCVModel.project_directions" href="giant.camera_models.opencv_model.OpenCVModel.project_directions.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.camera_models.html">giant.camera_models</a><ul>
+  <li><a href="../giant.camera_models.opencv_model.html">giant.camera_models.opencv_model</a><ul>
+  <li><a href="giant.camera_models.opencv_model.OpenCVModel.html">OpenCVModel</a><ul>
+      <li>Previous: <a href="giant.camera_models.opencv_model.OpenCVModel.project_directions.html" title="previous chapter">OpenCVModel.project_directions</a></li>
+      <li>Next: <a href="giant.camera_models.opencv_model.OpenCVModel.compute_pixel_jacobian.html" title="next chapter">OpenCVModel.compute_pixel_jacobian</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.camera_models.opencv_model.OpenCVModel.project_directions.html" title="Previous document">OpenCVModel.project_directions</a>
+        </li>
+        <li>
+          <a href="giant.camera_models.opencv_model.OpenCVModel.compute_pixel_jacobian.html" title="Next document">OpenCVModel.compute_pixel_jacobian</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="opencvmodel-compute-jacobian">
+<h1>OpenCVModel.compute_jacobian<a class="headerlink" href="#opencvmodel-compute-jacobian" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.camera_models.opencv_model.html#module-giant.camera_models.opencv_model" title="giant.camera_models.opencv_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.camera_models.opencv_model</span></code></a>:</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.camera_models.opencv_model.OpenCVModel.compute_jacobian">
+<span class="sig-prename descclassname"><span class="pre">OpenCVModel.</span></span><span class="sig-name descname"><span class="pre">compute_jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit_vectors_camera</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giant.camera_models.opencv_model.OpenCVModel.compute_jacobian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the Jacobian matrix for each observation in <cite>unit_vectors_camera</cite> for each parameter to be estimated
+as defined in the <a class="reference internal" href="giant.camera_models.opencv_model.OpenCVModel.html#giant.camera_models.opencv_model.OpenCVModel.estimation_parameters" title="giant.camera_models.opencv_model.OpenCVModel.estimation_parameters"><code class="xref py py-attr docutils literal notranslate"><span class="pre">estimation_parameters</span></code></a> attribute.</p>
+<p>This method works by first computing the partial derivatives for all camera parameters for each provided unit
+vector. It then concatenates the rows into the Jacobian matrix and removes any columns of parameters that
+are not specified in the <a class="reference internal" href="giant.camera_models.opencv_model.OpenCVModel.html#giant.camera_models.opencv_model.OpenCVModel.estimation_parameters" title="giant.camera_models.opencv_model.OpenCVModel.estimation_parameters"><code class="xref py py-attr docutils literal notranslate"><span class="pre">estimation_parameters</span></code></a> attribute and sorts the columns according to the order
+of the <a class="reference internal" href="giant.camera_models.opencv_model.OpenCVModel.html#giant.camera_models.opencv_model.OpenCVModel.estimation_parameters" title="giant.camera_models.opencv_model.OpenCVModel.estimation_parameters"><code class="xref py py-attr docutils literal notranslate"><span class="pre">estimation_parameters</span></code></a> attribute. The resulting Jacobian
+will be the appropriate size and in the order specified by <a class="reference internal" href="giant.camera_models.opencv_model.OpenCVModel.html#giant.camera_models.opencv_model.OpenCVModel.estimation_parameters" title="giant.camera_models.opencv_model.OpenCVModel.estimation_parameters"><code class="xref py py-attr docutils literal notranslate"><span class="pre">estimation_parameters</span></code></a>.  There is one
+constraint that the misalignment (if included) must be last in <a class="reference internal" href="giant.camera_models.opencv_model.OpenCVModel.html#giant.camera_models.opencv_model.OpenCVModel.estimation_parameters" title="giant.camera_models.opencv_model.OpenCVModel.estimation_parameters"><code class="xref py py-attr docutils literal notranslate"><span class="pre">estimation_parameters</span></code></a>.</p>
+<p>The <cite>unit_vectors_camera</cite> inputs should be formatted as a Sequence of 2d sequences.  Each inner 2D sequence
+should be of shape <span class="math notranslate nohighlight">\(3\times x\)</span>, where each row corresponds to a component of a unit vector in the camera
+frame. Each inner sequence should contain all observations from a single image, so that if there are <span class="math notranslate nohighlight">\(m\)</span>
+images being considered, then the outer sequence should be length <span class="math notranslate nohighlight">\(m\)</span>.  The value of <span class="math notranslate nohighlight">\(x\)</span> can change
+for each image. If you are estimating multiple misalignments (one for each image) then each misalignment will
+correspond to the order of the image observations in the outer sequence.</p>
+<p>You can also set the <a class="reference internal" href="giant.camera_models.opencv_model.OpenCVModel.html#giant.camera_models.opencv_model.OpenCVModel.use_a_priori" title="giant.camera_models.opencv_model.OpenCVModel.use_a_priori"><code class="xref py py-attr docutils literal notranslate"><span class="pre">use_a_priori</span></code></a> to True to have this method append an identity matrix to the bottom of
+this Jacobian if you are solving for an update to your camera model, and not a new one entirely.</p>
+<p>The optional <cite>temperature</cite> input specifies the temperature of the camera for use in estimating temperature
+dependence.  The temperature input should either be a scalar value (float or int), or a list that is the same
+length as <cite>unit_vectors_camera</cite>, where each element of the list is the temperature of the camera at the time
+of each image represented by <cite>unit_vectors_camera</cite>.  If the <cite>temperature</cite> input is a scalar, then it is assumed
+to be the temperature value for all of the images represented in <cite>unit_vectors_camera</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>unit_vectors_camera</strong> (<em>Sequence</em><em>[</em><em>Union</em><em>[</em><em>Sequence</em><em>[</em><em>Sequence</em><em>]</em><em>, </em><em>numpy.ndarray</em><em>]</em><em>]</em>) – The points/directions in the camera frame that the jacobian matrix is to be computed
+for.  For multiple images, this should be a list of 2D unit vectors where each
+element of the list corresponds to a new image.</p></li>
+<li><p><strong>temperature</strong> (<em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>, </em><em>numbers.Real</em><em>]</em>) – A single temperature for all images or a list of temperatures the same length of
+<cite>unit_vectors_camera</cite> containing the temperature of the camera at the time each image was
+captured</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The Jacobian matrix evaluated for each observation</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">OpenCVModel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">OpenCVModel</span><span class="p">(</span><span class="n">fx</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">fy</span><span class="o">=</span><span class="mi">4000</span><span class="p">,</span> <span class="n">px</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">py</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">a1</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">a2</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                    <span class="n">misalignment</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">1e-12</span><span class="p">,</span> <span class="o">-</span><span class="mf">2e-14</span><span class="p">,</span> <span class="mf">3e-10</span><span class="p">],</span> <span class="p">[</span><span class="mf">2e-15</span><span class="p">,</span> <span class="mf">1e-13</span><span class="p">,</span> <span class="mf">3e-10</span><span class="p">]],</span>
+<span class="gp">&gt;&gt;&gt; </span>                    <span class="n">estimation_parameters</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;multiple misalignments&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">compute_jacobian</span><span class="p">([[[</span><span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]]],</span>
+<span class="gp">&gt;&gt;&gt; </span>                       <span class="n">temperature</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">])</span>
+<span class="go">array([[  0.00000000e+00,  -3.75075000e+03,   0.00000000e+00,</span>
+<span class="go">          0.00000000e+00,   0.00000000e+00,   0.00000000e+00],</span>
+<span class="go">       [  4.00080000e+03,   2.98059600e-07,  -2.00040000e+03,</span>
+<span class="go">          0.00000000e+00,   0.00000000e+00,   0.00000000e+00],</span>
+<span class="go">       [  0.00000000e+00,   0.00000000e+00,   0.00000000e+00,</span>
+<span class="go">         -5.62612499e+00,  -3.00247537e+03,  -2.25045000e+02],</span>
+<span class="go">       [  0.00000000e+00,   0.00000000e+00,   0.00000000e+00,</span>
+<span class="go">          4.02330450e+03,   7.50150000e+00,  -1.00020000e+02],</span>
+<span class="go">       [  0.00000000e+00,   0.00000000e+00,   0.00000000e+00,</span>
+<span class="go">         -9.60191999e+00,  -3.00540096e+03,  -2.40048000e+02],</span>
+<span class="go">       [  0.00000000e+00,   0.00000000e+00,   0.00000000e+00,</span>
+<span class="go">          4.02640512e+03,   1.28025600e+01,  -1.60032000e+02],</span>
+<span class="go">       [  0.00000000e+00,   0.00000000e+00,   0.00000000e+00,</span>
+<span class="go">         -1.25025000e+01,  -3.00810150e+03,  -2.50050000e+02],</span>
+<span class="go">       [  0.00000000e+00,   0.00000000e+00,   0.00000000e+00,</span>
+<span class="go">          4.02858333e+03,   1.66700000e+01,  -2.00040000e+02]])</span>
+</pre></div>
+</div>
+<p>Mathematically the Jacobian matrix is defined to be</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial\mathbf{x}_P}{\partial\mathbf{c}} = \left[\begin{array}{cccc}
+\frac{\partial\mathbf{x}_P}{\partial\mathbf{k}} &amp;
+\frac{\partial\mathbf{x}_P}{\partial\mathbf{d}} &amp;
+\frac{\partial\mathbf{x}_P}{\partial\mathbf{a}} &amp;
+\frac{\partial\mathbf{x}_P}{\partial\boldsymbol{\delta\theta}}\end{array}\right]\]</div>
+<p>where, using the chain rule,</p>
+<div class="math notranslate nohighlight">
+\begin{gather}
+\frac{\partial\mathbf{x}_P}{\partial\mathbf{d}} =
+\frac{\partial\mathbf{x}_P}{\partial\mathbf{x}_I'}
+\frac{\partial\mathbf{x}_I'}{\partial\mathbf{d}} \\
+\frac{\partial\mathbf{x}_P}{\partial\boldsymbol{\delta\theta}} =
+\frac{\partial\mathbf{x}_p}{\partial\mathbf{x}_I'}
+\frac{\partial\mathbf{x}_I'}{\partial\mathbf{x}_I}
+\frac{\partial\mathbf{x}_I}{\partial\mathbf{x}_C'}
+\frac{\partial\mathbf{x}_C'}{\partial\boldsymbol{\delta\theta}}
+\end{gather}</div><p>and</p>
+<div class="math notranslate nohighlight">
+\begin{gather}
+\frac{\partial\mathbf{x}_P}{\partial\mathbf{k}} = \left[\begin{array}{cccc} x_I &amp; 0 &amp; y_I &amp; 1 &amp; 0
+\\ 0 &amp; y_I &amp; 0 &amp; 0 &amp; 1 \end{array}\right] \\
+\frac{\partial\mathbf{x}_P}{\partial\mathbf{a}} = \left[\begin{array}{cc} f_x &amp; \alpha \\
+0 &amp; f_y\end{array}\right] \mathbf{x}_I \left[\begin{array}{ccc} T &amp; T^2 &amp; T^3 \end{array}\right] \\
+\frac{\partial\mathbf{x}_P}{\partial\mathbf{x}_I'} = (1+a_1T+a_2T^2+a_3T^3)
+\left[\begin{array}{cc} f_x &amp; \alpha \\ 0 &amp; f_y \end{array}\right] \\
+\frac{\partial\mathbf{x}_I'}{\partial\mathbf{d}} = \left[
+\begin{array}{cccccccccccc}
+r^2x_Il^{-1} &amp; r^4x_Il^{-1} &amp; r^6x_Il^{-1} &amp; -r^2x_Iul^{-2} &amp; -r^4x_Iul^{-2} &amp; -r^6x_Iul^{-2} &amp;
+2x_Iy_I &amp; r^2+2y_I^2 &amp; r^2 &amp; r^4 &amp; 0 &amp; 0 \\
+r^2y_Il^{-1} &amp; r^4y_Il^{-1} &amp; r^6y_Il^{-1} &amp; -r^2y_Iul^{-2} &amp; -r^4y_Iul^{-2} &amp; -r^6y_Iul^{-2} &amp;
+r^2+2x_I^2 &amp; 2x_Iy_I &amp; 0 &amp; 0 &amp; r^2 &amp; r^4
+\end{array}\right]\\
+u = 1+k_1r^2+k_2r^4+k_3r^6\\
+l = 1+k_4r^2+k_5r^4+k_6r^6\\
+\begin{split}
+\frac{\partial\mathbf{x}_I'}{\partial\mathbf{x}_I} = &amp;\frac{u}
+{l}\mathbf{I}_{2\times 2} +
+\left[\begin{array}{cc}2p_1y_I+4p_2x_I &amp; 2p_1x_I \\
+2p_2y_I &amp; 4p_1y_I+2p_2x_I \end{array}\right] + \\
+&amp; \frac{l\left(2k_1+4k_2r^2+6k_3r^4\right)-
+u\left(2k_4+4k_5r^2+6k_6r^4\right)}
+{l^2}\mathbf{x}_I\mathbf{x}_I^T +\\
+&amp; 2 \left[\begin{array}{cc} p_2x_I &amp; p_2y_I \\ p_1x_I &amp; p_1y_I \end{array}\right] +
+2 \left[\begin{array}{cc} (s_1+2s_2r^2)x_I &amp; (s_1+2s_2r^2)y_I \\
+(s_3+2s_4r^2)x_I &amp; (s_3+2s_4r^2)y_I \end{array}\right]
+\end{split}\\
+\frac{\partial\mathbf{x}_I}{\partial\mathbf{x}_C'} = \frac{1}{z_C'}\left[
+\begin{array}{ccc}1 &amp; 0 &amp; \frac{-x_C'}{z_C'} \\ 0 &amp; 1 &amp; \frac{-y_C'}{z_C'} \end{array}\right] \\
+\frac{\partial\mathbf{x}_C'}{\partial\boldsymbol{\delta\theta}} = \left[\mathbf{x}_C\times\right]
+\end{gather}</div><p>where <span class="math notranslate nohighlight">\(\mathbf{k}=[k_x \quad k_y \quad \alpha \quad p_x \quad p_y]\)</span> is a vector of the intrinsic camera parameters,
+<span class="math notranslate nohighlight">\(\mathbf{a}=[a_1 \quad a_2 \quad a_3]\)</span> is a vector of the temperature dependence coefficients,
+<span class="math notranslate nohighlight">\(\mathbf{x}_C'\)</span> is the camera frame point after applying the misalignment,
+<span class="math notranslate nohighlight">\(\boldsymbol{\delta\theta}\)</span> is the misalignment vector, <span class="math notranslate nohighlight">\(\mathbf{x}_C\)</span> is the camera frame point
+before misalignment is applied, <span class="math notranslate nohighlight">\(\left[\bullet\times\right]\)</span> is the skew-symmetric cross product
+matrix formed from <span class="math notranslate nohighlight">\(\bullet\)</span>,
+<span class="math notranslate nohighlight">\(\mathbf{x}_P\)</span> is the pixel location, <span class="math notranslate nohighlight">\(\mathbf{x}_I\)</span> is the gnomic location,
+<span class="math notranslate nohighlight">\(\mathbf{x}_I'\)</span> is the distorted gnomic location,
+<span class="math notranslate nohighlight">\(a_{1-3}\)</span> are the temperature coefficients, <span class="math notranslate nohighlight">\(T\)</span> is the temperature, <span class="math notranslate nohighlight">\(f_x\)</span> is the effective focal
+length in the x direction, <span class="math notranslate nohighlight">\(f_y\)</span> is the effective focal length in the y direction,
+<span class="math notranslate nohighlight">\(\mathbf{d}=[k_1 \quad k_2 \quad k_3 \quad p_1 \quad p_2]\)</span> is a vector of the distortion coefficients,
+<span class="math notranslate nohighlight">\(\alpha\)</span> is the skewness parameter, <span class="math notranslate nohighlight">\(k_1\)</span> is the second order radial distortion,
+<span class="math notranslate nohighlight">\(k_2\)</span> is the fourth order radial distortion coefficient,
+<span class="math notranslate nohighlight">\(k_3\)</span> is the sixth order radial distortion coefficient,
+<span class="math notranslate nohighlight">\(p_1\)</span> is the x tangential distortion coefficient, and
+<span class="math notranslate nohighlight">\(p_2\)</span> is the x tangential distortion coefficient.</p>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.camera_models.opencv_model.OpenCVModel.project_directions.html" title="Previous document">OpenCVModel.project_directions</a>
+        </li>
+        <li>
+          <a href="giant.camera_models.opencv_model.OpenCVModel.compute_pixel_jacobian.html" title="Next document">OpenCVModel.compute_pixel_jacobian</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/opencv_model/giant.camera_models.opencv_model.OpenCVModel.compute_jacobian.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

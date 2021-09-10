@@ -1,0 +1,188 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>plot_alignment_residuals &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="ray_tracer" href="../../giant.ray_tracer.html" />
+    <link rel="prev" title="plot_distortion_map" href="giant.calibration.visualizer.plot_distortion_map.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.calibration.html">giant.calibration</a><ul>
+  <li><a href="../giant.calibration.visualizer.html">giant.calibration.visualizer</a><ul>
+      <li>Previous: <a href="giant.calibration.visualizer.plot_distortion_map.html" title="previous chapter">plot_distortion_map</a></li>
+      <li>Next: <a href="../../giant.ray_tracer.html" title="next chapter">ray_tracer</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.calibration.visualizer.plot_distortion_map.html" title="Previous document">plot_distortion_map</a>
+        </li>
+        <li>
+          <a href="../../giant.ray_tracer.html" title="Next document">ray_tracer</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="plot-alignment-residuals">
+<h1>plot_alignment_residuals<a class="headerlink" href="#plot-alignment-residuals" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.calibration.visualizer.html#module-giant.calibration.visualizer" title="giant.calibration.visualizer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.calibration.visualizer</span></code></a>:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="giant.calibration.visualizer.plot_alignment_residuals">
+<span class="sig-prename descclassname"><span class="pre">giant.calibration.visualizer.</span></span><span class="sig-name descname"><span class="pre">plot_alignment_residuals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdf_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/calibration/visualizer.html#plot_alignment_residuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.calibration.visualizer.plot_alignment_residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function plots the residual alignment errors per image as roll/pitch/yaw for both the estimated static and
+temperature alignments (if done).</p>
+<p>The residual plots are generated by comparing the current values of <code class="xref py py-attr docutils literal notranslate"><span class="pre">Image.rotation_inertial_to_camera</span></code> to
+<code class="docutils literal notranslate"><span class="pre">calib...._alignment*calib.alignment_base_frame_func(image.observation_date)</span></code> and converting the residual into
+roll, pitch, yaw Tait-Bryan angles (xyz) rotation.  This function will generate 1 figure for each type of alignment
+that has been performed, plotting the residuals versus camera temperature.  The residuals are computed as the
+rotation from the computed frame using the estimated alignment to the observed frame for each image.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function will take into account misalignment estimated in the camera model itself if it finds one, however,
+it is recommended that before calling this function you reset the misalignment to 0 in the camera model and
+then call <a class="reference internal" href="../calibration_class/giant.calibration.calibration_class.Calibration.estimate_attitude.html#giant.calibration.calibration_class.Calibration.estimate_attitude" title="giant.calibration.calibration_class.Calibration.estimate_attitude"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate_attitude()</span></code></a> again before using this function.</p>
+</div>
+<p>You should have called at least one of <a class="reference internal" href="../calibration_class/giant.calibration.calibration_class.Calibration.estimate_static_alignment.html#giant.calibration.calibration_class.Calibration.estimate_static_alignment" title="giant.calibration.calibration_class.Calibration.estimate_static_alignment"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate_static_alignment()</span></code></a> or
+<a class="reference internal" href="../calibration_class/giant.calibration.calibration_class.Calibration.estimate_temperature_dependent_alignment.html#giant.calibration.calibration_class.Calibration.estimate_temperature_dependent_alignment" title="giant.calibration.calibration_class.Calibration.estimate_temperature_dependent_alignment"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate_temperature_dependent_alignment()</span></code></a> before using this function.  In addition, you should
+have called method <a class="reference internal" href="../calibration_class/giant.calibration.calibration_class.Calibration.estimate_attitude.html#giant.calibration.calibration_class.Calibration.estimate_attitude" title="giant.calibration.calibration_class.Calibration.estimate_attitude"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate_attitude()</span></code></a> for the results generated from this function to be
+meaningful.  Finally, the <a class="reference internal" href="../calibration_class/giant.calibration.calibration_class.Calibration.html#giant.calibration.calibration_class.Calibration.alignment_base_frame_func" title="giant.calibration.calibration_class.Calibration.alignment_base_frame_func"><code class="xref py py-attr docutils literal notranslate"><span class="pre">alignment_base_frame_func</span></code></a> must not be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">pdf_name</span></code> param is provided, the figures will be saved to a pdf file of the same name, and will not be
+displayed interactively.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If both <a class="reference internal" href="../calibration_class/giant.calibration.calibration_class.Calibration.html#giant.calibration.calibration_class.Calibration.static_alignment" title="giant.calibration.calibration_class.Calibration.static_alignment"><code class="xref py py-attr docutils literal notranslate"><span class="pre">static_alignment</span></code></a> and
+<a class="reference internal" href="../calibration_class/giant.calibration.calibration_class.Calibration.html#giant.calibration.calibration_class.Calibration.temperature_dependent_alignment" title="giant.calibration.calibration_class.Calibration.temperature_dependent_alignment"><code class="xref py py-attr docutils literal notranslate"><span class="pre">temperature_dependent_alignment</span></code></a> are <code class="docutils literal notranslate"><span class="pre">None</span></code> or if
+<a class="reference internal" href="../calibration_class/giant.calibration.calibration_class.Calibration.html#giant.calibration.calibration_class.Calibration.alignment_base_frame_func" title="giant.calibration.calibration_class.Calibration.alignment_base_frame_func"><code class="xref py py-attr docutils literal notranslate"><span class="pre">alignment_base_frame_func</span></code></a> is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>calib</strong> (<a class="reference internal" href="../calibration_class/giant.calibration.calibration_class.Calibration.html#giant.calibration.calibration_class.Calibration" title="giant.calibration.calibration_class.Calibration"><em>giant.calibration.calibration_class.Calibration</em></a>) – The <a class="reference internal" href="../calibration_class/giant.calibration.calibration_class.Calibration.html#giant.calibration.calibration_class.Calibration" title="giant.calibration.calibration_class.Calibration"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calibration</span></code></a> instance</p></li>
+<li><p><strong>pdf_name</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>pathlib.Path</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Used as the file name for saving the figures to a pdf</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.calibration.visualizer.plot_distortion_map.html" title="Previous document">plot_distortion_map</a>
+        </li>
+        <li>
+          <a href="../../giant.ray_tracer.html" title="Next document">ray_tracer</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/calibration/visualizer/giant.calibration.visualizer.plot_alignment_residuals.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

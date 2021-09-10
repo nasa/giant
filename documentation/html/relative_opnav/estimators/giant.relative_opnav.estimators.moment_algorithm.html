@@ -1,0 +1,247 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>moment_algorithm &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="MomentAlgorithm" href="moment_algorithm/giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.html" />
+    <link rel="prev" title="LimbMatching.target_generator" href="limb_matching/giant.relative_opnav.estimators.limb_matching.LimbMatching.target_generator.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.relative_opnav.html">giant.relative_opnav</a><ul>
+  <li><a href="../giant.relative_opnav.estimators.html">estimators</a><ul>
+      <li>Previous: <a href="limb_matching/giant.relative_opnav.estimators.limb_matching.LimbMatching.target_generator.html" title="previous chapter">LimbMatching.target_generator</a></li>
+      <li>Next: <a href="moment_algorithm/giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.html" title="next chapter">MomentAlgorithm</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="limb_matching/giant.relative_opnav.estimators.limb_matching.LimbMatching.target_generator.html" title="Previous document">LimbMatching.target_generator</a>
+        </li>
+        <li>
+          <a href="moment_algorithm/giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.html" title="Next document">MomentAlgorithm</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.relative_opnav.estimators.moment_algorithm">
+<span id="moment-algorithm"></span><h1>moment_algorithm<a class="headerlink" href="#module-giant.relative_opnav.estimators.moment_algorithm" title="Permalink to this headline">¶</a></h1>
+<p>This module provides a class which implements a moment based (center of illumination) center finding RelNav technique.</p>
+<section id="description-of-the-technique">
+<h2>Description of the Technique<a class="headerlink" href="#description-of-the-technique" title="Permalink to this headline">¶</a></h2>
+<p>The moment algorithm is the technique that you typically use when your target begins to become resolved in your images,
+but you still don’t have an accurate shape model for doing a more advanced technique like <a class="reference internal" href="giant.relative_opnav.estimators.limb_matching.html#module-giant.relative_opnav.estimators.limb_matching" title="giant.relative_opnav.estimators.limb_matching"><code class="xref py py-mod docutils literal notranslate"><span class="pre">limb_matching</span></code></a> or
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">cross_correlation</span></code>.  Generally, this only is used for a short while when the target is between 5 and 100 pixels
+in apparent diameter) as you attempt to build a shape model of the target to begin using the more advanced and more
+accurate techniques, however, there is no hard limit on when you can and can’t use this technique.  You can even use it
+when the target is still unresolved or when the target is very large in the image, but in these cases (as in most cases)
+there are much more accurate methods that can be used.</p>
+<p>In order to extract the center finding observables from this method a few steps are followed.  First, we predict roughly
+how many pixels we expect the illuminated portion our target to subtend based on the a priori scene knowledge and
+assuming a spherical target.  We then use this predicted area to set the minimum number of connected pixels we are
+going to consider a possible target in the image (this can be turned off using option <code class="xref py py-attr docutils literal notranslate"><span class="pre">use_apparent_area</span></code>.
+We then segment the image into foreground/background objects using method <code class="xref py py-meth docutils literal notranslate"><span class="pre">segment_image()</span></code> from image processing.
+For each target in the image we are processing, we then identify the closest segmented object from the image to the
+target and assume that this is the location of the target in the actual image (if you have multiple targets in an image
+then it is somewhat important that your a priori scene is at least moderately accurate to ensure that this pairing works
+correctly).  Finally, we take the foreground objects around the identified segment (to account for possible portions of
+the target that may be separated from the main clump of illumination, such as along the limb) and compute the center of
+illumination using a moment algorithm.  The center of illumination is then corrected for phase angle effects (if
+requested) and the resulting center-of-figure measurements are stored.</p>
+</section>
+<section id="tuning">
+<h2>Tuning<a class="headerlink" href="#tuning" title="Permalink to this headline">¶</a></h2>
+<p>There are a few things that can be tuned for using this technique.  The first set is the tuning parameters for
+segmenting an image into foreground/background objects from the <a class="reference internal" href="../../image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a> class.  These are</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 38%" />
+<col style="width: 62%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageProcessing.otsu_levels</span></code></p></td>
+<td><p>The number of levels to attempt to segments the histogram into using
+multi-level Otsu thresholding.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageProcessing.minimum_segment_area</span></code></p></td>
+<td><p>The minimum size of a segment for it to be considered a foreground object.
+This can be determined automatically using the <code class="xref py py-attr docutils literal notranslate"><span class="pre">use_apparent_area</span></code>
+flag of this class.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageProcessing.minimum_segment_dn</span></code></p></td>
+<td><p>The minimum DN value for a segment to be considered foreground.  This can
+be used to help separate background segments that are slightly brighter
+due to stray light or other noise issues.</p></td>
+</tr>
+</tbody>
+</table>
+<p>For more details on using these attributes see the <code class="xref py py-meth docutils literal notranslate"><span class="pre">ImageProcessing.segment_image()</span></code> documentation.</p>
+<p>In addition, there are some tuning parameters on this class itself.  The first is the search radius.
+The search radius is controlled by <code class="xref py py-attr docutils literal notranslate"><span class="pre">search_distance</span></code> attribute.  This should be a number or <code class="docutils literal notranslate"><span class="pre">None</span></code>.
+If this is not <code class="docutils literal notranslate"><span class="pre">None</span></code>, then the distance from the centroid of the nearest segment to the predicted target u
+location must be less than this value.  Therefore, you should set this value to account for the expected
+center-of-figure to center-of-brightness shift as well as the uncertainty in the a priori location of the target
+in the scene, while being careful not to set too large of a value if there are multiple targets in the scene to
+avoid ambiguity.  If this is <code class="docutils literal notranslate"><span class="pre">None</span></code>, then the closest segment is always paired with the target (there is no
+search region considered) unless the segment has already been paired to another target in the scene.</p>
+<p>This technique can predict what the minimum segment area should be in the image using the predicted apparent areas
+for each target.  This can be useful to automatically set the <code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageProcessing.minimum_segment_area</span></code> based on
+the targets and the a priori location in the camera frame.  Because this is just an approximation, a margin of
+safety is included with <code class="xref py py-attr docutils literal notranslate"><span class="pre">apparent_area_margin_of_safety</span></code>, which is used to shrink the predicted apparent area
+to account for the assumptions about the spherical target and possible errors in the a priori scene information.
+You can turn off this feature and just use the set minimum segment area by setting <code class="xref py py-attr docutils literal notranslate"><span class="pre">use_apparent_area</span></code> to
+<code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<p>Whether the phase correction is applied or not is controlled by the boolean flag <code class="xref py py-attr docutils literal notranslate"><span class="pre">apply_phase_correction</span></code>.
+The information that is passed to the phase correction routines are controlled by the <code class="xref py py-attr docutils literal notranslate"><span class="pre">phase_correction_type</span></code>
+and <code class="xref py py-attr docutils literal notranslate"><span class="pre">brdf</span></code> attributes.</p>
+</section>
+<section id="use">
+<h2>Use<a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h2>
+<p>The class provided in this module is usually not used by the user directly, instead it is usually interfaced with
+through the <a class="reference internal" href="../relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class using the identifier <a class="reference internal" href="../relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav.moment_algorithm" title="giant.relative_opnav.relnav_class.RelativeOpNav.moment_algorithm"><code class="xref py py-attr docutils literal notranslate"><span class="pre">moment_algorithm</span></code></a>.  For more
+details on using the <a class="reference internal" href="../relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> interface, please refer to the <a class="reference internal" href="../giant.relative_opnav.relnav_class.html#module-giant.relative_opnav.relnav_class" title="giant.relative_opnav.relnav_class"><code class="xref py py-mod docutils literal notranslate"><span class="pre">relnav_class</span></code></a> documentation.  For
+more details on using the technique class directly, as well as a description of the <code class="docutils literal notranslate"><span class="pre">details</span></code> dictionaries produced
+by this technique, refer to the following class documentation.</p>
+</section>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="moment_algorithm/giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.html#giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm" title="giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MomentAlgorithm</span></code></a></p></td>
+<td><p>This class implements GIANT’s version of moment based center finding for extracting bearing measurements to resolved or or unresolved targets in an image.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="limb_matching/giant.relative_opnav.estimators.limb_matching.LimbMatching.target_generator.html" title="Previous document">LimbMatching.target_generator</a>
+        </li>
+        <li>
+          <a href="moment_algorithm/giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.html" title="Next document">MomentAlgorithm</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/relative_opnav/estimators/giant.relative_opnav.estimators.moment_algorithm.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

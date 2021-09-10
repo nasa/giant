@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>spatial_correlator_2d &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="fft_correlator_1d" href="giant.image_processing.fft_correlator_1d.html" />
+    <link rel="prev" title="fft_correlator_2d" href="giant.image_processing.fft_correlator_2d.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.image_processing.html">giant.image_processing</a><ul>
+      <li>Previous: <a href="giant.image_processing.fft_correlator_2d.html" title="previous chapter">fft_correlator_2d</a></li>
+      <li>Next: <a href="giant.image_processing.fft_correlator_1d.html" title="next chapter">fft_correlator_1d</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.image_processing.fft_correlator_2d.html" title="Previous document">fft_correlator_2d</a>
+        </li>
+        <li>
+          <a href="giant.image_processing.fft_correlator_1d.html" title="Next document">fft_correlator_1d</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="spatial-correlator-2d">
+<h1>spatial_correlator_2d<a class="headerlink" href="#spatial-correlator-2d" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.image_processing.html#module-giant.image_processing" title="giant.image_processing"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.image_processing</span></code></a>:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="giant.image_processing.spatial_correlator_2d">
+<span class="sig-prename descclassname"><span class="pre">giant.image_processing.</span></span><span class="sig-name descname"><span class="pre">spatial_correlator_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/giant/image_processing.html#spatial_correlator_2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.image_processing.spatial_correlator_2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function performs normalized cross correlation directly (spatial correlation).</p>
+<p>The correlation is performed over the full image, aligning the center of the template with every pixel in the image.
+(Note that this means that if the center of the template should be outside of the image this function will not
+work.)</p>
+<p>Each pixel of the correlation surface returned by this function represents the correlation value when the center of
+the template is placed at this location.  Thus, the location of any point in the template can be found by</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.image_processing</span> <span class="kn">import</span> <span class="n">spatial_correlator_2d</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">example_image</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">example_template</span> <span class="o">=</span> <span class="n">example_image</span><span class="p">[</span><span class="mi">30</span><span class="p">:</span><span class="mi">60</span><span class="p">,</span> <span class="mi">45</span><span class="p">:</span><span class="mi">60</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">surf</span> <span class="o">=</span> <span class="n">spatial_correlator_2d</span><span class="p">(</span><span class="n">example_image</span><span class="p">,</span> <span class="n">example_template</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">temp_middle</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">example_template</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_point</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>  <span class="c1"># upper left corner -- replace 0, 0 with whichever template location you</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># want (starting with the upper left as 0, 0).</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_point</span> <span class="o">-</span> <span class="n">temp_middle</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">surf</span><span class="o">.</span><span class="n">argmax</span><span class="p">(),</span> <span class="n">surf</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">array([30., 45.])</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>numpy.ndarray</em>) – The image that the template is to be matched against</p></li>
+<li><p><strong>template</strong> (<em>numpy.ndarray</em>) – the template that is to be matched against the image</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A surface of the correlation coefficients for each overlap between the template and the image.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.image_processing.fft_correlator_2d.html" title="Previous document">fft_correlator_2d</a>
+        </li>
+        <li>
+          <a href="giant.image_processing.fft_correlator_1d.html" title="Next document">fft_correlator_1d</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/image_processing/giant.image_processing.spatial_correlator_2d.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

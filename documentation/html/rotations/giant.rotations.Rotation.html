@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Rotation &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="Rotation.inv" href="giant.rotations.Rotation.inv.html" />
+    <link rel="prev" title="giant.rotations" href="../giant.rotations.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.rotations.html">giant.rotations</a><ul>
+      <li>Previous: <a href="../giant.rotations.html" title="previous chapter">giant.rotations</a></li>
+      <li>Next: <a href="giant.rotations.Rotation.inv.html" title="next chapter">Rotation.inv</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.rotations.html" title="Previous document">giant.rotations</a>
+        </li>
+        <li>
+          <a href="giant.rotations.Rotation.inv.html" title="Next document">Rotation.inv</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="rotation">
+<h1>Rotation<a class="headerlink" href="#rotation" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.rotations.html#module-giant.rotations" title="giant.rotations"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.rotations</span></code></a>:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.rotations.Rotation">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.rotations.</span></span><span class="sig-name descname"><span class="pre">Rotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/giant/rotations.html#Rotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.rotations.Rotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class to represent and manipulate rotations in GIANT.</p>
+<p>The <a class="reference internal" href="#giant.rotations.Rotation" title="giant.rotations.Rotation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rotation</span></code></a> class is the main way that attitude and rotation information is communicated in GIANT.  It
+provides a number of convenient features that make handling attitude data and rotations much easier.  The first of
+these features is is the ability to initialize the class with a rotation vector, rotation matrix, or rotation
+quaternion as described in the <a class="reference internal" href="../giant.rotations.html#rotation-representation-table"><span class="std std-ref">Rotation Representations</span></a> table. For any case,
+simply provide the constructor with your current representation of your rotation and it will interpret the type of
+input (based on its shape) and store the appropriate data.</p>
+<p>The next feature is property based aliases with caching and setting capabilities.  These properties allow you to
+quickly get any of the 3 primary rotation representations(<a class="reference internal" href="#giant.rotations.Rotation.quaternion" title="giant.rotations.Rotation.quaternion"><code class="xref py py-attr docutils literal notranslate"><span class="pre">quaternion</span></code></a>, <a class="reference internal" href="#giant.rotations.Rotation.matrix" title="giant.rotations.Rotation.matrix"><code class="xref py py-attr docutils literal notranslate"><span class="pre">matrix</span></code></a>, <a class="reference internal" href="#giant.rotations.Rotation.vector" title="giant.rotations.Rotation.vector"><code class="xref py py-attr docutils literal notranslate"><span class="pre">vector</span></code></a>),
+caching the result so the conversion doesn’t need to be performed every time you need the representation (but
+smartly knowing when the cache needs updated because the object has been updated).  They also allow you to update
+the entire object in place by directly setting to any of them.</p>
+<p>The final feature is operator overloading so that rotation transformations are easy.  This means that you can do
+things like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.rotations</span> <span class="kn">import</span> <span class="n">Rotation</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rotation_A2B</span> <span class="o">=</span> <span class="n">Rotation</span><span class="p">([</span><span class="n">pi</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rotation_B2C</span> <span class="o">=</span> <span class="n">Rotation</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rotation_A2C</span> <span class="o">=</span> <span class="n">rotation_B2C</span><span class="o">*</span><span class="n">rotation_A2B</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rotation_A2C</span>
+<span class="go">Rotation(array([ 7.07106781e-01,  4.32978028e-17, -7.07106781e-01,  4.32978028e-17]))</span>
+</pre></div>
+</div>
+<p>In addition to the multiplication operator, the equality operator is also overloaded to check that the
+quaternion representation of two objects is the same.</p>
+<p>In general when a rotation needs to be expressed the <a class="reference internal" href="#giant.rotations.Rotation" title="giant.rotations.Rotation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rotation</span></code></a> object is used in GIANT.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>, </em><a class="reference internal" href="#giant.rotations.Rotation" title="giant.rotations.Rotation"><em>Rotation</em></a><em>]</em><em>]</em>) – The rotation data to initialize the class with</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.rotations.Rotation.quaternion">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">quaternion</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.rotations.Rotation.quaternion" title="Permalink to this definition">¶</a></dt>
+<dd><p>This property stores the quaternion representation of the attitude as a numpy array.</p>
+<p>It also enables setting the rotation represented for this object. When setting the rotation data for this
+object, the input should have a length of 4 and be convertable to a numpy array.  It should also be of unit
+length (as is required for rotation quaternions).  If the set value is not of unit length then it will be
+automatically normalized before being stored and a warning will be printed.</p>
+<p>In order to make the quaternion representations unique in GIANT, setting a quaternion to this property will
+enforce that the scalar component is positive.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.rotations.Rotation.q">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">q</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.rotations.Rotation.q" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is an alias to the <a class="reference internal" href="#giant.rotations.Rotation.quaternion" title="giant.rotations.Rotation.quaternion"><code class="xref py py-attr docutils literal notranslate"><span class="pre">quaternion</span></code></a> property.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.rotations.Rotation.matrix">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">matrix</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.rotations.Rotation.matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>This property stores the matrix representation of the attitude as a numpy array.</p>
+<p>It also enables setting the rotation represented for this object. When setting the rotation data for this
+object , the input should be an orthonormal matrix (Sequence of Sequences) of size 3x3.  When setting this
+property, the <a class="reference internal" href="#giant.rotations.Rotation.quaternion" title="giant.rotations.Rotation.quaternion"><code class="xref py py-attr docutils literal notranslate"><span class="pre">quaternion</span></code></a> property is automatically updated</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.rotations.Rotation.vector">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">vector</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.rotations.Rotation.vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>This property stores the vector representation of the attitude as a numpy array.</p>
+<p>It also enables setting the rotation represented for this object. When setting the rotation data for this
+object, the input should be a length 3 rotation vector (Sequence) according to the form specified in the
+<a class="reference internal" href="../giant.rotations.html#rotation-representation-table"><span class="std std-ref">Rotation Representations</span></a>.  When setting this property, the
+<a class="reference internal" href="#giant.rotations.Rotation.quaternion" title="giant.rotations.Rotation.quaternion"><code class="xref py py-attr docutils literal notranslate"><span class="pre">quaternion</span></code></a> property is automatically updated.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.rotations.Rotation.q_vector">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">q_vector</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.rotations.Rotation.q_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is an alias to the first three elements of the quaternion array (the vector portion of the quaternion)</p>
+<p>This property is read only.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.rotations.Rotation.q_scalar">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">q_scalar</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#giant.rotations.Rotation.q_scalar" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is an alias to the last element of the quaternion array (the scalar portion of the quaternion)</p>
+<p>This property is read only.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p class="rubric">Summary of Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.rotations.Rotation.inv.html#giant.rotations.Rotation.inv" title="giant.rotations.Rotation.inv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inv</span></code></a></p></td>
+<td><p>This method returns the inverse rotation of the current instance as a new <code class="docutils literal notranslate"><span class="pre">Rotation</span></code> object.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.rotations.Rotation.interp_attitude.html#giant.rotations.Rotation.interp_attitude" title="giant.rotations.Rotation.interp_attitude"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_attitude</span></code></a></p></td>
+<td><p>This method interprets attitude data based on its shape and type.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.rotations.Rotation.rotate.html#giant.rotations.Rotation.rotate" title="giant.rotations.Rotation.rotate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate</span></code></a></p></td>
+<td><p>Performs a left inplace rotation by other.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.rotations.Rotation.copy.html#giant.rotations.Rotation.copy" title="giant.rotations.Rotation.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a></p></td>
+<td><p>Returns a deep copy of self.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.rotations.html" title="Previous document">giant.rotations</a>
+        </li>
+        <li>
+          <a href="giant.rotations.Rotation.inv.html" title="Next document">Rotation.inv</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/rotations/giant.rotations.Rotation.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

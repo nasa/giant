@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>giant.relative_opnav &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/logo.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="next" title="relnav_class" href="relative_opnav/giant.relative_opnav.relnav_class.html" />
+    <link rel="prev" title="show_outlier" href="stellar_opnav/visualizer/giant.stellar_opnav.visualizer.show_outlier.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="giant.html">API Reference</a><ul>
+      <li>Previous: <a href="stellar_opnav/visualizer/giant.stellar_opnav.visualizer.show_outlier.html" title="previous chapter">show_outlier</a></li>
+      <li>Next: <a href="relative_opnav/giant.relative_opnav.relnav_class.html" title="next chapter">relnav_class</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="stellar_opnav/visualizer/giant.stellar_opnav.visualizer.show_outlier.html" title="Previous document">show_outlier</a>
+        </li>
+        <li>
+          <a href="relative_opnav/giant.relative_opnav.relnav_class.html" title="Next document">relnav_class</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.relative_opnav">
+<span id="giant-relative-opnav"></span><h1>giant.relative_opnav<a class="headerlink" href="#module-giant.relative_opnav" title="Permalink to this headline">¶</a></h1>
+<p>This package provides the required routines and objects to extract observables to targets in an image.</p>
+<section id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>In GIANT, Relative OpNav refers to the process of extracting observables from monocular images of non-star targets.
+These observables can take many different forms, and are usually fed to some type of filter or estimator to use in
+refining the knowledge of the relative state between the camera and the target.  Some of the most common forms of RelNav
+measurements are bearing observables to the center of figure of an object, bearing observables to a surface feature on a
+target, bearing measurements to points on the illuminated limb of a target, full 3DOF relative position measurements
+between the camera and the center of figure of the target, and constraint measurements (or bearing measurements to the
+same, possibly unknown, feature in multiple images.  In addition to the different types of observables that can be
+extracted from images, there are also many different techniques for extracting these observables.  Taken together, all
+of these choices can make doing RelNav and writing code to do RelNav confusing and difficult.  Therefore, as with the
+<a class="reference internal" href="stellar_opnav/stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html#giant.stellar_opnav.stellar_class.StellarOpNav" title="giant.stellar_opnav.stellar_class.StellarOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">StellarOpNav</span></code></a> class, in GIANT we have made a single user interface to handle most of these techniques and make
+doing RelNav significantly easier in the form of the <a class="reference internal" href="relative_opnav/relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class.</p>
+<p>The <a class="reference internal" href="relative_opnav/relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class is generally the only interface a user will require when performing relative OpNav.
+Indeed, in most cases, doing RelNav using this class is as simple as initializing the class with some basic settings
+and then calling <a class="reference internal" href="relative_opnav/relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate.html#giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate" title="giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">auto_estimate()</span></code></a>, which will attempt to automatically deduce what technique is
+best suited for extracting observables from the images based on what is expected to be seen in the images and apply
+those techniques to the images.  This means it is largely possible to do RelNav without having a super in-depth
+understanding of what exactly is going on, though at least a basic understanding certainly helps. For those with an
+in-depth understanding, the <a class="reference internal" href="relative_opnav/relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class also provides easy access to many of the sub-steps required,
+allowing for more fine-grained control and more advanced analysis.</p>
+<p>This package level documentation only focuses on the use of the class to do RelNav for typical cases.  If you need a
+deeper understanding of what is going on, or you need to do some advanced analysis (or possibly even create your own
+RelNav technique) then we encourage you to read the sub-module/package documentation from this package
+(<a class="reference internal" href="relative_opnav/giant.relative_opnav.estimators.html#module-giant.relative_opnav.estimators" title="giant.relative_opnav.estimators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">relative_opnav.estimators</span></code></a>, <a class="reference internal" href="relative_opnav/giant.relative_opnav.relnav_class.html#module-giant.relative_opnav.relnav_class" title="giant.relative_opnav.relnav_class"><code class="xref py py-mod docutils literal notranslate"><span class="pre">relnav_class</span></code></a>, and <code class="xref py py-mod docutils literal notranslate"><span class="pre">relative_opnav.visualizer</span></code>)</p>
+</section>
+<section id="tuning-for-successful-relative-opnav">
+<h2>Tuning for Successful Relative OpNav<a class="headerlink" href="#tuning-for-successful-relative-opnav" title="Permalink to this headline">¶</a></h2>
+<p>Tuning is generally simple for most relative OpNav techniques, especially when compared to stellar OpNav.  In most
+cases, the only tuning parameter you really need to worry about is the <code class="xref py py-attr docutils literal notranslate"><span class="pre">extended_body_cutoff</span></code>.   This knob tells
+the <a class="reference internal" href="relative_opnav/relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate.html#giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate" title="giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">auto_estimate()</span></code></a> method when to switch from using the unresolved technique, where the target in the image is
+assumed to be dominated by the point spread function of the camera, to using resolved techniques based on the shape
+representation of the target.  Typically you want this set around 5-10 pixels, though if you have a particularly large
+PSF for your camera then you may want to increase this slightly.  Beyond that, at least for method
+<a class="reference internal" href="relative_opnav/relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate.html#giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate" title="giant.relative_opnav.relnav_class.RelativeOpNav.auto_estimate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">auto_estimate()</span></code></a>, most of the default tuning parameters should be sufficient to get pretty good RelNav results.
+If you need more control over the tuning for individual techniques you should refer to their module documentation which
+you can get to from <a class="reference internal" href="relative_opnav/giant.relative_opnav.estimators.html#module-giant.relative_opnav.estimators" title="giant.relative_opnav.estimators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">relative_opnav.estimators</span></code></a>.</p>
+</section>
+<p class="rubric">Modules</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="relative_opnav/giant.relative_opnav.relnav_class.html#module-giant.relative_opnav.relnav_class" title="giant.relative_opnav.relnav_class"><code class="xref py py-obj docutils literal notranslate"><span class="pre">relnav_class</span></code></a></p></td>
+<td><p>This module provides a subclass of the <a class="reference internal" href="opnav_class/giant.opnav_class.OpNav.html#giant.opnav_class.OpNav" title="giant.opnav_class.OpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpNav</span></code></a> class for performing relative OpNav.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="relative_opnav/giant.relative_opnav.estimators.html#module-giant.relative_opnav.estimators" title="giant.relative_opnav.estimators"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimators</span></code></a></p></td>
+<td><p>This package provides an abstract base class that defines the interface GIANT expects for Relative OpNav techniques as well as concrete implementations some of the most commonly used RelNav techniques.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="relative_opnav/relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a></p></td>
+<td><p>This class serves as the main user interface for performing relative optical navigation.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="stellar_opnav/visualizer/giant.stellar_opnav.visualizer.show_outlier.html" title="Previous document">show_outlier</a>
+        </li>
+        <li>
+          <a href="relative_opnav/giant.relative_opnav.relnav_class.html" title="Next document">relnav_class</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/giant.relative_opnav.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

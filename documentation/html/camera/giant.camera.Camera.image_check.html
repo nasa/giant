@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Camera.image_check &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="Camera.long_off" href="giant.camera.Camera.long_off.html" />
+    <link rel="prev" title="Camera.apply_date_range" href="giant.camera.Camera.apply_date_range.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.camera.html">giant.camera</a><ul>
+      <li>Previous: <a href="giant.camera.Camera.apply_date_range.html" title="previous chapter">Camera.apply_date_range</a></li>
+      <li>Next: <a href="giant.camera.Camera.long_off.html" title="next chapter">Camera.long_off</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.camera.Camera.apply_date_range.html" title="Previous document">Camera.apply_date_range</a>
+        </li>
+        <li>
+          <a href="giant.camera.Camera.long_off.html" title="Next document">Camera.long_off</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="camera-image-check">
+<h1>Camera.image_check<a class="headerlink" href="#camera-image-check" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.camera.html#module-giant.camera" title="giant.camera"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.camera</span></code></a>:</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.camera.Camera.image_check">
+<span class="sig-prename descclassname"><span class="pre">Camera.</span></span><span class="sig-name descname"><span class="pre">image_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parse_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/giant/camera.html#Camera.image_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.camera.Camera.image_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is used to interpret the image data that is supplied by the user (either during initialization or
+through the <a class="reference internal" href="giant.camera.Camera.add_images.html#giant.camera.Camera.add_images" title="giant.camera.Camera.add_images"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_images()</span></code></a> method) and ensure that it is a subclass of <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage" title="giant.image.OpNavImage"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpNavImage</span></code></a></p>
+<p>The input to this method should be a single representation of image data (either an <code class="xref py py-class docutils literal notranslate"><span class="pre">OpNavImage</span></code>,
+Sequence of Sequences, numpy array, or the path to the image file) and the output will be that representation
+converted to an <code class="xref py py-class docutils literal notranslate"><span class="pre">OpNavImage</span></code>.  If you are entering the path to the image file then you can specify
+the optional <code class="docutils literal notranslate"><span class="pre">parse_data</span></code> flag which is passed to the OpNavImage initialization function.</p>
+<p>In general it may be desirable to override this method when the <a class="reference internal" href="giant.camera.Camera.html#giant.camera.Camera" title="giant.camera.Camera"><code class="xref py py-class docutils literal notranslate"><span class="pre">Camera</span></code></a> class is subclassed to customize
+the functionality.  If you simply want to use a subclass of <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage" title="giant.image.OpNavImage"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpNavImage</span></code></a> with the same functionality
+then you can simply override the <code class="docutils literal notranslate"><span class="pre">default_image_class</span></code> keyword argument to the constructor of this class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>Union</em><em>[</em><em>pathlib.Path</em><em>, </em><em>str</em><em>, </em><em>Sequence</em><em>[</em><em>Sequence</em><em>]</em><em>, </em><em>numpy.ndarray</em><em>]</em>) – The data to be converted into an <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage" title="giant.image.OpNavImage"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpNavImage</span></code></a></p></li>
+<li><p><strong>parse_data</strong> (<em>bool</em>) – A flag specifying whether to attempt to automatically parse the metadata for the image</p></li>
+<li><p><strong>metadata_only</strong> (<em>bool</em>) – A flag to specify to only load the metadata for an image, not the image data itself.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The image data converted into an <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage" title="giant.image.OpNavImage"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpNavImage</span></code></a> or one of its subclasses</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage" title="giant.image.OpNavImage">giant.image.OpNavImage</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.camera.Camera.apply_date_range.html" title="Previous document">Camera.apply_date_range</a>
+        </li>
+        <li>
+          <a href="giant.camera.Camera.long_off.html" title="Next document">Camera.long_off</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/camera/giant.camera.Camera.image_check.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

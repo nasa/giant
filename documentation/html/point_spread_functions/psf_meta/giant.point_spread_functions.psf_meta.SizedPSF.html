@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>SizedPSF &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="SizedPSF.determine_size" href="giant.point_spread_functions.psf_meta.SizedPSF.determine_size.html" />
+    <link rel="prev" title="PointSpreadFunction.generate_kernel" href="giant.point_spread_functions.psf_meta.PointSpreadFunction.generate_kernel.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.point_spread_functions.html">giant.point_spread_functions</a><ul>
+  <li><a href="../giant.point_spread_functions.psf_meta.html">giant.point_spread_functions.psf_meta</a><ul>
+      <li>Previous: <a href="giant.point_spread_functions.psf_meta.PointSpreadFunction.generate_kernel.html" title="previous chapter">PointSpreadFunction.generate_kernel</a></li>
+      <li>Next: <a href="giant.point_spread_functions.psf_meta.SizedPSF.determine_size.html" title="next chapter">SizedPSF.determine_size</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.point_spread_functions.psf_meta.PointSpreadFunction.generate_kernel.html" title="Previous document">PointSpreadFunction.generate_kernel</a>
+        </li>
+        <li>
+          <a href="giant.point_spread_functions.psf_meta.SizedPSF.determine_size.html" title="Next document">SizedPSF.determine_size</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="sizedpsf">
+<h1>SizedPSF<a class="headerlink" href="#sizedpsf" title="Permalink to this headline">¶</a></h1>
+<p>In addition to the methods and attributes from <a class="reference internal" href="giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="giant.point_spread_functions.psf_meta.PointSpreadFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PointSpreadFunction</span></code></a>, <a class="reference internal" href="#giant.point_spread_functions.psf_meta.SizedPSF" title="giant.point_spread_functions.psf_meta.SizedPSF"><code class="xref py py-class docutils literal notranslate"><span class="pre">SizedPSF</span></code></a> implements the following</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.point_spread_functions.psf_meta.SizedPSF">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.point_spread_functions.psf_meta.</span></span><span class="sig-name descname"><span class="pre">SizedPSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/point_spread_functions/psf_meta.html#SizedPSF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.point_spread_functions.psf_meta.SizedPSF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="giant.point_spread_functions.psf_meta.PointSpreadFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">giant.point_spread_functions.psf_meta.PointSpreadFunction</span></code></a></p>
+<p>This ABC adds common functionality for a PSF where the required size can be determine algorithmically.</p>
+<p>Specifically, this adds an instance attribute <a class="reference internal" href="#giant.point_spread_functions.psf_meta.SizedPSF.size" title="giant.point_spread_functions.psf_meta.SizedPSF.size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">size</span></code></a> which stores the size of the PSF,
+a new abstract method <a class="reference internal" href="giant.point_spread_functions.psf_meta.SizedPSF.determine_size.html#giant.point_spread_functions.psf_meta.SizedPSF.determine_size" title="giant.point_spread_functions.psf_meta.SizedPSF.determine_size"><code class="xref py py-meth docutils literal notranslate"><span class="pre">determine_size()</span></code></a> which should be implemented to algorithmically determine the size of
+the kernel required for the PSF, and concrete method <a class="reference internal" href="giant.point_spread_functions.psf_meta.SizedPSF.generate_kernel.html#giant.point_spread_functions.psf_meta.SizedPSF.generate_kernel" title="giant.point_spread_functions.psf_meta.SizedPSF.generate_kernel"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate_kernel()</span></code></a>, which generates a square unit kernel
+based on the <a class="reference internal" href="#giant.point_spread_functions.psf_meta.SizedPSF.size" title="giant.point_spread_functions.psf_meta.SizedPSF.size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">size</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>size</strong> (<em>int</em>) – The size of the kernel to generate.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.point_spread_functions.psf_meta.SizedPSF.size">
+<span class="sig-name descname"><span class="pre">size</span></span><em class="property"><span class="pre">:</span> <span class="pre">int</span></em><a class="headerlink" href="#giant.point_spread_functions.psf_meta.SizedPSF.size" title="Permalink to this definition">¶</a></dt>
+<dd><p>The size of the kernel to return on a call to <a class="reference internal" href="giant.point_spread_functions.psf_meta.SizedPSF.generate_kernel.html#giant.point_spread_functions.psf_meta.SizedPSF.generate_kernel" title="giant.point_spread_functions.psf_meta.SizedPSF.generate_kernel"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate_kernel()</span></code></a>.</p>
+<p>Typically this should be an odd number to ensure that the kernel is square and centered.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p class="rubric">Summary of Added/Modified Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.point_spread_functions.psf_meta.SizedPSF.determine_size.html#giant.point_spread_functions.psf_meta.SizedPSF.determine_size" title="giant.point_spread_functions.psf_meta.SizedPSF.determine_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">determine_size</span></code></a></p></td>
+<td><p>Sets the size required for the kernel algorithmically.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.point_spread_functions.psf_meta.SizedPSF.generate_kernel.html#giant.point_spread_functions.psf_meta.SizedPSF.generate_kernel" title="giant.point_spread_functions.psf_meta.SizedPSF.generate_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_kernel</span></code></a></p></td>
+<td><p>Generates a square kernel centered at the centroid of the PSF normalized to have a volume (sum) of 1 for the size input or specified in the <code class="xref py py-attr docutils literal notranslate"><span class="pre">size</span></code> attribute.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.point_spread_functions.psf_meta.PointSpreadFunction.generate_kernel.html" title="Previous document">PointSpreadFunction.generate_kernel</a>
+        </li>
+        <li>
+          <a href="giant.point_spread_functions.psf_meta.SizedPSF.determine_size.html" title="Next document">SizedPSF.determine_size</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.SizedPSF.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,567 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.relative_opnav.estimators.estimator_interface_abc &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../../index.html">
+    <img class="logo" src="../../../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.relative_opnav.estimators.estimator_interface_abc</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
+<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module defines the abstract base class (abc) for defining Relative OpNav techniques that will work with the</span>
+<span class="sd">:class:`.RelativeOpNav` class.</span>
+
+<span class="sd">This abc provides a design guide/requirement for building a new RelNav technique that can be easily registered with</span>
+<span class="sd">the :class:`.RelativeOpNav` class.  In general, when you define a new RelNav technique, you should subclass this abc</span>
+<span class="sd">(a) to ensure you implement all of the required methods and instance/class attributes, but also to get some of the</span>
+<span class="sd">concrete implementations that this class provides which are generally applicable.</span>
+
+<span class="sd">You should only worry about this abc when you are defining a new technique.  If you are using an existing technique,</span>
+<span class="sd">like :mod:`.cross_correlation`, :mod:`.ellipse_matching`, :mod:`.limb_matching`, :mod:`.moment_algorithm`, or</span>
+<span class="sd">:mod:`.unresolved` then you can ignore this class exists and just read the documentation for those techniques.</span>
+
+<span class="sd">Use</span>
+<span class="sd">---</span>
+
+<span class="sd">To implement a fully functional RelNav technique, you must implement the following class attributes.</span>
+
+<span class="sd">============================================= ==========================================================================</span>
+<span class="sd">Class Attribute                               Description</span>
+<span class="sd">============================================= ==========================================================================</span>
+<span class="sd">:attr:`~.RelNavEstimator.technique`           A string that gives the name to the technique.  This should be an</span>
+<span class="sd">                                              &quot;identifier&quot;, which means it should be only letters/numbers and the</span>
+<span class="sd">                                              underscore character, and should not start with a number.  This will be</span>
+<span class="sd">                                              used in registering the class to define the property that points to the</span>
+<span class="sd">                                              instance of this technique, as well as the ``{technique}_estimate`` method</span>
+<span class="sd">                                              and ``{technique}_details`` attribute.</span>
+<span class="sd">:attr:`~.RelNavEstimator.observable_type`     A list of :class:`.RelNavObservablesType` values that specify what types</span>
+<span class="sd">                                              of observables are generated by the new technique.  This controls how the</span>
+<span class="sd">                                              results from the new technique are retrieved and stored by the</span>
+<span class="sd">                                              :class:`.RelativeOpNav` technique.</span>
+<span class="sd">:attr:`~.RelNavEstimator.generates_templates` A boolean flag specifying whether this technique generates templates and</span>
+<span class="sd">                                              stores them in the :attr:`~.RelNavEstimator.templates` attribute.</span>
+<span class="sd">                                              If this is ``True``, then :class:`.RelativeOpNav` may store the templates</span>
+<span class="sd">                                              for further investigation by copying the</span>
+<span class="sd">                                              :attr:`~.RelNavEstimator.templates` attribute.</span>
+<span class="sd">============================================= ==========================================================================</span>
+
+<span class="sd">You also should typically implement the following instance attributes:</span>
+
+<span class="sd">============================================= ==========================================================================</span>
+<span class="sd">Instance Attribute                            Description</span>
+<span class="sd">============================================= ==========================================================================</span>
+<span class="sd">:attr:`~.RelNavEstimator.image_processing`    The instance of the image processing class to use when working with the</span>
+<span class="sd">                                              images.</span>
+<span class="sd">:attr:`~.RelNavEstimator.scene`               The instance of the :class:`.Scene` class that defines the *a priori*</span>
+<span class="sd">                                              knowledge of the location/orientation of the targets in the camera frame.</span>
+<span class="sd">                                              When you are using your custom class with the :class:`.RelativeOpNav`</span>
+<span class="sd">                                              class and a :class:`.Scene` class then you can assume that the scene</span>
+<span class="sd">                                              is appropriately set up for each image.</span>
+<span class="sd">:attr:`~.RelNavEstimator.camera`              The instance of the :class:`.Camera` class which contains the camera model</span>
+<span class="sd">                                              as well as other images.</span>
+<span class="sd">:attr:`~.RelNavEstimator.computed_bearings`   The attribute in which to store computed (predicted) bearing measurements</span>
+<span class="sd">                                              as (x, y) in pixels. This is a list the length of the number of targets in</span>
+<span class="sd">                                              the scene, and when a target is processed, it should put the bearing</span>
+<span class="sd">                                              measurements into the appropriate index.  For center finding type</span>
+<span class="sd">                                              measurements, these will be single (x,y) pairs.  For landmark/limb type</span>
+<span class="sd">                                              measurements, these will be an nx2 array of (x,y) pairs for each landmark</span>
+<span class="sd">                                              or feature</span>
+<span class="sd">:attr:`~.RelNavEstimator.observed_bearings`   The attribute in which to store observed bearing measurements</span>
+<span class="sd">                                              as (x, y) in pixels. This is a list the length of the number of targets in</span>
+<span class="sd">                                              the scene, and when a target is processed, it should put the bearing</span>
+<span class="sd">                                              measurements into the appropriate index.  For center finding type</span>
+<span class="sd">                                              measurements, these will be single (x,y) pairs.  For landmark/limb type</span>
+<span class="sd">                                              measurements, these will be an nx2 array of (x,y) pairs for each landmark</span>
+<span class="sd">                                              or feature</span>
+<span class="sd">:attr:`~.RelNavEstimator.computed_positions`  The attribute in which to store computed (predicted) positions</span>
+<span class="sd">                                              measurements as (x, y, z) in kilometers in the camera frame. This is a</span>
+<span class="sd">                                              list the length of the number of targets in the scene, and when a target</span>
+<span class="sd">                                              is processed, it should put the predicted position into the appropriate</span>
+<span class="sd">                                              index.</span>
+<span class="sd">:attr:`~.RelNavEstimator.observed_positions`  The attribute in which to store observed (measured) positions</span>
+<span class="sd">                                              measurements as (x, y, z) in kilometers in the camera frame. This is a</span>
+<span class="sd">                                              list the length of the number of targets in the scene, and when a target</span>
+<span class="sd">                                              is processed, it should put the measured position into the appropriate</span>
+<span class="sd">                                              index.</span>
+<span class="sd">:attr:`~.RelNavEstimator.templates`           The attribute in which templates should be stored for each target if</span>
+<span class="sd">                                              templates are used for the technique.  This is a list the length of the</span>
+<span class="sd">                                              number of targets in the scene, and when a target is processed, it should</span>
+<span class="sd">                                              have the template(s) generated for that target stored in the appropriate</span>
+<span class="sd">                                              element.  For center finding type techniques the templates are 2D numpy</span>
+<span class="sd">                                              arrays.  For landmark type techniques the templates are usually lists of</span>
+<span class="sd">                                              2D numpy arrays, where each list element corresponds to the template for</span>
+<span class="sd">                                              the corresponding landmark.</span>
+<span class="sd">:attr:`~.RelNavEstimator.details`             This attribute can be used to store extra information about what happened</span>
+<span class="sd">                                              when the technique was applied.  This should be a list the length of the</span>
+<span class="sd">                                              number of targets in the scene, and when a target is processed, the</span>
+<span class="sd">                                              details should be saved to the appropriate element in the list.  Usually</span>
+<span class="sd">                                              each element takes the form of a dictionary and contains things like the</span>
+<span class="sd">                                              uncertainty of the measured value (if known), the correlation score (if</span>
+<span class="sd">                                              correlation was used) or other pieces of information that are necessarily</span>
+<span class="sd">                                              directly needed, but which may given context to a user or another program.</span>
+<span class="sd">                                              Because this is freeform, for the most part GIANT will just copy this list</span>
+<span class="sd">                                              where it belongs and will not actually inspect the contents. To use the</span>
+<span class="sd">                                              contents you will either need to inspect them yourself or will need to</span>
+<span class="sd">                                              write custom code for them.</span>
+<span class="sd">============================================= ==========================================================================</span>
+
+<span class="sd">Finally, we must implement the following method</span>
+
+<span class="sd">============================================= ==========================================================================</span>
+<span class="sd">Method                                        Description</span>
+<span class="sd">============================================= ==========================================================================</span>
+<span class="sd">:meth:`~.RelNavEstimator.estimate`            This method should use the defined technique to extract observables from</span>
+<span class="sd">                                              the image, depending on the type of the observables generated.  This is</span>
+<span class="sd">                                              also where the computed (predicted) observables should be generated and</span>
+<span class="sd">                                              stored, as well as fleshing out the :attr:`~.RelNavEstimator.details` and</span>
+<span class="sd">                                              the :attr:`~.RelNavEstimator.templates` lists if applicable.  This method</span>
+<span class="sd">                                              should be capable of applying the technique to all targets in the scene,</span>
+<span class="sd">                                              or to a specifically requested target.</span>
+<span class="sd">============================================= ==========================================================================</span>
+
+<span class="sd">If you implement a class that contains all of these things then you will have successfully defined a new RelNav</span>
+<span class="sd">technique that can be registered with the :class:`.RelativeOpNav` class.  Whether that technique actually works or not</span>
+<span class="sd">is up to you however.</span>
+
+<span class="sd">For more details on defining/registering a new technique, as well as an example, refer to the</span>
+<span class="sd">:mod:`~.relative_opnav.estimators` documentation.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">giant.ray_tracer.scene</span> <span class="kn">import</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">SceneObject</span>
+<span class="kn">from</span> <span class="nn">giant.camera</span> <span class="kn">import</span> <span class="n">Camera</span>
+<span class="kn">from</span> <span class="nn">giant.image_processing</span> <span class="kn">import</span> <span class="n">ImageProcessing</span>
+<span class="kn">from</span> <span class="nn">giant._typing</span> <span class="kn">import</span> <span class="n">NONEARRAY</span>
+<span class="kn">from</span> <span class="nn">giant.image</span> <span class="kn">import</span> <span class="n">OpNavImage</span>
+
+
+<div class="viewcode-block" id="RelNavObservablesType"><a class="viewcode-back" href="../../../../relative_opnav/estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavObservablesType.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavObservablesType">[docs]</a><span class="k">class</span> <span class="nc">RelNavObservablesType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This enumeration provides options for the basic types of observables generated in Relative OpNav.</span>
+
+<span class="sd">    This is used to set the values for the :attr:`.RelNavEstimator.observable_type` attribute to specify what types of</span>
+<span class="sd">    observables are generated by a technique.  If you are not implementing your own RelNav technique then you don&#39;t need</span>
+<span class="sd">    to worry about this enumeration really.</span>
+
+<span class="sd">    When using this enumeration you can combine multiple types using a list (so</span>
+<span class="sd">    ``[RelNavObservablesType.RELATIVE_POSITION, RelNavObservablesType.LIMB]`` would specify a RelNav technique that</span>
+<span class="sd">    generates both a relative position measurement for each image-target pair, as well as individual limb observations</span>
+<span class="sd">    as bearing measurement).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">CENTER_FINDING</span> <span class="o">=</span> <span class="s1">&#39;CENTER-FINDING&#39;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A technique that locates the bearing to the center-of-figure of the target in the image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">LIMB</span> <span class="o">=</span> <span class="s1">&#39;LIMB&#39;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A technique that identifies the bearings to the limbs of a target in an image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">LANDMARK</span> <span class="o">=</span> <span class="s1">&#39;LANDMARK&#39;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A technique that identifies te bearings to the surface features (landmarks) on a target in an image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">RELATIVE_POSITION</span> <span class="o">=</span> <span class="s1">&#39;RELATIVE-POSITION&#39;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A technique that identifies the relative position between the camera and the center-of-figure of the target in an </span>
+<span class="sd">    image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">CONSTRAINT</span> <span class="o">=</span> <span class="s1">&#39;CONSTRAINT&#39;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A technique that identifies the bearings to the same feature in multiple images (whether a known feature or an </span>
+<span class="sd">    opportunistic one).</span>
+<span class="sd">    </span>
+<span class="sd">    Matching features should be labeled with the same key in different images.  </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">CUSTOM</span> <span class="o">=</span> <span class="s1">&#39;CUSTOM&#39;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A technique that doesn&#39;t fall into another category and requires a custom handler.</span>
+<span class="sd">    </span>
+<span class="sd">    The custom handler should be stored in the :attr:`.RelNavEstimator.relnav_handler` attribute and should at minimum </span>
+<span class="sd">    take a :class:`.RelativeOpNav` instance as the first argument.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="RelNavEstimator"><a class="viewcode-back" href="../../../../relative_opnav/estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator">[docs]</a><span class="k">class</span> <span class="nc">RelNavEstimator</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is the abstract base class for all RelNav techniques in GIANT that work with the :class:`.RelativeOpNav` user</span>
+<span class="sd">    interface.</span>
+
+<span class="sd">    A RelNav technique in GIANT is something that extracts observables of targets from an image.  Usually these targets</span>
+<span class="sd">    are planetary or natural bodies, not stars or man-made objects (though it is possible to have a man made object be a</span>
+<span class="sd">    target).  There are different variations on what exactly is extracted from the image, but most boil down into either</span>
+<span class="sd">    a bearing measurement (the pixel location of the target in the image), a relative position measurement (the vector</span>
+<span class="sd">    from the camera to the target in the camera frame), or a constraint measurement (paired bearing measurements of the</span>
+<span class="sd">    same target in different images).</span>
+
+<span class="sd">    This class serves as a prototype for implementing a new RelNav technique in GIANT.  It defines an abstract method,</span>
+<span class="sd">    :meth:`estimate` which is the primary interface GIANT will use to apply the technique to extract observables from an</span>
+<span class="sd">    image.  It also defines some class methods that should be overridden by subclass, including :attr:`technique`,</span>
+<span class="sd">    :attr:`observable_type`, :attr:`relnav_handler`, and :attr:`generates_templates` which determine how the</span>
+<span class="sd">    :class:`.RelativeOpNav` class interacts with the new technique.  Finally, it defines some instance attributes,</span>
+<span class="sd">    :attr:`image_processing`, :attr:`scene`, :attr:`camera:`, :attr:`computed_bearings`, :attr:`observed_bearings`,</span>
+<span class="sd">    :attr:`computed_positions`, :attr:`observed_positions`, :attr:`templates`, and :attr:`details` which should be used</span>
+<span class="sd">    for retrieving/storing information during the fit.  This class also defines a concrete method, :meth:`reset`, which</span>
+<span class="sd">    is used by the :class:`.RelativeOpNav` class to prepare the instance of the technique for a new image/target pair.</span>
+
+<span class="sd">    For more details on defining/registering a new technique using this class as a template/super class, see the</span>
+<span class="sd">    :mod:`~.relative_opnav.estimators` documentation.</span>
+
+<span class="sd">    .. note:: Because this is an ABC, you cannot create an instance of this class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">technique</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The name for the technique for registering with :class:`.RelativeOpNav`.  </span>
+<span class="sd">    </span>
+<span class="sd">    If None then the name will default to the name of the module where the class is defined.  </span>
+<span class="sd">    </span>
+<span class="sd">    This should typically be all lowercase and should not include any spaces or special characters except for ``_`` as </span>
+<span class="sd">    it will be used to make attribute/method names.  (That is ``MyEstimator.technique.isidentifier()`` should evaluate </span>
+<span class="sd">    ``True``).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">observable_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">RelNavObservablesType</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span> <span class="n">RelNavObservablesType</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The types of observables that are generated by this technique.  </span>
+<span class="sd">    </span>
+<span class="sd">    This should be a list of :class:`.RelNavObservablesType` enum values that specify what type(s) of observables this </span>
+<span class="sd">    technique generates.  It can also be ``None`` in which case the default type of </span>
+<span class="sd">    :attr:`.RelNavObservablesType.CENTER_FINDING` will be assumed, or it can be a single string or </span>
+<span class="sd">    :class:`.RelNavObservable` value if only one type is assumed.  </span>
+<span class="sd">    </span>
+<span class="sd">    If this is :attr:`.RelNavObservablesType.CUSTOM`, then that can be the only type, and you must also define a class </span>
+<span class="sd">    attribute ``relnav_handler`` which is a function where the first and only positional argument is the </span>
+<span class="sd">    :class:`.RelativeOpNav` instance that this technique was registered to and there are 2 key word arguments </span>
+<span class="sd">    ``image_ind`` and ``include_targets`` which should be used to control which image/target is processed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">relnav_handler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A custom handler for doing estimation/packaging the results into the :class:`.RelativeOpNav` instance.</span>
+<span class="sd">    </span>
+<span class="sd">    Typically this should be ``None``, unless the :attr:`observable_type` is set to </span>
+<span class="sd">    :attr:`.RelNavObservablesType.CUSTOM`, in which case this must be a function where the first and only positional </span>
+<span class="sd">    argument is the :class:`.RelativeOpNav` instance that this technique was registered to and there are 2 key word </span>
+<span class="sd">    arguments ``image_ind`` and ``include_targets`` which should be used to control which image/target is processed.</span>
+<span class="sd">    </span>
+<span class="sd">    If :attr:`observable_type` is not :attr:`.RelNavObservablesType.CUSTOM` then this is ignored whether it is ``None`` </span>
+<span class="sd">    or not.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">generates_templates</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A flag specifying whether this RelNav estimator generates and stores templates in the :attr:`templates` attribute.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span> <span class="n">image_processing</span><span class="p">:</span> <span class="n">ImageProcessing</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param scene: The :class:`.Scene` object containing the target, light, and obscuring objects.</span>
+<span class="sd">        :param camera: The :class:`.Camera` object containing the camera model and images to be utilized</span>
+<span class="sd">        :param image_processing: The :class:`.ImageProcessing` object to be used to process the images</span>
+<span class="sd">        :param kwargs: Extra arguments that the technique may need for settings/other things.  These aren&#39;t actually</span>
+<span class="sd">                       used by this class, but are included so that the type checker doesn&#39;t get mad and so you know</span>
+<span class="sd">                       you can do it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scene</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_camera</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_processing</span> <span class="o">=</span> <span class="n">image_processing</span>  <span class="c1"># type: ImageProcessing</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The :class:`.ImageProcessing` instance to use to apply image processing techniques to the images.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span> <span class="o">=</span> <span class="n">scene</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">camera</span> <span class="o">=</span> <span class="n">camera</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>  <span class="c1"># type: List[NONEARRAY]</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A list of the computed (predicted) bearings in the image where each element corresponds to</span>
+<span class="sd">        the same element in the :attr:`.Scene.target_objs` list.</span>
+
+<span class="sd">        The list elements should be numpy arrays or ``None`` if the the target wasn&#39;t considered for some reason.  If</span>
+<span class="sd">        numpy arrays they should contain the pixel locations as (x, y) or (col, row).  This does not always need to be </span>
+<span class="sd">        filled out.</span>
+<span class="sd">        </span>
+<span class="sd">        This is were you should store results for ``CENTER-FINDING, LIMB, LANDMARK, CONSTRAINT`` techniques.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>  <span class="c1"># type: List[NONEARRAY]</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A list of the observed bearings in the image where each element corresponds to</span>
+<span class="sd">        the same element in the :attr:`.Scene.target_objs` list.</span>
+
+<span class="sd">        The list elements should be numpy arrays or ``None`` if the the target wasn&#39;t considered for some reason.  If</span>
+<span class="sd">        numpy arrays they should contain the pixel locations as (x, y) or (col, row).  This does not always need to be </span>
+<span class="sd">        filled out.</span>
+<span class="sd">        </span>
+<span class="sd">        This is were you should store results for ``CENTER-FINDING, LIMB, LANDMARK, CONSTRAINT`` techniques.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">computed_positions</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>  <span class="c1"># type: List[NONEARRAY]</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A list of the computed relative position between the target and the camera in the image frame</span>
+<span class="sd">        where each element corresponds to the same element in the :attr:`.Scene.target_objs` list.</span>
+
+<span class="sd">        The list elements should be numpy arrays or ``None`` if the the target wasn&#39;t considered or this type of</span>
+<span class="sd">        measurement is not applicable.  If numpy arrays they should contain the relative position between the camera</span>
+<span class="sd">        and the target as a length 3 array with units of kilometers in the camera frame. This does not need to be</span>
+<span class="sd">        populated for all RelNav techniques</span>
+<span class="sd">        </span>
+<span class="sd">        This is were you should store results for ``RELATIVE-POSITION`` techniques.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">observed_positions</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>  <span class="c1"># type: List[NONEARRAY]</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A list of the observed relative position between the target and the camera in the image frame</span>
+<span class="sd">        where each element corresponds to the same element in the :attr:`.Scene.target_objs` list.</span>
+
+<span class="sd">        The list elements should be numpy arrays or ``None`` if the the target wasn&#39;t considered or this type of</span>
+<span class="sd">        measurement is not applicable.  If numpy arrays they should contain the relative position between the camera</span>
+<span class="sd">        and the target as a length 3 array with units of kilometers in the camera frame. This does not need to be</span>
+<span class="sd">        populated for all RelNav techniques</span>
+<span class="sd">        </span>
+<span class="sd">        This is were you should store results for ``RELATIVE-POSITION`` techniques.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">templates</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>  <span class="c1"># type: List[NONEARRAY]</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A list of rendered templates generated by this technique.</span>
+
+<span class="sd">        The list elements should be numpy arrays or ``None`` if the the target wasn&#39;t considered or this type of</span>
+<span class="sd">        measurement is not applicable.  If numpy arrays they should contain the templates rendered for the target as 2D </span>
+<span class="sd">        arrays.</span>
+
+<span class="sd">        If :attr:`generates_templates` is ``False`` this can be ignored.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">details</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>  <span class="c1"># type: List[Optional[Any]]</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This attribute should provide details from applying the technique to each target in the scene.</span>
+
+<span class="sd">        The list should be the same length at the :attr:`.Scene.target_objs`.  Typically, if the technique was not </span>
+<span class="sd">        applied for some of the targets then the details for the corresponding element should be ``None``.  Beyond each</span>
+<span class="sd">        element of the details should typically contain a dictionary providing information about the results that is not</span>
+<span class="sd">        strictly needed for understanding what happened, however, this is not required and you can use whatever </span>
+<span class="sd">        structure you want to convey the information.  Whatever you do, however, you should clearly document it for each</span>
+<span class="sd">        technique so that the user can know what to expect.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Can&#39;t handle additional kwargs here.  Don&#39;t pass them to me!!&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">scene</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scene</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The scene which defines the a priori locations of all targets and light sources with respect to the camera.</span>
+
+<span class="sd">        You can assume that the scene has been updated for the appropriate image time inside of the class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scene</span>
+
+    <span class="nd">@scene</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">scene</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Scene</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">Scene</span><span class="p">):</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scene</span> <span class="o">=</span> <span class="n">val</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;scene must be a Scene&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">camera</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Camera</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The camera instance that represents the camera used to take the images we are performing Relative OpNav on.</span>
+
+<span class="sd">        This is the source of the camera model, and may be used for other information about the camera as well.</span>
+<span class="sd">        See the :class:`.Camera` property for details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_camera</span>
+
+    <span class="nd">@camera</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">camera</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Camera</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">Camera</span><span class="p">):</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_camera</span> <span class="o">=</span> <span class="n">val</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The camera must be a Camera&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RelNavEstimator.target_generator"><a class="viewcode-back" href="../../../../relative_opnav/estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.target_generator.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.target_generator">[docs]</a>    <span class="k">def</span> <span class="nf">target_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_targets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">SceneObject</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method returns a generator which yields target_index, target pairs that are to be processed based on the</span>
+<span class="sd">        input ``include_targets``.</span>
+
+<span class="sd">        If ``include_targets`` is ``None`` then all targets are yielded in the scene.  If it is a list of boolean values</span>
+<span class="sd">        then only targets where the corresponding index in the list is ``True`` are yielded.</span>
+
+<span class="sd">        :param include_targets: The targets to include in the estimation process</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">include_targets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">include_targets</span><span class="p">[</span><span class="n">ind</span><span class="p">]:</span>
+                <span class="k">yield</span> <span class="n">ind</span><span class="p">,</span> <span class="n">target</span></div>
+
+<div class="viewcode-block" id="RelNavEstimator.estimate"><a class="viewcode-back" href="../../../../relative_opnav/estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.estimate.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.estimate">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">include_targets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method should apply the technique to a specified image for all targets specified in ``include_targets``.</span>
+
+<span class="sd">        The results from this method should typically be stored in :attr:`computed_bearings`, :attr:`observed_bearings`,</span>
+<span class="sd">        :attr:`computed_positions`, :attr:`observed_positions`, :attr:`templates`, and :attr:`details`, depending on the</span>
+<span class="sd">        type of observables generated.</span>
+
+<span class="sd">        When this method is called, you can assume that the scene is set correctly for the input image.</span>
+
+<span class="sd">        :param image: The image the technique should be applied to as an OpNavImage</span>
+<span class="sd">        :param include_targets: An argument specifying which targets should be processed for this image.  If ``None``</span>
+<span class="sd">                                then all are processed (no, the irony is not lost on me...)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="RelNavEstimator.reset"><a class="viewcode-back" href="../../../../relative_opnav/estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.reset.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method resets the observed/computed attributes as well as the details attribute to have ``None`` for each</span>
+<span class="sd">        target in :attr:`scene`.</span>
+
+<span class="sd">        This method is called by :class:`.RelativeOpNav` between images to ensure that data is not accidentally applied</span>
+<span class="sd">        from one image to the next.  You can override this method with a subclass to do even more, however, be sure to</span>
+<span class="sd">        call super().reset() from your override.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">computed_positions</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observed_positions</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">templates</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">details</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

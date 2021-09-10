@@ -1,0 +1,201 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Shape &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="next" title="Shape.compute_intersect" href="giant.ray_tracer.shapes.shape.Shape.compute_intersect.html" />
+    <link rel="prev" title="shape" href="../giant.ray_tracer.shapes.shape.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../giant.html">API Reference</a><ul>
+  <li><a href="../../../giant.ray_tracer.html">ray_tracer</a><ul>
+  <li><a href="../../giant.ray_tracer.shapes.html">shapes</a><ul>
+  <li><a href="../giant.ray_tracer.shapes.shape.html">shape</a><ul>
+      <li>Previous: <a href="../giant.ray_tracer.shapes.shape.html" title="previous chapter">shape</a></li>
+      <li>Next: <a href="giant.ray_tracer.shapes.shape.Shape.compute_intersect.html" title="next chapter">Shape.compute_intersect</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.ray_tracer.shapes.shape.html" title="Previous document">shape</a>
+        </li>
+        <li>
+          <a href="giant.ray_tracer.shapes.shape.Shape.compute_intersect.html" title="Next document">Shape.compute_intersect</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="shape">
+<h1>Shape<a class="headerlink" href="#shape" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.ray_tracer.shapes.shape.html#module-giant.ray_tracer.shapes.shape" title="giant.ray_tracer.shapes.shape"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.ray_tracer.shapes.shape</span></code></a>:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.ray_tracer.shapes.shape.Shape">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.ray_tracer.shapes.shape.</span></span><span class="sig-name descname"><span class="pre">Shape</span></span><a class="headerlink" href="#giant.ray_tracer.shapes.shape.Shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>This represents the minimum required interface for an object to be considered traceable in GIANT.</p>
+<p>This is essentially an abstract base class (though abstract base classes do not actually exist as c extensions).  It
+defines the minimum interface for geometry in GIANT to be considered traceable in the normal <a class="reference internal" href="../../scene/giant.ray_tracer.scene.Scene.html#giant.ray_tracer.scene.Scene" title="giant.ray_tracer.scene.Scene"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scene</span></code></a> setup
+in GIANT.  All of the built in GIANT geometry that is traceable inherits from this class.</p>
+<p>In general, a user will never actually use this class unless they are (a) defining a new geometry, in which case
+they should inherit from this class and override its 4 methods or (b) creating something where they want to accept
+renderable geometry, in which case they should use this as the base class for the type of class that they accept.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.ray_tracer.shapes.shape.Shape.bounding_box">
+<span class="sig-name descname"><span class="pre">bounding_box</span></span><em class="property"><span class="pre">:</span> <span class="pre">AxisAlignedBoundingBox</span></em><a class="headerlink" href="#giant.ray_tracer.shapes.shape.Shape.bounding_box" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="../axis_aligned_bounding_box/giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox.html#giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox" title="giant.ray_tracer.shapes.axis_aligned_bounding_box.AxisAlignedBoundingBox"><code class="xref py py-class docutils literal notranslate"><span class="pre">AxisAlignedBoundingBox</span></code></a> that fully contains this shape.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p class="rubric">Summary of Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.ray_tracer.shapes.shape.Shape.compute_intersect.html#giant.ray_tracer.shapes.shape.Shape.compute_intersect" title="giant.ray_tracer.shapes.shape.Shape.compute_intersect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_intersect</span></code></a></p></td>
+<td><p>This method computes the intersections between a ray and the geometry defined by the class, returning the results as a numpy array with type <code class="xref py py-attr docutils literal notranslate"><span class="pre">INTERSECT_DTYPE</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.ray_tracer.shapes.shape.Shape.rotate.html#giant.ray_tracer.shapes.shape.Shape.rotate" title="giant.ray_tracer.shapes.shape.Shape.rotate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate</span></code></a></p></td>
+<td><p>This method rotates the shape in place.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.ray_tracer.shapes.shape.Shape.trace.html#giant.ray_tracer.shapes.shape.Shape.trace" title="giant.ray_tracer.shapes.shape.Shape.trace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace</span></code></a></p></td>
+<td><p>This method computes the intersections between a series of rays and the geometry defined by the class, returning the results as a numpy array with type <code class="xref py py-attr docutils literal notranslate"><span class="pre">INTERSECT_DTYPE</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.ray_tracer.shapes.shape.Shape.translate.html#giant.ray_tracer.shapes.shape.Shape.translate" title="giant.ray_tracer.shapes.shape.Shape.translate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">translate</span></code></a></p></td>
+<td><p>This method translates the shape in place.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.ray_tracer.shapes.shape.Shape.find_limbs.html#giant.ray_tracer.shapes.shape.Shape.find_limbs" title="giant.ray_tracer.shapes.shape.Shape.find_limbs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_limbs</span></code></a></p></td>
+<td><p>The method determines the limb points (visible edge of the shape) that would be an observed for an observer located at <code class="docutils literal notranslate"><span class="pre">observer_position</span></code> looking toward <code class="docutils literal notranslate"><span class="pre">scan_center_dir</span></code> along the directions given by <code class="docutils literal notranslate"><span class="pre">scan_dirs</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.ray_tracer.shapes.shape.Shape.compute_limb_jacobian.html#giant.ray_tracer.shapes.shape.Shape.compute_limb_jacobian" title="giant.ray_tracer.shapes.shape.Shape.compute_limb_jacobian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_limb_jacobian</span></code></a></p></td>
+<td><p>This method computes the linear change in the limb location given a change in the relative position between the ellipsoid and the shape.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.ray_tracer.shapes.shape.html" title="Previous document">shape</a>
+        </li>
+        <li>
+          <a href="giant.ray_tracer.shapes.shape.Shape.compute_intersect.html" title="Next document">Shape.compute_intersect</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../../_sources/ray_tracer/shapes/shape/giant.ray_tracer.shapes.shape.Shape.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

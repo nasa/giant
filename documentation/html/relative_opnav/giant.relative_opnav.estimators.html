@@ -1,0 +1,545 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>estimators &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="cross_correlation" href="estimators/giant.relative_opnav.estimators.cross_correlation.html" />
+    <link rel="prev" title="giant.relative_opnav.relnav_class.RESULTS_DTYPE" href="relnav_class/giant.relative_opnav.relnav_class.RESULTS_DTYPE.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.relative_opnav.html">giant.relative_opnav</a><ul>
+      <li>Previous: <a href="relnav_class/giant.relative_opnav.relnav_class.RESULTS_DTYPE.html" title="previous chapter">giant.relative_opnav.relnav_class.RESULTS_DTYPE</a></li>
+      <li>Next: <a href="estimators/giant.relative_opnav.estimators.cross_correlation.html" title="next chapter">cross_correlation</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="relnav_class/giant.relative_opnav.relnav_class.RESULTS_DTYPE.html" title="Previous document">giant.relative_opnav.relnav_class.RESULTS_DTYPE</a>
+        </li>
+        <li>
+          <a href="estimators/giant.relative_opnav.estimators.cross_correlation.html" title="Next document">cross_correlation</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.relative_opnav.estimators">
+<span id="estimators"></span><h1>estimators<a class="headerlink" href="#module-giant.relative_opnav.estimators" title="Permalink to this headline">¶</a></h1>
+<p>This package provides an abstract base class that defines the interface GIANT expects for Relative OpNav techniques as
+well as concrete implementations some of the most commonly used RelNav techniques.</p>
+<section id="description-of-the-problem">
+<h2>Description of the Problem<a class="headerlink" href="#description-of-the-problem" title="Permalink to this headline">¶</a></h2>
+<p>In Relative OpNav, we are trying to extract observables of targets we see in an image to be able pass them to some
+external filter to use in estimating the relative state between the camera (the spacecraft that hosts the camera) and
+the observed targets.  Usually this takes the form of line-of-sight/bearing measurements to a target, whether that be
+the center-of-figure of the target or a landmark on the surface of the target, although other observables are possible
+for some technique.</p>
+<p>Because there are many different types of RelNav techniques in the world, and more are being added frequently, we do
+not try to implement them all here.  Rather, we provide a subset of estimators that are the ones that are most commonly
+used, at least in our experience.  In many cases, these provided estimators will be enough to extract plenty of
+information from images for estimating the relative state between the camera and the observed targets.</p>
+<p>In some cases, however, you may need a different or more advanced technique, or you may simply like to try new things.
+To accommodate this, we have made adding new RelNav techniques to GIANT easy, allowing you to follow a simple
+architecture to define a new technique and register it for use, automatically creating a lot of the boilerplate code
+that is shared by many RelNav techniques for you.  This is done through the <a class="reference internal" href="estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator" title="giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelNavEstimator</span></code></a> abstract base
+class, and the process is described in detail in the following section.</p>
+</section>
+<section id="adding-a-new-relnav-technique">
+<h2>Adding a New RelNav Technique<a class="headerlink" href="#adding-a-new-relnav-technique" title="Permalink to this headline">¶</a></h2>
+<p>As mentioned, adding a new RelNav technique to GIANT is pretty simple if you follow the architecture laid out in the
+<a class="reference internal" href="estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator" title="giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelNavEstimator</span></code></a> abstract base class.  This involves defining some class and instance attributes as well as
+a few methods for our new technique that GIANT expects a RelNav estimator to expose.  Once we have done that, (and
+implemented the details of our new technique) we can simply wrap the class with the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.register.html#giant.relative_opnav.relnav_class.RelativeOpNav.register" title="giant.relative_opnav.relnav_class.RelativeOpNav.register"><code class="xref py py-meth docutils literal notranslate"><span class="pre">RelativeOpNav.register()</span></code></a>
+decorator to register the new technique and prepare it for use.</p>
+<p>Specifically, in our new technique, we should define the following class attributes</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 38%" />
+<col style="width: 62%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Class Attribute</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.technique" title="giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.technique"><code class="xref py py-attr docutils literal notranslate"><span class="pre">technique</span></code></a></p></td>
+<td><p>A string that gives the name to the technique.  This should be an
+“identifier”, which means it should be only letters/numbers and the
+underscore character, and should not start with a number.  This will be
+used in registering the class to define the property that points to the
+instance of this technique, as well as the <code class="docutils literal notranslate"><span class="pre">{technique}_estimate</span></code> method
+and <code class="docutils literal notranslate"><span class="pre">{technique}_details</span></code> attribute.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.observable_type" title="giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.observable_type"><code class="xref py py-attr docutils literal notranslate"><span class="pre">observable_type</span></code></a></p></td>
+<td><p>A list of <a class="reference internal" href="estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavObservablesType.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavObservablesType" title="giant.relative_opnav.estimators.estimator_interface_abc.RelNavObservablesType"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelNavObservablesType</span></code></a> values that specify what types
+of observables are generated by the new technique.  This controls how the
+results from the new technique are retrieved and stored by the
+<a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> technique.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.generates_templates" title="giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.generates_templates"><code class="xref py py-attr docutils literal notranslate"><span class="pre">generates_templates</span></code></a></p></td>
+<td><p>A boolean flag specifying whether this technique generates templates and
+stores them in the <code class="xref py py-attr docutils literal notranslate"><span class="pre">templates</span></code> attribute.
+If this is <code class="docutils literal notranslate"><span class="pre">True</span></code>, then <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> may store the templates
+for further investigation by copying the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">templates</span></code> attribute.</p></td>
+</tr>
+</tbody>
+</table>
+<p>When defining the <a class="reference internal" href="estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.observable_type" title="giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.observable_type"><code class="xref py py-attr docutils literal notranslate"><span class="pre">observable_type</span></code></a> attribute, we need to be careful what we pick and ensure
+that whatever we pick we actually generate.  Therefore, if we specify that the measurement generates bearing
+measurements (CENTER_FINDING, LIMB, LANDMARK, CONSTRAINT) we should be sure to populate the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">computed_bearings</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">observed_bearings</span></code> instance attributes.
+Similarly, if we specify that it generates RELATIVE_POSITION measurements, then we should be sure to populate the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">computed_positions</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">observed_positions</span></code> instance attributes below.
+If our technique generates multiple types of bearing measurements (i.e. CENTER_FINDING and LIMB) then we will
+unfortunately need to use the CUSTOM observables type instead to ensure that the appropriate data is grabbed.</p>
+<p>We should also define/use the following instance attributes</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 38%" />
+<col style="width: 62%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Instance Attribute</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">image_processing</span></code></p></td>
+<td><p>The instance of the image processing class to use when working with the
+images.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.scene" title="giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.scene"><code class="xref py py-attr docutils literal notranslate"><span class="pre">scene</span></code></a></p></td>
+<td><p>The instance of the <a class="reference internal" href="../ray_tracer/scene/giant.ray_tracer.scene.Scene.html#giant.ray_tracer.scene.Scene" title="giant.ray_tracer.scene.Scene"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scene</span></code></a> class that defines the <em>a priori</em>
+knowledge of the location/orientation of the targets in the camera frame.
+When you are using your custom class with the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a>
+class and a <a class="reference internal" href="../ray_tracer/scene/giant.ray_tracer.scene.Scene.html#giant.ray_tracer.scene.Scene" title="giant.ray_tracer.scene.Scene"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scene</span></code></a> class then you can assume that the scene
+is appropriately set up for each image.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.camera" title="giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.camera"><code class="xref py py-attr docutils literal notranslate"><span class="pre">camera</span></code></a></p></td>
+<td><p>The instance of the <a class="reference internal" href="../camera/giant.camera.Camera.html#giant.camera.Camera" title="giant.camera.Camera"><code class="xref py py-class docutils literal notranslate"><span class="pre">Camera</span></code></a> class which contains the camera model
+as well as other images.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">computed_bearings</span></code></p></td>
+<td><p>The attribute in which to store computed (predicted) bearing measurements
+as (x, y) in pixels. This is a list the length of the number of targets in
+the scene, and when a target is processed, it should put the bearing
+measurements into the appropriate index.  For center finding type
+measurements, these will be single (x,y) pairs.  For landmark/limb type
+measurements, these will be an nx2 array of (x,y) pairs for each landmark
+or feature</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">observed_bearings</span></code></p></td>
+<td><p>The attribute in which to store observed bearing measurements
+as (x, y) in pixels. This is a list the length of the number of targets in
+the scene, and when a target is processed, it should put the bearing
+measurements into the appropriate index.  For center finding type
+measurements, these will be single (x,y) pairs.  For landmark/limb type
+measurements, these will be an nx2 array of (x,y) pairs for each landmark
+or feature</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">computed_positions</span></code></p></td>
+<td><p>The attribute in which to store computed (predicted) positions
+measurements as (x, y, z) in kilometers in the camera frame. This is a
+list the length of the number of targets in the scene, and when a target
+is processed, it should put the predicted position into the appropriate
+index.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">observed_positions</span></code></p></td>
+<td><p>The attribute in which to store observed (measured) positions
+measurements as (x, y, z) in kilometers in the camera frame. This is a
+list the length of the number of targets in the scene, and when a target
+is processed, it should put the measured position into the appropriate
+index.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">templates</span></code></p></td>
+<td><p>The attribute in which templates should be stored for each target if
+templates are used for the technique.  This is a list the length of the
+number of targets in the scene, and when a target is processed, it should
+have the template(s) generated for that target stored in the appropriate
+element.  For center finding type techniques the templates are 2D numpy
+arrays.  For landmark type techniques the templates are usually lists of
+2D numpy arrays, where each list element corresponds to the template for
+the corresponding landmark.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">details</span></code></p></td>
+<td><p>This attribute can be used to store extra information about what happened
+when the technique was applied.  This should be a list the length of the
+number of targets in the scene, and when a target is processed, the
+details should be saved to the appropriate element in the list.  Usually
+each element takes the form of a dictionary and contains things like the
+uncertainty of the measured value (if known), the correlation score (if
+correlation was used) or other pieces of information that are necessarily
+directly needed, but which may given context to a user or another program.
+Because this is freeform, for the most part GIANT will just copy this list
+where it belongs and will not actually inspect the contents. To use the
+contents you will either need to inspect them yourself or will need to
+write custom code for them.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Finally, we should define (or override) the following methods</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 38%" />
+<col style="width: 62%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.estimate.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.estimate" title="giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.estimate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate()</span></code></a></p></td>
+<td><p>This method should use the defined technique to extract observables from
+the image, depending on the type of the observables generated.  This is
+also where the computed (predicted) observables should be generated and
+stored, as well as fleshing out the <code class="xref py py-attr docutils literal notranslate"><span class="pre">details</span></code> and
+the <code class="xref py py-attr docutils literal notranslate"><span class="pre">templates</span></code> lists if applicable.  This method
+should be capable of applying the technique to all targets in the scene,
+or to a specifically requested target.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.reset.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.reset" title="giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.reset"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reset()</span></code></a></p></td>
+<td><p>This method is called after the estimate method and after all required
+data has been extracted and store from the class to prepare the class for
+the next image/target processing.   You should use this method as an
+opportunity to remove any old data that you don’t want to potentially
+carry over to a new image/target pair.  Typically, you can leave this
+method alone as it already handles the most likely source of issues, but
+in some cases you may want to handle even more with it.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Once you have defined these things, simply wrap the class with the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.register.html#giant.relative_opnav.relnav_class.RelativeOpNav.register" title="giant.relative_opnav.relnav_class.RelativeOpNav.register"><code class="xref py py-meth docutils literal notranslate"><span class="pre">RelativeOpNav.register()</span></code></a> decorator (or call
+the decorator on the un-initialized class object) and then you will be good to go.</p>
+<p>As an example, lets build a new RelNav technique for using moments to compute the center-of-figure of a target in an
+image (note that a moment based algorithm already exists in <a class="reference internal" href="estimators/giant.relative_opnav.estimators.moment_algorithm.html#module-giant.relative_opnav.estimators.moment_algorithm" title="giant.relative_opnav.estimators.moment_algorithm"><code class="xref py py-mod docutils literal notranslate"><span class="pre">moment_algorithm</span></code></a> and this will be a much simpler
+technique). First, we need to import the <a class="reference internal" href="estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator" title="giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelNavEstimator</span></code></a> and <a class="reference internal" href="estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavObservablesType.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavObservablesType" title="giant.relative_opnav.estimators.estimator_interface_abc.RelNavObservablesType"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelNavObservablesType</span></code></a> classes.  We also
+need to import the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class so that we can register our new technique.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">giant.relative_opnav.estimators</span> <span class="kn">import</span> <span class="n">RelNavEstimator</span><span class="p">,</span> <span class="n">RelNavObservablesType</span>
+<span class="kn">from</span> <span class="nn">giant.relative_opnav.relnav_class</span> <span class="kn">import</span> <span class="n">RelativeOpNav</span>
+<span class="kn">from</span> <span class="nn">giant.point_spread_functions</span> <span class="kn">import</span> <span class="n">Moment</span>
+<span class="kn">import</span> <span class="nn">cv2</span>  <span class="c1"># we need</span>
+</pre></div>
+</div>
+<p>Now, we can define our class and the class/instance attributes we will use</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@RelativeOpNav</span><span class="o">.</span><span class="n">register</span>  <span class="c1"># use the register decorator to register this new technique</span>
+<span class="c1"># subclass the relnav estimator to get some of the concrete implementations it provides</span>
+<span class="k">class</span> <span class="nc">MomentCenterFindingSimple</span><span class="p">(</span><span class="n">RelNavEstimator</span><span class="p">):</span>
+    <span class="n">technique</span> <span class="o">=</span> <span class="s2">&quot;simple_moments&quot;</span>  <span class="c1"># the name that will be used to identify the technique in the RelativeOpNav class</span>
+    <span class="n">observable_type</span> <span class="o">=</span> <span class="p">[</span><span class="n">RelNavObservablesType</span><span class="o">.</span><span class="n">CENTER_FINDING</span><span class="p">]</span>  <span class="c1"># we only generate center finding observables</span>
+    <span class="n">generates_templates</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># we don&#39;t generate templates for this technique.</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">image_processing</span><span class="p">,</span> <span class="n">use_apparent_area</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">apparent_area_margin_of_safety</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">search_range</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># let the super class prep most of our instance attributes</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">image_processing</span><span class="p">)</span>
+
+        <span class="c1"># store and or apply any extra options here</span>
+        <span class="c1"># this flag tells us to use the apparent diameter to predict the size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_apparent_area</span> <span class="o">=</span> <span class="n">use_apparent_area</span>
+
+        <span class="c1"># this fudge factor is used to account for the fact that things aren&#39;t spherical and don&#39;t project to</span>
+        <span class="c1"># circles in most cases even if they are.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apparent_area_margin_of_safety</span> <span class="o">=</span> <span class="n">apparent_area_margin_of_safety</span>
+
+        <span class="c1"># specify the search range for trying to pair the identified segments with the a priori location of the</span>
+        <span class="c1"># camera</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">search_range</span> <span class="o">=</span> <span class="n">search_range</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">search_range</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">search_range</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">n_cols</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, we need to continue our class definition by defining the estimate method.  Since this generates center finding
+observables we need to be sure to populate both the <code class="xref py py-attr docutils literal notranslate"><span class="pre">computed_bearings</span></code> and
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">observed_bearings</span></code> attributes, as well as the <code class="xref py py-attr docutils literal notranslate"><span class="pre">details</span></code> attribute.
+The details of what exactly we’re doing for the technique here are out of scope and are further addressed in the
+<a class="reference internal" href="estimators/giant.relative_opnav.estimators.moment_algorithm.html#module-giant.relative_opnav.estimators.moment_algorithm" title="giant.relative_opnav.estimators.moment_algorithm"><code class="xref py py-mod docutils literal notranslate"><span class="pre">moment_algorithm</span></code></a> documentation.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">include_targets</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="n">image_processing_original_segment_area</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">minimum_segment_area</span>
+    <span class="c1"># use the phase angle to predict the minimum size of a blob to expect assuming a spherical target.</span>
+    <span class="c1"># because many targets aren&#39;t spherical we give a factor of safety setting the minimum size to half the</span>
+    <span class="c1"># predicted area for each target.</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_apparent_area</span><span class="p">:</span>
+        <span class="n">minimum_area</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># do it for each target and take the minimum one</span>
+        <span class="k">for</span> <span class="n">target_ind</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_generator</span><span class="p">(</span><span class="n">include_targets</span><span class="p">):</span>
+            <span class="c1"># compute the phase angle</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">phase_angle</span><span class="p">(</span><span class="n">target_ind</span><span class="p">)</span>
+
+            <span class="c1"># predict the apparent diameter in pixels</span>
+            <span class="n">apparent_diameter</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">get_apparent_diameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+
+            <span class="n">apparent_radius</span> <span class="o">=</span> <span class="n">apparent_diameter</span><span class="o">/</span><span class="mi">2</span>
+
+            <span class="c1"># compute the predicted area in pixels assuming a projected circle for the illuminated limb and an</span>
+            <span class="c1"># ellipse for the terminator</span>
+            <span class="k">if</span> <span class="n">phase</span> <span class="o">&lt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">:</span>
+                <span class="n">predicted_area</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">apparent_radius</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phase</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">predicted_area</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">apparent_radius</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phase</span><span class="p">))</span>
+
+            <span class="c1"># apply the margin of safety</span>
+            <span class="n">predicted_area</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apparent_area_margin_of_safety</span>
+
+            <span class="c1"># store it if it is smaller</span>
+            <span class="k">if</span> <span class="n">minimum_area</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">minimum_area</span> <span class="o">=</span> <span class="n">predicted_area</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">minimum_area</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">predicted_area</span><span class="p">,</span> <span class="n">minimum_area</span><span class="p">)</span>
+
+        <span class="c1"># set the minimum segment area for image processing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">minimum_segment_area</span> <span class="o">=</span> <span class="n">minimum_area</span>
+
+    <span class="c1"># segment our image using Otsu/connected components</span>
+    <span class="n">segments</span><span class="p">,</span> <span class="n">foreground</span><span class="p">,</span> <span class="n">segment_stats</span><span class="p">,</span> <span class="n">segment_centroids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">segment_image</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+    <span class="c1"># process each target using the concrete target_generator method from the super class</span>
+    <span class="k">for</span> <span class="n">target_ind</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_generator</span><span class="p">(</span><span class="n">include_targets</span><span class="p">):</span>
+
+        <span class="c1"># predict the location of the center of figure by projecting the target location onto the image plane</span>
+        <span class="c1"># we assume that the scene has been updated to reflect the image time correctly and everything is already</span>
+        <span class="c1"># in the camera frame.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                                                                                  <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="c1"># figure out which segment is closest</span>
+        <span class="n">closest_ind</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">closest_distance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">segment_ind</span><span class="p">,</span> <span class="n">centroid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segment_centroids</span><span class="p">):</span>
+
+            <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">centroid</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="n">closest_ind</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">search_range</span><span class="p">:</span>
+                    <span class="n">closest_ind</span> <span class="o">=</span> <span class="n">segment_ind</span>
+                    <span class="n">closest_distance</span> <span class="o">=</span> <span class="n">distance</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;</span> <span class="n">closet_distance</span><span class="p">:</span>
+                    <span class="n">closest_ind</span> <span class="o">=</span> <span class="n">segment_ind</span>
+                    <span class="n">closest_distance</span> <span class="o">=</span> <span class="n">distance</span>
+
+        <span class="c1"># if nothing met the tolerance throw an error</span>
+        <span class="k">if</span> <span class="n">closest_ind</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No segments were found within the search range.  for target </span><span class="si">{</span><span class="n">target_ind</span><span class="si">}</span><span class="s2">&quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot;Please try adjusting your parameters and try again&quot;</span><span class="p">)</span>
+
+        <span class="c1"># now, get the observed centroid</span>
+        <span class="c1"># extract the region around the blob from the found segment.  Include some extra pixels to capture things</span>
+        <span class="c1"># like the terminator.  Use a fudge factor of 1 tenth of the sqrt of the area with a minimum of 10</span>
+        <span class="n">fudge_factor</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">segment_stats</span><span class="p">[</span><span class="n">closest_ind</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">CC_STAT_AREA</span><span class="p">])</span><span class="o">*</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="n">top_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">segment_stats</span><span class="p">[</span><span class="n">closest_ind</span><span class="p">,</span> <span class="p">[</span><span class="n">cv2</span><span class="o">.</span><span class="n">CC_STAT_TOP</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">CC_STAT_LEFT</span><span class="p">]]</span> <span class="o">-</span>
+                            <span class="n">fudge_factor</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">bottom_right</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">top_left</span> <span class="o">+</span> <span class="n">segment_stats</span><span class="p">[</span><span class="n">closest_ind</span><span class="p">,</span> <span class="p">[</span><span class="n">cv2</span><span class="o">.</span><span class="n">CC_STAT_HEIGHT</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">CC_STAT_WIDTH</span><span class="p">]]</span> <span class="o">+</span>
+                               <span class="mi">2</span><span class="o">*</span><span class="n">fudge_factor</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="n">use_image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">use_image</span><span class="p">[</span><span class="n">top_left</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">bottom_right</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">top_left</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="n">bottom_right</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> \
+            <span class="n">foreground</span><span class="p">[</span><span class="n">top_left</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">bottom_right</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">top_left</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="n">bottom_right</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+        <span class="c1"># get the x/y pixels where we need to include in the centroiding</span>
+        <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">use_image</span><span class="p">)</span>
+
+        <span class="c1"># do the moment fit using the Moment &quot;PSF&quot;</span>
+        <span class="n">fit</span> <span class="o">=</span> <span class="n">Moment</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="n">y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="n">image</span><span class="p">[</span><span class="n">keep_image</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+
+        <span class="c1"># store the fit in case people want to inspect it more closely</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;fit object&#39;</span><span class="p">:</span> <span class="n">fit</span><span class="p">,</span>
+                                    <span class="s1">&#39;minimum segment area&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">minimum_segment_area</span><span class="p">}</span>
+
+        <span class="c1"># store the location of the centroid (typically we would phase correct this but not in this example)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">fit</span><span class="o">.</span><span class="n">centroid</span>
+
+    <span class="c1"># reset the image processing minimum segment area in case we messed with it</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">minimum_segment_area</span> <span class="o">=</span> <span class="n">image_processing_original_segment_area</span>
+</pre></div>
+</div>
+<p>and that’s it, we’ve now implemented a basic moment algorithm for RelNav.  This new technique could be accessed from the
+<a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class using attribute <code class="docutils literal notranslate"><span class="pre">simple_moments</span></code> and it can be applied to images using method
+<code class="docutils literal notranslate"><span class="pre">simple_moments_estimate</span></code>.  We can also initialize our new technique directly through <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> by
+supplying
+<code class="docutils literal notranslate"><span class="pre">simple_moment_kwargs={'use_apparent_area':</span> <span class="pre">True,</span> <span class="pre">'apparent_area_margin_of_safety':</span> <span class="pre">1.5,</span> <span class="pre">'search_range':</span> <span class="pre">200}</span></code>
+as a key word argument to the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> initialization.  Finally, we could retrieve the details about our
+moment algorithm fit through the <code class="docutils literal notranslate"><span class="pre">simple_moment_details</span></code> attribute.</p>
+<p class="rubric">Adding a New Technique With a Custom Handler</p>
+<p>Occasionally, you may need to implement a new RelNav type that doesn’t work like the others.  Perhaps it doesn’t
+generate bearing, position, or constraint measurements but something else entirely.  Or perhaps it needs more than just
+the image, camera, and scene to extract the measurements from the image.  If this is the case then you have 2 options
+for proceeding.</p>
+<p>The first option is to define a custom handler for the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class to use in place of the
+<a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.default_estimator.html#giant.relative_opnav.relnav_class.RelativeOpNav.default_estimator" title="giant.relative_opnav.relnav_class.RelativeOpNav.default_estimator"><code class="xref py py-meth docutils literal notranslate"><span class="pre">default_estimator()</span></code></a>.  This custom handler should be a function that accepts at minimum the RelNav instance as the
+first argument (essentially it should be a method for the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class but defined outside of the class
+definition).  In addition, it typically should have 2 optional arguments <code class="docutils literal notranslate"><span class="pre">image_ind</span></code> and <code class="docutils literal notranslate"><span class="pre">include_targets</span></code> which can
+be used to control what image/target pairs the technique is applied to, although that is strictly a convention and not a
+requirement.  Inside the function, you should handle preparing the scene and calling the estimate method of your
+technique for each image requested (note that you can use the methods/attributes that exist in the
+<a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class to help you do some common things).  You should also handle storing the results for each
+image/target pair that is processed.  You may need to do some fancy work at the beginning to check if an instance
+attribute already exists in the RelNav instance using <code class="docutils literal notranslate"><span class="pre">getattr</span></code> and <code class="docutils literal notranslate"><span class="pre">setattr</span></code>.  Finally, you should ensure that the
+<a class="reference internal" href="estimators/estimator_interface_abc/giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.html#giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.observable_type" title="giant.relative_opnav.estimators.estimator_interface_abc.RelNavEstimator.observable_type"><code class="xref py py-attr docutils literal notranslate"><span class="pre">RelNavEstimator.observable_type</span></code></a> class attribute is set to only <code class="docutils literal notranslate"><span class="pre">CUSTOM</span></code>.  This should then allow you to
+register the technique with the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class and use it as you would with a regular registered
+technique.</p>
+<p>While that is one option, it may not be the best in a special case like this.  The primary benefit to registering the
+new techniques with the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class is that it generates a lot of the boilerplate code for
+preparing the scene and storing the results for you, but by generating your own handler you are largely bypassing this
+benefit.  Therefore, it may be better to just use your new class directly in a script instead of registering it, unless
+you are looking to share with others and want to ensure a standard interface.  In this case you can use the
+<a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.default_estimator.html#giant.relative_opnav.relnav_class.RelativeOpNav.default_estimator" title="giant.relative_opnav.relnav_class.RelativeOpNav.default_estimator"><code class="xref py py-meth docutils literal notranslate"><span class="pre">default_estimator()</span></code></a> method as a template for making your script and you don’t need to bother with the
+<a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class at all.</p>
+</section>
+<p class="rubric">Modules</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="estimators/giant.relative_opnav.estimators.cross_correlation.html#module-giant.relative_opnav.estimators.cross_correlation" title="giant.relative_opnav.estimators.cross_correlation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cross_correlation</span></code></a></p></td>
+<td><p>This module provides the capability to locate the center-of-figure of a target in an image using 2D cross-correlation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="estimators/giant.relative_opnav.estimators.ellipse_matching.html#module-giant.relative_opnav.estimators.ellipse_matching" title="giant.relative_opnav.estimators.ellipse_matching"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ellipse_matching</span></code></a></p></td>
+<td><p>This module provides the capability to locate the relative position of a regular target body (well modelled by a triaxial ellipsoid) by matching the observed ellipse of the limb in an image with the ellipsoid model of the target.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="estimators/giant.relative_opnav.estimators.estimator_interface_abc.html#module-giant.relative_opnav.estimators.estimator_interface_abc" title="giant.relative_opnav.estimators.estimator_interface_abc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimator_interface_abc</span></code></a></p></td>
+<td><p>This module defines the abstract base class (abc) for defining Relative OpNav techniques that will work with the <a class="reference internal" href="relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="estimators/giant.relative_opnav.estimators.limb_matching.html#module-giant.relative_opnav.estimators.limb_matching" title="giant.relative_opnav.estimators.limb_matching"><code class="xref py py-obj docutils literal notranslate"><span class="pre">limb_matching</span></code></a></p></td>
+<td><p>This module provides the capability to locate the relative position of any target body by matching the observed limb in an image with the shape model of the target.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="estimators/giant.relative_opnav.estimators.moment_algorithm.html#module-giant.relative_opnav.estimators.moment_algorithm" title="giant.relative_opnav.estimators.moment_algorithm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moment_algorithm</span></code></a></p></td>
+<td><p>This module provides a class which implements a moment based (center of illumination) center finding RelNav technique.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="estimators/giant.relative_opnav.estimators.sfn.html#module-giant.relative_opnav.estimators.sfn" title="giant.relative_opnav.estimators.sfn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sfn</span></code></a></p></td>
+<td><p>This subpackage provides the requisite classes and functions for performing surface feature navigation in GIANT.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="estimators/giant.relative_opnav.estimators.unresolved.html#module-giant.relative_opnav.estimators.unresolved" title="giant.relative_opnav.estimators.unresolved"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unresolved</span></code></a></p></td>
+<td><p>This module provides a class which implements an unresolved center finding RelNav technique along with a new meta class that adds concrete center-of-brightness to center-of-figure correction methods.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="relnav_class/giant.relative_opnav.relnav_class.RESULTS_DTYPE.html" title="Previous document">giant.relative_opnav.relnav_class.RESULTS_DTYPE</a>
+        </li>
+        <li>
+          <a href="estimators/giant.relative_opnav.estimators.cross_correlation.html" title="Next document">cross_correlation</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/relative_opnav/giant.relative_opnav.estimators.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

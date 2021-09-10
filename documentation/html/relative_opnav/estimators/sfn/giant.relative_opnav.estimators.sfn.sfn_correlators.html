@@ -1,0 +1,177 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>sfn_correlators &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="next" title="sfn_correlator" href="sfn_correlators/giant.relative_opnav.estimators.sfn.sfn_correlators.sfn_correlator.html" />
+    <link rel="prev" title="SurfaceFeatureNavigationOptions.peak_finder" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigationOptions.peak_finder.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../giant.html">API Reference</a><ul>
+  <li><a href="../../../giant.relative_opnav.html">giant.relative_opnav</a><ul>
+  <li><a href="../../giant.relative_opnav.estimators.html">estimators</a><ul>
+  <li><a href="../giant.relative_opnav.estimators.sfn.html">sfn</a><ul>
+      <li>Previous: <a href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigationOptions.peak_finder.html" title="previous chapter">SurfaceFeatureNavigationOptions.peak_finder</a></li>
+      <li>Next: <a href="sfn_correlators/giant.relative_opnav.estimators.sfn.sfn_correlators.sfn_correlator.html" title="next chapter">sfn_correlator</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigationOptions.peak_finder.html" title="Previous document">SurfaceFeatureNavigationOptions.peak_finder</a>
+        </li>
+        <li>
+          <a href="sfn_correlators/giant.relative_opnav.estimators.sfn.sfn_correlators.sfn_correlator.html" title="Next document">sfn_correlator</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.relative_opnav.estimators.sfn.sfn_correlators">
+<span id="sfn-correlators"></span><h1>sfn_correlators<a class="headerlink" href="#module-giant.relative_opnav.estimators.sfn.sfn_correlators" title="Permalink to this headline">¶</a></h1>
+<p>This module defines the spatial correlator used by <a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurfaceFeatureNavigation</span></code></a> for subpixel locations of features
+in an image.</p>
+<p>The function provided by this module, <a class="reference internal" href="sfn_correlators/giant.relative_opnav.estimators.sfn.sfn_correlators.sfn_correlator.html#giant.relative_opnav.estimators.sfn.sfn_correlators.sfn_correlator" title="giant.relative_opnav.estimators.sfn.sfn_correlators.sfn_correlator"><code class="xref py py-func docutils literal notranslate"><span class="pre">sfn_correlator()</span></code></a>, provides a spatial correlation routine using pearson
+product moments to generate a correlation surface between the template and the image.  It does this about a predicted
+location of the center of the template in the image, and takes into account 2 masks that specify when to include pixels
+in the computation of a pixel score.  The computation is parallelized for speed, though, with it being a spatial
+correlator, it still is slower than FFT based correlation for large seach distances.</p>
+<p>Typically you will not use this function for anything besides doing surface feature navigation, however, if you have
+another application full documentation is provided.  Even when doing surface feature navigation the user typically
+doesn’t interact with this class directly.</p>
+<p class="rubric">Function</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="sfn_correlators/giant.relative_opnav.estimators.sfn.sfn_correlators.sfn_correlator.html#giant.relative_opnav.estimators.sfn.sfn_correlators.sfn_correlator" title="giant.relative_opnav.estimators.sfn.sfn_correlators.sfn_correlator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sfn_correlator</span></code></a></p></td>
+<td><p>This function performs normalized cross correlation in the spatial domain over a given search distance about a center between an image and a template using masks.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigationOptions.peak_finder.html" title="Previous document">SurfaceFeatureNavigationOptions.peak_finder</a>
+        </li>
+        <li>
+          <a href="sfn_correlators/giant.relative_opnav.estimators.sfn.sfn_correlators.sfn_correlator.html" title="Next document">sfn_correlator</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../../_sources/relative_opnav/estimators/sfn/giant.relative_opnav.estimators.sfn.sfn_correlators.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

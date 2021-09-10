@@ -1,0 +1,305 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>IterativeGaussian &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="IterativeGaussian.fit" href="giant.point_spread_functions.gaussians.IterativeGaussian.fit.html" />
+    <link rel="prev" title="Gaussian.update_state" href="giant.point_spread_functions.gaussians.Gaussian.update_state.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.point_spread_functions.html">giant.point_spread_functions</a><ul>
+  <li><a href="../giant.point_spread_functions.gaussians.html">giant.point_spread_functions.gaussians</a><ul>
+      <li>Previous: <a href="giant.point_spread_functions.gaussians.Gaussian.update_state.html" title="previous chapter">Gaussian.update_state</a></li>
+      <li>Next: <a href="giant.point_spread_functions.gaussians.IterativeGaussian.fit.html" title="next chapter">IterativeGaussian.fit</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.point_spread_functions.gaussians.Gaussian.update_state.html" title="Previous document">Gaussian.update_state</a>
+        </li>
+        <li>
+          <a href="giant.point_spread_functions.gaussians.IterativeGaussian.fit.html" title="Next document">IterativeGaussian.fit</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="iterativegaussian">
+<h1>IterativeGaussian<a class="headerlink" href="#iterativegaussian" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.point_spread_functions.gaussians.IterativeGaussian">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.point_spread_functions.gaussians.</span></span><span class="sig-name descname"><span class="pre">IterativeGaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centroid_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centroid_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/point_spread_functions/gaussians.html#IterativeGaussian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.point_spread_functions.gaussians.IterativeGaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="giant.point_spread_functions.gaussians.Gaussian.html#giant.point_spread_functions.gaussians.Gaussian" title="giant.point_spread_functions.gaussians.Gaussian"><code class="xref py py-class docutils literal notranslate"><span class="pre">giant.point_spread_functions.gaussians.Gaussian</span></code></a>, <a class="reference internal" href="../psf_meta/giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSF.html#giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSF" title="giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSF"><code class="xref py py-class docutils literal notranslate"><span class="pre">giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSF</span></code></a></p>
+<p>A class for representing and fitting a standard (non-rotated) 2D Gaussian point spread function using iterative
+non-linear least squares.</p>
+<p>This class only differs from the <a class="reference internal" href="giant.point_spread_functions.gaussians.Gaussian.html#giant.point_spread_functions.gaussians.Gaussian" title="giant.point_spread_functions.gaussians.Gaussian"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gaussian</span></code></a> class in the way the <a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.fit.html#giant.point_spread_functions.gaussians.IterativeGaussian.fit" title="giant.point_spread_functions.gaussians.IterativeGaussian.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a> class method works.  In this
+version, the fit is performed using iterative non-linear least squares, which is typically more accurate than using
+the logarithmic transformation to do linear least squares at the expense of more computation time.</p>
+<p>For more details about the model this works with, see the <a class="reference internal" href="giant.point_spread_functions.gaussians.Gaussian.html#giant.point_spread_functions.gaussians.Gaussian" title="giant.point_spread_functions.gaussians.Gaussian"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gaussian</span></code></a> documentation.</p>
+<p>This class can be used anywhere GIANT expects a point spread function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma_x</strong> (<em>float</em>) – The Gaussian RMS width in the x direction in pixels</p></li>
+<li><p><strong>sigma_y</strong> (<em>Optional</em><em>[</em><em>numbers.Real</em><em>]</em>) – The Gaussian RMS Width in the y direction in pixels.  If set to 0 or <code class="docutils literal notranslate"><span class="pre">None</span></code> this is set to be
+the same as <code class="docutils literal notranslate"><span class="pre">sigma_x</span></code></p></li>
+<li><p><strong>size</strong> (<em>int</em>) – The size of the kernel to use when applying this PSF in pixels.  If set to 0 or <code class="docutils literal notranslate"><span class="pre">None</span></code> will be
+computed based on the Gaussian RSM widths.</p></li>
+<li><p><strong>amplitude</strong> (<em>float</em>) – The amplitude of the gaussian kernel to use when applying this PSF.  If set to 0 or <code class="docutils literal notranslate"><span class="pre">None</span></code>
+this will be computed so that the kernel does not increase/decrease the total signal.</p></li>
+<li><p><strong>centroid_x</strong> (<em>float</em>) – The x location of the peak of the Gaussian PSF in pixels.  This is not used when applying the
+PSF, but it is used when fitting the PSF.  Typically this is not specified by the user.</p></li>
+<li><p><strong>centroid_y</strong> (<em>float</em>) – The y location of the peak of the Gaussian PSF in pixels.  This is not used when applying the
+PSF, but it is used when fitting the PSF.  Typically this is not specified by the user.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.point_spread_functions.gaussians.IterativeGaussian.save_residuals">
+<span class="sig-name descname"><span class="pre">save_residuals</span></span><em class="property"> <span class="pre">=</span> <span class="pre">False</span></em><a class="headerlink" href="#giant.point_spread_functions.gaussians.IterativeGaussian.save_residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class attribute specifies whether to save the residuals when fitting the specified PSF to data.</p>
+<p>Saving the residuals can be important for in depth analysis but can use a lot of space when many fits are being
+performed and stored so this defaults to off.  To store the residuals simply set this to <code class="docutils literal notranslate"><span class="pre">True</span></code> either before or
+after initialization.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.point_spread_functions.gaussians.IterativeGaussian.max_iter">
+<span class="sig-name descname"><span class="pre">max_iter</span></span><em class="property"> <span class="pre">=</span> <span class="pre">20</span></em><a class="headerlink" href="#giant.point_spread_functions.gaussians.IterativeGaussian.max_iter" title="Permalink to this definition">¶</a></dt>
+<dd><p>An integer defining the maximum number of iterations to attempt in the iterative least squares solution.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.point_spread_functions.gaussians.IterativeGaussian.atol">
+<span class="sig-name descname"><span class="pre">atol</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1e-10</span></em><a class="headerlink" href="#giant.point_spread_functions.gaussians.IterativeGaussian.atol" title="Permalink to this definition">¶</a></dt>
+<dd><p>The absolute tolerance cut-off for the iterative least squares. (The iteration will cease when the new estimate is
+within this tolerance for every element from the previous estimate)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.point_spread_functions.gaussians.IterativeGaussian.rtol">
+<span class="sig-name descname"><span class="pre">rtol</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1e-10</span></em><a class="headerlink" href="#giant.point_spread_functions.gaussians.IterativeGaussian.rtol" title="Permalink to this definition">¶</a></dt>
+<dd><p>The relative tolerance cut-off for the iterative least squares. (The iteration will cease when the maximum percent
+change in the state vector from one iteration to the next is less than this value)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.point_spread_functions.gaussians.IterativeGaussian.sigma_y">
+<span class="sig-name descname"><span class="pre">sigma_y</span></span><a class="headerlink" href="#giant.point_spread_functions.gaussians.IterativeGaussian.sigma_y" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Gaussian RMS width in the y direction in pixels.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.point_spread_functions.gaussians.IterativeGaussian.residuals">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">residuals</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.point_spread_functions.gaussians.IterativeGaussian.residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>A 1D array containing residuals of the fit of this Gaussian Model to data.</p>
+<p>These are only populated when initialized by <a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.fit.html#giant.point_spread_functions.gaussians.IterativeGaussian.fit" title="giant.point_spread_functions.gaussians.IterativeGaussian.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a> and when the class attribute <a class="reference internal" href="#giant.point_spread_functions.gaussians.IterativeGaussian.save_residuals" title="giant.point_spread_functions.gaussians.IterativeGaussian.save_residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_residuals</span></code></a>
+is set to true.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.point_spread_functions.gaussians.IterativeGaussian.covariance">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">covariance</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional[numpy.ndarray]</span></em><a class="headerlink" href="#giant.point_spread_functions.gaussians.IterativeGaussian.covariance" title="Permalink to this definition">¶</a></dt>
+<dd><p>The formal covariance of the PSF parameters after fitting this PSF model to data.</p>
+<p>If this instance is not the result of a fit (<a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.fit.html#giant.point_spread_functions.gaussians.IterativeGaussian.fit" title="giant.point_spread_functions.gaussians.IterativeGaussian.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a>) of if <a class="reference internal" href="#giant.point_spread_functions.gaussians.IterativeGaussian.save_residuals" title="giant.point_spread_functions.gaussians.IterativeGaussian.save_residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_residuals</span></code></a> is <code class="docutils literal notranslate"><span class="pre">False</span></code> then this
+will return None.</p>
+<p>The order of the state vector (and thus the covariance matrix) is <span class="math notranslate nohighlight">\([x_0, y_0, \sigma_x, \sigma_y, A]\)</span>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.point_spread_functions.gaussians.IterativeGaussian.residual_mean">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">residual_mean</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional[float]</span></em><a class="headerlink" href="#giant.point_spread_functions.gaussians.IterativeGaussian.residual_mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>The mean of the post-fit residuals after fitting this PSF model to data.</p>
+<p>If this instance is not the result of a fit (<a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.fit.html#giant.point_spread_functions.gaussians.IterativeGaussian.fit" title="giant.point_spread_functions.gaussians.IterativeGaussian.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a>) or if <a class="reference internal" href="#giant.point_spread_functions.gaussians.IterativeGaussian.save_residuals" title="giant.point_spread_functions.gaussians.IterativeGaussian.save_residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_residuals</span></code></a> is <code class="docutils literal notranslate"><span class="pre">False</span></code> then this
+will return None</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.point_spread_functions.gaussians.IterativeGaussian.residual_std">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">residual_std</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional[float]</span></em><a class="headerlink" href="#giant.point_spread_functions.gaussians.IterativeGaussian.residual_std" title="Permalink to this definition">¶</a></dt>
+<dd><p>The standard deviation of the post-fit residuals after fitting this PSF model to data.</p>
+<p>If this instance is not the result of a fit (<a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.fit.html#giant.point_spread_functions.gaussians.IterativeGaussian.fit" title="giant.point_spread_functions.gaussians.IterativeGaussian.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a>) or if <a class="reference internal" href="#giant.point_spread_functions.gaussians.IterativeGaussian.save_residuals" title="giant.point_spread_functions.gaussians.IterativeGaussian.save_residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_residuals</span></code></a> is <code class="docutils literal notranslate"><span class="pre">False</span></code> then this
+will return None</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.point_spread_functions.gaussians.IterativeGaussian.residual_rss">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">residual_rss</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional[float]</span></em><a class="headerlink" href="#giant.point_spread_functions.gaussians.IterativeGaussian.residual_rss" title="Permalink to this definition">¶</a></dt>
+<dd><p>The sum of squares of the post-fit residuals after fitting this PSF model to data.</p>
+<p>If this instance is not the result of a fit (<a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.fit.html#giant.point_spread_functions.gaussians.IterativeGaussian.fit" title="giant.point_spread_functions.gaussians.IterativeGaussian.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a>) or if <a class="reference internal" href="#giant.point_spread_functions.gaussians.IterativeGaussian.save_residuals" title="giant.point_spread_functions.gaussians.IterativeGaussian.save_residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_residuals</span></code></a> is <code class="docutils literal notranslate"><span class="pre">False</span></code> then this
+will return None</p>
+</dd></dl>
+
+</dd></dl>
+
+<p class="rubric">Summary of Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.fit.html#giant.point_spread_functions.gaussians.IterativeGaussian.fit" title="giant.point_spread_functions.gaussians.IterativeGaussian.fit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code></a></p></td>
+<td><p>This fits a 2d gaussian function to a surface using iterative non-linear least squares estimation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.__call__.html#giant.point_spread_functions.gaussians.IterativeGaussian.__call__" title="giant.point_spread_functions.gaussians.IterativeGaussian.__call__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code></a></p></td>
+<td><p>Applies the represented Gaussian PSF to a 2D array.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.apply_1d.html#giant.point_spread_functions.gaussians.IterativeGaussian.apply_1d" title="giant.point_spread_functions.gaussians.IterativeGaussian.apply_1d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_1d</span></code></a></p></td>
+<td><p>Applies the defined PSF using the stored parameters to the 1D image scans provided.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.apply_1d_sized.html#giant.point_spread_functions.gaussians.IterativeGaussian.apply_1d_sized" title="giant.point_spread_functions.gaussians.IterativeGaussian.apply_1d_sized"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_1d_sized</span></code></a></p></td>
+<td><p>Applies the defined PSF using the stored parameters to the 1D image scans provided with a given kernel size.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.compute_jacobian.html#giant.point_spread_functions.gaussians.IterativeGaussian.compute_jacobian" title="giant.point_spread_functions.gaussians.IterativeGaussian.compute_jacobian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_jacobian</span></code></a></p></td>
+<td><p>This method computes the Jacobian of the PSF with respect to a change in the state.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.converge.html#giant.point_spread_functions.gaussians.IterativeGaussian.converge" title="giant.point_spread_functions.gaussians.IterativeGaussian.converge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">converge</span></code></a></p></td>
+<td><p>Performs iterative non-linear least squares on a PSF model until convergence has been reached for a function of the form <span class="math notranslate nohighlight">\(z=f(x, y)\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.fit_lstsq.html#giant.point_spread_functions.gaussians.IterativeGaussian.fit_lstsq" title="giant.point_spread_functions.gaussians.IterativeGaussian.fit_lstsq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_lstsq</span></code></a></p></td>
+<td><p>This fits a PSF to a surface using iterative non-linear least squares estimation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.determine_size.html#giant.point_spread_functions.gaussians.IterativeGaussian.determine_size" title="giant.point_spread_functions.gaussians.IterativeGaussian.determine_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">determine_size</span></code></a></p></td>
+<td><p>Sets the size for the kernel based on the width of the PSF.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.evaluate.html#giant.point_spread_functions.gaussians.IterativeGaussian.evaluate" title="giant.point_spread_functions.gaussians.IterativeGaussian.evaluate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code></a></p></td>
+<td><p>This method evaluates the PSF at the given x and y.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.generate_kernel.html#giant.point_spread_functions.gaussians.IterativeGaussian.generate_kernel" title="giant.point_spread_functions.gaussians.IterativeGaussian.generate_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_kernel</span></code></a></p></td>
+<td><p>Generates a square kernel centered at the centroid of the PSF normalized to have a volume (sum) of 1 for the size input or specified in the <code class="xref py py-attr docutils literal notranslate"><span class="pre">size</span></code> attribute.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.normalize_amplitude.html#giant.point_spread_functions.gaussians.IterativeGaussian.normalize_amplitude" title="giant.point_spread_functions.gaussians.IterativeGaussian.normalize_amplitude"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_amplitude</span></code></a></p></td>
+<td><p>Calculate and store the amplitude that makes the volume under the gaussian surface equal to 1</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.point_spread_functions.gaussians.IterativeGaussian.update_state.html#giant.point_spread_functions.gaussians.IterativeGaussian.update_state" title="giant.point_spread_functions.gaussians.IterativeGaussian.update_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_state</span></code></a></p></td>
+<td><p>Updates the current values based on the provided update vector.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.point_spread_functions.gaussians.Gaussian.update_state.html" title="Previous document">Gaussian.update_state</a>
+        </li>
+        <li>
+          <a href="giant.point_spread_functions.gaussians.IterativeGaussian.fit.html" title="Next document">IterativeGaussian.fit</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGaussian.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

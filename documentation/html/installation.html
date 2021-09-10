@@ -1,0 +1,228 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Installing GIANT &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/logo.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="next" title="Getting Started" href="getting_started.html" />
+    <link rel="prev" title="Goddard Image Analysis and Navigation Tool" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Goddard Image Analysis and Navigation Tool</a></li>
+      <li>Next: <a href="getting_started.html" title="next chapter">Getting Started</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="index.html" title="Previous document">Goddard Image Analysis and Navigation Tool</a>
+        </li>
+        <li>
+          <a href="getting_started.html" title="Next document">Getting Started</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="installing-giant">
+<span id="installation"></span><h1>Installing GIANT<a class="headerlink" href="#installing-giant" title="Permalink to this headline">¶</a></h1>
+<section id="setting-up-the-environment">
+<h2>Setting up the environment<a class="headerlink" href="#setting-up-the-environment" title="Permalink to this headline">¶</a></h2>
+<p>GIANT is primarily a python package with some modules written in Cython for speed improvements.  This makes installation
+fairly straight forward in most Unix-like environments.  It should be possible to install GIANT on windows using similar
+steps to those that follow, but this is untested.  The following subsections give step by step instructions for
+installing GIANT.</p>
+<p>The first step to installing GIANT is to install the mamba-forge python environment/package manager. This helps to
+ensure that the GIANT requirements don’t interfere with other python code you have on your system (and that other python
+environments you have don’t interfere with GIANT).  Mamba-forge can be downloaded fom
+<a class="reference external" href="https://github.com/conda-forge/miniforge#mambaforge">https://github.com/conda-forge/miniforge#mambaforge</a>
+Once you have downloaded anaconda, install it following the instructions provided (note that you can install it to your
+home directory without needing admin privileges, which is a big benefit).</p>
+<p>With mamba installed, we can now set up an environment in which to install giant</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt>Create a new environment to install GIANT to and install the dependencies</dt><dd><ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">create</span> <span class="pre">-n</span> <span class="pre">giant_env</span> <span class="pre">python=3</span> <span class="pre">opencv</span> <span class="pre">matplotlib</span> <span class="pre">scipy</span> <span class="pre">pandas</span> <span class="pre">numpy</span> <span class="pre">cython</span> <span class="pre">pyqt</span> <span class="pre">astropy</span> <span class="pre">lxml</span> <span class="pre">sphinx</span> <span class="pre">spiceypy</span> <span class="pre">c-compiler</span> <span class="pre">openmp</span> <span class="pre">astroquery</span> <span class="pre">dill</span> <span class="pre">psutil</span> <span class="pre">imagemagick</span></code></p></li>
+<li><p>Note that creating a new environment is not required, but is strongly recommended.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Activate the new environment</dt><dd><ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">giant_env</span></code></p></li>
+<li><p>If you did not create a new environment then this step is not necessary (as long as the mamba python is first
+in your path).</p></li>
+<li><p>You will need to do this step each time you want to use GIANT.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Now there are a couple operating system specific instructions.</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>macOS</dt><dd><ul>
+<li><p>You may need to set the environment variable <code class="docutils literal notranslate"><span class="pre">CPATH</span></code> to something like
+<code class="docutils literal notranslate"><span class="pre">/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include</span></code>
+or <code class="docutils literal notranslate"><span class="pre">/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include</span></code> after installing xcode or xcode command
+line tools to ensure system headers are available</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+<section id="installing-and-testing-giant">
+<h2>Installing and testing GIANT<a class="headerlink" href="#installing-and-testing-giant" title="Permalink to this headline">¶</a></h2>
+<p>With the anaconda envrionment set up and activated it is now easy to install giant.</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt>Download the GIANT source code from git</dt><dd><ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">git&#64;aetd-git.gsfc.nasa.gov:giant/giant.git</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Install the GIANT package</dt><dd><ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">cd</span> <span class="pre">giant</span></code></p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">develop</span></code></p></li>
+<li><p>You can also use “install” instead of “develop” but using “develop” makes it easier to update GIANT in the future.</p></li>
+<li><p>You will likely see a lot of warnings from the c compiler that can largely be ignored.  If you have an error
+though that is a problem</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Check the installation (optional)</dt><dd><ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">cd</span> <span class="pre">unittests</span></code></p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">python</span> <span class="pre">-Wignore</span> <span class="pre">-m</span> <span class="pre">unittest</span> <span class="pre">discover</span></code></p></li>
+<li><p>This should complete with no errors (skips/warnings are OK).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+<p>GIANT should now be installed and ready for use.</p>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="index.html" title="Previous document">Goddard Image Analysis and Navigation Tool</a>
+        </li>
+        <li>
+          <a href="getting_started.html" title="Next document">Getting Started</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/installation.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

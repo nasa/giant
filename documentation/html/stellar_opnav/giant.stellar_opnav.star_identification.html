@@ -1,0 +1,333 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>giant.stellar_opnav.star_identification &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="StarID" href="star_identification/giant.stellar_opnav.star_identification.StarID.html" />
+    <link rel="prev" title="StellarOpNav.remove_outliers" href="stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.remove_outliers.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.stellar_opnav.html">giant.stellar_opnav</a><ul>
+      <li>Previous: <a href="stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.remove_outliers.html" title="previous chapter">StellarOpNav.remove_outliers</a></li>
+      <li>Next: <a href="star_identification/giant.stellar_opnav.star_identification.StarID.html" title="next chapter">StarID</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.remove_outliers.html" title="Previous document">StellarOpNav.remove_outliers</a>
+        </li>
+        <li>
+          <a href="star_identification/giant.stellar_opnav.star_identification.StarID.html" title="Next document">StarID</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.stellar_opnav.star_identification">
+<span id="giant-stellar-opnav-star-identification"></span><h1>giant.stellar_opnav.star_identification<a class="headerlink" href="#module-giant.stellar_opnav.star_identification" title="Permalink to this headline">¶</a></h1>
+<p>This module provides the star identification routines for GIANT through the <a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID" title="giant.stellar_opnav.star_identification.StarID"><code class="xref py py-class docutils literal notranslate"><span class="pre">StarID</span></code></a> class.</p>
+<section id="algorithm-description">
+<h2>Algorithm Description<a class="headerlink" href="#algorithm-description" title="Permalink to this headline">¶</a></h2>
+<p>Star Identification refers to the process of matching observed stars in an image with a corresponding set of known star
+locations from a star catalogue. Making this identification is the first step in performing a number of OpNav tasks,
+including attitude estimation, geometric camera calibration, and camera alignment, as well as a number of photometry
+tasks like linearity checks and point spread function modelling.</p>
+<p>In GIANT, star identification is handled using a random sampling and consensus (RANSAC) approach using the following
+steps:</p>
+<ol class="arabic simple">
+<li><p>The <em>a priori</em> attitude information for each image is used to query the star catalogue for the expected stars in the
+field of view of each image.</p></li>
+<li><p>The retrieved catalogue stars are transformed into the camera frame and projected onto the image using the <em>a priori</em>
+image attitude and camera model.</p></li>
+<li><p>The projected catalogue locations are paired with points in the image that were identified in the image by the image
+processing algorithm as potential stars using a nearest neighbor approach.</p></li>
+<li><p>The initial pairs are thresholded based on the distance between the points, as well as for stars that are matched
+with 2 image points and image points that are close to 2 stars.</p></li>
+<li><p>The remaining pairs are randomly sampled for 4 star pairs</p></li>
+<li><p>The sample is used to estimate a new attitude for the image using the <a class="reference internal" href="../giant.calibration.html#giant.calibration.DavenportQMethod" title="giant.calibration.DavenportQMethod"><code class="xref py py-class docutils literal notranslate"><span class="pre">DavenportQMethod</span></code></a> routines.</p></li>
+<li><p>The new solved for attitude is used to re-rotate and project the catalogue stars onto the image.</p></li>
+<li><p>The new projections are compared with their matched image points and the number of inlier pairs (pairs whose distance
+is less than some ransac threshold) are counted.</p></li>
+<li><p>The number of inliers is compared to the maximum number of inliers found by any sample to this point (set to 0 if
+this is the first sample) and:</p>
+<ul class="simple">
+<li><p>if there are more inliers</p>
+<ul>
+<li><p>the maximum number of inliers is set to the number of inliers generated for this sample</p></li>
+<li><p>the inliers for this sample are stored as correctly identified stars</p></li>
+<li><p>the sum of the squares of the distances between the inlier pairs for this sample is stored</p></li>
+</ul>
+</li>
+<li><p>if there are an equivalent number of inliers to the previous maximum number of inliers then the sum of the squares
+of the distance between the pairs of inliers is compared to the sum of the squares of the previous inliers and if
+the new sum of squares is less than the old sum of squares</p>
+<ul>
+<li><p>the maximum number of inliers is set to the number of inliers generated for this sample</p></li>
+<li><p>the inliers are stored as correctly identified stars</p></li>
+<li><p>the sum of the squares of the distances between the inlier pairs is stored</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Steps 5-9 are repeated for a number of iterations, and the final set of stars stored as correctly identified stars
+become the identified stars for the image.</p></li>
+</ol>
+<p>It is also possible to skip the RANSAC algorithm, stopping at step 4 above and marking any pairs that remain after the
+check as correctly identified stars.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For the above algorithm an <em>a priori</em> attitude is needed for each image in which stars are being identified.  While 
+most OpNav images will have an <em>a priori</em> attitude, in some cases they may not due to anomalies on the spacecraft.  
+This is known as the <em>lost-in-space</em> problem.  Currently GIANT does not have the ability to handle the lost-in-space
+problem and the user will first need to use other software to determine an <em>a priori</em> attitude for the images (such 
+as <a class="reference external" href="http://astrometry.net">astrometry.net</a>).  We are currently developing the algorithms required to perform lost
+in space star identification using hash code based pattern matching (similar to the techniques used by 
+<em>astrometry.net</em>) in GIANT, but they are unfortunately not complete yet.</p>
+</div>
+<p>Unfortunately, the star identification routines do require some human input to be successful.  This involves tuning
+various parameters to get a good initial match.  Luckily, once these parameters are tuned for a few images for a
+certain camera set under certain conditions, they largely should apply well to all similar images from that camera.
+Below we discuss the different tuning parameters that are available in the <a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID" title="giant.stellar_opnav.star_identification.StarID"><code class="xref py py-class docutils literal notranslate"><span class="pre">StarID</span></code></a> class, and also some
+techniques for getting successful identifications.</p>
+</section>
+<section id="tuning-the-starid-routines">
+<h2>Tuning the StarID routines<a class="headerlink" href="#tuning-the-starid-routines" title="Permalink to this headline">¶</a></h2>
+<p>There are a few different parameters that can be tuned in the <a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID" title="giant.stellar_opnav.star_identification.StarID"><code class="xref py py-class docutils literal notranslate"><span class="pre">StarID</span></code></a> class when attempting to get a successful
+star identification for a set of images.  Each of these parameters and what they control are described in the following
+table.</p>
+<table class="docutils align-default" id="tuning-parameters-table">
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 69%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.max_magnitude" title="giant.stellar_opnav.star_identification.StarID.max_magnitude"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_magnitude</span></code></a></p></td>
+<td><p>The maximum magnitude to query the star catalogue to.  This is useful for
+limiting the number of catalogue stars that are being matched against.
+Remember that stellar magnitude is on an inverse logarithmic scale, therefore
+the higher you set this number the dimmer stars that will be returned.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.min_magnitude" title="giant.stellar_opnav.star_identification.StarID.min_magnitude"><code class="xref py py-attr docutils literal notranslate"><span class="pre">min_magnitude</span></code></a></p></td>
+<td><p>The minimum magnitude to query the star catalogue to.  This is useful for
+limiting the number of catalogue stars that are being matched against.
+Remember that stellar magnitude is on an inverse logarithmic scale, therefore
+the lower you set this number the brighter stars that will be returned.
+Typically this should be left alone.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.max_combos" title="giant.stellar_opnav.star_identification.StarID.max_combos"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_combos</span></code></a></p></td>
+<td><p>The maximum number of samples to try in the RANSAC algorithm.  The RANSAC
+algorithm will try at most <a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.max_combos" title="giant.stellar_opnav.star_identification.StarID.max_combos"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_combos</span></code></a> combinations when
+attempting to identify stars. The only way it will try less than
+<a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.max_combos" title="giant.stellar_opnav.star_identification.StarID.max_combos"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_combos</span></code></a> is if there are less unique sample combinations
+possible, in which case the RANSAC algorithm will try every possible sample
+(and becomes just a simple Sampling and Consensus algorithm).  This parameter
+is also used to turn off the RANSAC algorithm by setting it to 0.  This stops
+the star identification process at step 4 from above.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.tolerance" title="giant.stellar_opnav.star_identification.StarID.tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">tolerance</span></code></a></p></td>
+<td><p>The maximum initial distance that a catalogue-image poi pair can have for it to be
+considered a potential match in units of pixels. This is the tolerance that is
+applied before the RANSAC to filter out nearest neighbor pairs that are too far
+apart to be potential matches.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.ransac_tolerance" title="giant.stellar_opnav.star_identification.StarID.ransac_tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ransac_tolerance</span></code></a></p></td>
+<td><p>The maximum post-fit distance that a catalogue-image poi pair can have for it to
+be considered an inlier in the RANSAC algorithm in units of pixels.  This is
+the tolerance used inside of the RANSAC algorithm to determine the number of
+inliers for a given attitude solution from a sample.  This should always be
+less than the <a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.tolerance" title="giant.stellar_opnav.star_identification.StarID.tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">tolerance</span></code></a> parameter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.second_closest_check" title="giant.stellar_opnav.star_identification.StarID.second_closest_check"><code class="xref py py-attr docutils literal notranslate"><span class="pre">second_closest_check</span></code></a></p></td>
+<td><p>A flag specifying whether to check if the second closest catalogue star to an
+image poi is also within the <a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.tolerance" title="giant.stellar_opnav.star_identification.StarID.tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">tolerance</span></code></a> distance.  This is
+useful for throwing out potential pairs that may be ambiguous.  In general you
+should set this flag to <code class="docutils literal notranslate"><span class="pre">False</span></code> when your initial attitude/camera model error is
+larger, and <code class="docutils literal notranslate"><span class="pre">True</span></code> after removing those large errors.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.unique_check" title="giant.stellar_opnav.star_identification.StarID.unique_check"><code class="xref py py-attr docutils literal notranslate"><span class="pre">unique_check</span></code></a></p></td>
+<td><p>A flag specifying whether to allow a single catalogue star to be potentially
+paired with multiple image points of interest.  In general you
+should set this flag to <code class="docutils literal notranslate"><span class="pre">False</span></code> when your initial attitude/camera model error is
+larger, and <code class="docutils literal notranslate"><span class="pre">True</span></code> after removing those large errors.</p></td>
+</tr>
+</tbody>
+</table>
+<p>By tuning these parameters, you should be able to identify stars in nearly any image with an <em>a priori</em> attitude that is
+remotely close.  There are a few suggestions that may help you to find the proper tuning faster:</p>
+<ul class="simple">
+<li><p>Getting the initial identification is generally the most difficult; therefore, you should generally have 2 tunings
+for an image set.</p></li>
+<li><p>The first tuning should be fairly conservative in order to get a good refined attitude estimate for the image.  
+(Remember that we really only need 4 or 5 correctly identified stars to get a good attitude estimate.)</p>
+<ul>
+<li><p>a large initial <a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.tolerance" title="giant.stellar_opnav.star_identification.StarID.tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">tolerance</span></code></a>–greater than 10 pixels.  Note that this initial tolerance should include
+the errors in the star projections due to both the <em>a priori</em> attitude uncertainty and the camera model</p></li>
+<li><p>a smaller but still relatively large <a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.ransac_tolerance" title="giant.stellar_opnav.star_identification.StarID.ransac_tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ransac_tolerance</span></code></a>–on the order of about 1-5 pixels. This
+tolerance should mostly reflect a very conservative estimate on the errors caused by the camera model as the
+attitude errors should largely be removed</p></li>
+<li><p>a small <a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.max_magnitude" title="giant.stellar_opnav.star_identification.StarID.max_magnitude"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_magnitude</span></code></a>–only allowing bright stars.  Bright stars generally have more accurate
+catalogue positions and are more likely to be picked up by the <a class="reference internal" href="../image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a> algorithms</p></li>
+<li><p>the <a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.max_combos" title="giant.stellar_opnav.star_identification.StarID.max_combos"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_combos</span></code></a> set fairly large–on the order of 500-1000</p></li>
+</ul>
+</li>
+<li><p>After getting the initial pairing and updating
+the attitude for the images (note that this is done external to the <a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID" title="giant.stellar_opnav.star_identification.StarID"><code class="xref py py-class docutils literal notranslate"><span class="pre">StarID</span></code></a> class), you can then attempt a 
+larger identification with dimmer stars</p>
+<ul>
+<li><p>decreasing the <a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.tolerance" title="giant.stellar_opnav.star_identification.StarID.tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">tolerance</span></code></a> to be about the same as your previous <a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.ransac_tolerance" title="giant.stellar_opnav.star_identification.StarID.ransac_tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ransac_tolerance</span></code></a></p></li>
+<li><p>turning the RANSAC algorithm off by setting the <a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.max_combos" title="giant.stellar_opnav.star_identification.StarID.max_combos"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_combos</span></code></a> to 0</p></li>
+<li><p>increasing the <a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID.max_magnitude" title="giant.stellar_opnav.star_identification.StarID.max_magnitude"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_magnitude</span></code></a>.</p></li>
+</ul>
+</li>
+<li><p>If you are having problems getting the identification to work it can be useful to visually examine the results for a
+couple of images using the <a class="reference internal" href="visualizer/giant.stellar_opnav.visualizer.show_id_results.html#giant.stellar_opnav.visualizer.show_id_results" title="giant.stellar_opnav.visualizer.show_id_results"><code class="xref py py-func docutils literal notranslate"><span class="pre">show_id_results()</span></code></a> function.</p></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This script loads the lost in space catalogue from python pickle files.  Pickle files can be used to execute
+arbitrary code, so you should never open one from an untrusted source.  While this code should only be reading
+pickle files generated by GIANT itself that are safe, you should verify that the <code class="xref py py-attr docutils literal notranslate"><span class="pre">LIS_FILE</span></code> and the file it
+points to have not been tampered with to be absolutely sure.</p>
+</div>
+</section>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="star_identification/giant.stellar_opnav.star_identification.StarID.html#giant.stellar_opnav.star_identification.StarID" title="giant.stellar_opnav.star_identification.StarID"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StarID</span></code></a></p></td>
+<td><p>The StarID class operates on the result of image processing algorithms to attempt to match image points of interest with catalogue star records.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.remove_outliers.html" title="Previous document">StellarOpNav.remove_outliers</a>
+        </li>
+        <li>
+          <a href="star_identification/giant.stellar_opnav.star_identification.StarID.html" title="Next document">StarID</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/stellar_opnav/giant.stellar_opnav.star_identification.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

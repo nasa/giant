@@ -1,0 +1,375 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Detector.package_results &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="Detector.remove_duplicates" href="giant.ufo.detector.Detector.remove_duplicates.html" />
+    <link rel="prev" title="Detector.identify_hot_pixels_and_unmatched_stars" href="giant.ufo.detector.Detector.identify_hot_pixels_and_unmatched_stars.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.ufo.html">giant.ufo</a><ul>
+  <li><a href="../giant.ufo.detector.html">giant.ufo.detector</a><ul>
+  <li><a href="giant.ufo.detector.Detector.html">Detector</a><ul>
+      <li>Previous: <a href="giant.ufo.detector.Detector.identify_hot_pixels_and_unmatched_stars.html" title="previous chapter">Detector.identify_hot_pixels_and_unmatched_stars</a></li>
+      <li>Next: <a href="giant.ufo.detector.Detector.remove_duplicates.html" title="next chapter">Detector.remove_duplicates</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.ufo.detector.Detector.identify_hot_pixels_and_unmatched_stars.html" title="Previous document">Detector.identify_hot_pixels_and_unmatched_stars</a>
+        </li>
+        <li>
+          <a href="giant.ufo.detector.Detector.remove_duplicates.html" title="Next document">Detector.remove_duplicates</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="detector-package-results">
+<h1>Detector.package_results<a class="headerlink" href="#detector-package-results" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.ufo.detector.html#module-giant.ufo.detector" title="giant.ufo.detector"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.ufo.detector</span></code></a>:</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.ufo.detector.Detector.package_results">
+<span class="sig-prename descclassname"><span class="pre">Detector.</span></span><span class="sig-name descname"><span class="pre">package_results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/ufo/detector.html#Detector.package_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.ufo.detector.Detector.package_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method packages information about UFOs (and matched stars) into attributes in this class and as a Pandas
+DataFrame that can be stored to any number of table formats.</p>
+<p>You should have called <a class="reference internal" href="giant.ufo.detector.Detector.find_ufos.html#giant.ufo.detector.Detector.find_ufos" title="giant.ufo.detector.Detector.find_ufos"><code class="xref py py-meth docutils literal notranslate"><span class="pre">find_ufos()</span></code></a> before calling this method.</p>
+<p>Specifically, the results for UFOs are stored into</p>
+<ul class="simple">
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">bearing</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">ra_sigma</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">declination_sigma</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">fit_chi2_value</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">integrated_psf</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">integrated_psf_uncertainty</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">invalid_images</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">magnitude</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_dn</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">occulting</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">saturated</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">saturation_distance</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">summed_dn</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">summed_dn_count</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">summed_dn_uncertainty</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">trail_length</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">trail_principal_angle</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">x_raw_sigma</span></code></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">y_raw_sigma</span></code></p></li>
+<li><dl class="field-list simple">
+<dt class="field-odd">attr</dt>
+<dd class="field-odd"><p><cite>.StellarOpNav.unmatched_extracted_image_points</cite></p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">attr</dt>
+<dd class="field-odd"><p><cite>.StellarOpNav.unmatched_stats</cite></p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">attr</dt>
+<dd class="field-odd"><p><cite>.StellarOpNav.unmatched_psfs</cite></p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">attr</dt>
+<dd class="field-odd"><p><cite>.StellarOpNav.unmatched_snrs</cite></p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">attr</dt>
+<dd class="field-odd"><p><cite>.StellarOpNav.unmatched_snrs</cite></p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>In addition, the results for matched stars are stored into
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">star_bearing</span></code>
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">star_ra_sigma</span></code>
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">star_declination_sigma</span></code>
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">star_fit_chi2_value</span></code>
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">star_integrated_psf</span></code>
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">star_integrated_psf_uncertainty</span></code>
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">invalid_images</span></code>
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">star_observed_magnitude</span></code>
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">star_max_dn</span></code>
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">star_occulting</span></code>
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">star_saturated</span></code>
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">star_saturation_distance</span></code>
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">star_summed_dn</span></code>
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">star_summed_dn_count</span></code>
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">star_summed_dn_uncertainty</span></code>
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">star_x_raw_sigma</span></code>
+- <code class="xref py py-attr docutils literal notranslate"><span class="pre">star_y_raw_sigma</span></code>
+- :attr: <cite>.StellarOpNav.matched_extracted_image_points</cite>
+- :attr: <cite>.StellarOpNav.matched_stats</cite>
+- :attr: <cite>.StellarOpNav.matched_psfs</cite>
+- :attr: <cite>.StellarOpNav.matched_snrs</cite>
+- :attr: <cite>.StellarOpNav.matched_snrs</cite></p>
+<p>Both star and UFO results are stored into a dataframe at <code class="xref py py-attr docutils literal notranslate"><span class="pre">detection_data_frame</span></code> with Columns of</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 81%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>image_file</p></td>
+<td><p>The file name of the image the detection came from as a string</p></td>
+</tr>
+<tr class="row-odd"><td><p>mid_exposure_utc</p></td>
+<td><p>The mid exposure time in UTC as a datetime</p></td>
+</tr>
+<tr class="row-even"><td><p>mid_exposure_et</p></td>
+<td><p>The mid exposure time in ET seconds since J2000 as a float</p></td>
+</tr>
+<tr class="row-odd"><td><p>x_raw</p></td>
+<td><p>The x-sub-pixel (column) location of the centroid of the detection as a float</p></td>
+</tr>
+<tr class="row-even"><td><p>y_raw</p></td>
+<td><p>The y-sub-pixel (column) location of the centroid of the detection as a float</p></td>
+</tr>
+<tr class="row-odd"><td><p>x_raw_sigma</p></td>
+<td><p>The x-sub-pixel location of the centroid of the detection formal uncertainty in pixels as
+a float</p></td>
+</tr>
+<tr class="row-even"><td><p>y_raw_sigma</p></td>
+<td><p>The y-sub-pixel location of the centroid of the detection formal uncertainty in pixels as
+a float</p></td>
+</tr>
+<tr class="row-odd"><td><p>ra</p></td>
+<td><p>The right ascension of the detection in the inertial frame in degrees as a float.  Note
+that this is the direction from the camera to the detection in inertial space, <strong>not</strong> the
+location of the detection in the celestial sphere.</p></td>
+</tr>
+<tr class="row-even"><td><p>dec</p></td>
+<td><p>The declination of the detection in the inertial frame in degrees as a float.  Note
+that this is the direction from the camera to the detection in inertial space, <strong>not</strong> the
+location of the detection in the celestial sphere.</p></td>
+</tr>
+<tr class="row-odd"><td><p>ra_sigma</p></td>
+<td><p>The formal uncertainty on the RA of the detection in units of degrees as a float</p></td>
+</tr>
+<tr class="row-even"><td><p>dec_sigma</p></td>
+<td><p>The formal uncertainty on the declination of the detection in units of degrees as a float</p></td>
+</tr>
+<tr class="row-odd"><td><p>area</p></td>
+<td><p>The area of the detection (number of pixels above the specified threshold) as an integer</p></td>
+</tr>
+<tr class="row-even"><td><p>peak_dn</p></td>
+<td><p>The maxim DN value of the detection (minus the background term) as a float</p></td>
+</tr>
+<tr class="row-odd"><td><p>summed_dn</p></td>
+<td><p>The sum of the (normally) 5x5 grid of pixels surrounding the centroid of the detection in
+DN as a float</p></td>
+</tr>
+<tr class="row-even"><td><p>summed_dn_sigma</p></td>
+<td><p>The formal uncertainty of the summed dn value in DN as a float.  This is based off of the
+expected noise of the pixels where the detection was found at.</p></td>
+</tr>
+<tr class="row-odd"><td><p>n_pix_summed</p></td>
+<td><p>The number of pixels summed as an integer. This will nearly always be 25, unless the
+detection was very close to the edge of the image</p></td>
+</tr>
+<tr class="row-even"><td><p>integrated_psf</p></td>
+<td><p>The value of the integrated fit PSF for the detection in DN as a float.</p></td>
+</tr>
+<tr class="row-odd"><td><p>integrated_psf_sigma</p></td>
+<td><p>The formal uncertainty of the integrated fit PSF for the detection in DN as a float</p></td>
+</tr>
+<tr class="row-even"><td><p>magnitude</p></td>
+<td><p>The computed apparent magnitude of the detector or 0, if no <code class="xref py py-attr docutils literal notranslate"><span class="pre">magnitude_function</span></code> was
+given</p></td>
+</tr>
+<tr class="row-odd"><td><p>snr</p></td>
+<td><p>The signal to noise ratio of the detection</p></td>
+</tr>
+<tr class="row-even"><td><p>psf</p></td>
+<td><p>The fit point spread function for the detection as a string</p></td>
+</tr>
+<tr class="row-odd"><td><p>psf_fit_quality</p></td>
+<td><p>The quality of the PSF fit as a chi**2 parameter as a float</p></td>
+</tr>
+<tr class="row-even"><td><p>occulting</p></td>
+<td><p>A boolean flag specifying whether this detection is between the camera and the dark region
+of an extended body</p></td>
+</tr>
+<tr class="row-odd"><td><p>saturation_distance</p></td>
+<td><p>The distance between the centroid of this detection and the nearest blob of pixels with at
+least 3 pixels saturated</p></td>
+</tr>
+<tr class="row-even"><td><p>is_saturated</p></td>
+<td><p>A boolean flag specifying if any of the pixels in the detection are saturated</p></td>
+</tr>
+<tr class="row-odd"><td><p>trail_length</p></td>
+<td><p>The length of the trail of the detection if it is a trailed detection (or 0) in units of
+pixels as a float</p></td>
+</tr>
+<tr class="row-even"><td><p>trail_principal_angle</p></td>
+<td><p>The angle between the trail semi-major axis and the direction of increasing right
+ascension in the image in units of degrees as a float</p></td>
+</tr>
+<tr class="row-odd"><td><p>quality_code</p></td>
+<td><p>The quality code of the detection.  Attempts to give the detection a quality label of 1-5
+with 5 being a detection in which there is strong confidence it is not just a noise spike.
+quality codes of 0 indicate detections paired to known stars.  Quality codes of -1
+indicate detections that may be hot pixels or un-matched stars.  Quality codes of -1 will
+only be present after a call to <a class="reference internal" href="giant.ufo.detector.Detector.identify_hot_pixels_and_unmatched_stars.html#giant.ufo.detector.Detector.identify_hot_pixels_and_unmatched_stars" title="giant.ufo.detector.Detector.identify_hot_pixels_and_unmatched_stars"><code class="xref py py-meth docutils literal notranslate"><span class="pre">identify_hot_pixels_and_unmatched_stars()</span></code></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p>x_inert2cam</p></td>
+<td><p>The x component of the quaternion that rotates from the inertial frame to the camera frame
+at the time of the detection as a float</p></td>
+</tr>
+<tr class="row-odd"><td><p>y_inert2cam</p></td>
+<td><p>The y component of the quaternion that rotates from the inertial frame to the camera frame
+at the time of the detection as a float</p></td>
+</tr>
+<tr class="row-even"><td><p>z_inert2cam</p></td>
+<td><p>The z component of the quaternion that rotates from the inertial frame to the camera frame
+at the time of the detection as a float</p></td>
+</tr>
+<tr class="row-odd"><td><p>s_inert2cam</p></td>
+<td><p>The scalar component of the quaternion that rotates from the inertial frame to the camera
+frame at the time of the detection as a float</p></td>
+</tr>
+<tr class="row-even"><td><p>star_id</p></td>
+<td><p>A string given the catalogue ID of the star this detection was matched to (if it was
+matched to a star).</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.ufo.detector.Detector.identify_hot_pixels_and_unmatched_stars.html" title="Previous document">Detector.identify_hot_pixels_and_unmatched_stars</a>
+        </li>
+        <li>
+          <a href="giant.ufo.detector.Detector.remove_duplicates.html" title="Next document">Detector.remove_duplicates</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/ufo/detector/giant.ufo.detector.Detector.package_results.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

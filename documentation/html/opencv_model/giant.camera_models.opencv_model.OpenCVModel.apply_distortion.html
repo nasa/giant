@@ -1,0 +1,187 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>OpenCVModel.apply_distortion &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="OpenCVModel.get_state_labels" href="giant.camera_models.opencv_model.OpenCVModel.get_state_labels.html" />
+    <link rel="prev" title="OpenCVModel.get_projections" href="giant.camera_models.opencv_model.OpenCVModel.get_projections.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.camera_models.html">giant.camera_models</a><ul>
+  <li><a href="../giant.camera_models.opencv_model.html">giant.camera_models.opencv_model</a><ul>
+  <li><a href="giant.camera_models.opencv_model.OpenCVModel.html">OpenCVModel</a><ul>
+      <li>Previous: <a href="giant.camera_models.opencv_model.OpenCVModel.get_projections.html" title="previous chapter">OpenCVModel.get_projections</a></li>
+      <li>Next: <a href="giant.camera_models.opencv_model.OpenCVModel.get_state_labels.html" title="next chapter">OpenCVModel.get_state_labels</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.camera_models.opencv_model.OpenCVModel.get_projections.html" title="Previous document">OpenCVModel.get_projections</a>
+        </li>
+        <li>
+          <a href="giant.camera_models.opencv_model.OpenCVModel.get_state_labels.html" title="Next document">OpenCVModel.get_state_labels</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="opencvmodel-apply-distortion">
+<h1>OpenCVModel.apply_distortion<a class="headerlink" href="#opencvmodel-apply-distortion" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.camera_models.opencv_model.html#module-giant.camera_models.opencv_model" title="giant.camera_models.opencv_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.camera_models.opencv_model</span></code></a>:</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.camera_models.opencv_model.OpenCVModel.apply_distortion">
+<span class="sig-prename descclassname"><span class="pre">OpenCVModel.</span></span><span class="sig-name descname"><span class="pre">apply_distortion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pinhole_locations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/giant/camera_models/opencv_model.html#OpenCVModel.apply_distortion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.camera_models.opencv_model.OpenCVModel.apply_distortion" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method applies the distortion model to the specified pinhole (gnomic) locations in the image frame.</p>
+<p>In general this function is not used by the user and the higher level <a class="reference internal" href="giant.camera_models.opencv_model.OpenCVModel.project_onto_image.html#giant.camera_models.opencv_model.OpenCVModel.project_onto_image" title="giant.camera_models.opencv_model.OpenCVModel.project_onto_image"><code class="xref py py-meth docutils literal notranslate"><span class="pre">project_onto_image()</span></code></a> is used
+which calls this method (along with a few others) instead.  In cases were it is desirable to use this method
+the pinhole locations should be input as a shape (2,) or shape (2, n) array of unitless image plane locations.
+The output from this function is the unitless distorted image plane locations.</p>
+<p>For the OpenCV model, the conversion from gnomic to distorted points is defined as</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\mathbf{x}_I' = \frac{1+k_1r^2+k_2r^4+k_3r^6}{1+k_4r^2+k_5r^4+k_6r^6}\mathbf{x}_I +
+\left[\begin{array}{c} 2p_1x_Iy_I+p_2(r^2+2x_I^2)+s1r^2+s2r^4 \\
+p_1(r^2+2y_I^2) + 2p_2x_Iy_I +s3r^2+s4r^4\end{array}\right]\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Delta\mathbf{x}_I'\)</span> is the distorted gnomic locations,
+<span class="math notranslate nohighlight">\(k_{1-6}\)</span> are radial distortion coefficients,
+<span class="math notranslate nohighlight">\(p_{1-2}\)</span> are the tangential distortion coefficients,
+<span class="math notranslate nohighlight">\(s_{1-4}\)</span> are thin prism distortion coefficients,
+<span class="math notranslate nohighlight">\(\mathbf{x}_I\)</span> is the unitless gnomic location,  and
+<span class="math notranslate nohighlight">\(r = \sqrt{\mathbf{x}_I^T\mathbf{x}_I}\)</span> is the radial distance from the optical axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pinhole_locations</strong> (<em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>]</em>) – The unitless image plane location of points to be distorted as a shape (2,) or (2, n)
+array.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The unitless distorted locations of the points on the image plane as a shape (2,) or (2, n) array.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.camera_models.opencv_model.OpenCVModel.get_projections.html" title="Previous document">OpenCVModel.get_projections</a>
+        </li>
+        <li>
+          <a href="giant.camera_models.opencv_model.OpenCVModel.get_state_labels.html" title="Next document">OpenCVModel.get_state_labels</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/opencv_model/giant.camera_models.opencv_model.OpenCVModel.apply_distortion.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

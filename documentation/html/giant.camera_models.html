@@ -1,0 +1,238 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>giant.camera_models &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/logo.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="next" title="giant.camera_models.camera_model" href="giant.camera_models.camera_model.html" />
+    <link rel="prev" title="slerp" href="rotations/giant.rotations.slerp.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="giant.html">API Reference</a><ul>
+      <li>Previous: <a href="rotations/giant.rotations.slerp.html" title="previous chapter">slerp</a></li>
+      <li>Next: <a href="giant.camera_models.camera_model.html" title="next chapter">giant.camera_models.camera_model</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="rotations/giant.rotations.slerp.html" title="Previous document">slerp</a>
+        </li>
+        <li>
+          <a href="giant.camera_models.camera_model.html" title="Next document">giant.camera_models.camera_model</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.camera_models">
+<span id="giant-camera-models"></span><h1>giant.camera_models<a class="headerlink" href="#module-giant.camera_models" title="Permalink to this headline">¶</a></h1>
+<p>This package provides classes and functions for creating/using geometric camera models in GIANT.</p>
+<p>In GIANT, a camera model refers to a class that provides a collection of methods for mapping 3D points and directions
+expressed in the camera frame to 2D points in an image, for mapping 2D points in an image to 3D directions in
+the camera frame, and provides jacobian matrices for those processes.</p>
+<p>These objects are used extensively throughout GIANT and are one of the building blocks of optical navigation.
+The modules in this package provide a number of the most commonly used camera models for optical navigation, including
+the <a class="reference internal" href="giant.camera_models.pinhole_model.html#module-giant.camera_models.pinhole_model" title="giant.camera_models.pinhole_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pinhole_model</span></code></a>, the <a class="reference internal" href="giant.camera_models.brown_model.html#module-giant.camera_models.brown_model" title="giant.camera_models.brown_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">brown_model</span></code></a>, the <a class="reference internal" href="giant.camera_models.owen_model.html#module-giant.camera_models.owen_model" title="giant.camera_models.owen_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owen_model</span></code></a>, and the <a class="reference internal" href="giant.camera_models.opencv_model.html#module-giant.camera_models.opencv_model" title="giant.camera_models.opencv_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">opencv_model</span></code></a>.  In addition,
+the <a class="reference internal" href="giant.camera_models.camera_model.html#module-giant.camera_models.camera_model" title="giant.camera_models.camera_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">camera_model</span></code></a> module provides an abstract base class and instructions for constructing your own custom camera
+models.</p>
+<p>If you are just starting out, we recommend that you begin with one of the provided camera models as these are adequate
+for almost all cameras and are generally easy to initialize if you have some basic knowledge about the camera itself.
+Refer to the documentation for each module to get more details about the models.</p>
+<p>While all of the classes and functions in this package are defined in the sub-modules discussed above, they are imported
+into the package to make access easier; therefore, you can do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">BrownModel</span><span class="p">,</span> <span class="n">save</span><span class="p">,</span> <span class="n">load</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">OwenModel</span>
+</pre></div>
+</div>
+<p class="rubric">Modules</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.camera_model.html#module-giant.camera_models.camera_model" title="giant.camera_models.camera_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">camera_model</span></code></a></p></td>
+<td><p>This module provides an abstract base class (abc) for implementing GIANT camera models.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera_models.pinhole_model.html#module-giant.camera_models.pinhole_model" title="giant.camera_models.pinhole_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pinhole_model</span></code></a></p></td>
+<td><p>This module provides a subclass of <a class="reference internal" href="camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraModel</span></code></a> that implements the distortion free Pinhole camera model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.brown_model.html#module-giant.camera_models.brown_model" title="giant.camera_models.brown_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">brown_model</span></code></a></p></td>
+<td><p>This module provides a subclass of <a class="reference internal" href="camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraModel</span></code></a> that implements the Brown camera model, which adds basic distortion corrections to the Pinhole model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.camera_models.opencv_model.html#module-giant.camera_models.opencv_model" title="giant.camera_models.opencv_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">opencv_model</span></code></a></p></td>
+<td><p>This module provides a subclass of <a class="reference internal" href="camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraModel</span></code></a> that implements the OpenCV camera model, which adds distortion corrections to the Pinhole model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.camera_models.owen_model.html#module-giant.camera_models.owen_model" title="giant.camera_models.owen_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owen_model</span></code></a></p></td>
+<td><p>This module provides a subclass of <a class="reference internal" href="camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraModel</span></code></a> that implements the distortion modeled Owen (or JPL) camera model.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CameraModel</span></code></a></p></td>
+<td><p>This is the abstract base class for all camera models in GIANT.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="pinhole_model/giant.camera_models.pinhole_model.PinholeModel.html#giant.camera_models.pinhole_model.PinholeModel" title="giant.camera_models.pinhole_model.PinholeModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PinholeModel</span></code></a></p></td>
+<td><p>This class provides an implementation of the pinhole camera model for projecting 3d points onto images.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="brown_model/giant.camera_models.brown_model.BrownModel.html#giant.camera_models.brown_model.BrownModel" title="giant.camera_models.brown_model.BrownModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BrownModel</span></code></a></p></td>
+<td><p>This class provides an implementation of the Brown camera model for projecting 3D points onto images and performing camera calibration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="opencv_model/giant.camera_models.opencv_model.OpenCVModel.html#giant.camera_models.opencv_model.OpenCVModel" title="giant.camera_models.opencv_model.OpenCVModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OpenCVModel</span></code></a></p></td>
+<td><p>This class provides an implementation of the OpenCV camera model for projecting 3D points onto images and performing camera calibration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="owen_model/giant.camera_models.owen_model.OwenModel.html#giant.camera_models.owen_model.OwenModel" title="giant.camera_models.owen_model.OwenModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OwenModel</span></code></a></p></td>
+<td><p>This class provides an implementation of the Owen camera model for projecting 3D points onto images and performing camera calibration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="camera_model/giant.camera_models.camera_model.ReturnShape.html#giant.camera_models.camera_model.ReturnShape" title="giant.camera_models.camera_model.ReturnShape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReturnShape</span></code></a></p></td>
+<td><p>This enumeration is used to specify what should be returned from method <a class="reference internal" href="camera_model/giant.camera_models.camera_model.CameraModel.undistort_image.html#giant.camera_models.camera_model.CameraModel.undistort_image" title="giant.camera_models.camera_model.CameraModel.undistort_image"><code class="xref py py-meth docutils literal notranslate"><span class="pre">undistort_image()</span></code></a>.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="camera_model/giant.camera_models.camera_model.save.html#giant.camera_models.camera_model.save" title="giant.camera_models.camera_model.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a></p></td>
+<td><p>This function is used to save a camera model to a GIANT xml file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="camera_model/giant.camera_models.camera_model.load.html#giant.camera_models.camera_model.load" title="giant.camera_models.camera_model.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a></p></td>
+<td><p>This function is used to retrieve a camera model from a GIANT xml file.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="toctree-wrapper compound">
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="rotations/giant.rotations.slerp.html" title="Previous document">slerp</a>
+        </li>
+        <li>
+          <a href="giant.camera_models.camera_model.html" title="Next document">giant.camera_models.camera_model</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/giant.camera_models.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

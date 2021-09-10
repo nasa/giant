@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>StellarOpNav.remove_outliers &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="giant.stellar_opnav.star_identification" href="../giant.stellar_opnav.star_identification.html" />
+    <link rel="prev" title="StellarOpNav.review_outliers" href="giant.stellar_opnav.stellar_class.StellarOpNav.review_outliers.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.stellar_opnav.html">giant.stellar_opnav</a><ul>
+  <li><a href="../giant.stellar_opnav.stellar_class.html">giant.stellar_opnav.stellar_class</a><ul>
+  <li><a href="giant.stellar_opnav.stellar_class.StellarOpNav.html">StellarOpNav</a><ul>
+      <li>Previous: <a href="giant.stellar_opnav.stellar_class.StellarOpNav.review_outliers.html" title="previous chapter">StellarOpNav.review_outliers</a></li>
+      <li>Next: <a href="../giant.stellar_opnav.star_identification.html" title="next chapter">giant.stellar_opnav.star_identification</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.stellar_opnav.stellar_class.StellarOpNav.review_outliers.html" title="Previous document">StellarOpNav.review_outliers</a>
+        </li>
+        <li>
+          <a href="../giant.stellar_opnav.star_identification.html" title="Next document">giant.stellar_opnav.star_identification</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="stellaropnav-remove-outliers">
+<h1>StellarOpNav.remove_outliers<a class="headerlink" href="#stellaropnav-remove-outliers" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.stellar_opnav.stellar_class.html#module-giant.stellar_opnav.stellar_class" title="giant.stellar_opnav.stellar_class"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.stellar_opnav.stellar_class</span></code></a>:</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.stellar_opnav.stellar_class.StellarOpNav.remove_outliers">
+<span class="sig-prename descclassname"><span class="pre">StellarOpNav.</span></span><span class="sig-name descname"><span class="pre">remove_outliers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hard_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/stellar_opnav/stellar_class.html#StellarOpNav.remove_outliers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.stellar_opnav.stellar_class.StellarOpNav.remove_outliers" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method removes outliers for all images within a camera object.</p>
+<p>Outliers are identified using <a class="reference internal" href="../../utilities/outlier_identifier/giant.utilities.outlier_identifier.get_outliers.html#giant.utilities.outlier_identifier.get_outliers" title="giant.utilities.outlier_identifier.get_outliers"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_outliers()</span></code></a> and through a hard threshold. The
+<code class="docutils literal notranslate"><span class="pre">sigma_cutoff</span></code> is passed to the same argument in the <a class="reference internal" href="../../utilities/outlier_identifier/giant.utilities.outlier_identifier.get_outliers.html#giant.utilities.outlier_identifier.get_outliers" title="giant.utilities.outlier_identifier.get_outliers"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_outliers()</span></code></a>.  The <code class="docutils literal notranslate"><span class="pre">hard_threshold</span></code> is used to
+identify possible outliers by simply thresholding the total pixel error (sqrt(x**2+y**2)).  All possible
+outliers from either method are removed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma_cutoff</strong> (<em>numbers.Real</em>) – the sigma threshold to use in the Median Absolute Deviation check</p></li>
+<li><p><strong>hard_threshold</strong> (<em>numbers.Real</em>) – The hard threshold to use in units of pixels</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.stellar_opnav.stellar_class.StellarOpNav.review_outliers.html" title="Previous document">StellarOpNav.review_outliers</a>
+        </li>
+        <li>
+          <a href="../giant.stellar_opnav.star_identification.html" title="Next document">giant.stellar_opnav.star_identification</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/stellar_opnav/stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.remove_outliers.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

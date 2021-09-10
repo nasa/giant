@@ -1,0 +1,1064 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.camera_models.camera_model &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.camera_models.camera_model</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
+<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
+
+
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides an abstract base class (abc) for implementing GIANT camera models.</span>
+
+<span class="sd">This abc provides a design guide for building GIANT compatible camera models.  All user defined camera models should</span>
+<span class="sd">probably subclass this class to ensure that they implement all of the required properties and methods that GIANT expects</span>
+<span class="sd">a camera model to have [#]_. In addition, this module provides the functions :func:`save` and :func:`load` which can be</span>
+<span class="sd">used to write/read camera models from disk in a human and machine readable format.</span>
+
+<span class="sd">For a typical use case that doesn&#39;t require a custom camera model, see the :class:`.PinholeModel`, :class:`.BrownModel`,</span>
+<span class="sd">:class:`.OwenModel`, or :class:`.OpenCVModel` classes which provide some of the most common models used in optical</span>
+<span class="sd">navigation.  These also serve as examples of how to make a concrete implementation of the :class:`CameraModel` abc.</span>
+
+<span class="sd">.. rubric:: Footnotes</span>
+
+<span class="sd">.. [#] GIANT will not error if you do not subclass :class:`CameraModel`, but it will print warnings to the screen.</span>
+
+<span class="sd">Use</span>
+<span class="sd">___</span>
+
+<span class="sd">To implement a fully functional custom camera model for GIANT, you must implement the following methods in addition to</span>
+<span class="sd">subclassing the :class:`CameraModel` class.</span>
+
+<span class="sd">================================================= ======================================================================</span>
+<span class="sd">Method                                            Use</span>
+<span class="sd">================================================= ======================================================================</span>
+<span class="sd">:meth:`~CameraModel.project_onto_image`           projects a point from the camera frame onto the image</span>
+<span class="sd">:meth:`~CameraModel.compute_jacobian`             returns the Jacobian matrix</span>
+<span class="sd">                                                  :math:`\partial\mathbf{x}_P/\partial\mathbf{c}`</span>
+<span class="sd">                                                  where :math:`\mathbf{c}` is a vector of camera model parameters (like</span>
+<span class="sd">                                                  focal length, pixel pitch, distortion coefficients, etc) and</span>
+<span class="sd">                                                  :math:`\mathbf{x}_P` is a pixel location.</span>
+<span class="sd">:meth:`~CameraModel.compute_pixel_jacobian`       returns the Jacobian matrix \partial\mathbf{x}_P/\partial\mathbf{x}_C`</span>
+<span class="sd">                                                  where :math:`\mathbf{x}_C` is a vector in the camera frame that</span>
+<span class="sd">                                                  projects to :math:`\mathbf{x}_P` which is the pixel location.</span>
+<span class="sd">:meth:`~CameraModel.compute_unit_vector_jacobian` returns the Jacobian matrix \partial\mathbf{x}_C/\partial\mathbf{x}_P`</span>
+<span class="sd">                                                  where :math:`\mathbf{x}_C` is a unit vector in the camera frame that</span>
+<span class="sd">                                                  projects to :math:`\mathbf{x}_P` which is the pixel location.</span>
+<span class="sd">:meth:`~CameraModel.apply_update`                 updates the camera model based on a vector of delta camera model</span>
+<span class="sd">                                                  parameters</span>
+<span class="sd">:meth:`~CameraModel.pixels_to_unit`               transforms pixel coordinates into unit vectors in the camera frame</span>
+<span class="sd">:meth:`~CameraModel.undistort_pixels`             takes a distorted pixel location and computes the corresponding</span>
+<span class="sd">                                                  undistorted gnomic location in units of pixels</span>
+<span class="sd">:meth:`~CameraModel.distort_pixels`               applies the distortion model to gnomic points with units of pixels</span>
+<span class="sd">================================================= ======================================================================</span>
+
+<span class="sd">In addition the following methods and attributes are already implemented for most cases but may need to be overridden</span>
+<span class="sd">for some special cases</span>
+
+<span class="sd">================================================= ======================================================================</span>
+<span class="sd">Method/Attribute                                  Use</span>
+<span class="sd">================================================= ======================================================================</span>
+<span class="sd">:meth:`~CameraModel.overwrite`                    overwrites the calling instance with the attributes of another</span>
+<span class="sd">                                                  instance in place</span>
+<span class="sd">:meth:`~CameraModel.distortion_map`               generates a set of pixel coordinates+distortion values that can be</span>
+<span class="sd">                                                  used to create a distortion quiver or contour map.</span>
+<span class="sd">:meth:`~CameraModel.undistort_image`              undistorts an entire image based on the distortion model (returns a</span>
+<span class="sd">                                                  warped image)</span>
+<span class="sd">:meth:`~CameraModel.copy`                         returns a copy of the current model</span>
+<span class="sd">:meth:`~CameraModel.to_elem`                      a method that stores the model parameters in an element tree element</span>
+<span class="sd">                                                  for saving the model to file</span>
+<span class="sd">:meth:`~CameraModel.from_elem`                    a class method that retrieves the model parameters from an element</span>
+<span class="sd">                                                  tree element for loading a model from a file</span>
+<span class="sd">:attr:`~CameraModel.n_rows`                       The number of rows in pixels in an image captured by the device</span>
+<span class="sd">                                                  modeled by this camera model</span>
+<span class="sd">:attr:`~CameraModel.n_cols`                       The number of columns in pixels in an image captured by the device</span>
+<span class="sd">                                                  modeled by this camera model</span>
+<span class="sd">:attr:`~CameraModel.field_of_view`                Half the diagonal field of view of the detector in units of degrees.</span>
+<span class="sd">================================================= ======================================================================</span>
+
+<span class="sd">Finally, if the :meth:`~CameraModel.to_elem` and :meth:`~CameraModel.from_elem` methods are not being overridden, the</span>
+<span class="sd">:attr:`~CameraModel.important_attributes` attribute should be extended with a list of attributes that must be</span>
+<span class="sd">saved/loaded to completely reconstruct the camera model.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">importlib</span> <span class="kn">import</span> <span class="n">import_module</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+
+<span class="kn">from</span> <span class="nn">numbers</span> <span class="kn">import</span> <span class="n">Real</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">interpolate</span> <span class="k">as</span> <span class="n">interp</span>
+
+<span class="c1"># apparently lxml has security vulnerabilities but adding warning to documentation to avoid</span>
+<span class="c1"># loading unverified files</span>
+<span class="kn">import</span> <span class="nn">lxml.etree</span> <span class="k">as</span> <span class="nn">etree</span>  <span class="c1"># nosec</span>
+
+<span class="kn">from</span> <span class="nn">giant._typing</span> <span class="kn">import</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">SCALAR_OR_ARRAY</span><span class="p">,</span> <span class="n">NONEARRAY</span><span class="p">,</span> <span class="n">NONENUM</span><span class="p">,</span> <span class="n">PATH</span>
+
+
+<div class="viewcode-block" id="ReturnShape"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.ReturnShape.html#giant.camera_models.camera_model.ReturnShape">[docs]</a><span class="k">class</span> <span class="nc">ReturnShape</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This enumeration is used to specify what should be returned from method :meth:`~.CameraModel.undistort_image`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">FULL</span> <span class="o">=</span> <span class="s2">&quot;full&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the full undistorted image in a 2D array large enough to contain all pixels with valid data.  </span>
+<span class="sd">    Pixels inside of the array which do not have valid data are filled with NaN.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">SAME</span> <span class="o">=</span> <span class="s2">&quot;same&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return an undistorted image in a 2D array of the same shape as the input image.  If the undistorted image is larger</span>
+<span class="sd">    than the input image then it will be cropped.  If the undistorted image is smaller than the input image then it will</span>
+<span class="sd">    be padded.  Pixels which do not have valid data are filled with NaN.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="CameraModel"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel">[docs]</a><span class="k">class</span> <span class="nc">CameraModel</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is the abstract base class for all camera models in GIANT.</span>
+<span class="sd">    </span>
+<span class="sd">    A camera model is a mapping from a 3D point expressed in the camera frame to a corresponding 2D point in the image.</span>
+<span class="sd">    For more description of a camera model refer to the :mod:`.camera_models` documentation.</span>
+<span class="sd">    </span>
+<span class="sd">    This class serves as a prototype for implementing a :class:`!CameraModel` in GIANT.  It defines a number of abstract</span>
+<span class="sd">    methods that need to be implemented for every camera model (:meth:`project_onto_image`, :meth:`compute_jacobian`,</span>
+<span class="sd">    :meth:`compute_pixel_jacobian`, :meth:`compute_unit_vector_jacobian`, :meth:`apply_update`, :meth:`pixels_to_unit`,</span>
+<span class="sd">    :meth:`undistort_pixels`, and :meth:`distort_pixels`)</span>
+<span class="sd">    as well as a few concrete methods that are generally valid for all camera models (:meth:`overwrite`,</span>
+<span class="sd">    :meth:`distortion_map`, :meth:`undistort_image`, :meth:`copy`, :meth:`to_elem`, :meth:`from_elem`).  This class also</span>
+<span class="sd">    provides a few attributes (:attr:`field_of_view`, :attr:`n_rows`, :attr:`n_cols`, and :attr:`use_a_priori`) which</span>
+<span class="sd">    are required for all models.</span>
+
+<span class="sd">    Finally, this class provides the beginning of an attribute :attr:`important_attributes` which should be</span>
+<span class="sd">    updated by each sub-class to ensure some core functionality is not broken (:meth:`__eq__`, :meth:`from_elem`, and</span>
+<span class="sd">    :meth:`to_elem`).  Essentially, this should be a list of attributes that should (a) be checked when checking for</span>
+<span class="sd">    equality between two models and (b) be added to/retrieved from elements when writing/reading a model to a file.  The</span>
+<span class="sd">    values in this list should be valid attributes that return values using ``getattr(self, attr)``.</span>
+<span class="sd">    </span>
+<span class="sd">    .. note:: Because this is an ABC, you cannot create an instance of CameraModel (it will raise a ``TypeError``)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field_of_view</span><span class="p">:</span> <span class="n">NONENUM</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">n_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">use_a_priori</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param field_of_view: The field of view of the camera in units of degrees.</span>
+<span class="sd">        :param n_rows: The number of rows in the active pixel array for the camera</span>
+<span class="sd">        :param n_cols: The number of columns in the active pixel array for the camera</span>
+<span class="sd">        :param use_a_priori: A flag to specify whether to append the identity matrix to the Jacobian matrix returned</span>
+<span class="sd">                             by :meth:`compute_jacobian` in order to include the current estimate of the camera model</span>
+<span class="sd">                             in the calibration process.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_field_of_view</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span> <span class="o">=</span> <span class="n">n_rows</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The number of rows in the active pixel array for the camera</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span> <span class="o">=</span> <span class="n">n_cols</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The number of columns in the active pixel array for the camera</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># set the flag whether to use the current estimate of the model in the calibration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_a_priori</span> <span class="o">=</span> <span class="n">use_a_priori</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This boolean value is used to determine whether to append the identity matrix to the Jacobian matrix returned </span>
+<span class="sd">        by :meth:`compute_jacobian` in order to include the current estimate of the camera model in the calibration </span>
+<span class="sd">        process.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">important_attributes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;field_of_view&#39;</span><span class="p">,</span> <span class="s1">&#39;n_rows&#39;</span><span class="p">,</span> <span class="s1">&#39;n_cols&#39;</span><span class="p">,</span> <span class="s1">&#39;use_a_priori&#39;</span><span class="p">]</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A list specifying the important attributes the must be saved/loaded for this camera model to be completely </span>
+<span class="sd">        reconstructed. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_of_view</span> <span class="o">=</span> <span class="n">field_of_view</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Defines the equality check for all :class:`CameraModel` subclasses.</span>
+
+<span class="sd">        Camera models are defined as equal if all of the :attr:`important_attributes` attributes are equivalent</span>
+
+<span class="sd">        :param other: The other camera model to compare to</span>
+<span class="sd">        :return: True if the camera models are equivalent, False if otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># check to see if self and other are the same class</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># check each variable in the important_attributes attribute and see if it is equivalent</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">important_attributes</span><span class="p">:</span>
+
+            <span class="n">mine</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+
+            <span class="n">theirs</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">mine</span><span class="p">,</span> <span class="n">theirs</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">field_of_view</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A radial field of view of the camera specified in degrees.</span>
+<span class="sd">        </span>
+<span class="sd">        The field of view should be set to at least the half width diagonal field of view of the camera. The field of</span>
+<span class="sd">        view is used when querying star catalogues.</span>
+<span class="sd">        </span>
+<span class="sd">        The diagonal field of view is defined as</span>
+<span class="sd">        </span>
+<span class="sd">        .. code-block:: none</span>
+<span class="sd">        </span>
+<span class="sd">            +-----------+</span>
+<span class="sd">            |          /|</span>
+<span class="sd">            |         / |</span>
+<span class="sd">            |        /  |</span>
+<span class="sd">            |      V/   |</span>
+<span class="sd">            |     O/    |</span>
+<span class="sd">            |    F/     |</span>
+<span class="sd">            |   */      |</span>
+<span class="sd">            |  2/       |</span>
+<span class="sd">            |  /        |</span>
+<span class="sd">            | /         |</span>
+<span class="sd">            |/          |</span>
+<span class="sd">            +-----------+</span>
+
+<span class="sd">        If you specify this parameter to be ``None``, the field of view will be computed using the camera model if</span>
+<span class="sd">        possible.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_field_of_view</span>
+
+    <span class="nd">@field_of_view</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">field_of_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_field_of_view</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The field_of_view must be convertible to a float&quot;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">field_of_view</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="p">],</span>
+                                                                                     <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span><span class="p">]])),</span>
+                                                       <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">*</span> <span class="mi">90</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>   <span class="c1"># 90/pi because we want half angle</span>
+
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_field_of_view</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">estimation_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A list of strings containing the parameters to estimate when performing calibration with this model.</span>
+
+<span class="sd">        This list is used in the methods :meth:`compute_jacobian` and :meth:`apply_update` to determine which parameters</span>
+<span class="sd">        are being estimated/updated. From the :meth:`compute_jacobian` method, only columns of the Jacobian matrix</span>
+<span class="sd">        corresponding to the parameters in this list are returned.  In the :meth:`apply_update` method, the update</span>
+<span class="sd">        vector elements are assumed to correspond to the order expressed in this list.</span>
+
+<span class="sd">        Valid values for the elements of this list are dependent on each concrete camera model.  Generally, they</span>
+<span class="sd">        correspond to attributes of the class, with a few convenient aliases that point to a collection of attributes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@estimation_parameters</span><span class="o">.</span><span class="n">setter</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">estimation_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>  <span class="c1"># estimation_parameters should be writeable</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">state_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Real</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the fully realized state vector according to :attr:`estimation_parameters` as a length l list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CameraModel.get_state_labels"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.get_state_labels.html#giant.camera_models.camera_model.CameraModel.get_state_labels">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_state_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert a list of estimation parameters into state label names.</span>
+
+<span class="sd">        This method interprets the list of estimation parameters (:attr:`estimation_parameters) into human readable</span>
+<span class="sd">        state labels for pretty printing calibration results and for knowing the order of the state vector.</span>
+<span class="sd">        In general this returns a list of attributes which can be retrieved from the camera using ``getattr`` with the</span>
+<span class="sd">        exception of misalignment which must be handled separately.</span>
+
+<span class="sd">        :return: The list of state names corresponding to estimation parameters in order</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="CameraModel.project_onto_image"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.project_onto_image.html#giant.camera_models.camera_model.CameraModel.project_onto_image">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">project_onto_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points_in_camera_frame</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method transforms 3D points (or directions) expressed in the camera frame into the corresponding 2D image</span>
+<span class="sd">        locations.</span>
+<span class="sd">        </span>
+<span class="sd">        The points input should be either 1 or 2 dimensional, with the first axis being length 3 (each point </span>
+<span class="sd">        (direction) in the camera frame is specified as a column).</span>
+<span class="sd">        </span>
+<span class="sd">        The optional ``image`` key word argument specifies the index of the image you are projecting onto (this only </span>
+<span class="sd">        applies if you have a separate misalignment for each image)</span>
+
+<span class="sd">        The optional ``temperature`` key word argument specifies the temperature to use when projecting the points into</span>
+<span class="sd">        the image.  This only applies when your focal length has a temperature dependence</span>
+<span class="sd">        </span>
+<span class="sd">        :param points_in_camera_frame: a shape (3,) or shape (3, n) array of points to project</span>
+<span class="sd">        :param image: The index of the image being projected onto (only applicable with multiple misalignments)</span>
+<span class="sd">        :param temperature: The temperature of the camera to use for the projection</span>
+<span class="sd">        :return: A shape (2,) or shape (2, n) numpy array of image points (with units of pixels)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CameraModel.project_directions"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.project_directions.html#giant.camera_models.camera_model.CameraModel.project_directions">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">project_directions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directions_in_camera_frame</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method transforms 3D directions expressed in the camera frame into the corresponding 2D image</span>
+<span class="sd">        directions.</span>
+
+<span class="sd">        The direction input should be either 1 or 2 dimensional, with the first axis being length 3 (each direction</span>
+<span class="sd">        in the camera frame is specified as a column).</span>
+
+<span class="sd">        The optional ``image`` key word argument specifies the index of the image you are projecting onto (this only</span>
+<span class="sd">        applies if you have a separate misalignment for each image)</span>
+
+<span class="sd">        This method is different from method :meth:`project_onto_image` in that it only projects the direction component</span>
+<span class="sd">        perpendicular to the optical axis of the camera (x, y axes of the camera frame) into a unit vector in the image</span>
+<span class="sd">        plane.  Therefore, you do not get a location in the image out of this, rather a unitless direction in the image.</span>
+
+<span class="sd">        :param directions_in_camera_frame: a shape (3,) or shape (3, n) array of points to project</span>
+<span class="sd">        :param image: The index of the image being projected onto (only applicable with multiple misalignments)</span>
+<span class="sd">        :return: A shape (2,) or shape (2, n) numpy array of image direction unit vectors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CameraModel.compute_jacobian"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.compute_jacobian.html#giant.camera_models.camera_model.CameraModel.compute_jacobian">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit_vectors_in_camera_frame</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="n">SCALAR_OR_ARRAY</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method computes the Jacobian matrix :math:`\partial\mathbf{x}_P/\partial\mathbf{c}` where</span>
+<span class="sd">        :math:`\mathbf{c}` is a vector of camera model parameters.</span>
+<span class="sd">        </span>
+<span class="sd">        The vector of camera model parameters contains things like the focal length, the pixel pitch, the distortion</span>
+<span class="sd">        coefficients, and a misalignment vector.  The ``unit_vectors_in_camera_frame`` should be a shape (m, 3, n) array</span>
+<span class="sd">        of unit vectors expressed in the camera frame that you wish to calculate the Jacobian for where m is the number</span>
+<span class="sd">        of images being calibrated. (These unit vectors should correspond to the pixel locations of the measurements</span>
+<span class="sd">        when projected through the model).</span>
+<span class="sd">        </span>
+<span class="sd">        In general this method will not be used by the user and instead is used internally by the calibration estimators</span>
+<span class="sd">        in :mod:`.calibration`.</span>
+<span class="sd">        </span>
+<span class="sd">        :param unit_vectors_in_camera_frame: A (m, 3, n) array of unit vectors expressed in the camera frame</span>
+<span class="sd">        :param temperature: The temperature of the camera to use for computing the Jacobian matrix.</span>
+<span class="sd">                            If temperature is an array it must be the same length as the first axis of the</span>
+<span class="sd">                            ``unit_vectors_in_camera_frame`` input.</span>
+<span class="sd">        :return: A (n*2, o) (where o is the length of :math:`\mathbf{c}`) array containing the Jacobian matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="CameraModel.compute_pixel_jacobian"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.compute_pixel_jacobian.html#giant.camera_models.camera_model.CameraModel.compute_pixel_jacobian">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">compute_pixel_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vectors_in_camera_frame</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method computes the Jacobian matrix :math:`\partial\mathbf{x}_P/\partial\mathbf{x}_C` where</span>
+<span class="sd">        :math:`\mathbf{x}_C` is a vector in the camera frame that projects to :math:`\mathbf{x}_P` which is the</span>
+<span class="sd">        pixel location.</span>
+
+<span class="sd">        This method is used in the :class:`.LimbScanning` process in order to predict the change in a projected pixel</span>
+<span class="sd">        location with respect to a change in the projected vector.  The ``vectors_in_camera_frame`` input should</span>
+<span class="sd">        be a 3xn array of vectors which the Jacobian is to be computed for.</span>
+
+<span class="sd">        :param vectors_in_camera_frame: The vectors to compute the Jacobian at</span>
+<span class="sd">        :param image: The image number to compute the the Jacobian for</span>
+<span class="sd">        :param temperature: The temperature of the camera at the time the image was taken</span>
+<span class="sd">        :return: The Jacobian matrix as a nx2x3 array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="CameraModel.compute_unit_vector_jacobian"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.compute_unit_vector_jacobian.html#giant.camera_models.camera_model.CameraModel.compute_unit_vector_jacobian">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">compute_unit_vector_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pixel_locations</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> \
+            <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method computes the Jacobian matrix :math:`\partial\mathbf{x}_C/\partial\mathbf{x}_P` where</span>
+<span class="sd">        :math:`\mathbf{x}_C` is a vector in the camera frame that projects to :math:`\mathbf{x}_P` which is the</span>
+<span class="sd">        pixel location.</span>
+
+<span class="sd">        This method is used in the :class:`.LimbScanning` process in order to predict the change in the unit vector that</span>
+<span class="sd">        projects to a pixel location with respect to a change in the pixel location.  The</span>
+<span class="sd">        ``pixel_locations`` input should be a 2xn array of vectors which the Jacobian is to be computed for.</span>
+
+<span class="sd">        :param pixel_locations: The pixel locations to compute the Jacobian at</span>
+<span class="sd">        :param image: The image number to compute the the Jacobian for</span>
+<span class="sd">        :param temperature: The temperature of the camera at the time the image was taken</span>
+<span class="sd">        :return: The Jacobian matrix as a nx3x2 array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="CameraModel.apply_update"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.apply_update.html#giant.camera_models.camera_model.CameraModel.apply_update">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">apply_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update_vec</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method takes in a delta update to camera parameters (:math:`\Delta\mathbf{c}`) and applies the update</span>
+<span class="sd">        to the current instance in place.</span>
+<span class="sd">        </span>
+<span class="sd">        In general the delta update is calculated in the estimators in the :mod:`.calibration` subpackage and this</span>
+<span class="sd">        method is not used by the user.</span>
+<span class="sd">        </span>
+<span class="sd">        The update vector is an array like object where each element corresponds to a specific camera parameter,</span>
+<span class="sd">        corresponding to the element represented by each column coming from the :meth:`~CameraModel.compute_jacobian`</span>
+<span class="sd">        method.  For a concrete example of the update vector and how it works, see the concrete camera model</span>
+<span class="sd">        implementations.</span>
+<span class="sd">        </span>
+<span class="sd">        :param update_vec: delta updates to the model parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="CameraModel.pixels_to_unit"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.pixels_to_unit.html#giant.camera_models.camera_model.CameraModel.pixels_to_unit">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">pixels_to_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pixels</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method converts pixel image locations to unit vectors expressed in the camera frame.</span>
+<span class="sd">        </span>
+<span class="sd">        The pixel locations should be expressed as a shape (2,) or (2, n) array.  They are converted</span>
+<span class="sd">        to unit vectors by first going through the inverse distortion model (see :meth:`undistort_pixels`) and then </span>
+<span class="sd">        being converted to unit vectors in the camera frame according to the definitions of the current model (also </span>
+<span class="sd">        including any misalignment terms).</span>
+<span class="sd">        </span>
+<span class="sd">        :param pixels: The image points to be converted to unit vectors in the camera frame as a shape (2,) or (2, n) </span>
+<span class="sd">                       array</span>
+<span class="sd">        :param temperature: The temperature to use for the undistortion</span>
+<span class="sd">        :param image: The image index that the pixels belong to (only important if there are multiple misalignments)</span>
+<span class="sd">        :return: The unit vectors corresponding to the image locations expressed in the camera frame as a shape (3,) or</span>
+<span class="sd">                 (3, n) array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CameraModel.undistort_pixels"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.undistort_pixels.html#giant.camera_models.camera_model.CameraModel.undistort_pixels">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">undistort_pixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pixels</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method computes undistorted pixel locations (gnomic/pinhole locations) for given distorted</span>
+<span class="sd">        pixel locations according to the current model.</span>
+
+<span class="sd">        The ``pixels`` input should be specified as a shape (2,) or (2, n) array of image locations with units of </span>
+<span class="sd">        pixels.  The return will be an array of the same shape as ``pixels`` with units of pixels but with distortion</span>
+<span class="sd">        removed.</span>
+<span class="sd">        </span>
+<span class="sd">        :param pixels: The image points to be converted to gnomic (pinhole) locations as a shape (2,) or (2, n) array</span>
+<span class="sd">        :param temperature: The temperature to use for the undistortion</span>
+<span class="sd">        :return: The undistorted (gnomic) locations corresponding to the distorted pixel locations as an array of</span>
+<span class="sd">                 the same shape as ``pixels``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CameraModel.overwrite"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.overwrite.html#giant.camera_models.camera_model.CameraModel.overwrite">[docs]</a>    <span class="k">def</span> <span class="nf">overwrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="s1">&#39;CameraModel&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method replaces self with the properties of ``model`` in place.</span>
+<span class="sd">        </span>
+<span class="sd">        This method is primarily used in the calibration classes to maintain the link between the internal and external</span>
+<span class="sd">        camera models.  Essentially, each instance variable in ``self`` is overwritten by the corresponding instance</span>
+<span class="sd">        variable in other.</span>
+
+<span class="sd">        This method operates by looping through the properties defined in :attr:`important_attributes` and copying the</span>
+<span class="sd">        value from ``model`` to ``self``.</span>
+
+<span class="sd">        :param model: The model to overwrite self with</span>
+<span class="sd">        :raises ValueError: When ``model`` is not the same type as ``self``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># check to see if the other model is the same type of self</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Models must be of same type to overwrite&#39;</span><span class="p">)</span>
+
+        <span class="c1"># loop through each attribute in important_attributes and copy its value from model to self</span>
+        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">important_attributes</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">attribute</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="CameraModel.distort_pixels"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.distort_pixels.html#giant.camera_models.camera_model.CameraModel.distort_pixels">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">distort_pixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pixels</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A method that takes gnomic pixel locations in units of pixels and applies the appropriate distortion to them.</span>
+
+<span class="sd">        This method is used in the :meth:`distortion_map` method to generate the distortion values for each pixel.</span>
+
+<span class="sd">        :param pixels: The pinhole location pixel locations the distortion is to be applied to</span>
+<span class="sd">        :return: The distorted pixel locations in units of pixels</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CameraModel.distortion_map"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.distortion_map.html#giant.camera_models.camera_model.CameraModel.distortion_map">[docs]</a>    <span class="k">def</span> <span class="nf">distortion_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method computes the value of the distortion model across an entire image for use in creating distortion </span>
+<span class="sd">        maps.</span>
+<span class="sd">        </span>
+<span class="sd">        The ``shape`` and ``step`` inputs to this method specify the size of the image (shape) as well as the size of</span>
+<span class="sd">        the grid steps for computing the distortion values.  The locations the distortion values are computed for are</span>
+<span class="sd">        generated by::</span>
+
+<span class="sd">            rows, cols = np.meshgrid(np.arange(0, shape[0], step), np.arange(0, shape[1], step), indexing=&#39;ij&#39;)</span>
+
+<span class="sd">        If shape is ``None`` then it is set to be ``(self.n_rows, self.n_cols)``.</span>
+<span class="sd">            </span>
+<span class="sd">        The value of the distortion is then computed for each row and column location in ``rows`` and ``cols`` and then</span>
+<span class="sd">        returned, along with the ``rows`` and ``cols`` grids in units of pixels.</span>
+<span class="sd">        </span>
+<span class="sd">        In general this method will be used like::</span>
+<span class="sd">            &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">            &gt;&gt;&gt; from giant.camera_models import CameraModel</span>
+<span class="sd">            &gt;&gt;&gt; inst = CameraModel(field_of_view=1)  # you can&#39;t actually do this</span>
+<span class="sd">            &gt;&gt;&gt; prows, pcols, dist = inst.distortion_map((1024, 1024), 100)</span>
+<span class="sd">            &gt;&gt;&gt; plt.figure()</span>
+<span class="sd">            &gt;&gt;&gt; cs = plt.contour(pcols, prows, np.linalg.norm(dist, axis=0).reshape(prows.shape))</span>
+<span class="sd">            &gt;&gt;&gt; plt.clabel(cs, inline=True, fontsize=10)</span>
+<span class="sd">            &gt;&gt;&gt; plt.figure()</span>
+<span class="sd">            &gt;&gt;&gt; plt.quiver(pcols.flatten(), prows.flatten(), dist[0], dist[1])</span>
+<span class="sd">            </span>
+<span class="sd">        to generate distortion maps of the current model.</span>
+<span class="sd">         </span>
+<span class="sd">        :param shape: The size of the image or None</span>
+<span class="sd">        :param step: The size of the step to use in sampling the distortion field</span>
+<span class="sd">        :return: a tuple containing the ``rows`` grid, ``cols`` grid, and a (2, ``rows.size``) array containing the</span>
+<span class="sd">                 distortion values in pixels (first row = x distortion values, seconds row=y distortion values)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="p">)</span>
+        <span class="c1"># get the pixels that we are calculating the distortion map for</span>
+        <span class="n">row_labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">step</span><span class="p">)</span>
+        <span class="n">col_labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">step</span><span class="p">)</span>
+
+        <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">row_labels</span><span class="p">,</span> <span class="n">col_labels</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+
+        <span class="n">pixels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">cols</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">rows</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()])</span>
+
+        <span class="c1"># distort the pixels, calculate the distortion, and return the results</span>
+        <span class="k">return</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">distort_pixels</span><span class="p">(</span><span class="n">pixels</span><span class="p">)</span> <span class="o">-</span> <span class="n">pixels</span></div>
+
+<div class="viewcode-block" id="CameraModel.undistort_image"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.undistort_image.html#giant.camera_models.camera_model.CameraModel.undistort_image">[docs]</a>    <span class="k">def</span> <span class="nf">undistort_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">return_shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ReturnShape</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;same&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method takes in an entire image and warps it to remove the distortion specified by the current model.</span>
+<span class="sd">        </span>
+<span class="sd">        The image should be input as a (n, m) array of gray-scale illumination values (DN values).</span>
+<span class="sd">        </span>
+<span class="sd">        The warping is formed by</span>
+
+<span class="sd">        #. generating a grid of subscripts for each cell of the image (these are the distorted pixel locations)</span>
+<span class="sd">        #. computing the corresponding gnomic location of these points using the :meth:`undistort_pixels` method</span>
+<span class="sd">        #. re-sampling the undistorted image data to form a new image with distortion removed</span>
+<span class="sd">        </span>
+<span class="sd">        In general you should avoid using this function because it is much more computationally expensive than</span>
+<span class="sd">        working with the nominal distorted image and then undistorting specific points for OpNav measurements.</span>
+
+<span class="sd">        If ``return_shape`` is ``&#39;same&#39;`` then the returned image is the same size as the input image (and the</span>
+<span class="sd">        undistorted image is either cropped or padded to fit this shape).  If ``return_shape`` is ``&#39;full&#39;`` then the</span>
+<span class="sd">        returned image is the size of what the detector would need to be to capture the image from the camera if it</span>
+<span class="sd">        was a pinhole model.</span>
+<span class="sd">                  </span>
+<span class="sd">        :param image: The image to have the distortion removed from as a (n, m) array of gray-scale illumination values</span>
+<span class="sd">        :param return_shape: Specify whether to return the full undistorted image or the undistorted image set to the</span>
+<span class="sd">                             same size as the original</span>
+<span class="sd">        :return: The undistorted image as an array of shape (n, m) illumination values</span>
+
+<span class="sd">        .. note:: The re-sampled image has NaN specified for anywhere that would be considered extrapolation in the</span>
+<span class="sd">                  re-sampling process.  This means that the undistorted image will generally look somewhat weird around</span>
+<span class="sd">                  the edges.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">row_labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">col_labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">row_labels</span><span class="p">,</span> <span class="n">col_labels</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+
+        <span class="n">pixel_subs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">cols</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">rows</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()])</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">):</span>
+            <span class="c1"># noinspection PyTypeChecker</span>
+            <span class="n">undistorted_subs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">undistort_pixels</span><span class="p">(</span><span class="n">pixel_subs</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">undistorted_subs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">undistort_pixels</span><span class="p">(</span><span class="n">pixel_subs</span><span class="p">)</span>
+
+        <span class="c1"># points = np.array([undistorted_subs[1, :].tolist(), undistorted_subs[0, :].tolist()]).T</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">undistorted_subs</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="k">if</span> <span class="n">ReturnShape</span><span class="p">(</span><span class="n">return_shape</span><span class="p">)</span> <span class="o">==</span> <span class="n">ReturnShape</span><span class="o">.</span><span class="n">SAME</span><span class="p">:</span>
+            <span class="n">new_subs</span> <span class="o">=</span> <span class="n">pixel_subs</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">new_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">stop</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">new_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">stop</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">gridded_r</span><span class="p">,</span> <span class="n">gridded_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">new_r</span><span class="p">,</span> <span class="n">new_c</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+
+            <span class="n">new_subs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">gridded_r</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">gridded_c</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span>
+
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">gridded_r</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="k">return</span> <span class="n">interp</span><span class="o">.</span><span class="n">griddata</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">new_subs</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CameraModel.copy"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.copy.html#giant.camera_models.camera_model.CameraModel.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;CameraModel&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a deep copy of this object, breaking all references with ``self``.</span>
+<span class="sd">        </span>
+<span class="sd">        :return: A copy of self that is a separate object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+    <span class="c1"># noinspection PyProtectedMember</span>
+<div class="viewcode-block" id="CameraModel.to_elem"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.to_elem.html#giant.camera_models.camera_model.CameraModel.to_elem">[docs]</a>    <span class="k">def</span> <span class="nf">to_elem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elem</span><span class="p">:</span> <span class="n">etree</span><span class="o">.</span><span class="n">_Element</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">etree</span><span class="o">.</span><span class="n">_Element</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stores this camera model in an :class:`lxml.etree.SubElement` object for storing in a GIANT xml file</span>
+
+<span class="sd">        This method operates by looping through the attributes in :attr:`important_attributes`, retrieving the value of</span>
+<span class="sd">        these attributes in self, and then storing them as a sub-element to ``elem``.  If the attribute already exists</span>
+<span class="sd">        as a sub-element to ``elem`` then it is overwritten.</span>
+
+<span class="sd">        The user generally will not use this method and instead will use the module level :func:`save` function.</span>
+<span class="sd">        </span>
+<span class="sd">        :param elem: The :class:`lxml.etree.SubElement` class to store this camera model in</span>
+<span class="sd">        :return: The :class:`lxml.etree.SubElement` for this model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># loop attributes included in this instance&#39;s import vars</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">important_attributes</span><span class="p">:</span>
+
+            <span class="n">val</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+            <span class="c1"># see if this attribute already exists in the subElement</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># if it doesn&#39;t, add it</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+            <span class="c1"># store the value of this attribute in the subElement</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="n">elem</span></div>
+
+    <span class="c1"># noinspection PyUnresolvedReferences</span>
+    <span class="c1"># noinspection PyProtectedMember</span>
+<div class="viewcode-block" id="CameraModel.from_elem"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.CameraModel.from_elem.html#giant.camera_models.camera_model.CameraModel.from_elem">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_elem</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">elem</span><span class="p">:</span> <span class="n">etree</span><span class="o">.</span><span class="n">_Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;CameraModel&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This class method is used to construct a new instance of `cls` from an :class:`etree._Element` object</span>
+
+<span class="sd">        This method works by first creating an initialized instance of the class.  It then loops through each attribute</span>
+<span class="sd">        defined in the :attr:`important_attributes` list and searches the element to see if it contains information</span>
+<span class="sd">        about the current attribute.  If the element contains information for the specified attribute, then this</span>
+<span class="sd">        information is set in the initialized instance of this class.  If information is not found for the current</span>
+<span class="sd">        attribute, then a warning is thrown that the element does not contain all the information necessary to define</span>
+<span class="sd">        the :attr:`important_attributes`.</span>
+
+<span class="sd">        .. note:: The user will generally not use this method and instead will use the module level :func:`load`</span>
+<span class="sd">                  function to retrieve a camera model from a file</span>
+
+<span class="sd">        :param elem: The element containing the attribute information for the instance to be created</span>
+<span class="sd">        :return: An initialized instance of this class with the attributes set according to the `elem` object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span>
+        <span class="kn">from</span> <span class="nn">giant.rotations</span> <span class="kn">import</span> <span class="n">Rotation</span>
+
+        <span class="c1"># create an instance of class.  I&#39;m not sure why copy is needed here but weird things happen if you don&#39;t</span>
+        <span class="n">inst</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># loop attributes included in this class&#39;s __dict__ attribute and see if they are store in the element</span>
+        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">inst</span><span class="o">.</span><span class="n">important_attributes</span><span class="p">:</span>
+
+            <span class="c1"># try to find this attribute in the subElement</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># if we couldn&#39;t find the attribute in the subElement raise a warning and move to the next</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;missing value for </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prop</span><span class="p">))</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># set the instance attribute with the value from the subElement</span>
+            <span class="c1"># eval is a security risk, but the warning to not load unverified</span>
+            <span class="c1"># files is probably sufficient.  Unfortunately I can&#39;t see any way</span>
+            <span class="c1"># around the security threat without going through an extended parser</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">inst</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="nb">eval</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">text</span><span class="p">))</span>  <span class="c1"># nosec</span>
+
+        <span class="k">return</span> <span class="n">inst</span></div>
+
+    <span class="k">def</span> <span class="nf">instantaneous_field_of_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                                    <span class="n">center</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">direction</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the Instantaneous Field of View (FOV of a single pixel) for the given temperature, location on the focal</span>
+<span class="sd">        plane, and direction.</span>
+
+<span class="sd">        This is computed by determining the line of sight through the center pixel, then the center pixel + the</span>
+<span class="sd">        direction, and then computing then angle between them (and dividing by the norm of the direction in case it</span>
+<span class="sd">        isn&#39;t 1).  The result will give the IFOV in radians.</span>
+
+<span class="sd">        If you do not specify the center or direction, they will be assumed to be the principal point and the x axis</span>
+<span class="sd">        respectively. Note that this assumes that the principal axis is along the z-axis of the camera frame.  If this</span>
+<span class="sd">        is not the case for your camera then you must specify the center.</span>
+
+<span class="sd">        :param temperature: the temperature at which to compute the IFOV</span>
+<span class="sd">        :param center: The pixel to compute the IFOV for.  If None then defaults to the principal point</span>
+<span class="sd">        :param direction: The direction to compute the IFOV in as a length 2 unit vector</span>
+<span class="sd">        :return: The IFOV of the detector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">center</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># get the principal point</span>
+            <span class="n">center_dir</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.</span><span class="p">]])</span>
+            <span class="n">center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">center_dir</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">center_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+
+        <span class="k">if</span> <span class="n">direction</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">]])</span>
+
+        <span class="n">step_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="n">center</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">direction</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                                       <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="c1"># compute the IFOV</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">((</span><span class="n">step_dir</span><span class="o">*</span><span class="n">center_dir</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">direction</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">compute_ground_sample_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_position</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span>
+                                       <span class="n">target_normal</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                                       <span class="n">camera_step_direction</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                                       <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SCALAR_OR_ARRAY</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the ground sample distance of the camera at the targets.</span>
+
+<span class="sd">        The ground sample distance is computed using</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            g = x_1+x_2</span>
+
+<span class="sd">        where</span>
+
+<span class="sd">        :math:`g` is the ground sample distance,</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            x_1 = \frac{r\sin{\theta/2}}{\sin{\delta}}, \\</span>
+<span class="sd">            x_2 = \frac{r\sin{\theta/2}}{\sin{\gamma}},</span>
+
+<span class="sd">        :math:`r=\|\mathbf{r}\|` is the length of the target position vectors :math:`\mathbf{r}`, :math:`\theta` is the</span>
+<span class="sd">        instantaneous field of views of the detector in the ``camera_step_direction`` towards the target positions,</span>
+<span class="sd">        :math:`\delta=\frac{\pi}{2}-\theta+\beta`, :math:`\gamma=\frac{\pi}{2}-\theta-\beta`,</span>
+<span class="sd">        :math:`\beta=\cos^{-1}{\mathbf{n}^T\frac{-\mathbf{r}}{r}}` and :math:`\mathbf{n}` is the unit normal vectors</span>
+<span class="sd">        ``target_normal_vector``.</span>
+
+<span class="sd">        If the ``target_normal_vector`` is ``None``, then it is assumed to be along the line of sight from the camera to</span>
+<span class="sd">        the targets so that :math:`\delta=\gamma`.  The camera IFOV is computed using</span>
+<span class="sd">        :meth:`instantaneous_field_of_view`.</span>
+
+<span class="sd">        :param target_position: The location of the targets as a 3xn array</span>
+<span class="sd">        :param target_normal: ``None`` or the unit normal vector of the targets in the camera frame as a 3xn array.</span>
+<span class="sd">                              If ``None``, the normal vector is assumed to be along the line of sight vector</span>
+<span class="sd">        :param camera_step_direction: ``None`` or the pixel direction to step when computing the IFOV as a length 2</span>
+<span class="sd">                                       array.  If ``None``, the x direction is assumed.</span>
+<span class="sd">        :param temperature: The temperature of the camera when the GSD is to be computed.  This is used in the IFOV</span>
+<span class="sd">                            calculation.</span>
+<span class="sd">        :return: The ground sample distances of the camera in the same units as the provided ``target_position`` vector.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># make sure the position vector is an array with the appropriate shape</span>
+        <span class="n">target_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">target_position</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># get the distance to the target</span>
+        <span class="n">target_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">target_position</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">line_of_sight_vector</span> <span class="o">=</span> <span class="o">-</span><span class="n">target_position</span><span class="o">/</span><span class="n">target_distance</span>
+
+        <span class="c1"># set the target normal vector to be the line of sight, if not provided/ensure its an appropriate shape array</span>
+        <span class="k">if</span> <span class="n">target_normal</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">target_normal</span> <span class="o">=</span> <span class="n">line_of_sight_vector</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">target_normal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">target_normal</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># compute the location of the target in the image for computing the IFOV</span>
+        <span class="n">target_center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">target_position</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="c1"># get the IFOV in radians</span>
+        <span class="n">ifov</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instantaneous_field_of_view</span><span class="p">(</span><span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span>
+                                                <span class="n">center</span><span class="o">=</span><span class="n">target_center</span><span class="p">,</span>
+                                                <span class="n">direction</span><span class="o">=</span><span class="n">camera_step_direction</span><span class="p">)</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">ifov</span><span class="o">/</span><span class="mi">2</span>
+
+        <span class="c1"># compute the interior angle between the line of sight vector and the normal vector in radians</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">((</span><span class="n">target_normal</span><span class="o">*</span><span class="n">line_of_sight_vector</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="c1"># compute r times half the IFOV</span>
+        <span class="n">r_sin_theta</span> <span class="o">=</span> <span class="n">target_distance</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+        <span class="c1"># compute the short side distance</span>
+        <span class="n">gsd_short</span> <span class="o">=</span> <span class="n">r_sin_theta</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="n">theta</span><span class="o">+</span><span class="n">gamma</span><span class="p">)</span>
+
+        <span class="c1"># compute the long side distance</span>
+        <span class="n">gsd_long</span> <span class="o">=</span> <span class="n">r_sin_theta</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="n">theta</span><span class="o">-</span><span class="n">gamma</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">gsd_short</span><span class="o">+</span><span class="n">gsd_long</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="save"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.save.html#giant.camera_models.camera_model.save">[docs]</a><span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">PATH</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">CameraModel</span><span class="p">,</span> <span class="n">group</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">misalignment</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function is used to save a camera model to a GIANT xml file.</span>
+
+<span class="sd">    The models are stored as plain text xml trees, where each property is a node of the tree.  The root element for</span>
+<span class="sd">    the camera models is called `CameraModels`.  You can also optionally specify a `group` in order to be able to</span>
+<span class="sd">    collect similar camera models together.</span>
+
+<span class="sd">    The xml file stores all information necessary for recreating the camera model when it is loaded from a file.  This</span>
+<span class="sd">    includes the module that defines the camera model, as well as the name of the class that the camera model was an</span>
+<span class="sd">    instance of.  When saving the camera model to file, this function first looks to see if a camera model of the same</span>
+<span class="sd">    name and group already exists in the file.  If it does then that camera model is overwritten with the new values.</span>
+<span class="sd">    If it does not, then the current camera model is added to the file.</span>
+
+<span class="sd">    Camera models are converted into xml using the :meth:`~CameraModel.to_elem` method of the class.  This method is</span>
+<span class="sd">    defined in the :class:`CameraModel` class and thus all models that subclass :class:`CameraModel` (as they should)</span>
+<span class="sd">    are usable with this function.</span>
+
+<span class="sd">    There is an optional keyword argument group which can be used to store the camera model in a sub node of the xml</span>
+<span class="sd">    tree.  This is mostly just used to organize the save file and allow faster lookup when the file becomes large, but</span>
+<span class="sd">    it can also be used to distinguish between multiple camera models with the same name, though this is not</span>
+<span class="sd">    recommended.</span>
+
+<span class="sd">    Finally, there is a `misalignment` flag which specifies whether you want to save the misalignment values in the</span>
+<span class="sd">    file.  This should generally be left as false, which resets the misalignment in the model to be a single</span>
+<span class="sd">    misalignment of [0, 0, 0] and adjusts the :attr:`~.CameraModel.estimation_parameters` attribute accordingly.  If set</span>
+<span class="sd">    to true, then the misalignment is stored exactly as it is in the camera model.</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">        There is a security risk when loading XML files (exacerbated here by using a eval on some of the field of the xml</span>
+<span class="sd">        tree).  Do not pass untrusted/unverified files to this function. The files themselves are simple text files that</span>
+<span class="sd">        can easily be verified for malicious code by inspecting them in a text editor beforehand.</span>
+
+<span class="sd">    :param file:  The path of the file to store the camera model in</span>
+<span class="sd">    :param name: The name to use to store the camera model (i.e. &#39;Navigation Camera&#39;)</span>
+<span class="sd">    :param model:  The instance of the camera model to store. Should be a subclass of :class:`CameraModel`</span>
+<span class="sd">    :param group: An optional group to store the camera model into.</span>
+<span class="sd">    :param misalignment: A flag specifying whether to include the misalignment values in the save file or not.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+        <span class="c1"># both etree parse are technically security risks but the user is warned to</span>
+        <span class="c1"># verify files before loading them since they are easy to inspec</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>  <span class="c1"># nosec</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">file</span><span class="p">))</span>  <span class="c1"># nosec</span>
+
+        <span class="n">root</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="n">root</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s1">&#39;CameraModels&#39;</span><span class="p">)</span>
+
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">group</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">group_elem</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">group_elem</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">group_elem</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">group</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="n">group_elem</span> <span class="o">=</span> <span class="n">root</span>
+
+    <span class="n">model_elem</span> <span class="o">=</span> <span class="n">group_elem</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">model_elem</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">model_elem</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">group_elem</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">attrib</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="vm">__module__</span><span class="p">,</span>
+                                                                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">})</span>
+
+    <span class="n">model</span><span class="o">.</span><span class="n">to_elem</span><span class="p">(</span><span class="n">model_elem</span><span class="p">,</span> <span class="n">misalignment</span><span class="o">=</span><span class="n">misalignment</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out</span><span class="p">:</span>
+
+        <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">etree</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">pretty_print</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="load"><a class="viewcode-back" href="../../../camera_model/giant.camera_models.camera_model.load.html#giant.camera_models.camera_model.load">[docs]</a><span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">PATH</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">group</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CameraModel</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function is used to retrieve a camera model from a GIANT xml file.</span>
+
+<span class="sd">    This function will return the queried camera model if it exists, otherwise it raises a LookupError.</span>
+
+<span class="sd">    If you saved your camera model to a specific group, you can optionally specify this group which may make the search</span>
+<span class="sd">    faster.  If you have two camera models with the same name but different groups then you must specify group.</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">        There is a security risk when loading XML files (exacerbated here by using a eval on some of the field of the</span>
+<span class="sd">        xml tree and by importing the module the camera model is defined in).  Do not pass untrusted/unverified files to</span>
+<span class="sd">        this function. The files themselves are simple text files that can easily be verified for malicious code by</span>
+<span class="sd">        inspecting them in a text editor beforehand.</span>
+
+<span class="sd">    :param file: The path to the xml file to retrieve the camera models from.</span>
+<span class="sd">    :param name: The name of the camera model to retrieve from the file</span>
+<span class="sd">    :param group: The group that contains the camera model in the file</span>
+<span class="sd">    :return: The camera model retrieved from the file</span>
+<span class="sd">    :raises LookupError: when the camera model can&#39;t be found in the file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># both etree parse are technically security risks but the user is warned to</span>
+    <span class="c1"># verify files before loading them since they are easy to inspec</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>  <span class="c1"># nosec</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">file</span><span class="p">))</span>  <span class="c1"># nosec</span>
+
+    <span class="n">root</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">group</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">path</span> <span class="o">=</span> <span class="n">group</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">name</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;.//&#39;</span> <span class="o">+</span> <span class="n">name</span>
+
+    <span class="n">elem</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">elem</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;module&#39;</span><span class="p">))</span>
+
+        <span class="bp">cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">elem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_elem</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">LookupError</span><span class="p">(</span><span class="s1">&#39;The specified camera model could not be found in the file&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

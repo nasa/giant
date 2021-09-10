@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Catalogue &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="Catalogue.query_catalogue" href="giant.catalogues.meta_catalogue.Catalogue.query_catalogue.html" />
+    <link rel="prev" title="meta_catalogue" href="../giant.catalogues.meta_catalogue.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.catalogues.html">catalogues</a><ul>
+  <li><a href="../giant.catalogues.meta_catalogue.html">meta_catalogue</a><ul>
+      <li>Previous: <a href="../giant.catalogues.meta_catalogue.html" title="previous chapter">meta_catalogue</a></li>
+      <li>Next: <a href="giant.catalogues.meta_catalogue.Catalogue.query_catalogue.html" title="next chapter">Catalogue.query_catalogue</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.catalogues.meta_catalogue.html" title="Previous document">meta_catalogue</a>
+        </li>
+        <li>
+          <a href="giant.catalogues.meta_catalogue.Catalogue.query_catalogue.html" title="Next document">Catalogue.query_catalogue</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="catalogue">
+<h1>Catalogue<a class="headerlink" href="#catalogue" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.catalogues.meta_catalogue.html#module-giant.catalogues.meta_catalogue" title="giant.catalogues.meta_catalogue"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.catalogues.meta_catalogue</span></code></a>:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.catalogues.meta_catalogue.Catalogue">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.catalogues.meta_catalogue.</span></span><span class="sig-name descname"><span class="pre">Catalogue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_proper_motion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/catalogues/meta_catalogue.html#Catalogue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.catalogues.meta_catalogue.Catalogue" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the abstract base class for star catalogues that GIANT can use for star identification.</p>
+<p>This class defines the minimum required attributes and methods that GIANT expects when interfacing with a star
+catalogue.  It is also set up to implement duck typing, so if you don’t want to you don’t need to subclass this
+class directly when defining a new catalogue, though it is still strongly encouraged.</p>
+<p>To define a new Catalogue you pretty much only need to implement a <a class="reference internal" href="giant.catalogues.meta_catalogue.Catalogue.query_catalogue.html#giant.catalogues.meta_catalogue.Catalogue.query_catalogue" title="giant.catalogues.meta_catalogue.Catalogue.query_catalogue"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_catalogue()</span></code></a> method with the call
+signature specified in the abstract method documentation.  This is what GIANT will use when retrieving stars from
+the catalogue.  Beyond that, you should probably also implement and use an instance attribute
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">include_proper_motion</span></code> (although this is not required) as a flag that the user could use to turn proper
+motion applying on or off on a call to <a class="reference internal" href="giant.catalogues.meta_catalogue.Catalogue.query_catalogue.html#giant.catalogues.meta_catalogue.Catalogue.query_catalogue" title="giant.catalogues.meta_catalogue.Catalogue.query_catalogue"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_catalogue()</span></code></a>.</p>
+<p>If you are just trying to use a GIANT catalogue, you don’t need to worry about this class, instead see one of the
+concrete implementations in <a class="reference internal" href="../giant.catalogues.ucac.html#module-giant.catalogues.ucac" title="giant.catalogues.ucac"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ucac</span></code></a>, <a class="reference internal" href="../giant.catalogues.tycho.html#module-giant.catalogues.tycho" title="giant.catalogues.tycho"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tycho</span></code></a>, or <a class="reference internal" href="../giant.catalogues.giant_catalogue.html#module-giant.catalogues.giant_catalogue" title="giant.catalogues.giant_catalogue"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant_catalogue</span></code></a></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Because this is an ABC, you cannot create an instance of this class.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>include_proper_motion</strong> (<em>bool</em>) – A flag indicating that proper motion should be applied to query results from this
+catalogue</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Summary of Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.catalogues.meta_catalogue.Catalogue.query_catalogue.html#giant.catalogues.meta_catalogue.Catalogue.query_catalogue" title="giant.catalogues.meta_catalogue.Catalogue.query_catalogue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">query_catalogue</span></code></a></p></td>
+<td><p>This method queries stars from the catalogue that meet specified constraints and returns them as a DataFrame with columns of <code class="xref py py-attr docutils literal notranslate"><span class="pre">GIANT_COLUMNS</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.catalogues.meta_catalogue.html" title="Previous document">meta_catalogue</a>
+        </li>
+        <li>
+          <a href="giant.catalogues.meta_catalogue.Catalogue.query_catalogue.html" title="Next document">Catalogue.query_catalogue</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/catalogues/meta_catalogue/giant.catalogues.meta_catalogue.Catalogue.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,190 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>KDNode.split &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="KDNode.translate" href="giant.ray_tracer.kdtree.KDNode.translate.html" />
+    <link rel="prev" title="KDNode.rotate" href="giant.ray_tracer.kdtree.KDNode.rotate.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.ray_tracer.html">ray_tracer</a><ul>
+  <li><a href="../giant.ray_tracer.kdtree.html">kdtree</a><ul>
+  <li><a href="giant.ray_tracer.kdtree.KDNode.html">KDNode</a><ul>
+      <li>Previous: <a href="giant.ray_tracer.kdtree.KDNode.rotate.html" title="previous chapter">KDNode.rotate</a></li>
+      <li>Next: <a href="giant.ray_tracer.kdtree.KDNode.translate.html" title="next chapter">KDNode.translate</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.ray_tracer.kdtree.KDNode.rotate.html" title="Previous document">KDNode.rotate</a>
+        </li>
+        <li>
+          <a href="giant.ray_tracer.kdtree.KDNode.translate.html" title="Next document">KDNode.translate</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="kdnode-split">
+<h1>KDNode.split<a class="headerlink" href="#kdnode-split" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.ray_tracer.kdtree.html#module-giant.ray_tracer.kdtree" title="giant.ray_tracer.kdtree"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.ray_tracer.kdtree</span></code></a>:</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.ray_tracer.kdtree.KDNode.split">
+<span class="sig-prename descclassname"><span class="pre">KDNode.</span></span><span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giant.ray_tracer.kdtree.KDNode.split" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is used to “grow” the tree.  It takes the geometry primitives contained in this node, and
+distributes them to the left and right using the median value of the center of each facet along the axis with
+the widest separation.</p>
+<p>Normally this method won’t split once there are less than 10 geometry primitives contained in the node.  This
+can be over ridden by setting the force flag to True, which will split until there is only 1 geometry primitive
+in the node.</p>
+<p>The results are stored in the <a class="reference internal" href="giant.ray_tracer.kdtree.KDNode.html#giant.ray_tracer.kdtree.KDNode.left" title="giant.ray_tracer.kdtree.KDNode.left"><code class="xref py py-attr docutils literal notranslate"><span class="pre">left</span></code></a> and <a class="reference internal" href="giant.ray_tracer.kdtree.KDNode.html#giant.ray_tracer.kdtree.KDNode.right" title="giant.ray_tracer.kdtree.KDNode.right"><code class="xref py py-attr docutils literal notranslate"><span class="pre">right</span></code></a> attributes of the current node as well as returned
+as a tuple.  The local surface is also removed from this node since the primitives are distributed to the
+child nodes.</p>
+<p>Typically a user won’t directly use this method and instead will use <a class="reference internal" href="giant.ray_tracer.kdtree.KDTree.build.html#giant.ray_tracer.kdtree.KDTree.build" title="giant.ray_tracer.kdtree.KDTree.build"><code class="xref py py-meth docutils literal notranslate"><span class="pre">KDTree.build()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>force</strong> (<em>bool</em>) – A flag specifying whether to force splitting even past once there are less than 10 facets in the
+node</p></li>
+<li><p><strong>flip</strong> (<em>bool</em>) – A flag specifying whether to flip which side of the split gets the “equals” in the comparison.  If
+<code class="docutils literal notranslate"><span class="pre">True</span></code> then the right side gets the equals.  If <code class="docutils literal notranslate"><span class="pre">False</span></code> then the left side.</p></li>
+<li><p><strong>print_progress</strong> (<em>bool</em>) – A flag specifying whether to print the progress of the splitting as we go.  This prints a
+a lot to the screen but at least lets you know that things are not stuck somewhere</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A tuple of the new left and right nodes (in order) or a tuple of None, None if we have already split as
+far as possible</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Union[Tuple[<a class="reference internal" href="giant.ray_tracer.kdtree.KDNode.html#giant.ray_tracer.kdtree.KDNode" title="giant.ray_tracer.kdtree.KDNode">KDNode</a>, <a class="reference internal" href="giant.ray_tracer.kdtree.KDNode.html#giant.ray_tracer.kdtree.KDNode" title="giant.ray_tracer.kdtree.KDNode">KDNode</a>], Tuple[None, None]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.ray_tracer.kdtree.KDNode.rotate.html" title="Previous document">KDNode.rotate</a>
+        </li>
+        <li>
+          <a href="giant.ray_tracer.kdtree.KDNode.translate.html" title="Next document">KDNode.translate</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/ray_tracer/kdtree/giant.ray_tracer.kdtree.KDNode.split.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,224 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>LimbScanner &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="next" title="LimbScanner.extract_limbs" href="giant.relative_opnav.estimators.ellipse_matching.LimbScanner.extract_limbs.html" />
+    <link rel="prev" title="LimbExtractionMethods" href="giant.relative_opnav.estimators.ellipse_matching.LimbExtractionMethods.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../giant.html">API Reference</a><ul>
+  <li><a href="../../../giant.relative_opnav.html">giant.relative_opnav</a><ul>
+  <li><a href="../../giant.relative_opnav.estimators.html">estimators</a><ul>
+  <li><a href="../giant.relative_opnav.estimators.ellipse_matching.html">ellipse_matching</a><ul>
+      <li>Previous: <a href="giant.relative_opnav.estimators.ellipse_matching.LimbExtractionMethods.html" title="previous chapter">LimbExtractionMethods</a></li>
+      <li>Next: <a href="giant.relative_opnav.estimators.ellipse_matching.LimbScanner.extract_limbs.html" title="next chapter">LimbScanner.extract_limbs</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.relative_opnav.estimators.ellipse_matching.LimbExtractionMethods.html" title="Previous document">LimbExtractionMethods</a>
+        </li>
+        <li>
+          <a href="giant.relative_opnav.estimators.ellipse_matching.LimbScanner.extract_limbs.html" title="Next document">LimbScanner.extract_limbs</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="limbscanner">
+<h1>LimbScanner<a class="headerlink" href="#limbscanner" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.relative_opnav.estimators.ellipse_matching.html#module-giant.relative_opnav.estimators.ellipse_matching" title="giant.relative_opnav.estimators.ellipse_matching"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.relative_opnav.estimators.ellipse_matching</span></code></a>:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.relative_opnav.estimators.ellipse_matching.LimbScanner">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.relative_opnav.estimators.ellipse_matching.</span></span><span class="sig-name descname"><span class="pre">LimbScanner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">scene</span></em>, <em class="sig-param"><span class="pre">camera</span></em>, <em class="sig-param"><span class="pre">psf</span></em>, <em class="sig-param"><span class="pre">number_of_scan_lines=51</span></em>, <em class="sig-param"><span class="pre">scan_range=2.356194490192345</span></em>, <em class="sig-param"><span class="pre">number_of_sample_points=501</span></em>, <em class="sig-param"><span class="pre">brdf=None</span></em>, <em class="sig-param"><span class="pre">peak_finder=&lt;function</span> <span class="pre">parabolic_peak_finder_1d&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/giant/relative_opnav/estimators/ellipse_matching.html#LimbScanner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.relative_opnav.estimators.ellipse_matching.LimbScanner" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class is used to extract limbs from an image and pair them to surface points on the target.</p>
+<p>This is done by first determining the surface points on the limb based on the shape model, the scan center vector,
+and the sun direction vector.  Once these surface points have been identified (using :meth:.Shape.find_limbs`) they
+are projected onto the image to generate the predicted limb locations in the image.  Then the image is sampled
+along the scan line through each predicted limb location and the scan center location in the image using the
+<code class="docutils literal notranslate"><span class="pre">image_interpolator</span></code> input to get the observed intensity line.  In addition, the scan line is rendered using
+ray tracing to generate the predicted intensity line.  The predicted intensity lines and the extracted intensity
+lines are then compared using cross correlation to find the shift that best aligns them.  This shift is then applied
+to the predicted limb locations in the image along the scan line to get the extracted limb location in the image.
+This is all handled by the <a class="reference internal" href="giant.relative_opnav.estimators.ellipse_matching.LimbScanner.extract_limbs.html#giant.relative_opnav.estimators.ellipse_matching.LimbScanner.extract_limbs" title="giant.relative_opnav.estimators.ellipse_matching.LimbScanner.extract_limbs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">extract_limbs()</span></code></a> method.</p>
+<p>There are a few tuning options for this class.  The first collection affects the scan lines that are used to extract
+the limb locations from the image.  The <code class="xref py py-attr docutils literal notranslate"><span class="pre">number_of_scan_lines</span></code> sets the number of generated scan lines and
+directly corresponds to the number of limb points that will be extracted from the image.  In addition,
+the <code class="xref py py-attr docutils literal notranslate"><span class="pre">scan_range</span></code> attribute sets the angular extent about the sun direction vector that these scan lines will
+be evenly distributed. Finally, the <code class="xref py py-attr docutils literal notranslate"><span class="pre">number_of_sample_points</span></code> specifies how many samples to take along the
+scan lines for both the extracted and predicted intensity lines and corresponds somewhat to how accurate the
+resulting limb location will be. (Generally a higher number will lead to a higher accuracy though this is also
+limited by the resolution of the image and the shape model itself.  A higher number also will make things take
+longer.)</p>
+<p>In addition to the control over the scan lines, you can adjust the <code class="xref py py-attr docutils literal notranslate"><span class="pre">brdf</span></code> which is used to generate the
+predicted intensity lines (although this will generally not make much difference) and you can change what peak
+finder is used to find the subpixel peaks of the correlation lines.</p>
+<p>This technique requires decent a priori knowledge of the relative state between the target and the camera for it to
+work.  At minimum it requires that the scan center be located through both the observed target location in the image
+and the target shape model placed at the current relative position in the scene.  If this isn’t guaranteed by your
+knowledge then you can use something like the <a class="reference internal" href="../giant.relative_opnav.estimators.moment_algorithm.html#module-giant.relative_opnav.estimators.moment_algorithm" title="giant.relative_opnav.estimators.moment_algorithm"><code class="xref py py-mod docutils literal notranslate"><span class="pre">moment_algorithm</span></code></a> to correct the gross errors in your a priori
+knowledge as is done by <a class="reference internal" href="../limb_matching/giant.relative_opnav.estimators.limb_matching.LimbMatching.html#giant.relative_opnav.estimators.limb_matching.LimbMatching" title="giant.relative_opnav.estimators.limb_matching.LimbMatching"><code class="xref py py-class docutils literal notranslate"><span class="pre">LimbMatching</span></code></a>.</p>
+<p>Generally you will not use this class directly as it is used by the <a class="reference internal" href="../limb_matching/giant.relative_opnav.estimators.limb_matching.LimbMatching.html#giant.relative_opnav.estimators.limb_matching.LimbMatching" title="giant.relative_opnav.estimators.limb_matching.LimbMatching"><code class="xref py py-class docutils literal notranslate"><span class="pre">LimbMatching</span></code></a> class.  If you want to
+use it for some other purpose however, simply provide the required initialization parameters, then use
+<a class="reference internal" href="giant.relative_opnav.estimators.ellipse_matching.LimbScanner.extract_limbs.html#giant.relative_opnav.estimators.ellipse_matching.LimbScanner.extract_limbs" title="giant.relative_opnav.estimators.ellipse_matching.LimbScanner.extract_limbs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">extract_limbs()</span></code></a> to extract the limbs from the image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scene</strong> (<a class="reference internal" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.html#giant.ray_tracer.scene.Scene" title="giant.ray_tracer.scene.Scene"><em>giant.ray_tracer.scene.Scene</em></a>) – The scene containing the target(s) and the light source</p></li>
+<li><p><strong>camera</strong> (<a class="reference internal" href="../../../camera/giant.camera.Camera.html#giant.camera.Camera" title="giant.camera.Camera"><em>giant.camera.Camera</em></a>) – The camera containing the camera model</p></li>
+<li><p><strong>psf</strong> (<a class="reference internal" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="giant.point_spread_functions.psf_meta.PointSpreadFunction"><em>giant.point_spread_functions.psf_meta.PointSpreadFunction</em></a>) – The point spread function to apply to the predicted intensity lines.  This should have a
+<a class="reference internal" href="../../../giant.point_spread_functions.html#giant.point_spread_functions.PointSpreadFunction.apply_1d" title="giant.point_spread_functions.PointSpreadFunction.apply_1d"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apply_1d()</span></code></a></p></li>
+<li><p><strong>number_of_scan_lines</strong> (<em>int</em>) – The number of scan lines to generate (number of extracted limb points)</p></li>
+<li><p><strong>scan_range</strong> (<em>numbers.Real</em>) – The angular extent about the sun direction vector to distribute the scan lines through.  This
+Should be in units of radians and should generally be less than <span class="math notranslate nohighlight">\(\pi\)</span>.</p></li>
+<li><p><strong>number_of_sample_points</strong> (<em>int</em>) – The number of points to sample along each scan line</p></li>
+<li><p><strong>brdf</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../../../ray_tracer/illumination/giant.ray_tracer.illumination.IlluminationModel.html#giant.ray_tracer.illumination.IlluminationModel" title="giant.ray_tracer.illumination.IlluminationModel"><em>giant.ray_tracer.illumination.IlluminationModel</em></a><em>]</em>) – The illumination model to use to render the predicted scan intensity lines</p></li>
+<li><p><strong>peak_finder</strong> (<em>Callable</em>) – The peak finder to find the peak of each correlation line.  This should assume that each
+row of the input array is a correlation line that the peak needs to be found for.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Summary of Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.relative_opnav.estimators.ellipse_matching.LimbScanner.extract_limbs.html#giant.relative_opnav.estimators.ellipse_matching.LimbScanner.extract_limbs" title="giant.relative_opnav.estimators.ellipse_matching.LimbScanner.extract_limbs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_limbs</span></code></a></p></td>
+<td><p>This method extracts limb points in an image and pairs them to surface points that likely generated them.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.relative_opnav.estimators.ellipse_matching.LimbScanner.predict_limbs.html#giant.relative_opnav.estimators.ellipse_matching.LimbScanner.predict_limbs" title="giant.relative_opnav.estimators.ellipse_matching.LimbScanner.predict_limbs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict_limbs</span></code></a></p></td>
+<td><p>Predict the limb locations for a given target in the camera frame.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.relative_opnav.estimators.ellipse_matching.LimbExtractionMethods.html" title="Previous document">LimbExtractionMethods</a>
+        </li>
+        <li>
+          <a href="giant.relative_opnav.estimators.ellipse_matching.LimbScanner.extract_limbs.html" title="Next document">LimbScanner.extract_limbs</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../../_sources/relative_opnav/estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.LimbScanner.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

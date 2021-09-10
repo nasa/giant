@@ -1,0 +1,247 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Rays &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="Rays.rotate" href="giant.ray_tracer.rays.Rays.rotate.html" />
+    <link rel="prev" title="rays" href="../giant.ray_tracer.rays.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.ray_tracer.html">ray_tracer</a><ul>
+  <li><a href="../giant.ray_tracer.rays.html">rays</a><ul>
+      <li>Previous: <a href="../giant.ray_tracer.rays.html" title="previous chapter">rays</a></li>
+      <li>Next: <a href="giant.ray_tracer.rays.Rays.rotate.html" title="next chapter">Rays.rotate</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.ray_tracer.rays.html" title="Previous document">rays</a>
+        </li>
+        <li>
+          <a href="giant.ray_tracer.rays.Rays.rotate.html" title="Next document">Rays.rotate</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="rays">
+<h1>Rays<a class="headerlink" href="#rays" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.ray_tracer.rays.html#module-giant.ray_tracer.rays" title="giant.ray_tracer.rays"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.ray_tracer.rays</span></code></a>:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.ray_tracer.rays.Rays">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.ray_tracer.rays.</span></span><span class="sig-name descname"><span class="pre">Rays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/ray_tracer/rays.html#Rays"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.ray_tracer.rays.Rays" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class to store/manipulate rays.</p>
+<p>In GIANT a ray is defined by a start and a direction (and optionally a list of ids to ignore when tracing a ray
+through a scene/to a shape.  In addition, given these inputs, this class automatically computes the inverse
+direction (1/direction) which is used when intersecting the rays with an axis aligned bounding box.</p>
+<p>When creating rays, if you are creating multiple rays that share the same <a class="reference internal" href="#giant.ray_tracer.rays.Rays.start" title="giant.ray_tracer.rays.Rays.start"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start</span></code></a> or the same
+<a class="reference internal" href="#giant.ray_tracer.rays.Rays.direction" title="giant.ray_tracer.rays.Rays.direction"><code class="xref py py-attr docutils literal notranslate"><span class="pre">direction</span></code></a> you should input these as a single array of length 3 (not 3x1).  This will allow us to use
+numpy broadcasting rules to efficiently represent the rays without having to duplicate memory.  In addition, you can
+update the start/direction of the rays by using the <a class="reference internal" href="giant.ray_tracer.rays.Rays.rotate.html#giant.ray_tracer.rays.Rays.rotate" title="giant.ray_tracer.rays.Rays.rotate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">rotate()</span></code></a> and <a class="reference internal" href="giant.ray_tracer.rays.Rays.translate.html#giant.ray_tracer.rays.Rays.translate" title="giant.ray_tracer.rays.Rays.translate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">translate()</span></code></a> methods, or by setting to
+the <a class="reference internal" href="#giant.ray_tracer.rays.Rays.start" title="giant.ray_tracer.rays.Rays.start"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start</span></code></a> and <a class="reference internal" href="#giant.ray_tracer.rays.Rays.direction" title="giant.ray_tracer.rays.Rays.direction"><code class="xref py py-attr docutils literal notranslate"><span class="pre">direction</span></code></a> directly.</p>
+<p>To use the <a class="reference internal" href="#giant.ray_tracer.rays.Rays.ignore" title="giant.ray_tracer.rays.Rays.ignore"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ignore</span></code></a> attribute of the rays you need to encode the full id of whatever you are trying to ignore.
+This can be very tricky and depends on what your tracing the rays against.  For instance, if you are directly
+tracing the rays with a <a class="reference internal" href="../shapes/surface/giant.ray_tracer.shapes.surface.RawSurface.html#giant.ray_tracer.shapes.surface.RawSurface" title="giant.ray_tracer.shapes.surface.RawSurface"><code class="xref py py-class docutils literal notranslate"><span class="pre">RawSurface</span></code></a> like a <a class="reference internal" href="../shapes/triangle/giant.ray_tracer.shapes.triangle.Triangle64.html#giant.ray_tracer.shapes.triangle.Triangle64" title="giant.ray_tracer.shapes.triangle.Triangle64"><code class="xref py py-class docutils literal notranslate"><span class="pre">Triangle64</span></code></a> then the id is simply the facet number (row
+number in the <a class="reference internal" href="../shapes/surface/giant.ray_tracer.shapes.surface.RawSurface.html#giant.ray_tracer.shapes.surface.RawSurface.facets" title="giant.ray_tracer.shapes.surface.RawSurface.facets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">RawSurface.facets</span></code></a> array).  If you are tracing with a <a class="reference internal" href="../shapes/solid/giant.ray_tracer.shapes.solid.Solid.html#giant.ray_tracer.shapes.solid.Solid" title="giant.ray_tracer.shapes.solid.Solid"><code class="xref py py-class docutils literal notranslate"><span class="pre">Solid</span></code></a>, then the id is the
+<a class="reference internal" href="../shapes/solid/giant.ray_tracer.shapes.solid.Solid.html#giant.ray_tracer.shapes.solid.Solid.id" title="giant.ray_tracer.shapes.solid.Solid.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Solid.id</span></code></a>.  If you are tracing with a <a class="reference internal" href="../kdtree/giant.ray_tracer.kdtree.KDTree.html#giant.ray_tracer.kdtree.KDTree" title="giant.ray_tracer.kdtree.KDTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">KDTree</span></code></a> then the id needs to be a combination of the ids of
+the path through the tree to the leaf node containing the facet, plus the row number for the facet in the
+<a class="reference internal" href="../kdtree/giant.ray_tracer.kdtree.KDNode.html#giant.ray_tracer.kdtree.KDNode.surface" title="giant.ray_tracer.kdtree.KDNode.surface"><code class="xref py py-attr docutils literal notranslate"><span class="pre">KDNode.surface</span></code></a> of the leaf node (this can conveniently be determined using <a class="reference internal" href="../kdtree/giant.ray_tracer.kdtree.get_ignore_inds.html#giant.ray_tracer.kdtree.get_ignore_inds" title="giant.ray_tracer.kdtree.get_ignore_inds"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_ignore_inds()</span></code></a>).  If
+you are tracing with a scene, then you need to take the id of the geometry combined with index of the scene object
+in the <a class="reference internal" href="../scene/giant.ray_tracer.scene.Scene.html#giant.ray_tracer.scene.Scene.target_objs" title="giant.ray_tracer.scene.Scene.target_objs"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Scene.target_objs</span></code></a> list.  All of these get combined into a single integer.  Given this, it is rare to
+set the <a class="reference internal" href="#giant.ray_tracer.rays.Rays.ignore" title="giant.ray_tracer.rays.Rays.ignore"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ignore</span></code></a> attribute yourself.  Instead, typically you either let GIANT set the attribute for you
+automatically, or you get the value from a previous trace (the <code class="docutils literal notranslate"><span class="pre">facet</span></code> component of <a class="reference internal" href="giant.ray_tracer.rays.INTERSECT_DTYPE.html#giant.ray_tracer.rays.INTERSECT_DTYPE" title="giant.ray_tracer.rays.INTERSECT_DTYPE"><code class="xref py py-data docutils literal notranslate"><span class="pre">INTERSECT_DTYPE</span></code></a> will
+fully encode the id for whatever you traced through).</p>
+<p>This class supports iterating through rays one at a time using the normal python syntax (<code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">ray</span> <span class="pre">in</span> <span class="pre">rays:</span> <span class="pre">...</span></code>).
+That being said, this is not super efficient and is not the way GIANT handles multiple rays internally.  You can
+also use indexing on the <a class="reference internal" href="#giant.ray_tracer.rays.Rays" title="giant.ray_tracer.rays.Rays"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rays</span></code></a> object, which will return another <a class="reference internal" href="#giant.ray_tracer.rays.Rays" title="giant.ray_tracer.rays.Rays"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rays</span></code></a> object.  This can be useful
+for things like boolean indexing and slicing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> (<em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>]</em>) – Where the rays begin at as a length 3 array or a 3xn array</p></li>
+<li><p><strong>direction</strong> (<em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>]</em>) – The direction that the rays proceed in as a length 3 array or a 3xn array (typically this
+should be unit vectors)</p></li>
+<li><p><strong>ignore</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>]</em><em>]</em>) – The ids to ignore when tracing the rays.  This should be either <code class="docutils literal notranslate"><span class="pre">None</span></code> for no ignores, a length
+n array for a single ignore per ray (set to -1 for rays where you don’t want any ignores), or a
+length n Sequence of arrays (where there are multiple (possibly different numbers) ignores for
+each ray)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.ray_tracer.rays.Rays.start">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">start</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.ray_tracer.rays.Rays.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>The beginning location(s) of the ray(s) as an 3xn array of start locations (if n==1 then a flat 3 component
+array is returned).</p>
+<p>If there are multiple directions and only a single start then this will still return a 3xn array but will use
+numpy broadcasting so that memory is not duplicated.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.ray_tracer.rays.Rays.direction">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">direction</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.ray_tracer.rays.Rays.direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>The direction vector(s) of the ray(s) as an 3xn array of vector(s)  (if n==1 then a flat 3 component array is
+returned).</p>
+<p>If there are multiple starts and only a single direction then this will still return a 3xn array but will use
+numpy broadcasting so that memory is not duplicated.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.ray_tracer.rays.Rays.inv_direction">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">inv_direction</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.ray_tracer.rays.Rays.inv_direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>The inverse of the direction vectors (1/directions) as a 3xn array (if n==1 then a flat 3 component array is
+returned).</p>
+<p>If there are multiple starts and only a single direction then this will still return a 3xn array but will use
+numpy broadcasting so that memory is not duplicated.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="giant.ray_tracer.rays.Rays.ignore">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">ignore</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional[Union[Sequence,</span> <span class="pre">numpy.ndarray]]</span></em><a class="headerlink" href="#giant.ray_tracer.rays.Rays.ignore" title="Permalink to this definition">¶</a></dt>
+<dd><p>An array of the full ids of whatever you are trying to ignore for specific rays or None.</p>
+<p>This is generally used when illuminating a scene as a way to ignore the surface that a ray starts at.  See the
+class documentation for more details on how this mush be set.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p class="rubric">Summary of Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.ray_tracer.rays.Rays.rotate.html#giant.ray_tracer.rays.Rays.rotate" title="giant.ray_tracer.rays.Rays.rotate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate</span></code></a></p></td>
+<td><p>Rotates the start location(s) and the direction(s) of the ray(s) in place.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="giant.ray_tracer.rays.Rays.translate.html#giant.ray_tracer.rays.Rays.translate" title="giant.ray_tracer.rays.Rays.translate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">translate</span></code></a></p></td>
+<td><p>Translates the start location(s) of the ray(s) in place.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.ray_tracer.rays.html" title="Previous document">rays</a>
+        </li>
+        <li>
+          <a href="giant.ray_tracer.rays.Rays.rotate.html" title="Next document">Rays.rotate</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/ray_tracer/rays/giant.ray_tracer.rays.Rays.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

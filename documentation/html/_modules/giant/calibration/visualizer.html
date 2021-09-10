@@ -1,0 +1,434 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.calibration.visualizer &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.calibration.visualizer</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
+<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
+
+
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides utilities for visually inspecting calibration and alignment results.</span>
+
+<span class="sd">Throughout this module, the visualizations created can either be displayed interactively on-screen or saved directly to</span>
+<span class="sd">a PDF file.  To save to a PDF file, simply provide the optional argument ``pdf_name`` to each function.  To display the</span>
+<span class="sd">plot interactively, leave the ``pdf_name`` argument alone or set it to ``None``.</span>
+
+<span class="sd">All of the functions in this module assume that at minimum the :meth:`.Calibration.id_stars` has been called. This</span>
+<span class="sd">means you can use many of these functions to generate prefit plots for comparison with post-fit plots if you so desire.</span>
+
+<span class="sd">This module imports the pertinent functions from the :mod:`.stellar_opnav.visualizer` module for convenience</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_pdf</span> <span class="kn">import</span> <span class="n">PdfPages</span>
+
+<span class="kn">from</span> <span class="nn">.calibration_class</span> <span class="kn">import</span> <span class="n">Calibration</span>
+<span class="kn">from</span> <span class="nn">..rotations</span> <span class="kn">import</span> <span class="n">quaternion_to_euler</span><span class="p">,</span> <span class="n">euler_to_rotmat</span><span class="p">,</span> <span class="n">Rotation</span>
+<span class="kn">from</span> <span class="nn">..camera_models</span> <span class="kn">import</span> <span class="n">CameraModel</span>
+<span class="kn">from</span> <span class="nn">.._typing</span> <span class="kn">import</span> <span class="n">PATH</span>
+
+<span class="c1"># noinspection PyUnresolvedReferences</span>
+<span class="kn">from</span> <span class="nn">..stellar_opnav.visualizer</span> <span class="kn">import</span> <span class="p">(</span><span class="n">show_id_results</span><span class="p">,</span> <span class="n">residual_histograms</span><span class="p">,</span> <span class="n">plot_residuals_vs_magnitude</span><span class="p">,</span>
+                                        <span class="n">plot_residuals_vs_temperature</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="plot_focal_length_temperature_dependence"><a class="viewcode-back" href="../../../calibration/visualizer/giant.calibration.visualizer.plot_focal_length_temperature_dependence.html#giant.calibration.visualizer.plot_focal_length_temperature_dependence">[docs]</a><span class="k">def</span> <span class="nf">plot_focal_length_temperature_dependence</span><span class="p">(</span><span class="n">calib</span><span class="p">:</span> <span class="n">Calibration</span><span class="p">,</span> <span class="n">show_individual_focal_lengths</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                                             <span class="n">pdf_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PATH</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function generates a figure of the camera model&#39;s focal length temperature dependence.</span>
+
+<span class="sd">    The temperature dependence is shown over the range of temperatures of the camera for the images currently contained</span>
+<span class="sd">    in the images in the camera as a line.  Optionally, if ``show_individual_focal_lengths`` is set to ``True``, this</span>
+<span class="sd">    function will go through and estimate just the focal length with no temperature dependence for each image</span>
+<span class="sd">    individually (holding all other parameters of the camera model fixed) and plot these individual focal lengths as a</span>
+<span class="sd">    scatter plot on the figure.  If this is requested, then :meth:`~.Calibration.id_stars` must have been called at</span>
+<span class="sd">    least once.</span>
+
+<span class="sd">    Note that this function assumes that the camera model being estimated is a subclass of :class:`.PinholeModel` here</span>
+<span class="sd">    and that it follows the same convention for the temperature dependence as the :class:`.PinholeModel`.  If the camera</span>
+<span class="sd">    model being estimated does not implement a :meth:`~.PinholeModel.get_temperature_scale` then this function will</span>
+<span class="sd">    raise an exception.  Additionally, if it deviates significantly from the :class:`.PinholeModel` and its subclasses</span>
+<span class="sd">    in the way it handles focal length/temperature dependence this function will likely run into issues, therefore it</span>
+<span class="sd">    is recommended to either use one of the existing GIANT :class:`.PinholeModel` subclasses or be extra careful in how</span>
+<span class="sd">    you implement your own camera model to mimic the :class:`.PinholeModel`</span>
+
+<span class="sd">    :raises ValueError: if the camera model doesn&#39;t implement a :meth:`~.PinholeModel.get_temperature_scale` method.</span>
+
+<span class="sd">    :param calib: The calibration object to plot the results for</span>
+<span class="sd">    :param show_individual_focal_lengths: A boolean flag specifying whether to plot the individual focal lengths for</span>
+<span class="sd">                                          each image</span>
+<span class="sd">    :param pdf_name: Save the plot to this file name as a pdf</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;get_temperature_scale&#39;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The camera model must implement temperature dependence to use this function through the &#39;</span>
+                         <span class="s1">&#39;get_temperature_scale method to use this function.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># get the list of temperatures under consideration</span>
+    <span class="n">temperatures</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">calib</span><span class="o">.</span><span class="n">camera</span><span class="p">])</span>
+
+    <span class="c1"># get the temperature scales</span>
+    <span class="n">temp_scale</span> <span class="o">=</span> <span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_temperature_scale</span><span class="p">(</span><span class="n">temperatures</span><span class="p">)</span>
+
+    <span class="c1"># make the figure and axes</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+
+    <span class="c1"># check if this is a single focal length model or a double focal length model and handle accordingly</span>
+    <span class="n">double_focal_length</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;fx&#39;</span><span class="p">):</span>  <span class="c1"># double focal length:</span>
+        <span class="n">fx_temp_fit</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fx</span><span class="p">)</span> <span class="o">*</span> <span class="n">temp_scale</span>
+        <span class="n">fy_temp_fit</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fy</span><span class="p">)</span> <span class="o">*</span> <span class="n">temp_scale</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">temperatures</span><span class="p">,</span> <span class="n">fx_temp_fit</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;focal_x&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">temperatures</span><span class="p">,</span> <span class="n">fy_temp_fit</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;focal_y&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Focal Length, pix&#39;</span><span class="p">)</span>
+        <span class="n">double_focal_length</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># single focal length</span>
+        <span class="n">f_temp_fit</span> <span class="o">=</span> <span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">focal_length</span> <span class="o">*</span> <span class="n">temp_scale</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">temperatures</span><span class="p">,</span> <span class="n">f_temp_fit</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;focal_length&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Focal Length, mm&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Temperature, (deg C)&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">show_individual_focal_lengths</span><span class="p">:</span>
+        <span class="c1"># work on a copy of the model</span>
+        <span class="n">orig_model</span> <span class="o">=</span> <span class="n">calib</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">model_copy</span> <span class="o">=</span> <span class="n">orig_model</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">calib</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model_copy</span>
+
+        <span class="c1"># only estimate the focal length parameters</span>
+        <span class="k">if</span> <span class="n">double_focal_length</span><span class="p">:</span>
+            <span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">estimation_parameters</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;fx&#39;</span><span class="p">,</span> <span class="s1">&#39;fy&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">estimation_parameters</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;focal_length&#39;</span><span class="p">]</span>
+        <span class="c1"># reset the temperature coefficients</span>
+        <span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">temperature_coefficients</span><span class="p">[:]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># get a copy of the current image mask from the camera</span>
+        <span class="n">orig_mask</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">calib</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">image_mask</span><span class="p">)</span>
+
+        <span class="n">focal_lengths</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># loop through each turned on image</span>
+        <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">calib</span><span class="o">.</span><span class="n">camera</span><span class="p">:</span>
+
+            <span class="c1"># if stars were found for this image, call estimate_calibration to get an updated focal length</span>
+            <span class="k">if</span> <span class="p">((</span><span class="n">calib</span><span class="o">.</span><span class="n">matched_catalogue_star_records</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span>
+                    <span class="p">(</span><span class="ow">not</span> <span class="n">calib</span><span class="o">.</span><span class="n">matched_catalogue_star_records</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span><span class="o">.</span><span class="n">empty</span><span class="p">)):</span>
+                <span class="c1"># turn off all but this image</span>
+                <span class="n">calib</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">all_off</span><span class="p">()</span>
+                <span class="n">calib</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">image_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="c1"># estimate the focal length</span>
+                <span class="n">calib</span><span class="o">.</span><span class="n">estimate_calibration</span><span class="p">()</span>
+                <span class="c1"># reset the image mask to its original value</span>
+                <span class="n">calib</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">image_mask</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">orig_mask</span><span class="p">)</span>
+
+            <span class="c1"># store the updated focal length</span>
+            <span class="k">if</span> <span class="n">double_focal_length</span><span class="p">:</span>
+                <span class="n">focal_lengths</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">abs</span><span class="p">(</span><span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fx</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fy</span><span class="p">)])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">focal_lengths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">focal_length</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">double_focal_length</span><span class="p">:</span>
+                <span class="n">focal_lengths</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">focal_lengths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># scatter the individual focal lengths</span>
+        <span class="k">if</span> <span class="n">double_focal_length</span><span class="p">:</span>
+            <span class="n">fx</span><span class="p">,</span> <span class="n">fy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">focal_lengths</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">temperatures</span><span class="p">,</span> <span class="n">fx</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">temperatures</span><span class="p">,</span> <span class="n">fy</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">temperatures</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">focal_lengths</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+
+        <span class="c1"># put things back the way it was</span>
+        <span class="n">calib</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">orig_model</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">pdf_name</span><span class="p">:</span>
+        <span class="n">pdf</span> <span class="o">=</span> <span class="n">PdfPages</span><span class="p">(</span><span class="n">pdf_name</span><span class="p">)</span>
+        <span class="n">pdf</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+        <span class="n">pdf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plot_distortion_map"><a class="viewcode-back" href="../../../calibration/visualizer/giant.calibration.visualizer.plot_distortion_map.html#giant.calibration.visualizer.plot_distortion_map">[docs]</a><span class="k">def</span> <span class="nf">plot_distortion_map</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">CameraModel</span><span class="p">,</span> <span class="n">pdf_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PATH</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function produces a distortion map for the provided camera model.</span>
+
+<span class="sd">    If the `pdf_name` param is provided, the figure will be saved to a pdf file of the same name, and the figure</span>
+<span class="sd">    will not be displayed to the user.</span>
+
+<span class="sd">    :param model: The camera model to generate the distortion map for</span>
+<span class="sd">    :param pdf_name: Used as the file name for saving the figure to pdf</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">distortion_map</span><span class="p">((</span><span class="n">model</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">n_cols</span><span class="p">),</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">cs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">quiver</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">*</span><span class="n">d</span><span class="p">,</span> <span class="n">angles</span><span class="o">=</span><span class="s1">&#39;xy&#39;</span><span class="p">,</span> <span class="n">scale_units</span><span class="o">=</span><span class="s1">&#39;xy&#39;</span><span class="p">,</span>
+                     <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.0005</span><span class="p">,</span> <span class="n">headwidth</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">headlength</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">clabel</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Column, pix&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Row, pix&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">pdf_name</span><span class="p">:</span>
+        <span class="n">pdf</span> <span class="o">=</span> <span class="n">PdfPages</span><span class="p">(</span><span class="n">pdf_name</span><span class="p">)</span>
+        <span class="n">pdf</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+        <span class="n">pdf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plot_alignment_residuals"><a class="viewcode-back" href="../../../calibration/visualizer/giant.calibration.visualizer.plot_alignment_residuals.html#giant.calibration.visualizer.plot_alignment_residuals">[docs]</a><span class="k">def</span> <span class="nf">plot_alignment_residuals</span><span class="p">(</span><span class="n">calib</span><span class="p">:</span> <span class="n">Calibration</span><span class="p">,</span> <span class="n">pdf_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PATH</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function plots the residual alignment errors per image as roll/pitch/yaw for both the estimated static and</span>
+<span class="sd">    temperature alignments (if done).</span>
+
+<span class="sd">    The residual plots are generated by comparing the current values of :attr:`Image.rotation_inertial_to_camera` to</span>
+<span class="sd">    ``calib...._alignment*calib.alignment_base_frame_func(image.observation_date)`` and converting the residual into</span>
+<span class="sd">    roll, pitch, yaw Tait-Bryan angles (xyz) rotation.  This function will generate 1 figure for each type of alignment</span>
+<span class="sd">    that has been performed, plotting the residuals versus camera temperature.  The residuals are computed as the</span>
+<span class="sd">    rotation from the computed frame using the estimated alignment to the observed frame for each image.</span>
+
+<span class="sd">    .. Note::</span>
+
+<span class="sd">        This function will take into account misalignment estimated in the camera model itself if it finds one, however,</span>
+<span class="sd">        it is recommended that before calling this function you reset the misalignment to 0 in the camera model and</span>
+<span class="sd">        then call :meth:`~.Calibration.estimate_attitude` again before using this function.</span>
+
+<span class="sd">    You should have called at least one of :meth:`~.Calibration.estimate_static_alignment` or</span>
+<span class="sd">    :meth:`~.Calibration.estimate_temperature_dependent_alignment` before using this function.  In addition, you should</span>
+<span class="sd">    have called method :meth:`~.Calibration.estimate_attitude` for the results generated from this function to be</span>
+<span class="sd">    meaningful.  Finally, the :attr:`~.Calibration.alignment_base_frame_func` must not be ``None``.</span>
+
+<span class="sd">    If the ``pdf_name`` param is provided, the figures will be saved to a pdf file of the same name, and will not be</span>
+<span class="sd">    displayed interactively.</span>
+
+<span class="sd">    :raises ValueError: If both :attr:`~.Calibration.static_alignment` and</span>
+<span class="sd">                        :attr:`~.Calibration.temperature_dependent_alignment` are ``None`` or if</span>
+<span class="sd">                        :attr:`~.Calibration.alignment_base_frame_func` is ``None``.</span>
+
+<span class="sd">    :param calib: The :class:`.Calibration` instance</span>
+<span class="sd">    :param pdf_name: Used as the file name for saving the figures to a pdf</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">calib</span><span class="o">.</span><span class="n">static_alignment</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">calib</span><span class="o">.</span><span class="n">temperature_dependent_alignment</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;One form of alignment must have been estimated before using this function.&#39;</span>
+                         <span class="s1">&#39;Please call estimate_static_alignment or estimate_temperature_dependent_alignment from the &#39;</span>
+                         <span class="s1">&#39;calibration object before using this function&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">calib</span><span class="o">.</span><span class="n">alignment_base_frame_func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The alignment base frame function must not be None to use this function.&#39;</span><span class="p">)</span>
+
+    <span class="n">temperatures</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">static_residuals</span> <span class="o">=</span> <span class="p">[[],</span> <span class="p">[],</span> <span class="p">[]]</span>
+    <span class="n">temperature_residuals</span> <span class="o">=</span> <span class="p">[[],</span> <span class="p">[],</span> <span class="p">[]]</span>
+
+    <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">calib</span><span class="o">.</span><span class="n">camera</span><span class="p">:</span>
+        <span class="c1"># check if any stars were identified for this image</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">calib</span><span class="o">.</span><span class="n">matched_catalogue_star_records</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">temperatures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+
+            <span class="n">measured</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">*</span> <span class="n">calib</span><span class="o">.</span><span class="n">alignment_base_frame_func</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span><span class="o">.</span><span class="n">inv</span><span class="p">()</span>
+            <span class="c1"># take into account the camera model misalignment</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;get_misalignment&#39;</span><span class="p">):</span>
+                <span class="n">measured</span> <span class="o">=</span> <span class="n">calib</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_misalignment</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span><span class="o">*</span><span class="n">measured</span>
+
+            <span class="k">if</span> <span class="n">calib</span><span class="o">.</span><span class="n">static_alignment</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">static_err</span> <span class="o">=</span> <span class="n">quaternion_to_euler</span><span class="p">(</span><span class="n">measured</span> <span class="o">*</span> <span class="n">calib</span><span class="o">.</span><span class="n">static_alignment</span><span class="o">.</span><span class="n">inv</span><span class="p">())</span>
+
+                <span class="n">static_residuals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">static_err</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># in milliradians</span>
+                <span class="n">static_residuals</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">static_err</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># in milliradians</span>
+                <span class="n">static_residuals</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">static_err</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># in milliradians</span>
+
+            <span class="k">if</span> <span class="n">calib</span><span class="o">.</span><span class="n">temperature_dependent_alignment</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">temperature_err</span> <span class="o">=</span> <span class="n">quaternion_to_euler</span><span class="p">(</span>
+                    <span class="n">measured</span> <span class="o">*</span> <span class="n">Rotation</span><span class="p">(</span>
+                        <span class="n">euler_to_rotmat</span><span class="p">(</span><span class="n">calib</span><span class="o">.</span><span class="n">temperature_dependent_alignment</span><span class="o">@</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">],</span>
+                                        <span class="n">order</span><span class="o">=</span><span class="n">calib</span><span class="o">.</span><span class="n">temperature_dependent_alignment_estimator</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">inv</span><span class="p">()</span>
+                <span class="p">)</span>
+
+                <span class="n">temperature_residuals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temperature_err</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># in milliradians</span>
+                <span class="n">temperature_residuals</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temperature_err</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># in milliradians</span>
+                <span class="n">temperature_residuals</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temperature_err</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># in milliradians</span>
+
+    <span class="k">if</span> <span class="n">pdf_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pdf</span> <span class="o">=</span> <span class="n">PdfPages</span><span class="p">(</span><span class="n">pdf_name</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pdf</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">calib</span><span class="o">.</span><span class="n">static_alignment</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">temperatures</span><span class="p">,</span> <span class="n">static_residuals</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;pitch, $\mathbf</span><span class="si">{x}</span><span class="s1">_C$&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">temperatures</span><span class="p">,</span> <span class="n">static_residuals</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;yaw, $\mathbf</span><span class="si">{y}</span><span class="s1">_C$&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">temperatures</span><span class="p">,</span> <span class="n">static_residuals</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;roll, $\mathbf</span><span class="si">{z}</span><span class="s1">_C$&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Static Alignment Residuals vs Temperature</span><span class="se">\n</span><span class="s1">&#39;</span>
+                  <span class="s1">&#39;Standard Deviation (</span><span class="si">{:.3g}</span><span class="s1">, </span><span class="si">{:.3g}</span><span class="s1">, </span><span class="si">{:.3g}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">static_residuals</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                                                                       <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">static_residuals</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                                                       <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">static_residuals</span><span class="p">[</span><span class="mi">2</span><span class="p">])))</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;temperature, deg C&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Computed to Measured Residuals, mrad&#39;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">draggable</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">set_draggable</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">pdf</span><span class="p">:</span>
+            <span class="n">pdf</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">calib</span><span class="o">.</span><span class="n">temperature_dependent_alignment</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">temperatures</span><span class="p">,</span> <span class="n">temperature_residuals</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;pitch, $\mathbf</span><span class="si">{x}</span><span class="s1">_C$&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">temperatures</span><span class="p">,</span> <span class="n">temperature_residuals</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;yaw, $\mathbf</span><span class="si">{y}</span><span class="s1">_C$&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">temperatures</span><span class="p">,</span> <span class="n">temperature_residuals</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;roll, $\mathbf</span><span class="si">{z}</span><span class="s1">_C$&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Temperature Dependent Alignment Residuals vs Temperature</span><span class="se">\n</span><span class="s1">&#39;</span>
+                  <span class="s1">&#39;Standard Deviation (</span><span class="si">{:.3g}</span><span class="s1">, </span><span class="si">{:.3g}</span><span class="s1">, </span><span class="si">{:.3g}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">temperature_residuals</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                                                                       <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">temperature_residuals</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                                                       <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">temperature_residuals</span><span class="p">[</span><span class="mi">2</span><span class="p">])))</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;temperature, deg C&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Computed to Measured Residuals, mrad&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">draggable</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">set_draggable</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">pdf</span><span class="p">:</span>
+            <span class="n">pdf</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">pdf_name</span><span class="p">:</span>
+        <span class="n">pdf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

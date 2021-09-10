@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>unresolved &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="PhaseCorrectionType" href="unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrectionType.html" />
+    <link rel="prev" title="VisibleFeatureFinderOptions" href="sfn/surface_features/giant.relative_opnav.estimators.sfn.surface_features.VisibleFeatureFinderOptions.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.relative_opnav.html">giant.relative_opnav</a><ul>
+  <li><a href="../giant.relative_opnav.estimators.html">estimators</a><ul>
+      <li>Previous: <a href="sfn/surface_features/giant.relative_opnav.estimators.sfn.surface_features.VisibleFeatureFinderOptions.html" title="previous chapter">VisibleFeatureFinderOptions</a></li>
+      <li>Next: <a href="unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrectionType.html" title="next chapter">PhaseCorrectionType</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="sfn/surface_features/giant.relative_opnav.estimators.sfn.surface_features.VisibleFeatureFinderOptions.html" title="Previous document">VisibleFeatureFinderOptions</a>
+        </li>
+        <li>
+          <a href="unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrectionType.html" title="Next document">PhaseCorrectionType</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.relative_opnav.estimators.unresolved">
+<span id="unresolved"></span><h1>unresolved<a class="headerlink" href="#module-giant.relative_opnav.estimators.unresolved" title="Permalink to this headline">¶</a></h1>
+<p>This module provides a class which implements an unresolved center finding RelNav technique along with a new meta class
+that adds concrete center-of-brightness to center-of-figure correction methods.</p>
+<section id="description-of-the-technique">
+<h2>Description of the Technique<a class="headerlink" href="#description-of-the-technique" title="Permalink to this headline">¶</a></h2>
+<p>Unresolved center finding is applicable when you observe a target that is dominated by the point spread function of the
+camera rather than by the geometry of the object.  Typically this occurs when the apparent diameter of the object in
+the image is less than 5-10 pixels. Because these targets are dominated by the camera point spread function,
+GIANT treats unresolved bodies the same way that stars are treated.  In fact, all of the same algorithms and functions
+are used from the <a class="reference internal" href="../../giant.image_processing.html#module-giant.image_processing" title="giant.image_processing"><code class="xref py py-mod docutils literal notranslate"><span class="pre">image_processing</span></code></a> module as are used for extracting potential star locations from images.</p>
+<p>First, the area around the expected location of the target body is searched for all groupings of pixels that exceed a
+specified threshold.  Then, as long as there is 1 and only 1 grouping of pixels above the threshold in the search
+region, the sub-pixel center of brightness is extracted by using the specified fitting function (typically a 2D gaussian
+or a moment algorithm.  This is all done in the <a class="reference internal" href="../../image_processing/giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi.html#giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi" title="giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ImageProcessing.locate_subpixel_poi_in_roi()</span></code></a> method from the
+image processing class.</p>
+<p>This routine is generally used during early approach to an object, or for extracting Celestial Navigation (CelNav)
+observations to known targets from the solar system.  It does not apply once the target’s apparent diameter begins to
+exceed 5-10 pixels and will begin failing at that point.</p>
+</section>
+<section id="tuning">
+<h2>Tuning<a class="headerlink" href="#tuning" title="Permalink to this headline">¶</a></h2>
+<p>The primary control for tuning this technique is through the tuning of the
+<a class="reference internal" href="../../image_processing/giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi.html#giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi" title="giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ImageProcessing.locate_subpixel_poi_in_roi()</span></code></a> method.  There are a number of tuning parameters
+for this method and we direct you to its documentation for more details.</p>
+<p>In addition, there are a few tuning parameters for the class itself.
+The search region is controlled by the <code class="xref py py-attr docutils literal notranslate"><span class="pre">search_distance</span></code> attribute.  This should be an
+integer which specifies half of the square region to search around the predicted center, such that a 2*
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">search_distance</span></code> by 2* <code class="xref py py-attr docutils literal notranslate"><span class="pre">search_distance</span></code> pixels of the
+image will be searched.</p>
+<p>In addition, Whether the phase correction is applied or not is controlled by the boolean flag
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">apply_phase_correction</span></code>.  The phase correction computation can be controlled using the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">phase_correction_type</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">brdf</span></code> attributes.</p>
+</section>
+<section id="use">
+<h2>Use<a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h2>
+<p>This class is not typically not used directly by the user, but instead is
+called from the <a class="reference internal" href="../relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class using the technique name of <code class="docutils literal notranslate"><span class="pre">unresolved</span></code>.  For more details on using
+this class directly, refer to the following class documentation.  For more details on using this class through the
+<a class="reference internal" href="../relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> user interface refer to the <a class="reference internal" href="../giant.relative_opnav.relnav_class.html#module-giant.relative_opnav.relnav_class" title="giant.relative_opnav.relnav_class"><code class="xref py py-mod docutils literal notranslate"><span class="pre">relnav_class</span></code></a> documentation.</p>
+</section>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrectionType.html#giant.relative_opnav.estimators.unresolved.PhaseCorrectionType" title="giant.relative_opnav.estimators.unresolved.PhaseCorrectionType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PhaseCorrectionType</span></code></a></p></td>
+<td><p>This enumeration provides the possible phase correction methods to use to convert the observed center-of-brightness to a center of figure observation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrector.html#giant.relative_opnav.estimators.unresolved.PhaseCorrector" title="giant.relative_opnav.estimators.unresolved.PhaseCorrector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PhaseCorrector</span></code></a></p></td>
+<td><p>This class adds phase correction capabilities to RelNavEstimator.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="unresolved/giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding.html#giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding" title="giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UnresolvedCenterFinding</span></code></a></p></td>
+<td><p>This class implements GIANT’s version of unresolved center finding for extracting bearing measurements to unresolved targets in an image.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="sfn/surface_features/giant.relative_opnav.estimators.sfn.surface_features.VisibleFeatureFinderOptions.html" title="Previous document">VisibleFeatureFinderOptions</a>
+        </li>
+        <li>
+          <a href="unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrectionType.html" title="Next document">PhaseCorrectionType</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/relative_opnav/estimators/giant.relative_opnav.estimators.unresolved.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

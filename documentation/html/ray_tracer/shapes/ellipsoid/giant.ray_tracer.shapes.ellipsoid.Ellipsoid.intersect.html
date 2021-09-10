@@ -1,0 +1,194 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Ellipsoid.intersect &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="next" title="Ellipsoid.rotate" href="giant.ray_tracer.shapes.ellipsoid.Ellipsoid.rotate.html" />
+    <link rel="prev" title="Ellipsoid.find_limbs" href="giant.ray_tracer.shapes.ellipsoid.Ellipsoid.find_limbs.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../giant.html">API Reference</a><ul>
+  <li><a href="../../../giant.ray_tracer.html">ray_tracer</a><ul>
+  <li><a href="../../giant.ray_tracer.shapes.html">shapes</a><ul>
+  <li><a href="../giant.ray_tracer.shapes.ellipsoid.html">ellipsoid</a><ul>
+  <li><a href="giant.ray_tracer.shapes.ellipsoid.Ellipsoid.html">Ellipsoid</a><ul>
+      <li>Previous: <a href="giant.ray_tracer.shapes.ellipsoid.Ellipsoid.find_limbs.html" title="previous chapter">Ellipsoid.find_limbs</a></li>
+      <li>Next: <a href="giant.ray_tracer.shapes.ellipsoid.Ellipsoid.rotate.html" title="next chapter">Ellipsoid.rotate</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.ray_tracer.shapes.ellipsoid.Ellipsoid.find_limbs.html" title="Previous document">Ellipsoid.find_limbs</a>
+        </li>
+        <li>
+          <a href="giant.ray_tracer.shapes.ellipsoid.Ellipsoid.rotate.html" title="Next document">Ellipsoid.rotate</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="ellipsoid-intersect">
+<h1>Ellipsoid.intersect<a class="headerlink" href="#ellipsoid-intersect" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../giant.ray_tracer.shapes.ellipsoid.html#module-giant.ray_tracer.shapes.ellipsoid" title="giant.ray_tracer.shapes.ellipsoid"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.ray_tracer.shapes.ellipsoid</span></code></a>:</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.ray_tracer.shapes.ellipsoid.Ellipsoid.intersect">
+<span class="sig-prename descclassname"><span class="pre">Ellipsoid.</span></span><span class="sig-name descname"><span class="pre">intersect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giant.ray_tracer.shapes.ellipsoid.Ellipsoid.intersect" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method determines where the provides rays strike this tri-axial ellipsoid.</p>
+<p>The results are returned as a nx3 numpy array of floats with each row corresponding to the nearest intersect
+location between the corresponding ray and the ellipsoid.  Anywhere that the rays did not strike the ellipsoid
+the corresponding row is set to all NaN.</p>
+<p>The intersects are determined by solving the following quadratic equation for <span class="math notranslate nohighlight">\(d\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[ad^2+bd+c=0\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}a = \mathbf{d}^T\mathbf{A}_C\mathbf{d} \\
+b = 2\mathbf{d}^T\mathbf{A}_C\left(\mathbf{s}-\mathbf{c}\right) \\
+c = \left(\mathbf{s}-\mathbf{c}\right)^T\mathbf{A}_C\left(\mathbf{s}-\mathbf{c}\right)\end{split}\]</div>
+<p><span class="math notranslate nohighlight">\(\mathbf{d}\)</span> is the direction of the ray, <span class="math notranslate nohighlight">\(\mathbf{s}\)</span> is the start location for the ray, and
+<span class="math notranslate nohighlight">\(\mathbf{c}\)</span> is the center of the ellipsoid in the current frame.  Solving this quadratic equation will
+give 2 distances.  If both are imaginary (or both are negative) then no intersect occurs.  Otherwise the
+smallest (positive) distance is taken as the closest intersect.</p>
+<p>Only the intersection point is returned for each ray.  To get all of the information (intersection point,
+surface normal, albedo, etc) see the <a class="reference internal" href="giant.ray_tracer.shapes.ellipsoid.Ellipsoid.trace.html#giant.ray_tracer.shapes.ellipsoid.Ellipsoid.trace" title="giant.ray_tracer.shapes.ellipsoid.Ellipsoid.trace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">trace()</span></code></a> or <a class="reference internal" href="giant.ray_tracer.shapes.ellipsoid.Ellipsoid.compute_intersect.html#giant.ray_tracer.shapes.ellipsoid.Ellipsoid.compute_intersect" title="giant.ray_tracer.shapes.ellipsoid.Ellipsoid.compute_intersect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_intersect()</span></code></a> methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rays</strong> (<a class="reference internal" href="../../rays/giant.ray_tracer.rays.Rays.html#giant.ray_tracer.rays.Rays" title="giant.ray_tracer.rays.Rays"><em>Rays</em></a>) – The rays to trace through the array</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A nx3 array (where n is the number of rays) with the closest intersect between the corresponding ray
+and the ellipsoid or NaN if no intersection occurs.</p>
+</dd>
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.ray_tracer.shapes.ellipsoid.Ellipsoid.find_limbs.html" title="Previous document">Ellipsoid.find_limbs</a>
+        </li>
+        <li>
+          <a href="giant.ray_tracer.shapes.ellipsoid.Ellipsoid.rotate.html" title="Next document">Ellipsoid.rotate</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../../_sources/ray_tracer/shapes/ellipsoid/giant.ray_tracer.shapes.ellipsoid.Ellipsoid.intersect.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

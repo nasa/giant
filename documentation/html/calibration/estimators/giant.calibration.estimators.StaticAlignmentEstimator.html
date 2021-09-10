@@ -1,0 +1,212 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>giant.calibration.estimators.StaticAlignmentEstimator &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="StaticAlignmentEstimator.estimate" href="giant.calibration.estimators.StaticAlignmentEstimator.estimate.html" />
+    <link rel="prev" title="LMAEstimator.reset" href="giant.calibration.estimators.LMAEstimator.reset.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.calibration.html">giant.calibration</a><ul>
+  <li><a href="../giant.calibration.estimators.html">giant.calibration.estimators</a><ul>
+      <li>Previous: <a href="giant.calibration.estimators.LMAEstimator.reset.html" title="previous chapter">LMAEstimator.reset</a></li>
+      <li>Next: <a href="giant.calibration.estimators.StaticAlignmentEstimator.estimate.html" title="next chapter">StaticAlignmentEstimator.estimate</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.calibration.estimators.LMAEstimator.reset.html" title="Previous document">LMAEstimator.reset</a>
+        </li>
+        <li>
+          <a href="giant.calibration.estimators.StaticAlignmentEstimator.estimate.html" title="Next document">StaticAlignmentEstimator.estimate</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="giant-calibration-estimators-staticalignmentestimator">
+<h1>giant.calibration.estimators.StaticAlignmentEstimator<a class="headerlink" href="#giant-calibration-estimators-staticalignmentestimator" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.calibration.estimators.StaticAlignmentEstimator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.calibration.estimators.</span></span><span class="sig-name descname"><span class="pre">StaticAlignmentEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame1_unit_vecs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame2_unit_vecs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/calibration/estimators.html#StaticAlignmentEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.calibration.estimators.StaticAlignmentEstimator" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class estimates a static attitude alignment between one frame and another.</p>
+<p>The static alignment is estimated using Davenport’s Q-Method solution to Wahba’s problem, using the
+<a class="reference internal" href="../../giant.calibration.html#giant.calibration.DavenportQMethod" title="giant.calibration.DavenportQMethod"><code class="xref py py-class docutils literal notranslate"><span class="pre">DavenportQMethod</span></code></a> class.  To use, simply specify the unit vectors from the base frame and the unit vectors
+from the target frame, and then call <a class="reference internal" href="giant.calibration.estimators.StaticAlignmentEstimator.estimate.html#giant.calibration.estimators.StaticAlignmentEstimator.estimate" title="giant.calibration.estimators.StaticAlignmentEstimator.estimate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate()</span></code></a>.  The estimated alignment from frame 1 to frame 2 will
+be stored as a <a class="reference internal" href="../../rotations/giant.rotations.Rotation.html#giant.rotations.Rotation" title="giant.rotations.Rotation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rotation</span></code></a> object in <a class="reference internal" href="#giant.calibration.estimators.StaticAlignmentEstimator.alignment" title="giant.calibration.estimators.StaticAlignmentEstimator.alignment"><code class="xref py py-attr docutils literal notranslate"><span class="pre">alignment</span></code></a>.</p>
+<p>In general this class should not be used by the user, and instead you should use the <a class="reference internal" href="../calibration_class/giant.calibration.calibration_class.Calibration.html#giant.calibration.calibration_class.Calibration" title="giant.calibration.calibration_class.Calibration"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calibration</span></code></a> class and
+its <a class="reference internal" href="../calibration_class/giant.calibration.calibration_class.Calibration.estimate_static_alignment.html#giant.calibration.calibration_class.Calibration.estimate_static_alignment" title="giant.calibration.calibration_class.Calibration.estimate_static_alignment"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate_static_alignment()</span></code></a> method which will handle set up and tear down of this class for
+you.</p>
+<p>For more details about the algorithm used see the <a class="reference internal" href="../../giant.calibration.html#giant.calibration.DavenportQMethod" title="giant.calibration.DavenportQMethod"><code class="xref py py-class docutils literal notranslate"><span class="pre">DavenportQMethod</span></code></a> documentation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame1_unit_vecs</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>]</em><em>]</em>) – Unit vectors in the base frame as a 3xn array where each column is a unit vector.</p></li>
+<li><p><strong>frame2_unit_vecs</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>]</em><em>]</em>) – Unit vectors in the destination (camera) frame as a 3xn array where each column is a
+unit vector</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.calibration.estimators.StaticAlignmentEstimator.frame1_unit_vecs">
+<span class="sig-name descname"><span class="pre">frame1_unit_vecs</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.calibration.estimators.StaticAlignmentEstimator.frame1_unit_vecs" title="Permalink to this definition">¶</a></dt>
+<dd><p>The base frame unit vectors.</p>
+<p>Each column of this 3xn matrix should correspond to the same column in the <a class="reference internal" href="#giant.calibration.estimators.StaticAlignmentEstimator.frame2_unit_vecs" title="giant.calibration.estimators.StaticAlignmentEstimator.frame2_unit_vecs"><code class="xref py py-attr docutils literal notranslate"><span class="pre">frame2_unit_vecs</span></code></a> attribute.</p>
+<p>Typically this data should come from multiple images to ensure a good alignment can be estimated over 
+time.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.calibration.estimators.StaticAlignmentEstimator.frame2_unit_vecs">
+<span class="sig-name descname"><span class="pre">frame2_unit_vecs</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.calibration.estimators.StaticAlignmentEstimator.frame2_unit_vecs" title="Permalink to this definition">¶</a></dt>
+<dd><p>The target frame unit vectors.</p>
+<p>Each column of this 3xn matrix should correspond to the same column in the <a class="reference internal" href="#giant.calibration.estimators.StaticAlignmentEstimator.frame1_unit_vecs" title="giant.calibration.estimators.StaticAlignmentEstimator.frame1_unit_vecs"><code class="xref py py-attr docutils literal notranslate"><span class="pre">frame1_unit_vecs</span></code></a> attribute.</p>
+<p>Typically this data should come from multiple images to ensure a good alignment can be estimated over 
+time.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.calibration.estimators.StaticAlignmentEstimator.alignment">
+<span class="sig-name descname"><span class="pre">alignment</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../rotations/giant.rotations.Rotation.html#giant.rotations.Rotation" title="giant.rotations.Rotation"><span class="pre">giant.rotations.Rotation</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.calibration.estimators.StaticAlignmentEstimator.alignment" title="Permalink to this definition">¶</a></dt>
+<dd><p>The location where the estimated alignment is stored</p>
+</dd></dl>
+
+</dd></dl>
+
+<p class="rubric">Summary of Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.calibration.estimators.StaticAlignmentEstimator.estimate.html#giant.calibration.estimators.StaticAlignmentEstimator.estimate" title="giant.calibration.estimators.StaticAlignmentEstimator.estimate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate</span></code></a></p></td>
+<td><p>Estimate the static alignment between the frame 1 and frame 2 using Davenport’s Q Method Solution.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.calibration.estimators.LMAEstimator.reset.html" title="Previous document">LMAEstimator.reset</a>
+        </li>
+        <li>
+          <a href="giant.calibration.estimators.StaticAlignmentEstimator.estimate.html" title="Next document">StaticAlignmentEstimator.estimate</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/calibration/estimators/giant.calibration.estimators.StaticAlignmentEstimator.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

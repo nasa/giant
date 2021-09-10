@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>giant.utilities.tee &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="REDIRECT" href="tee/giant.utilities.tee.REDIRECT.html" />
+    <link rel="prev" title="RandomCombinations" href="random_combination/giant.utilities.random_combination.RandomCombinations.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.utilities.html">giant.utilities</a><ul>
+      <li>Previous: <a href="random_combination/giant.utilities.random_combination.RandomCombinations.html" title="previous chapter">RandomCombinations</a></li>
+      <li>Next: <a href="tee/giant.utilities.tee.REDIRECT.html" title="next chapter">REDIRECT</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="random_combination/giant.utilities.random_combination.RandomCombinations.html" title="Previous document">RandomCombinations</a>
+        </li>
+        <li>
+          <a href="tee/giant.utilities.tee.REDIRECT.html" title="Next document">REDIRECT</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.utilities.tee">
+<span id="giant-utilities-tee"></span><h1>giant.utilities.tee<a class="headerlink" href="#module-giant.utilities.tee" title="Permalink to this headline">¶</a></h1>
+<p>This module provides 2 classes for performing tees of outputs to a file.</p>
+<p>A tee (in unix terminology) refers to the ability to pipe 1 input to multiple outputs.  Here that means we can pipe a
+single call to stderr or stdout to write to both the standard stderr/stdout, as well as a user specified file.  This is
+useful for logging an interactive program (where you want to print both to the screen and to a file).</p>
+<p>The <a class="reference internal" href="tee/giant.utilities.tee.Tee.html#giant.utilities.tee.Tee" title="giant.utilities.tee.Tee"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tee</span></code></a> class is used to tee either STDOUT or STDERR to a file, while the <a class="reference internal" href="tee/giant.utilities.tee.DoubleTee.html#giant.utilities.tee.DoubleTee" title="giant.utilities.tee.DoubleTee"><code class="xref py py-class docutils literal notranslate"><span class="pre">DoubleTee</span></code></a> class is used to
+tee both STDOUT and STDERR to the same file.  Both of these classes can be used as context managers.</p>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="tee/giant.utilities.tee.REDIRECT.html#giant.utilities.tee.REDIRECT" title="giant.utilities.tee.REDIRECT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">REDIRECT</span></code></a></p></td>
+<td><p>An enumeration specifying the options of what to redirect</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tee/giant.utilities.tee.Tee.html#giant.utilities.tee.Tee" title="giant.utilities.tee.Tee"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tee</span></code></a></p></td>
+<td><p>This class support simultaneously writing to a file and stdout/stderr</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tee/giant.utilities.tee.DoubleTee.html#giant.utilities.tee.DoubleTee" title="giant.utilities.tee.DoubleTee"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DoubleTee</span></code></a></p></td>
+<td><p>This class provides the ability to simultaneously tee both STDOUT and STDERR to a file.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="random_combination/giant.utilities.random_combination.RandomCombinations.html" title="Previous document">RandomCombinations</a>
+        </li>
+        <li>
+          <a href="tee/giant.utilities.tee.REDIRECT.html" title="Next document">REDIRECT</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/utilities/giant.utilities.tee.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

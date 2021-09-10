@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>giant.ufo.state_initializer &#8212; GIANT 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="ORExInitializer" href="state_initializer/giant.ufo.state_initializer.ORExInitializer.html" />
+    <link rel="prev" title="OpticalBearingMeasurement.predict" href="measurements/giant.ufo.measurements.OpticalBearingMeasurement.predict.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.ufo.html">giant.ufo</a><ul>
+      <li>Previous: <a href="measurements/giant.ufo.measurements.OpticalBearingMeasurement.predict.html" title="previous chapter">OpticalBearingMeasurement.predict</a></li>
+      <li>Next: <a href="state_initializer/giant.ufo.state_initializer.ORExInitializer.html" title="next chapter">ORExInitializer</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="measurements/giant.ufo.measurements.OpticalBearingMeasurement.predict.html" title="Previous document">OpticalBearingMeasurement.predict</a>
+        </li>
+        <li>
+          <a href="state_initializer/giant.ufo.state_initializer.ORExInitializer.html" title="Next document">ORExInitializer</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.ufo.state_initializer">
+<span id="giant-ufo-state-initializer"></span><h1>giant.ufo.state_initializer<a class="headerlink" href="#module-giant.ufo.state_initializer" title="Permalink to this headline">¶</a></h1>
+<p>This module provides a working example state initializer callable for use with the <a class="reference internal" href="extended_kalman_filter/giant.ufo.extended_kalman_filter.ExtendedKalmanFilter.html#giant.ufo.extended_kalman_filter.ExtendedKalmanFilter" title="giant.ufo.extended_kalman_filter.ExtendedKalmanFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtendedKalmanFilter</span></code></a>.</p>
+<section id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>A state initializer is a Callable object which takes in the initial <a class="reference internal" href="measurements/giant.ufo.measurements.Measurement.html#giant.ufo.measurements.Measurement" title="giant.ufo.measurements.Measurement"><code class="xref py py-class docutils literal notranslate"><span class="pre">Measurement</span></code></a> instance and the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Dynamics.State</span></code> class object and returns an initialized <code class="xref py py-class docutils literal notranslate"><span class="pre">Dynamics.State</span></code> with position, velocity,
+covariance and other state parameters filled in.  This callable can either be a function or a class which implements the
+<code class="docutils literal notranslate"><span class="pre">__call__</span></code> method, although it is more typically implemented as a class to enable easy changing of parameters.</p>
+</section>
+<section id="use">
+<h2>Use<a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h2>
+<p>The process of initializing the state from a measurement will likely be different in every scenario, so the provided
+initializer really just serves as an example (taken from the OSIRIS-REx particle tracking code) for building your own.
+If your case is sufficiently similar to the OSIRIS-REx case then you can use this initializer directly (it is fully
+functional) by supplying an instance of it to the <a class="reference internal" href="extended_kalman_filter/giant.ufo.extended_kalman_filter.ExtendedKalmanFilter.html#giant.ufo.extended_kalman_filter.ExtendedKalmanFilter" title="giant.ufo.extended_kalman_filter.ExtendedKalmanFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtendedKalmanFilter</span></code></a> class.</p>
+</section>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="state_initializer/giant.ufo.state_initializer.ORExInitializer.html#giant.ufo.state_initializer.ORExInitializer" title="giant.ufo.state_initializer.ORExInitializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ORExInitializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="measurements/giant.ufo.measurements.OpticalBearingMeasurement.predict.html" title="Previous document">OpticalBearingMeasurement.predict</a>
+        </li>
+        <li>
+          <a href="state_initializer/giant.ufo.state_initializer.ORExInitializer.html" title="Next document">ORExInitializer</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021 United States Government.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/ufo/giant.ufo.state_initializer.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
