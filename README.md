@@ -7,7 +7,7 @@ scripts that aims to make all aspects of Optical Navigation (OpNav) and Camera C
 To install it is recommended that you use the
 [mamba-forge python distribution/package manager](https://github.com/conda-forge/miniforge#mambaforge).
 
-More detailed instructions can be found in the GIANT documentation (documentation/html/installation.html)
+More detailed instructions can be found in the GIANT documentation (documentation/html/index.html or https://aliounis.github.io/giant.github.io/installation.html)
 
 The first thing to do is to download the GIANT git repository:
 
@@ -59,4 +59,4 @@ tests passing.
 
 GIANT is now installed and you can begin navigating.
 
-See the GIANT documentation (documentation/html/index.html) for more information.
+See the GIANT documentation (documentation/html/index.html or https://aliounis.github.io/giant.github.io/) for more information.
