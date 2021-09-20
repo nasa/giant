@@ -53,6 +53,8 @@ if they meet your needs.
 import numpy as np
 cimport numpy as cnp
 
+import pandas as pd
+
 import pickle
 
 import copy
@@ -235,7 +237,7 @@ cdef class KDNode:
 
         if self.has_surface:
 
-            unique_facets = np.unique(self.surface.facets.ravel())
+            unique_facets = pd.unique(self.surface.facets.ravel())
 
             for facet_number in range(unique_facets.shape[0]):
                 facet = unique_facets[facet_number]
@@ -304,11 +306,11 @@ cdef class KDNode:
 
             normals = self.surface.normals  # type: np.ndarray
 
-            # find the median of the vertices to use as the split point
-            npverts = self.surface.vertices
-            _npverts = npverts.astype(np.float64)
-
             if self._centers is None:
+                # find the median of the vertices to use as the split point
+                npverts = self.surface.vertices
+                _npverts = npverts.astype(np.float64)
+
                 centers = np.zeros((self.surface.num_faces, 3), dtype=np.float64)
                 _centers = centers
                 with nogil, parallel():

@@ -28,6 +28,8 @@ from cython.parallel import prange, parallel
 cimport numpy as cnp
 from libc.math cimport fabs
 
+import pandas as pd
+
 from giant.rotations import Rotation
 from giant.ray_tracer.utilities import ref_ellipse, to_block
 from giant.ray_tracer.rays import INTERSECT_DTYPE
@@ -774,7 +776,7 @@ cdef class RawSurface(Surface):
         :attr:`facets`.  The results are stored in :attr:`bounding_box`.
         """
 
-        unique_verts = self.vertices[np.unique(self.facets)]
+        unique_verts = self.vertices[pd.unique(self.facets.ravel())]
         self.bounding_box = AxisAlignedBoundingBox(unique_verts.min(axis=0), unique_verts.max(axis=0))
 
     def compute_reference_ellipsoid(self):
@@ -789,7 +791,7 @@ cdef class RawSurface(Surface):
         This is done by a dispatch to the :func:`.ref_ellipse` function.
         """
 
-        unique_verts = self.vertices[np.unique(self.facets)]
+        unique_verts = self.vertices[pd.unique(self.facets.ravel())]
         self.reference_ellipsoid = ref_ellipse(unique_verts)
 
 
