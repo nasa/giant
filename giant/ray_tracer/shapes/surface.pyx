@@ -39,6 +39,7 @@ from giant.ray_tracer.shapes.axis_aligned_bounding_box import AxisAlignedBoundin
 from giant.ray_tracer.shapes.ellipsoid import Ellipsoid
 
 
+@cython.boundscheck(False)
 def find_limbs_surface(Surface target, scan_center_dir, scan_dirs, observer_position=None, initial_step=None,
                        int max_iterations=25, double rtol=1e-12, double atol=1e-12):
     r"""
@@ -137,6 +138,8 @@ def find_limbs_surface(Surface target, scan_center_dir, scan_dirs, observer_posi
 
         double[:, :] limb_locations = np.zeros((scan_dirs.shape[1], 3), dtype=np.float64)
 
+        double cyinf = np.inf
+
 
     if initial_step is None:
         step = (2.0*target.reference_ellipsoid.principal_axes.max())
@@ -149,6 +152,8 @@ def find_limbs_surface(Surface target, scan_center_dir, scan_dirs, observer_posi
     # oh well
     target._trace(start, left_dirs, inv_trace_dirs, ignore, start.shape[1], True,
                   hit, limb_locations, normal, albedo, facet, distance)
+
+    hit[:] = 0
 
     # set the right directions to start
     for ray_number in range(start.shape[1]):
@@ -189,7 +194,7 @@ def find_limbs_surface(Surface target, scan_center_dir, scan_dirs, observer_posi
                         all_converged = False
 
         hit[:] = 0  # update the hit flag so we don't get messed up
-        distance[:] = np.inf  # update the distance so that we don't shortcut
+        distance[:] = cyinf  # update the distance so that we don't shortcut
         if all_converged:
             break
 

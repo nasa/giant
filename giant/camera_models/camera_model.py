@@ -695,7 +695,7 @@ class CameraModel(metaclass=ABCMeta):
 
     def instantaneous_field_of_view(self, temperature: Real = 0,
                                     center: NONEARRAY = None,
-                                    direction: NONEARRAY = None) -> float:
+                                    direction: NONEARRAY = None) -> np.ndarray:
         """
         Compute the Instantaneous Field of View (FOV of a single pixel) for the given temperature, location on the focal
         plane, and direction.
@@ -720,7 +720,6 @@ class CameraModel(metaclass=ABCMeta):
             center = self.project_onto_image(center_dir, temperature=temperature)
         else:
             center_dir = self.pixels_to_unit(center, temperature=temperature).reshape(3, -1)
-
 
         if direction is None:
             direction = np.array([[1], [0.]])
@@ -840,9 +839,9 @@ def save(file: PATH, name: str, model: CameraModel, group: Optional[str] = None,
     to true, then the misalignment is stored exactly as it is in the camera model.
 
     .. warning::
-        There is a security risk when loading XML files (exacerbated here by using a eval on some of the field of the xml
-        tree).  Do not pass untrusted/unverified files to this function. The files themselves are simple text files that
-        can easily be verified for malicious code by inspecting them in a text editor beforehand.
+        There is a security risk when loading XML files (exacerbated here by using a eval on some of the field of the
+        xml tree).  Do not pass untrusted/unverified files to this function. The files themselves are simple text files
+        that can easily be verified for malicious code by inspecting them in a text editor beforehand.
 
     :param file:  The path of the file to store the camera model in
     :param name: The name to use to store the camera model (i.e. 'Navigation Camera')

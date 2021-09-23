@@ -87,7 +87,7 @@ campaign.  For now, we'll just use a rough guess for the PSF.
         # use sorted to ensure they are in time sequential order
         images = sorted(glob.glob('../opnav/2011123_OPNAV_001/*.FIT') +
                         glob.glob('../opnav/2011165_OPNAV_007/*.FIT') +
-                        glob.glob('../opnav/2011198_OPNAV_017/*.FIT'))[:4]
+                        glob.glob('../opnav/2011198_OPNAV_017/*.FIT'))
 
         # load the camera model we are using
         camera_model = load('dawn_camera_models.xml', 'FC2')
@@ -214,7 +214,7 @@ in the same scene, therefore we wrap the Vesta object in a list.  The sun become
 .. code::
 
     # now we can form our scene
-    opnav_scene = Scene(camera, target_objs=[vesta_obj], light_obj=sun_obj)
+    opnav_scene = Scene(target_objs=[vesta_obj], light_obj=sun_obj)
 
 Creating the RelNav Instance and extracting the observables
 -----------------------------------------------------------

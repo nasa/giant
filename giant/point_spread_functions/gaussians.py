@@ -535,7 +535,6 @@ class IterativeGaussian(Gaussian, InitialGuessIterativeNonlinearLSTSQPSF):
 
         # check if something isn't right
         if (out.sigma_x < 0) or (out.sigma_y < 0):
-            print('Hyperbolic surface')
             out.update_state(None)
             return out
 
@@ -617,7 +616,6 @@ class IterativeGaussianWBackground(Gaussian, InitialGuessIterativeNonlinearLSTSQ
 
         # check if something isn't right
         if (out.sigma_x < 0) or (out.sigma_y < 0):
-            print('Hyperbolic surface')
             out.update_state(None)
             return out
 
@@ -1069,7 +1067,6 @@ class IterativeGeneralizedGaussian(GeneralizedGaussian, InitialGuessIterativeNon
 
         # check if something isn't right
         if (out.a_coef < 0) or (out.b_coef < 0):
-            print('Hyperbolic surface')
             out.update_state(None)
             return out
 
@@ -1160,7 +1157,6 @@ class IterativeGeneralizedGaussianWBackground(GeneralizedGaussian, InitialGuessI
 
         # check if something isn't right
         if (out.sigma_x < 0) or (out.sigma_y < 0):
-            print('Hyperbolic surface')
             out.update_state(None)
             return out
 

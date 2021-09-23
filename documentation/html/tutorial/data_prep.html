@@ -253,7 +253,7 @@ information to feed GIANT.</p>
 of our directory.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="n">shape_model</span>
 <span class="n">cd</span> <span class="n">shape_model</span>
-<span class="n">ingest_shape</span> <span class="o">../</span><span class="n">kernels</span><span class="o">/</span><span class="n">dsk</span><span class="o">/</span><span class="n">old_versions</span><span class="o">/</span><span class="n">vesta_gaskell_512_110825</span><span class="o">.</span><span class="n">bds</span> <span class="s2">&quot;Vesta SPC&quot;</span> <span class="o">../</span><span class="n">kernels</span><span class="o">/</span><span class="n">pck</span><span class="o">/</span><span class="n">dawn_vesta_02</span><span class="o">.</span><span class="n">tpc</span> <span class="o">-</span><span class="n">m</span> <span class="mi">18</span> <span class="o">-</span><span class="n">e</span> <span class="c1"># convert the shape into the GIANT format</span>
+<span class="n">ingest_shape</span> <span class="o">../</span><span class="n">kernels</span><span class="o">/</span><span class="n">dsk</span><span class="o">/</span><span class="n">old_versions</span><span class="o">/</span><span class="n">vesta_gaskell_512_110825</span><span class="o">.</span><span class="n">bds</span> <span class="s2">&quot;Vesta SPC&quot;</span> <span class="o">-</span><span class="n">p</span> <span class="o">../</span><span class="n">kernels</span><span class="o">/</span><span class="n">pck</span><span class="o">/</span><span class="n">dawn_vesta_02</span><span class="o">.</span><span class="n">tpc</span> <span class="o">-</span><span class="n">m</span> <span class="mi">18</span> <span class="o">-</span><span class="n">e</span> <span class="c1"># convert the shape into the GIANT format</span>
 <span class="n">cd</span> <span class="o">..</span>
 <span class="n">mkdir</span> <span class="n">scripts</span>
 </pre></div>
@@ -261,6 +261,15 @@ of our directory.</p>
 <p>Directory <code class="docutils literal notranslate"><span class="pre">shape_model</span></code> contains the shape model file, and function <code class="docutils literal notranslate"><span class="pre">ingest_shape</span></code> builds the
 GIANT version of the shape model for us and stores it in this directory. Finally, directory <code class="docutils literal notranslate"><span class="pre">scripts</span></code> is where we will
 write our scripts to use GIANT to actually process images.</p>
+<p>Finally, we need to build the GIANT star catalogue (alternatively, you can contact Andrew, <a class="reference external" href="mailto:andrew&#46;j&#46;liounis&#37;&#52;&#48;nasa&#46;gov">andrew<span>&#46;</span>j<span>&#46;</span>liounis<span>&#64;</span>nasa<span>&#46;</span>gov</a>, if
+you would like a pre-built star catalogue.  To do this run the command line script included with GIANT
+<a class="reference internal" href="../scripts/giant.scripts.build_catalogue.html#module-giant.scripts.build_catalogue" title="giant.scripts.build_catalogue"><code class="xref py py-mod docutils literal notranslate"><span class="pre">build_catalogue</span></code></a> with the following settings</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">build_catalogue</span> <span class="o">-</span><span class="n">m</span> <span class="mi">12</span> <span class="o">-</span><span class="n">n</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>This will likely take a while to run because it requires first downloading the UCAC4 catalogue, which is about 9 GB in
+size.  If you already have the UCAC4 catalogue downloaded to your machine (with the original directory structure) you
+can skip the download step by adding the <code class="docutils literal notranslate"><span class="pre">-u</span></code> option with the path to the root of the UCAC4 directory structure.</p>
 </section>
 
 

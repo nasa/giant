@@ -49,13 +49,27 @@ from typing import Union, Iterable, List, Optional
 import numpy as np
 import pandas as pd
 
+from matplotlib.path import Path
+
 from giant.stellar_opnav import estimators as est
 from giant.stellar_opnav.star_identification import StarID
 from giant.utilities.outlier_identifier import get_outliers
 from giant.opnav_class import OpNav
 from giant.camera import Camera
 from giant.image_processing import ImageProcessing
+from giant.ray_tracer.scene import Scene
 from giant._typing import ARRAY_LIKE, ARRAY_LIKE_2D, PATH, Real, NONEARRAY
+
+
+_ANGLES: np.ndarray = np.linspace(0, 2 * np.pi, 360)
+"""
+An internal array used for checking for interior points in extended bodies.
+"""
+
+_SCAN_VECTORS: np.ndarray = np.vstack([np.cos(_ANGLES), np.sin(_ANGLES), np.zeros(_ANGLES.size)])
+"""
+An internal array used for checking for interior points in extended bodies.
+"""
 
 
 class StellarOpNav(OpNav):
@@ -107,7 +121,7 @@ class StellarOpNav(OpNav):
     can specify.
     """
 
-    def __init__(self, camera: Camera, use_weights: bool = False,
+    def __init__(self, camera: Camera, use_weights: bool = False, scene: Optional[Scene] = None,
                  image_processing: Optional[ImageProcessing] = None, image_processing_kwargs: Optional[dict] = None,
                  star_id: Optional[StarID] = None, star_id_kwargs: Optional[dict] = None,
                  attitude_estimator: Optional[est.AttitudeEstimator] = None,
@@ -115,6 +129,10 @@ class StellarOpNav(OpNav):
         """
         :param camera: The :class:`.Camera` object containing the camera model and images to be utilized
         :param use_weights: A flag specifying whether to use weighted estimation for attitude estimation
+        :param scene: Optionally, a scene defining the targets that may be in the FOV of the camera used to reject
+                      points interior to a body as stars.  If ``None`` then no attempt is made to reject points that
+                      might be interior to a body.  If not ``None`` then we will attempt to reject these points using
+                      a priori knowledge
         :param image_processing: An already initialized instance of :class:`.ImageProcessing` (or a subclass).  If not
                                  ``None`` then ``image_processing_kwargs`` are ignored.
         :param image_processing_kwargs: The keyword arguments to pass to the :class:`.ImageProcessing` class
@@ -136,6 +154,15 @@ class StellarOpNav(OpNav):
         self.use_weights = use_weights  # type: bool
         """
         A flag specifying whether to compute weights/use them in the attitude estimation routine
+        """
+
+        self.scene: Optional[Scene] = scene
+        """
+        Optionally, a scene defining the targets that may be in the FOV of the camera used to reject points interior to 
+        a body as stars.  
+                      
+        If ``None`` then no attempt is made to reject points that might be interior to a body. If not ``None`` then we 
+        will attempt to reject these points using a priori knowledge.
         """
 
         if star_id is None:
@@ -1219,6 +1246,45 @@ class StellarOpNav(OpNav):
                     else:
                         self._ip_extracted_image_points[ind], self._ip_image_illums[ind] = \
                             self._image_processing.locate_subpixel_poi_in_roi(image)
+
+                # discard points inside of extended bodies)
+                if self.scene is not None:
+
+                    if self._ip_extracted_image_points[ind] is not None:
+
+                        self.scene.update(image)
+
+                        for target in self.scene.target_objs:
+
+                            # check that we're close to the FOV
+                            boresight_angle = np.arccos(target.position.ravel()[-1] /
+                                                        np.linalg.norm(target.position)) * 180 / np.pi
+
+                            if boresight_angle <= 1.25 * self.camera.model.field_of_view:
+
+                                # get the limbs
+                                limbs = target.shape.find_limbs(target.position/np.linalg.norm(target.position),
+                                                                _SCAN_VECTORS)
+
+                                limbs_pix = self.camera.model.project_onto_image(limbs, image=ind,
+                                                                                 temperature=image.temperature)
+                                # make a path for the limb
+                                path = Path(limbs_pix.T, closed=True)
+
+                                # check if our points are inside of the limb or not
+                                interior = path.contains_points(self._ip_extracted_image_points[ind].T)
+
+                                # throw out interior points
+                                self._ip_extracted_image_points[ind] = self._ip_extracted_image_points[ind][:,
+                                                                                                            ~interior]
+                                self._ip_image_illums[ind] = self._ip_image_illums[ind][~interior]
+
+                                if self._image_processing.return_stats:
+                                    self._ip_stats[ind] = np.array(self._ip_stats[ind])[~interior]
+                                    self._ip_snrs[ind] = np.array(self._ip_snrs[ind])[~interior]
+                                if self._image_processing.save_psf:
+                                    self._ip_psfs[ind] = self._ip_psfs[ind][~interior]
+
 
                 # set a flag saying that we don't need to pass this image through the image processing again
                 self.process_stars[ind] = False

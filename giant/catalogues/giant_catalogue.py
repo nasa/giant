@@ -114,7 +114,8 @@ _STARS_TABLE_SQL: str = '''CREATE TABLE IF NOT EXISTS "stars" (
   "dec_sigma" REAL,
   "distance_sigma" REAL,
   "ra_pm_sigma" REAL,
-  "dec_pm_sigma" REAL
+  "dec_pm_sigma" REAL,
+  "epoch" REAL
 )'''
 """
 This SQL command creates a new table in the sqlite3 database file called stars for storing the GIANT catalogue
@@ -123,8 +124,8 @@ This shouldn't be used by the user and may change without notice.
 """
 
 
-def build_catalogue(database_file: Optional[PATH] = None, limiting_magnitude: Real = 16, number_of_stars: int = 5,
-                    use_tycho_mag: bool = False, limiting_separation: float = 0.04, blending_magnitude: Real = 12,
+def build_catalogue(database_file: Optional[PATH] = None, limiting_magnitude: Real = 12, number_of_stars: int = 0,
+                    use_tycho_mag: bool = False, limiting_separation: float = 0.04, blending_magnitude: Real = 8,
                     ucac_dir: Optional[PATH] = None):
     """
     Build a sqlite3 catalogue from the UCAC catalogue for faster query times.
@@ -153,7 +154,7 @@ def build_catalogue(database_file: Optional[PATH] = None, limiting_magnitude: Re
     :param ucac_dir: The directory containing the UCAC4 data files.  This is passed to the :class:`.UCAC4` class.
     """
 
-    with catch_warnings:
+    with catch_warnings():
         # ignore dumb warnings
         filterwarnings('ignore', message='The requested UCAC4')
 
@@ -165,6 +166,9 @@ def build_catalogue(database_file: Optional[PATH] = None, limiting_magnitude: Re
             database_file = DEFAULT_CAT_FILE
         else:
              database_file = Path(database_file)
+
+        # make sure the directory for the database file exists
+        database_file.parent.mkdir(exist_ok=True, parents=True)
 
         if database_file.exists():
             database_file.unlink()

@@ -140,13 +140,27 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
+<span class="kn">from</span> <span class="nn">matplotlib.path</span> <span class="kn">import</span> <span class="n">Path</span>
+
 <span class="kn">from</span> <span class="nn">giant.stellar_opnav</span> <span class="kn">import</span> <span class="n">estimators</span> <span class="k">as</span> <span class="n">est</span>
 <span class="kn">from</span> <span class="nn">giant.stellar_opnav.star_identification</span> <span class="kn">import</span> <span class="n">StarID</span>
 <span class="kn">from</span> <span class="nn">giant.utilities.outlier_identifier</span> <span class="kn">import</span> <span class="n">get_outliers</span>
 <span class="kn">from</span> <span class="nn">giant.opnav_class</span> <span class="kn">import</span> <span class="n">OpNav</span>
 <span class="kn">from</span> <span class="nn">giant.camera</span> <span class="kn">import</span> <span class="n">Camera</span>
 <span class="kn">from</span> <span class="nn">giant.image_processing</span> <span class="kn">import</span> <span class="n">ImageProcessing</span>
+<span class="kn">from</span> <span class="nn">giant.ray_tracer.scene</span> <span class="kn">import</span> <span class="n">Scene</span>
 <span class="kn">from</span> <span class="nn">giant._typing</span> <span class="kn">import</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">ARRAY_LIKE_2D</span><span class="p">,</span> <span class="n">PATH</span><span class="p">,</span> <span class="n">Real</span><span class="p">,</span> <span class="n">NONEARRAY</span>
+
+
+<span class="n">_ANGLES</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">360</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">An internal array used for checking for interior points in extended bodies.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">_SCAN_VECTORS</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">_ANGLES</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">_ANGLES</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">_ANGLES</span><span class="o">.</span><span class="n">size</span><span class="p">)])</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">An internal array used for checking for interior points in extended bodies.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
 
 <div class="viewcode-block" id="StellarOpNav"><a class="viewcode-back" href="../../../stellar_opnav/stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html#giant.stellar_opnav.stellar_class.StellarOpNav">[docs]</a><span class="k">class</span> <span class="nc">StellarOpNav</span><span class="p">(</span><span class="n">OpNav</span><span class="p">):</span>
@@ -198,7 +212,7 @@
 <span class="sd">    can specify.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span> <span class="n">use_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span> <span class="n">use_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Scene</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">image_processing</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ImageProcessing</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">image_processing_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">star_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StarID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">star_id_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">attitude_estimator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">est</span><span class="o">.</span><span class="n">AttitudeEstimator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -206,6 +220,10 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param camera: The :class:`.Camera` object containing the camera model and images to be utilized</span>
 <span class="sd">        :param use_weights: A flag specifying whether to use weighted estimation for attitude estimation</span>
+<span class="sd">        :param scene: Optionally, a scene defining the targets that may be in the FOV of the camera used to reject</span>
+<span class="sd">                      points interior to a body as stars.  If ``None`` then no attempt is made to reject points that</span>
+<span class="sd">                      might be interior to a body.  If not ``None`` then we will attempt to reject these points using</span>
+<span class="sd">                      a priori knowledge</span>
 <span class="sd">        :param image_processing: An already initialized instance of :class:`.ImageProcessing` (or a subclass).  If not</span>
 <span class="sd">                                 ``None`` then ``image_processing_kwargs`` are ignored.</span>
 <span class="sd">        :param image_processing_kwargs: The keyword arguments to pass to the :class:`.ImageProcessing` class</span>
@@ -227,6 +245,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">use_weights</span> <span class="o">=</span> <span class="n">use_weights</span>  <span class="c1"># type: bool</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A flag specifying whether to compute weights/use them in the attitude estimation routine</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Scene</span><span class="p">]</span> <span class="o">=</span> <span class="n">scene</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Optionally, a scene defining the targets that may be in the FOV of the camera used to reject points interior to </span>
+<span class="sd">        a body as stars.  </span>
+<span class="sd">                      </span>
+<span class="sd">        If ``None`` then no attempt is made to reject points that might be interior to a body. If not ``None`` then we </span>
+<span class="sd">        will attempt to reject these points using a priori knowledge.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">star_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1310,6 +1337,45 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_ip_extracted_image_points</span><span class="p">[</span><span class="n">ind</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ip_image_illums</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> \
                             <span class="bp">self</span><span class="o">.</span><span class="n">_image_processing</span><span class="o">.</span><span class="n">locate_subpixel_poi_in_roi</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+                <span class="c1"># discard points inside of extended bodies)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ip_extracted_image_points</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+                        <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">:</span>
+
+                            <span class="c1"># check that we&#39;re close to the FOV</span>
+                            <span class="n">boresight_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span>
+                                                        <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="p">))</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+                            <span class="k">if</span> <span class="n">boresight_angle</span> <span class="o">&lt;=</span> <span class="mf">1.25</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">field_of_view</span><span class="p">:</span>
+
+                                <span class="c1"># get the limbs</span>
+                                <span class="n">limbs</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">find_limbs</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="p">),</span>
+                                                                <span class="n">_SCAN_VECTORS</span><span class="p">)</span>
+
+                                <span class="n">limbs_pix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">limbs</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">ind</span><span class="p">,</span>
+                                                                                 <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+                                <span class="c1"># make a path for the limb</span>
+                                <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">limbs_pix</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+                                <span class="c1"># check if our points are inside of the limb or not</span>
+                                <span class="n">interior</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">contains_points</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ip_extracted_image_points</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+                                <span class="c1"># throw out interior points</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_ip_extracted_image_points</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ip_extracted_image_points</span><span class="p">[</span><span class="n">ind</span><span class="p">][:,</span>
+                                                                                                            <span class="o">~</span><span class="n">interior</span><span class="p">]</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_ip_image_illums</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ip_image_illums</span><span class="p">[</span><span class="n">ind</span><span class="p">][</span><span class="o">~</span><span class="n">interior</span><span class="p">]</span>
+
+                                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_processing</span><span class="o">.</span><span class="n">return_stats</span><span class="p">:</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">_ip_stats</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ip_stats</span><span class="p">[</span><span class="n">ind</span><span class="p">])[</span><span class="o">~</span><span class="n">interior</span><span class="p">]</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">_ip_snrs</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ip_snrs</span><span class="p">[</span><span class="n">ind</span><span class="p">])[</span><span class="o">~</span><span class="n">interior</span><span class="p">]</span>
+                                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_processing</span><span class="o">.</span><span class="n">save_psf</span><span class="p">:</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">_ip_psfs</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ip_psfs</span><span class="p">[</span><span class="n">ind</span><span class="p">][</span><span class="o">~</span><span class="n">interior</span><span class="p">]</span>
+
 
                 <span class="c1"># set a flag saying that we don&#39;t need to pass this image through the image processing again</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">process_stars</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>

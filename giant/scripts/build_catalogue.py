@@ -33,6 +33,9 @@ def _get_parser() -> ArgumentParser:
                         default=12, type=int)
     parser.add_argument('-b', '--blending_magnitude', help='The magnitude to try and blend dimmer stars to',
                         default=8, type=int)
+    parser.add_argument('-n', '--number_of_stars', help='The number of stars that can be blended to reach the blending '
+                                                        'magnitude.  Set to 0 to turn off blending',
+                        default=4, type=int)
 
     parser.add_argument('-s', '--limiting_separation', help='The maximum distance allowed '
                                                             'for stars to be blended in degrees',

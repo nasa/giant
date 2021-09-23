@@ -246,9 +246,9 @@ def apply_proper_motion(star_records: pd.DataFrame, new_time: Union[Real, dateti
     
     The stars input into this method should be a pandas dataframe with the GIANT format.  Specifically, this function
     requires the dataframe to have columns of ``['ra', 'dec', 'ra_proper_motion', 'dec_proper_motion', 'epoch']`` with
-    units of degrees, degrees/year, and MJD years respectively.  The updated bearing can be stored either in a copy of
-    the dataframe, or in-place, depending on the ``copy`` key word argument.  Either way the resulting dataframe is
-    returned.
+    units of degrees, degrees/year, and SI years (since January 1, 1) respectively.  The updated bearing can be stored
+    either in a copy of the dataframe, or in-place, depending on the ``copy`` key word argument.  Either way the
+    resulting dataframe is returned.
     
     The ``new_time`` parameter should either be a datetime object, or a float of the modified julian years for the 
     desired time. The ``copy`` flag states whether to return a copy of the dataframe with the updates applied
@@ -288,7 +288,7 @@ def apply_proper_motion(star_records: pd.DataFrame, new_time: Union[Real, dateti
     # compute the time delta
     if isinstance(new_time, datetime.datetime):
 
-        new_time = datetime_to_mjd_years(new_time)
+        new_time = timedelta_to_si_years(new_time - datetime.datetime(1, 1, 1))
 
     timedelta = new_time - start_time
 

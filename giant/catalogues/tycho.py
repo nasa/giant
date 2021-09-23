@@ -106,6 +106,8 @@ class Tycho2(Catalogue):
                                   " USE UP 500 MB OF SPACE!\n    ")
 
             if user_response[:1].lower() == 'y':
+                # make sure the directory exists
+                directory.mkdir(exist_ok=True, parents=True)
                 download_tycho(directory)
 
             else:

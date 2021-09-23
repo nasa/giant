@@ -786,7 +786,7 @@
 
     <span class="k">def</span> <span class="nf">instantaneous_field_of_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                                     <span class="n">center</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                                    <span class="n">direction</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+                                    <span class="n">direction</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the Instantaneous Field of View (FOV of a single pixel) for the given temperature, location on the focal</span>
 <span class="sd">        plane, and direction.</span>
@@ -811,7 +811,6 @@
             <span class="n">center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">center_dir</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">center_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-
 
         <span class="k">if</span> <span class="n">direction</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">direction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">]])</span>
@@ -931,9 +930,9 @@
 <span class="sd">    to true, then the misalignment is stored exactly as it is in the camera model.</span>
 
 <span class="sd">    .. warning::</span>
-<span class="sd">        There is a security risk when loading XML files (exacerbated here by using a eval on some of the field of the xml</span>
-<span class="sd">        tree).  Do not pass untrusted/unverified files to this function. The files themselves are simple text files that</span>
-<span class="sd">        can easily be verified for malicious code by inspecting them in a text editor beforehand.</span>
+<span class="sd">        There is a security risk when loading XML files (exacerbated here by using a eval on some of the field of the</span>
+<span class="sd">        xml tree).  Do not pass untrusted/unverified files to this function. The files themselves are simple text files</span>
+<span class="sd">        that can easily be verified for malicious code by inspecting them in a text editor beforehand.</span>
 
 <span class="sd">    :param file:  The path of the file to store the camera model in</span>
 <span class="sd">    :param name: The name to use to store the camera model (i.e. &#39;Navigation Camera&#39;)</span>

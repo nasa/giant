@@ -184,7 +184,7 @@ campaign.  For now, we’ll just use a rough guess for the PSF.</p>
     <span class="c1"># use sorted to ensure they are in time sequential order</span>
     <span class="n">images</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;../opnav/2011123_OPNAV_001/*.FIT&#39;</span><span class="p">)</span> <span class="o">+</span>
                     <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;../opnav/2011165_OPNAV_007/*.FIT&#39;</span><span class="p">)</span> <span class="o">+</span>
-                    <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;../opnav/2011198_OPNAV_017/*.FIT&#39;</span><span class="p">))[:</span><span class="mi">4</span><span class="p">]</span>
+                    <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;../opnav/2011198_OPNAV_017/*.FIT&#39;</span><span class="p">))</span>
 
     <span class="c1"># load the camera model we are using</span>
     <span class="n">camera_model</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="s1">&#39;dawn_camera_models.xml&#39;</span><span class="p">,</span> <span class="s1">&#39;FC2&#39;</span><span class="p">)</span>
@@ -297,7 +297,7 @@ and orientation of the camera in the inertial frame.</p>
 <p>In this scene, Vesta is the only target we are observing, but GIANT is set up to allow multiple targets to be observed
 in the same scene, therefore we wrap the Vesta object in a list.  The sun becomes the light source in the scene.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># now we can form our scene</span>
-<span class="n">opnav_scene</span> <span class="o">=</span> <span class="n">Scene</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="n">target_objs</span><span class="o">=</span><span class="p">[</span><span class="n">vesta_obj</span><span class="p">],</span> <span class="n">light_obj</span><span class="o">=</span><span class="n">sun_obj</span><span class="p">)</span>
+<span class="n">opnav_scene</span> <span class="o">=</span> <span class="n">Scene</span><span class="p">(</span><span class="n">target_objs</span><span class="o">=</span><span class="p">[</span><span class="n">vesta_obj</span><span class="p">],</span> <span class="n">light_obj</span><span class="o">=</span><span class="n">sun_obj</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

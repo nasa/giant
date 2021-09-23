@@ -205,7 +205,8 @@
 <span class="s1">  &quot;dec_sigma&quot; REAL,</span>
 <span class="s1">  &quot;distance_sigma&quot; REAL,</span>
 <span class="s1">  &quot;ra_pm_sigma&quot; REAL,</span>
-<span class="s1">  &quot;dec_pm_sigma&quot; REAL</span>
+<span class="s1">  &quot;dec_pm_sigma&quot; REAL,</span>
+<span class="s1">  &quot;epoch&quot; REAL</span>
 <span class="s1">)&#39;&#39;&#39;</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">This SQL command creates a new table in the sqlite3 database file called stars for storing the GIANT catalogue</span>
@@ -214,8 +215,8 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<div class="viewcode-block" id="build_catalogue"><a class="viewcode-back" href="../../../catalogues/giant_catalogue/giant.catalogues.giant_catalogue.build_catalogue.html#giant.catalogues.giant_catalogue.build_catalogue">[docs]</a><span class="k">def</span> <span class="nf">build_catalogue</span><span class="p">(</span><span class="n">database_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PATH</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">limiting_magnitude</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">number_of_stars</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
-                    <span class="n">use_tycho_mag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">limiting_separation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.04</span><span class="p">,</span> <span class="n">blending_magnitude</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
+<div class="viewcode-block" id="build_catalogue"><a class="viewcode-back" href="../../../catalogues/giant_catalogue/giant.catalogues.giant_catalogue.build_catalogue.html#giant.catalogues.giant_catalogue.build_catalogue">[docs]</a><span class="k">def</span> <span class="nf">build_catalogue</span><span class="p">(</span><span class="n">database_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PATH</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">limiting_magnitude</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span> <span class="n">number_of_stars</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">use_tycho_mag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">limiting_separation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.04</span><span class="p">,</span> <span class="n">blending_magnitude</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
                     <span class="n">ucac_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PATH</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Build a sqlite3 catalogue from the UCAC catalogue for faster query times.</span>
@@ -244,7 +245,7 @@
 <span class="sd">    :param ucac_dir: The directory containing the UCAC4 data files.  This is passed to the :class:`.UCAC4` class.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">with</span> <span class="n">catch_warnings</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">catch_warnings</span><span class="p">():</span>
         <span class="c1"># ignore dumb warnings</span>
         <span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s1">&#39;The requested UCAC4&#39;</span><span class="p">)</span>
 
@@ -254,6 +255,9 @@
         <span class="c1"># use the default if the user didn&#39;t specify</span>
         <span class="k">if</span> <span class="n">database_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">database_file</span> <span class="o">=</span> <span class="n">DEFAULT_CAT_FILE</span>
+
+        <span class="c1"># make sure the directory for the database file exists</span>
+        <span class="n">Path</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># connect to the database</span>
         <span class="n">db_con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">database_file</span><span class="p">))</span>

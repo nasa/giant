@@ -119,6 +119,8 @@ class UCAC4(Catalogue):
                                   " USE UP 9 GB OF SPACE!\n    ")
 
             if user_response[:1].lower() == 'y':
+                # make sure the directory exits
+                directory.mkdir(exist_ok=True, parents=True)
                 download_ucac(directory)
 
             else:

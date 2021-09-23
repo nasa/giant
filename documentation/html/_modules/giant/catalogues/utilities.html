@@ -337,9 +337,9 @@
 <span class="sd">    </span>
 <span class="sd">    The stars input into this method should be a pandas dataframe with the GIANT format.  Specifically, this function</span>
 <span class="sd">    requires the dataframe to have columns of ``[&#39;ra&#39;, &#39;dec&#39;, &#39;ra_proper_motion&#39;, &#39;dec_proper_motion&#39;, &#39;epoch&#39;]`` with</span>
-<span class="sd">    units of degrees, degrees/year, and MJD years respectively.  The updated bearing can be stored either in a copy of</span>
-<span class="sd">    the dataframe, or in-place, depending on the ``copy`` key word argument.  Either way the resulting dataframe is</span>
-<span class="sd">    returned.</span>
+<span class="sd">    units of degrees, degrees/year, and SI years (since January 1, 1) respectively.  The updated bearing can be stored</span>
+<span class="sd">    either in a copy of the dataframe, or in-place, depending on the ``copy`` key word argument.  Either way the</span>
+<span class="sd">    resulting dataframe is returned.</span>
 <span class="sd">    </span>
 <span class="sd">    The ``new_time`` parameter should either be a datetime object, or a float of the modified julian years for the </span>
 <span class="sd">    desired time. The ``copy`` flag states whether to return a copy of the dataframe with the updates applied</span>
@@ -379,7 +379,7 @@
     <span class="c1"># compute the time delta</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_time</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">):</span>
 
-        <span class="n">new_time</span> <span class="o">=</span> <span class="n">datetime_to_mjd_years</span><span class="p">(</span><span class="n">new_time</span><span class="p">)</span>
+        <span class="n">new_time</span> <span class="o">=</span> <span class="n">timedelta_to_si_years</span><span class="p">(</span><span class="n">new_time</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
     <span class="n">timedelta</span> <span class="o">=</span> <span class="n">new_time</span> <span class="o">-</span> <span class="n">start_time</span>
 
