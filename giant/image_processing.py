@@ -1682,7 +1682,7 @@ class ImageProcessing:
                       through, removing any blobs where a centroid was not found.
         :param snrs: An optional input of signal to noise ratios from the blobs.  This is not used in this function but
                      is passed through, removing any blobs where a centroid was not found.
-        :return: The subpixel centers of the points of interest as well as the illumination values (row, col)
+        :return: The subpixel centers of the points of interest as well as the illumination values (col, row)
         """
 
         # initialize lists for output

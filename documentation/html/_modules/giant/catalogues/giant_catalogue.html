@@ -255,10 +255,15 @@
         <span class="c1"># use the default if the user didn&#39;t specify</span>
         <span class="k">if</span> <span class="n">database_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">database_file</span> <span class="o">=</span> <span class="n">DEFAULT_CAT_FILE</span>
+        <span class="k">else</span><span class="p">:</span>
+             <span class="n">database_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span>
 
         <span class="c1"># make sure the directory for the database file exists</span>
-        <span class="n">Path</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">database_file</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">database_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">database_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+            
         <span class="c1"># connect to the database</span>
         <span class="n">db_con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">database_file</span><span class="p">))</span>
 
@@ -588,7 +593,22 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">db_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_catalogue</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">catalogue_path</span><span class="p">))</span>
+            <span class="k">try</span><span class="p">:</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">_catalogue</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">catalogue_path</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_catalogue</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM stars LIMIT 1&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">sqlite3</span><span class="o">.</span><span class="n">OperationalError</span><span class="p">,</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">DatabaseError</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;GIANT catalogue corrupted at </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">db_file</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">user_response</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Would you like to build the GIANT catalogue from the UCAC catalogue (y/n)?</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                      <span class="s2">&quot;    WARNING: THIS MAY TAKE A LONG TIME AND WILL USE UP 600 MB OF SPACE!</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">user_response</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+                    <span class="n">build_catalogue</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_catalogue</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">catalogue_path</span><span class="p">))</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">DatabaseError</span><span class="p">(</span><span class="s1">&#39;The GIANT catalogue database file is corrupted&#39;</span><span class="p">)</span>
+
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;GIANT catalogue not found at </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">db_file</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">user_response</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Would you like to build the GIANT catalogue from the UCAC catalogue (y/n)?</span><span class="se">\n</span><span class="s2">&quot;</span>

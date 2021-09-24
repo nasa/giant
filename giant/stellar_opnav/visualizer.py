@@ -182,7 +182,7 @@ def residual_histograms(sopnav: StellarOpNav, individual_images: bool = False, p
             image_residuals.append(residuals)
         if (residuals is not None) and residuals.size:
             column_residuals.extend(residuals[0])
-            row_residuals.extend(residuals[0])
+            row_residuals.extend(residuals[1])
             all_residuals.extend(residuals[0])
             all_residuals.extend(residuals[1])
 
@@ -274,7 +274,7 @@ def plot_residuals_vs_magnitude(sopnav: StellarOpNav, individual_images: bool = 
             image_residuals.append(residuals)
         if (residuals is not None) and residuals.size:
             column_residuals.extend(residuals[0])
-            row_residuals.extend(residuals[0])
+            row_residuals.extend(residuals[1])
             all_residuals.extend(residuals[0])
             all_residuals.extend(residuals[1])
             star_magnitudes.extend(sopnav.matched_catalogue_star_records[ind].loc[:, 'mag'])

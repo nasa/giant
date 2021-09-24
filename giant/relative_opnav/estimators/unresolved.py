@@ -525,6 +525,8 @@ class UnresolvedCenterFinding(PhaseCorrector):
                     snrs = None
                 psfs = None
 
+            points = points.T
+
             if len(points) > 1:
                 # TODO: consider picking the closest point to the a priori in this instance and throwing a warning
                 warnings.warn("too many points of interest found in the search region for epoch: {0} target: {1}.\n"

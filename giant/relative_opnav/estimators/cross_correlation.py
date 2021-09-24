@@ -210,7 +210,8 @@ class XCorrCenterFinding(RelNavEstimator):
                  options: Optional[XCorrCenterFindingOptions] = None,
                  brdf: Optional[IlluminationModel] = None, rays: Union[Optional[Rays], List[Rays]] = None,
                  grid_size: int = 1, peak_finder: Callable[[np.ndarray, bool], np.ndarray] = quadric_peak_finder_2d,
-                 min_corr_score: float = 0.3, blur: bool = True, search_region: Optional[int] = None):
+                 min_corr_score: float = 0.3, blur: bool = True, search_region: Optional[int] = None,
+                 template_overflow_bounds=-1):
         """
         :param scene: The scene describing the a priori locations of the targets and the light source.
         :param camera: The :class:`.Camera` object containing the camera model and images to be analyzed
@@ -240,9 +241,27 @@ class XCorrCenterFinding(RelNavEstimator):
                      high frequency noise
         :param search_region: The number of pixels to search around the a priori predicted center for the peak of the
                               correlation surface.  If ``None`` then searches the entire correlation surface.
+        :param template_overflow_bounds: The number of pixels to render in the template that overflow outside of the
+                                         camera field of view.  Set to a number less than 0 to accept all overflow
+                                         pixels in the template.  Set to a number greater than or equal to 0 to limit
+                                         the number of overflow pixels.
+
         """
 
         super().__init__(scene, camera, image_processing)
+
+        self.template_overflow_bounds = template_overflow_bounds
+        """
+        The number of pixels to render in the template that overflow outside of the camera field of view.  
+        
+        Set to a number less than 0 to accept all overflow pixels in the template.  Set to a number greater than or 
+        equal to 0 to limit the number of overflow pixels. 
+        
+        This setting can be particularly important in cases where the body fills significantly more than the field of 
+        view of the camera because the camera distortion models are usually undefined as you get outside of the field 
+        of view.  In most typical cases where you can see the entire body in the field of view though this setting 
+        should have little to no impact and can safely be left at -1
+        """
 
         self.rays: Union[Optional[Rays], List[Optional[Rays]]] = rays
         """
@@ -392,9 +411,16 @@ class XCorrCenterFinding(RelNavEstimator):
             local_min -= 3
 
         # Determine the actual bounds to use for the template so that it is within the image
-        min_inds = np.maximum(local_min, [0, 0])
+        if self.template_overflow_bounds >= 0:
+            min_inds = np.maximum(local_min, [-self.template_overflow_bounds, 
+                                              -self.template_overflow_bounds])
 
-        max_inds = np.minimum(local_max, [self.camera.model.n_cols, self.camera.model.n_rows])
+            max_inds = np.minimum(local_max, [self.camera.model.n_cols + self.template_overflow_bounds, 
+                                              self.camera.model.n_rows + self.template_overflow_bounds])
+        else:
+            min_inds = np.maximum(local_min, [0, 0])
+
+            max_inds = np.minimum(local_max, [self.camera.model.n_cols, self.camera.model.n_rows])
 
         # If the min inds are greater than the max inds then they body is outside of the FOV, move it to the center of
         # the image as a work around and restart
@@ -416,8 +442,12 @@ class XCorrCenterFinding(RelNavEstimator):
 
         else:
             # Compute the rays for the template
-            return compute_rays(self.camera.model, (local_min[1], local_max[1]), (local_min[0], local_max[0]),
-                                grid_size=self.grid_size, temperature=temperature), (local_min, local_max)
+            if self.template_overflow_bounds >= 0:
+                return compute_rays(self.camera.model, (min_inds[1], max_inds[1]), (min_inds[0], max_inds[0]),
+                                    grid_size=self.grid_size, temperature=temperature), (min_inds, max_inds)
+            else:
+                return compute_rays(self.camera.model, (local_min[1], local_max[1]), (local_min[0], local_max[0]),
+                                    grid_size=self.grid_size, temperature=temperature), (local_min, local_max)
 
     def estimate(self, image: OpNavImage, include_targets: Optional[List[bool]] = None):
         """

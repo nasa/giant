@@ -1420,6 +1420,11 @@ class StellarOpNav(OpNav):
         For a more thorough description of the attitude estimation routine see the
         :mod:`.stellar_opnav.estimators` documentation.
 
+        When attitude estimation is successful for an image (that is it was attempted and didn't error), then the
+        :attr:`.OpNavImage.pointing_post_fit` flag is updated to ``True``.  When attitude estimation isn't successful
+        for an image (it wasn't attempted due to a lack of stars or it failed) the the
+        :attr:`.OpNavImage.pointing_post_fit` is set to ``False``
+
         .. warning::
             This method overwrites the attitude information in the :attr:`.rotation_inertial_to_camera` attribute and
             does not save old information anywhere.  If you want this information saved be sure to store it yourself
@@ -1430,10 +1435,12 @@ class StellarOpNav(OpNav):
 
             if self._matched_catalogue_unit_vectors_inertial[ind] is None:
                 warnings.warn("No stars identified for image {0}.\n Cannot perform attitude estimation".format(ind))
+                image.pointing_post_fit = False
 
             elif self._matched_catalogue_unit_vectors_inertial[ind].reshape(3, -1).shape[-1] < 3:
                 warnings.warn("Not enough stars identified for image {0}.\n "
                               "Cannot perform attitude estimation".format(ind))
+                image.pointing_post_fit = False
 
             else:
                 self._attitude_est.base_frame_directions = self._matched_catalogue_unit_vectors_inertial[ind]
@@ -1451,6 +1458,7 @@ class StellarOpNav(OpNav):
                 self._attitude_est.estimate()
 
                 image.rotation_inertial_to_camera = self._attitude_est.rotation
+                image.pointing_post_fit = True
 
         self.reproject_stars()
 

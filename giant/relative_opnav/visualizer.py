@@ -21,8 +21,6 @@ except UnicodeDecodeError:
 
 import numpy as np
 
-from giant.ray_tracer.shapes import Ellipsoid
-
 ANGLES = np.linspace(0, 2 * np.pi, 500)
 SCAN_VECTORS = np.vstack([np.cos(ANGLES), np.sin(ANGLES), np.zeros(ANGLES.size)])
 
@@ -101,21 +99,12 @@ def show_limbs(relnav, index, ax=None):
         apriori_los = target.position.ravel() / apriori_distance
 
         # find the limb points in the camera frame
-        if isinstance(target.shape, Ellipsoid):
-            apriori_limbs_cam = target.shape.find_limbs(apriori_los, SCAN_VECTORS, target.position.ravel().copy())
+        apriori_limbs_cam = target.shape.find_limbs(apriori_los, SCAN_VECTORS)
 
-            # project the limb points into the image
-            apriori_limbs_image = relnav.camera.model.project_onto_image(
-                target.position.reshape(3, 1) + apriori_limbs_cam,
-                image=index,
-                temperature=image.temperature)
-        else:
-            apriori_limbs_cam = target.shape.find_limbs(apriori_los, SCAN_VECTORS, np.zeros(3))
-
-            # project the limb points into the image
-            apriori_limbs_image = relnav.camera.model.project_onto_image(apriori_limbs_cam,
-                                                                         image=index,
-                                                                         temperature=image.temperature)
+        # project the limb points into the image
+        apriori_limbs_image = relnav.camera.model.project_onto_image(apriori_limbs_cam,
+                                                                     image=index,
+                                                                     temperature=image.temperature)
 
         # plot the a priori limb points
         ax.plot(*apriori_limbs_image, linewidth=1, label='{} a priori limbs'.format(target.name))
@@ -139,20 +128,13 @@ def show_limbs(relnav, index, ax=None):
         else:
             raise ValueError("Can't display limbs for {} type relnav".format(rtype))
 
-        if isinstance(target.shape, Ellipsoid):
-            limbs_cam = target.shape.find_limbs(los, SCAN_VECTORS, target.position.ravel().copy())
+        limbs_cam = target.shape.find_limbs(los, SCAN_VECTORS)
 
-            # project the limb points into the image
-            limbs_image = relnav.camera.model.project_onto_image(target.position.reshape(3, 1) + limbs_cam,
-                                                                 image=index,
-                                                                 temperature=image.temperature)
-        else:
-            limbs_cam = target.shape.find_limbs(los, SCAN_VECTORS, np.zeros(3))
+        # project the limb points into the image
+        limbs_image = relnav.camera.model.project_onto_image(limbs_cam,
+                                                             image=index,
+                                                             temperature=image.temperature)
 
-            # project the limb points into the image
-            limbs_image = relnav.camera.model.project_onto_image(limbs_cam,
-                                                                 image=index,
-                                                                 temperature=image.temperature)
         # update the limb bounds
         min_limb_bounds = np.minimum(min_limb_bounds, limbs_image.min(axis=-1))
         max_limb_bounds = np.maximum(max_limb_bounds, limbs_image.max(axis=-1))

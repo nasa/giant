@@ -38,6 +38,8 @@ from giant.ray_tracer.shapes.shape cimport Shape
 from giant.ray_tracer.shapes.axis_aligned_bounding_box import AxisAlignedBoundingBox
 from giant.ray_tracer.shapes.ellipsoid import Ellipsoid
 
+import warnings
+
 
 @cython.boundscheck(False)
 def find_limbs_surface(Surface target, scan_center_dir, scan_dirs, observer_position=None, initial_step=None,
@@ -142,8 +144,21 @@ def find_limbs_surface(Surface target, scan_center_dir, scan_dirs, observer_posi
 
 
     if initial_step is None:
-        step = (2.0*target.reference_ellipsoid.principal_axes.max())
-        step /= np.linalg.norm(target.reference_ellipsoid.center-single_start.ravel())
+
+        tlimbs = target.reference_ellipsoid.find_limbs(scan_center_dir, scan_dirs, observer_position=observer_position)
+        tlimbs /= np.linalg.norm(tlimbs, axis=0, keepdims=True)
+
+        center_limb_angle = np.arccos(tlimbs.T@scan_center_dir.ravel())
+
+        scan_dir_angles = np.arccos(scan_dirs.T @ scan_center_dir.ravel())
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            step = 2*np.nanmax(np.abs(np.sin(center_limb_angle)/np.sin(np.pi - center_limb_angle + scan_dir_angles)))
+
+        if np.isnan(step):
+            step = (2.0*target.reference_ellipsoid.principal_axes.max())
+            step /= np.linalg.norm(target.reference_ellipsoid.center-single_start.ravel())
 
     else:
         step = initial_step
@@ -154,6 +169,7 @@ def find_limbs_surface(Surface target, scan_center_dir, scan_dirs, observer_posi
                   hit, limb_locations, normal, albedo, facet, distance)
 
     hit[:] = 0
+    distance[:] = cyinf
 
     # set the right directions to start
     for ray_number in range(start.shape[1]):
@@ -164,6 +180,7 @@ def find_limbs_surface(Surface target, scan_center_dir, scan_dirs, observer_posi
 
     # loop through until convergence
     for iter in range(max_iterations):
+
         # trace the current rays we are checking
         target._trace(start, trace_dirs, inv_trace_dirs, ignore, start.shape[1], True,
                       hit, intersect, normal, albedo, facet, distance)
@@ -193,10 +210,10 @@ def find_limbs_surface(Surface target, scan_center_dir, scan_dirs, observer_posi
                         atol + rtol * fabs(left_dirs[axis, ray_number])):
                         all_converged = False
 
-        hit[:] = 0  # update the hit flag so we don't get messed up
-        distance[:] = cyinf  # update the distance so that we don't shortcut
         if all_converged:
             break
+        hit[:] = 0  # update the hit flag so we don't get messed up
+        distance[:] = cyinf  # update the distance so that we don't shortcut
 
     # subtracts off the position already
     result = np.asarray(limb_locations).T - start

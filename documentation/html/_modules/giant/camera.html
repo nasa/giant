@@ -946,11 +946,17 @@
 
             <span class="c1"># otherwise both are long.  Choose the one with the smallest time difference</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># 2*np.argmin - 1 will either give -1 (previous image) or 1 (next image)</span>
-                <span class="n">delta</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">([</span><span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">ind</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">),</span>
-                                       <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">ind</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)])</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="c1"># check if they both have estimated attitude</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">ind</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">ind</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pointing_post_fit</span><span class="p">):</span>
+                    <span class="n">next_ind</span> <span class="o">=</span> <span class="n">ind</span><span class="o">-</span><span class="mi">1</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">ind</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">ind</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pointing_post_fit</span><span class="p">):</span>
+                    <span class="n">next_ind</span> <span class="o">=</span> <span class="n">ind</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># 2*np.argmin - 1 will either give -1 (previous image) or 1 (next image)</span>
+                    <span class="n">delta</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">([</span><span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">ind</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">),</span>
+                                           <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">ind</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)])</span> <span class="o">-</span> <span class="mi">1</span>
 
-                <span class="n">next_ind</span> <span class="o">=</span> <span class="n">ind</span> <span class="o">+</span> <span class="n">delta</span>
+                    <span class="n">next_ind</span> <span class="o">=</span> <span class="n">ind</span> <span class="o">+</span> <span class="n">delta</span>
 
         <span class="c1"># return the image we are considering</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">next_ind</span><span class="p">]</span>
@@ -963,6 +969,9 @@
 <span class="sd">        This method works on a single image to determine which of the 2 (or 1) surrounding long exposure images</span>
 <span class="sd">        are closest in time to the supplied short exposure image (within a maximum time difference of *timedelta*.</span>
 <span class="sd">        It then simply copies the long exposure attitude to the short exposure image.</span>
+
+<span class="sd">        If we are successful at updating a short exposure image using this method, then the</span>
+<span class="sd">        :attr:`.OpNavImage.pointing_post_fit` flag is updated to be ``True``.  Otherwise it is set to ``False``.</span>
 
 <span class="sd">        :param ind: The index into the :attr:`.images` list of the short exposure image being updated</span>
 <span class="sd">        :param image: The actual short exposure image object being updated.</span>
@@ -977,6 +986,12 @@
         <span class="k">if</span> <span class="n">next_image</span><span class="o">.</span><span class="n">exposure_type</span> <span class="o">==</span> <span class="n">ExposureType</span><span class="o">.</span><span class="n">SHORT</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;A short image cannot be preceded or followed by another short image to use &quot;</span>
                           <span class="s2">&quot;replace quaternion&quot;</span><span class="p">)</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">next_image</span><span class="o">.</span><span class="n">pointing_post_fit</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;The attitude of the next image has not been estimated.  Unable to replace quaternion.&quot;</span><span class="p">)</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">return</span>
 
         <span class="c1"># if the difference between the short and long exposure image is too long</span>
@@ -985,10 +1000,12 @@
         <span class="k">if</span> <span class="n">diff</span> <span class="o">&gt;</span> <span class="n">max_delta</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Two images are separated by too large of a time difference to use replace.&quot;</span>
                           <span class="s2">&quot;Diff </span><span class="si">{}</span><span class="s2"> between </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">,</span> <span class="n">next_image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">))</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">return</span>
 
         <span class="c1"># copy the long exposure attitude to the short exposure attitude</span>
         <span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="n">next_image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="c1"># noinspection PyTypeChecker</span>
     <span class="k">def</span> <span class="nf">_propagate_attitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">):</span>
@@ -1000,6 +1017,9 @@
 <span class="sd">        are closest in time to the supplied short exposure image (within a maximum time difference of *timedelta*.</span>
 <span class="sd">        It then queries the :attr:`.attitude_function` to get the change in the pointing between the two images and</span>
 <span class="sd">        applies this delta to the long exposure attitude to update the short exposure attitude.</span>
+
+<span class="sd">        If we are successful at updating a short exposure image using this method, then the</span>
+<span class="sd">        :attr:`.OpNavImage.pointing_post_fit` flag is updated to be ``True``.  Otherwise it is set to ``False``.</span>
 
 <span class="sd">        :param ind: The index into the :attr:`.images` list of the short exposure image being updated</span>
 <span class="sd">        :param image: The actual short exposure image object being updated.</span>
@@ -1014,6 +1034,12 @@
         <span class="k">if</span> <span class="n">next_image</span><span class="o">.</span><span class="n">exposure_type</span> <span class="o">==</span> <span class="n">ExposureType</span><span class="o">.</span><span class="n">SHORT</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;A short image cannot be both preceded and followed by another short image to use &quot;</span>
                           <span class="s2">&quot;delta quaternion&quot;</span><span class="p">)</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">next_image</span><span class="o">.</span><span class="n">pointing_post_fit</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;The attitude of the next image has not been estimated.  Unable to use delta quaternion.&quot;</span><span class="p">)</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">return</span>
 
         <span class="c1"># if the difference between the short and long exposure image is too long</span>
@@ -1022,6 +1048,7 @@
         <span class="k">if</span> <span class="n">diff</span> <span class="o">&gt;</span> <span class="n">max_delta</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Two images are separated by too large of a time difference to use delta quaternion.&quot;</span>
                           <span class="s2">&quot;Diff </span><span class="si">{}</span><span class="s2"> between </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">,</span> <span class="n">next_image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">))</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">return</span>
 
         <span class="n">att_prev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attitude_function</span><span class="p">(</span><span class="n">next_image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span>  <span class="c1"># type: Rotation</span>
@@ -1033,6 +1060,7 @@
 
         <span class="c1"># apply the updated delta quaternion</span>
         <span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="n">delta_q</span> <span class="o">*</span> <span class="n">next_image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span>
+        <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">_interp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1044,6 +1072,9 @@
 
 <span class="sd">        If all conditions are met then the interpolation method performs spherical linear interpolation between the two</span>
 <span class="sd">        long exposure images to get the updated attitude for the short exposure image (see :func:`.slerp`).</span>
+
+<span class="sd">        If we are successful at updating a short exposure image using this method, then the</span>
+<span class="sd">        :attr:`.OpNavImage.pointing_post_fit` flag is updated to be ``True``.  Otherwise it is set to ``False``.</span>
 
 <span class="sd">        :param ind: The index into the :attr:`.images` list of the short exposure image being updated</span>
 <span class="sd">        :param image: The actual short exposure image object being updated.</span>
@@ -1069,29 +1100,42 @@
                 <span class="k">if</span> <span class="n">image_prev</span><span class="o">.</span><span class="n">exposure_type</span> <span class="o">==</span> <span class="n">ExposureType</span><span class="o">.</span><span class="n">SHORT</span><span class="p">:</span>
                     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;A short image precedes a short image, falling back to replace method&quot;</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">)</span>
+                    <span class="k">return</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">image_prev</span><span class="o">.</span><span class="n">pointing_post_fit</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                        <span class="s2">&quot;The attitude of the preceding image has not been estimated.  Falling back to replace method.&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">)</span>
+                    <span class="k">return</span>
 
                 <span class="k">if</span> <span class="n">image_next</span><span class="o">.</span><span class="n">exposure_type</span> <span class="o">==</span> <span class="n">ExposureType</span><span class="o">.</span><span class="n">SHORT</span><span class="p">:</span>
                     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;A short image follows a short image, falling back to replace method&quot;</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">)</span>
+                    <span class="k">return</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">image_next</span><span class="o">.</span><span class="n">pointing_post_fit</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                        <span class="s2">&quot;The attitude of the next image has not been estimated.  Falling back to replace method.&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">)</span>
+                    <span class="k">return</span>
+
+                <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">-</span> <span class="n">image_prev</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_delta</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;the time delta between two images is larger than the maximum time delta.&quot;</span>
+                                  <span class="s2">&quot;Falling back to replace method.&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">)</span>
+
+                <span class="k">elif</span> <span class="nb">abs</span><span class="p">(</span><span class="n">image_next</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_delta</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;the time delta between two images is larger than the maximum time delta.&quot;</span>
+                                  <span class="s2">&quot;Falling back to replace method.&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">)</span>
 
                 <span class="k">else</span><span class="p">:</span>
-
-                    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">-</span> <span class="n">image_prev</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_delta</span><span class="p">:</span>
-                        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;the time delta between two images is larger than the maximum time delta.&quot;</span>
-                                      <span class="s2">&quot;Falling back to replace method.&quot;</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">)</span>
-
-                    <span class="k">elif</span> <span class="nb">abs</span><span class="p">(</span><span class="n">image_next</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_delta</span><span class="p">:</span>
-                        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;the time delta between two images is larger than the maximum time delta.&quot;</span>
-                                      <span class="s2">&quot;Falling back to replace method.&quot;</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">)</span>
-
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">slerp</span><span class="p">(</span><span class="n">image_prev</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="p">,</span>
-                                                                           <span class="n">image_next</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="p">,</span>
-                                                                           <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">,</span>
-                                                                           <span class="n">image_prev</span><span class="o">.</span><span class="n">observation_date</span><span class="p">,</span>
-                                                                           <span class="n">image_next</span><span class="o">.</span><span class="n">observation_date</span><span class="p">))</span>
+                    <span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">slerp</span><span class="p">(</span><span class="n">image_prev</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="p">,</span>
+                                                                       <span class="n">image_next</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="p">,</span>
+                                                                       <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">,</span>
+                                                                       <span class="n">image_prev</span><span class="o">.</span><span class="n">observation_date</span><span class="p">,</span>
+                                                                       <span class="n">image_next</span><span class="o">.</span><span class="n">observation_date</span><span class="p">))</span>
+                    <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">True</span>
 
 <div class="viewcode-block" id="Camera.update_short_attitude"><a class="viewcode-back" href="../../camera/giant.camera.Camera.update_short_attitude.html#giant.camera.Camera.update_short_attitude">[docs]</a>    <span class="k">def</span> <span class="nf">update_short_attitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                               <span class="n">method</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AttitudeUpdateMethods</span><span class="p">]</span> <span class="o">=</span> <span class="n">AttitudeUpdateMethods</span><span class="o">.</span><span class="n">INTERPOLATE</span><span class="p">,</span>
@@ -1132,6 +1176,10 @@
 <span class="sd">        images are replaced with the attitude from the closest (in time) long exposure image to them from the</span>
 <span class="sd">        :attr:`.images` list.  In order to use the `&#39;replace`&#39; method every turned on short exposure image must be</span>
 <span class="sd">        preceded or followed by a long exposure image.</span>
+
+<span class="sd">        If we are successful at updating a short exposure image using this method, then the</span>
+<span class="sd">        :attr:`.OpNavImage.pointing_post_fit` flag is updated to be ``True`` for the corresponding image.</span>
+<span class="sd">        Otherwise it is set to ``False``.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            The attitude is only updated for &quot;short&quot; exposure images that are turned on (it does not matter if the long</span>
@@ -1178,6 +1226,9 @@
 <span class="sd">        attribute of the image and the resulting Rotation object is set as the new :attr:`.rotation_inertial_to_camera`</span>
 <span class="sd">        for that image. The image attitude are updated regardless of their exposure type as long as they are turned on.</span>
 
+<span class="sd">        When we update the attitude for an image using this method we set the :attr:`.OpNavImage.pointing_post_fit`</span>
+<span class="sd">        flag to ``False`` for the corresponding image.</span>
+
 <span class="sd">        :raises: ValueError if the :attr:`.attitude_function` is not callable.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -1185,7 +1236,8 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;attitude_function must be callable to use update_attitude_from_file&quot;</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
-            <span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attitude_function</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span></div></div>
+            <span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attitude_function</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">False</span></div></div>
 </pre></div>
 
           </div>

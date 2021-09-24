@@ -1511,6 +1511,11 @@
 <span class="sd">        For a more thorough description of the attitude estimation routine see the</span>
 <span class="sd">        :mod:`.stellar_opnav.estimators` documentation.</span>
 
+<span class="sd">        When attitude estimation is successful for an image (that is it was attempted and didn&#39;t error), then the</span>
+<span class="sd">        :attr:`.OpNavImage.pointing_post_fit` flag is updated to ``True``.  When attitude estimation isn&#39;t successful</span>
+<span class="sd">        for an image (it wasn&#39;t attempted due to a lack of stars or it failed) the the</span>
+<span class="sd">        :attr:`.OpNavImage.pointing_post_fit` is set to ``False``</span>
+
 <span class="sd">        .. warning::</span>
 <span class="sd">            This method overwrites the attitude information in the :attr:`.rotation_inertial_to_camera` attribute and</span>
 <span class="sd">            does not save old information anywhere.  If you want this information saved be sure to store it yourself</span>
@@ -1521,10 +1526,12 @@
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_matched_catalogue_unit_vectors_inertial</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;No stars identified for image </span><span class="si">{0}</span><span class="s2">.</span><span class="se">\n</span><span class="s2"> Cannot perform attitude estimation&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ind</span><span class="p">))</span>
+                <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">False</span>
 
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_matched_catalogue_unit_vectors_inertial</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Not enough stars identified for image </span><span class="si">{0}</span><span class="s2">.</span><span class="se">\n</span><span class="s2"> &quot;</span>
                               <span class="s2">&quot;Cannot perform attitude estimation&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ind</span><span class="p">))</span>
+                <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">False</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_attitude_est</span><span class="o">.</span><span class="n">base_frame_directions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_matched_catalogue_unit_vectors_inertial</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
@@ -1542,6 +1549,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_attitude_est</span><span class="o">.</span><span class="n">estimate</span><span class="p">()</span>
 
                 <span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attitude_est</span><span class="o">.</span><span class="n">rotation</span>
+                <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reproject_stars</span><span class="p">()</span></div>
 

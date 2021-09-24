@@ -31,7 +31,7 @@ import cython
 from cython.parallel import prange, parallel
 
 from scipy.linalg.cython_lapack cimport dgelsd, dgesv
-from libc.math cimport sqrt
+from libc.math cimport sqrt, isnan
 
 from giant.rotations import Rotation
 from giant.ray_tracer.rays import INTERSECT_DTYPE
@@ -675,17 +675,17 @@ cdef class Ellipsoid(Solid):
 
         cdef double[:, :] limbs = np.zeros((scan_dirs.shape[-1], 3), dtype=np.float64)
 
-        cdef double a_coef, b_coef, c_coef, root, discriminant, rcond
+        cdef double a_coef, b_coef, c_coef, root, discriminant, rcond, cynan=np.nan
 
         cdef int  m, n, nrhs, lda, ldb, rank, lwork, info
 
         cdef double[1000] work
         cdef int[50] iwork
         cdef double[2] s
+        cdef bint breakout
 
         # compute the cross product between the scan center directions and the scan direction vectors
         cdef double[:, :] crosses = np.cross(scan_center_dir.reshape(1, 3), scan_dirs.T).astype(np.float64)
-
         # set the value for the first element of the rhs to be -1
         rhs[0] = -1
 
@@ -740,6 +740,25 @@ cdef class Ellipsoid(Solid):
             # find the particular solution to the underdetermined system of equations to determine a point on the line
             # formed by the intersection of the plane through the body center and the scan plane
             # line_start = np.linalg.lstsq(coefs, rhs[:2])[0]
+            # make sure we don't have nans
+            breakout = False
+            for i in range(2):
+                for j in range(3):
+                    if isnan(coefs[i, j]):
+                        breakout = True
+                        break
+                if breakout:
+                    break
+
+            if not breakout:
+                for i in range(3):
+                    if isnan(rhs[i]):
+                        breakout = True
+
+            if breakout:
+                limbs[ind, :] = cynan
+                continue
+
             dgelsd(&m, &n, &nrhs, &coefs[0, 0], &lda, &rhs[0], &ldb,
                    &s[0], &rcond, &rank, &work[0], &lwork, &iwork[0], &info)
 

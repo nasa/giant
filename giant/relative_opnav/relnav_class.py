@@ -253,7 +253,7 @@ class RelativeOpNav(OpNav):
     completion and static type checking purposes.
     """
 
-    def __init__(self, camera: Camera, scene: Scene, extended_body_cutoff: Real = 10,
+    def __init__(self, camera: Camera, scene: Scene, extended_body_cutoff: Real = 3,
                  save_templates: bool = False,
                  image_processing: Optional[ImageProcessing] = None, image_processing_kwargs: Optional[dict] = None,
                  cross_correlation: Optional[XCorrCenterFinding] = None,

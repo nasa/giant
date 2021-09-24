@@ -101,7 +101,7 @@ class OpNavImage(np.ndarray):
                 saturation: Optional[Real] = None, file: Union[PATH, None] = None,
                 parse_data: bool = False, exposure: Optional[Real] = None,
                 dark_pixels: Union[ARRAY_LIKE, None] = None, instrument: str = None, spacecraft: str = None,
-                target: Union[str, None] = None):
+                target: Union[str, None] = None, pointing_post_fit: bool = False):
         """
         :param data: The image data to be formed into an OpNavImage either as a path to an image file or the
                      illumination data directly
@@ -127,6 +127,7 @@ class OpNavImage(np.ndarray):
                            for convenience and for manual inspection
         :param target: The target that the camera is pointed towards. This is not used internally by GIANT and is
                        provided for convenience and for manual inspection
+        :param pointing_post_fit: A flag specifying whether the attitude for this image has been estimated (True) or not
         """
 
         if isinstance(data, (str, Path)):
@@ -151,6 +152,7 @@ class OpNavImage(np.ndarray):
         image_data.instrument = None
         image_data.spacecraft = None
         image_data.target = None
+        image_data.pointing_post_fit = pointing_post_fit
 
         if file is not None:
             image_data.file = file
@@ -215,6 +217,7 @@ class OpNavImage(np.ndarray):
         self.saturation = getattr(obj, 'saturation', np.finfo(np.float64).max)
         self.temperature = getattr(obj, 'temperature', 0)
         self.target = getattr(obj, 'target', None)
+        self.pointing_post_fit = getattr(obj, 'pointing_post_fit', False)
 
     def __repr__(self) -> str:
 

@@ -855,11 +855,17 @@ class Camera:
 
             # otherwise both are long.  Choose the one with the smallest time difference
             else:
-                # 2*np.argmin - 1 will either give -1 (previous image) or 1 (next image)
-                delta = 2 * np.argmin([abs(self.images[ind-1].observation_date - image.observation_date),
-                                       abs(self.images[ind+1].observation_date - image.observation_date)]) - 1
+                # check if they both have estimated attitude
+                if self.images[ind - 1].pointing_post_fit and (not self.images[ind + 1].pointing_post_fit):
+                    next_ind = ind-1
+                elif self.images[ind + 1].pointing_post_fit and (not self.images[ind - 1].pointing_post_fit):
+                    next_ind = ind + 1
+                else:
+                    # 2*np.argmin - 1 will either give -1 (previous image) or 1 (next image)
+                    delta = 2 * np.argmin([abs(self.images[ind-1].observation_date - image.observation_date),
+                                           abs(self.images[ind+1].observation_date - image.observation_date)]) - 1
 
-                next_ind = ind + delta
+                    next_ind = ind + delta
 
         # return the image we are considering
         return self.images[next_ind]
@@ -872,6 +878,9 @@ class Camera:
         This method works on a single image to determine which of the 2 (or 1) surrounding long exposure images
         are closest in time to the supplied short exposure image (within a maximum time difference of *timedelta*.
         It then simply copies the long exposure attitude to the short exposure image.
+
+        If we are successful at updating a short exposure image using this method, then the
+        :attr:`.OpNavImage.pointing_post_fit` flag is updated to be ``True``.  Otherwise it is set to ``False``.
 
         :param ind: The index into the :attr:`.images` list of the short exposure image being updated
         :param image: The actual short exposure image object being updated.
@@ -886,6 +895,12 @@ class Camera:
         if next_image.exposure_type == ExposureType.SHORT:
             warnings.warn("A short image cannot be preceded or followed by another short image to use "
                           "replace quaternion")
+            image.pointing_post_fit = False
+            return
+
+        if not next_image.pointing_post_fit:
+            warnings.warn("The attitude of the next image has not been estimated.  Unable to replace quaternion.")
+            image.pointing_post_fit = False
             return
 
         # if the difference between the short and long exposure image is too long
@@ -894,10 +909,12 @@ class Camera:
         if diff > max_delta:
             warnings.warn("Two images are separated by too large of a time difference to use replace."
                           "Diff {} between {} and {}".format(diff, image.observation_date, next_image.observation_date))
+            image.pointing_post_fit = False
             return
 
         # copy the long exposure attitude to the short exposure attitude
         image.rotation_inertial_to_camera = next_image.rotation_inertial_to_camera.copy()
+        image.pointing_post_fit = True
 
     # noinspection PyTypeChecker
     def _propagate_attitude(self, ind, image, max_delta):
@@ -909,6 +926,9 @@ class Camera:
         are closest in time to the supplied short exposure image (within a maximum time difference of *timedelta*.
         It then queries the :attr:`.attitude_function` to get the change in the pointing between the two images and
         applies this delta to the long exposure attitude to update the short exposure attitude.
+
+        If we are successful at updating a short exposure image using this method, then the
+        :attr:`.OpNavImage.pointing_post_fit` flag is updated to be ``True``.  Otherwise it is set to ``False``.
 
         :param ind: The index into the :attr:`.images` list of the short exposure image being updated
         :param image: The actual short exposure image object being updated.
@@ -923,6 +943,12 @@ class Camera:
         if next_image.exposure_type == ExposureType.SHORT:
             warnings.warn("A short image cannot be both preceded and followed by another short image to use "
                           "delta quaternion")
+            image.pointing_post_fit = False
+            return
+
+        if not next_image.pointing_post_fit:
+            warnings.warn("The attitude of the next image has not been estimated.  Unable to use delta quaternion.")
+            image.pointing_post_fit = False
             return
 
         # if the difference between the short and long exposure image is too long
@@ -931,6 +957,7 @@ class Camera:
         if diff > max_delta:
             warnings.warn("Two images are separated by too large of a time difference to use delta quaternion."
                           "Diff {} between {} and {}".format(diff, image.observation_date, next_image.observation_date))
+            image.pointing_post_fit = False
             return
 
         att_prev = self.attitude_function(next_image.observation_date)  # type: Rotation
@@ -942,6 +969,7 @@ class Camera:
 
         # apply the updated delta quaternion
         image.rotation_inertial_to_camera = delta_q * next_image.rotation_inertial_to_camera
+        image.pointing_post_fit = True
 
     def _interp(self, ind, image, max_delta):
         """
@@ -953,6 +981,9 @@ class Camera:
 
         If all conditions are met then the interpolation method performs spherical linear interpolation between the two
         long exposure images to get the updated attitude for the short exposure image (see :func:`.slerp`).
+
+        If we are successful at updating a short exposure image using this method, then the
+        :attr:`.OpNavImage.pointing_post_fit` flag is updated to be ``True``.  Otherwise it is set to ``False``.
 
         :param ind: The index into the :attr:`.images` list of the short exposure image being updated
         :param image: The actual short exposure image object being updated.
@@ -978,29 +1009,42 @@ class Camera:
                 if image_prev.exposure_type == ExposureType.SHORT:
                     warnings.warn("A short image precedes a short image, falling back to replace method")
                     self._replace(ind, image, max_delta)
+                    return
+
+                if not image_prev.pointing_post_fit:
+                    warnings.warn(
+                        "The attitude of the preceding image has not been estimated.  Falling back to replace method.")
+                    self._replace(ind, image, max_delta)
+                    return
 
                 if image_next.exposure_type == ExposureType.SHORT:
                     warnings.warn("A short image follows a short image, falling back to replace method")
                     self._replace(ind, image, max_delta)
+                    return
+
+                if not image_next.pointing_post_fit:
+                    warnings.warn(
+                        "The attitude of the next image has not been estimated.  Falling back to replace method.")
+                    self._replace(ind, image, max_delta)
+                    return
+
+                if abs(image.observation_date - image_prev.observation_date) > max_delta:
+                    warnings.warn("the time delta between two images is larger than the maximum time delta."
+                                  "Falling back to replace method.")
+                    self._replace(ind, image, max_delta)
+
+                elif abs(image_next.observation_date - image.observation_date) > max_delta:
+                    warnings.warn("the time delta between two images is larger than the maximum time delta."
+                                  "Falling back to replace method.")
+                    self._replace(ind, image, max_delta)
 
                 else:
-
-                    if abs(image.observation_date - image_prev.observation_date) > max_delta:
-                        warnings.warn("the time delta between two images is larger than the maximum time delta."
-                                      "Falling back to replace method.")
-                        self._replace(ind, image, max_delta)
-
-                    elif abs(image_next.observation_date - image.observation_date) > max_delta:
-                        warnings.warn("the time delta between two images is larger than the maximum time delta."
-                                      "Falling back to replace method.")
-                        self._replace(ind, image, max_delta)
-
-                    else:
-                        image.rotation_inertial_to_camera = Rotation(slerp(image_prev.rotation_inertial_to_camera,
-                                                                           image_next.rotation_inertial_to_camera,
-                                                                           image.observation_date,
-                                                                           image_prev.observation_date,
-                                                                           image_next.observation_date))
+                    image.rotation_inertial_to_camera = Rotation(slerp(image_prev.rotation_inertial_to_camera,
+                                                                       image_next.rotation_inertial_to_camera,
+                                                                       image.observation_date,
+                                                                       image_prev.observation_date,
+                                                                       image_next.observation_date))
+                    image.pointing_post_fit = True
 
     def update_short_attitude(self,
                               method: Union[str, AttitudeUpdateMethods] = AttitudeUpdateMethods.INTERPOLATE,
@@ -1041,6 +1085,10 @@ class Camera:
         images are replaced with the attitude from the closest (in time) long exposure image to them from the
         :attr:`.images` list.  In order to use the `'replace`' method every turned on short exposure image must be
         preceded or followed by a long exposure image.
+
+        If we are successful at updating a short exposure image using this method, then the
+        :attr:`.OpNavImage.pointing_post_fit` flag is updated to be ``True`` for the corresponding image.
+        Otherwise it is set to ``False``.
 
         .. note::
             The attitude is only updated for "short" exposure images that are turned on (it does not matter if the long
@@ -1087,6 +1135,9 @@ class Camera:
         attribute of the image and the resulting Rotation object is set as the new :attr:`.rotation_inertial_to_camera`
         for that image. The image attitude are updated regardless of their exposure type as long as they are turned on.
 
+        When we update the attitude for an image using this method we set the :attr:`.OpNavImage.pointing_post_fit`
+        flag to ``False`` for the corresponding image.
+
         :raises: ValueError if the :attr:`.attitude_function` is not callable.
         """
 
@@ -1095,3 +1146,4 @@ class Camera:
 
         for _, image in self:
             image.rotation_inertial_to_camera = self.attitude_function(image.observation_date)
+            image.pointing_post_fit = False

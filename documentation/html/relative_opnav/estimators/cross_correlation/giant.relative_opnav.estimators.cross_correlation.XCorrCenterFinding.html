@@ -112,7 +112,7 @@
 <p><a class="reference internal" href="../giant.relative_opnav.estimators.cross_correlation.html#module-giant.relative_opnav.estimators.cross_correlation" title="giant.relative_opnav.estimators.cross_correlation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.relative_opnav.estimators.cross_correlation</span></code></a>:</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.relative_opnav.estimators.cross_correlation.</span></span><span class="sig-name descname"><span class="pre">XCorrCenterFinding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">scene</span></em>, <em class="sig-param"><span class="pre">camera</span></em>, <em class="sig-param"><span class="pre">image_processing</span></em>, <em class="sig-param"><span class="pre">options=None</span></em>, <em class="sig-param"><span class="pre">brdf=None</span></em>, <em class="sig-param"><span class="pre">rays=None</span></em>, <em class="sig-param"><span class="pre">grid_size=1</span></em>, <em class="sig-param"><span class="pre">peak_finder=&lt;function</span> <span class="pre">quadric_peak_finder_2d&gt;</span></em>, <em class="sig-param"><span class="pre">min_corr_score=0.3</span></em>, <em class="sig-param"><span class="pre">blur=True</span></em>, <em class="sig-param"><span class="pre">search_region=None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/giant/relative_opnav/estimators/cross_correlation.html#XCorrCenterFinding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.relative_opnav.estimators.cross_correlation.</span></span><span class="sig-name descname"><span class="pre">XCorrCenterFinding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">scene</span></em>, <em class="sig-param"><span class="pre">camera</span></em>, <em class="sig-param"><span class="pre">image_processing</span></em>, <em class="sig-param"><span class="pre">options=None</span></em>, <em class="sig-param"><span class="pre">brdf=None</span></em>, <em class="sig-param"><span class="pre">rays=None</span></em>, <em class="sig-param"><span class="pre">grid_size=1</span></em>, <em class="sig-param"><span class="pre">peak_finder=&lt;function</span> <span class="pre">quadric_peak_finder_2d&gt;</span></em>, <em class="sig-param"><span class="pre">min_corr_score=0.3</span></em>, <em class="sig-param"><span class="pre">blur=True</span></em>, <em class="sig-param"><span class="pre">search_region=None</span></em>, <em class="sig-param"><span class="pre">template_overflow_bounds=-1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/giant/relative_opnav/estimators/cross_correlation.html#XCorrCenterFinding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class implements normalized cross correlation center finding for GIANT.</p>
 <p>All of the steps required for performing cross correlation are handled by this class, including the rendering of the
 template, the actual cross correlation, and the identification of the peak of the correlation surface.  This is all
@@ -201,6 +201,10 @@ check off.</p></li>
 high frequency noise</p></li>
 <li><p><strong>search_region</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of pixels to search around the a priori predicted center for the peak of the
 correlation surface.  If <code class="docutils literal notranslate"><span class="pre">None</span></code> then searches the entire correlation surface.</p></li>
+<li><p><strong>template_overflow_bounds</strong> – The number of pixels to render in the template that overflow outside of the
+camera field of view.  Set to a number less than 0 to accept all overflow
+pixels in the template.  Set to a number greater than or equal to 0 to limit
+the number of overflow pixels.</p></li>
 </ul>
 </dd>
 </dl>
@@ -214,6 +218,18 @@ correlation surface.  If <code class="docutils literal notranslate"><span class=
 <dt class="sig sig-object py" id="giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding.generates_templates">
 <span class="sig-name descname"><span class="pre">generates_templates</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><em class="property"> <span class="pre">=</span> <span class="pre">True</span></em><a class="headerlink" href="#giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding.generates_templates" title="Permalink to this definition">¶</a></dt>
 <dd><p>A flag specifying that this RelNav estimator generates and stores templates in the <code class="xref py py-attr docutils literal notranslate"><span class="pre">templates</span></code> attribute.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding.template_overflow_bounds">
+<span class="sig-name descname"><span class="pre">template_overflow_bounds</span></span><a class="headerlink" href="#giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding.template_overflow_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of pixels to render in the template that overflow outside of the camera field of view.</p>
+<p>Set to a number less than 0 to accept all overflow pixels in the template.  Set to a number greater than or 
+equal to 0 to limit the number of overflow pixels.</p>
+<p>This setting can be particularly important in cases where the body fills significantly more than the field of 
+view of the camera because the camera distortion models are usually undefined as you get outside of the field 
+of view.  In most typical cases where you can see the entire body in the field of view though this setting 
+should have little to no impact and can safely be left at -1</p>
 </dd></dl>
 
 <dl class="py property">
