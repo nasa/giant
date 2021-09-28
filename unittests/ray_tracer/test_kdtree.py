@@ -76,7 +76,7 @@ class TestKDTree(TestCase):
         node00.bounding_box = self.triangles.bounding_box
         node00.left = node10
         node00.right = node11
-        node00.order = 2
+        node00.order = 0
 
         self.assertEqual(node00, tree.root)
 

@@ -523,7 +523,7 @@ class SceneObject:
             ref_sphere = Ellipsoid(self._position.ravel(),
                                    principal_axes=np.array([self._shape.principal_axes.mean()] * 3))
 
-        elif getattr(self._shape, 'reference_ellipsoid') is not None:
+        elif getattr(self._shape, 'reference_ellipsoid', None) is not None:
             ref_sphere = Ellipsoid(self._position.ravel(),
                                    principal_axes=np.array([self._shape.reference_ellipsoid.principal_axes.mean()] * 3))
 
@@ -654,14 +654,14 @@ class Scene:
 
             if hasattr(obj.shape, "order"):
 
-                self.order = max(self.order, obj.shape.order + 1)
+                self.order = max(self.order, obj.shape.order)
 
             elif hasattr(obj.shape, "num_faces"):
 
                 self.order = max(self.order, int(np.log10(obj.shape.num_faces)))
 
             elif hasattr(obj.shape, "id"):
-                self.order = max(self.order, int(np.log10(obj.shape.id)) + 1)
+                self.order = max(self.order, int(np.log10(obj.shape.id)))
 
     @property
     def obscuring_objs(self) -> Optional[List[SceneObject]]:

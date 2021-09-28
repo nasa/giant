@@ -308,6 +308,16 @@ debugging but in general should not be used.</p></li>
 <dd><p>A flag specifying that this RelNav estimator generates and stores templates in the <code class="xref py py-attr docutils literal notranslate"><span class="pre">templates</span></code> attribute</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.technique">
+<span class="sig-name descname"><span class="pre">technique</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><em class="property"> <span class="pre">=</span> <span class="pre">'sfn'</span></em><a class="headerlink" href="#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.technique" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name for the technique for registering with <a class="reference internal" href="../../../relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a>.</p>
+<p>If None then the name will default to the name of the module where the class is defined.</p>
+<p>This should typically be all lowercase and should not include any spaces or special characters except for <code class="docutils literal notranslate"><span class="pre">_</span></code> as 
+it will be used to make attribute/method names.  (That is <code class="docutils literal notranslate"><span class="pre">MyEstimator.technique.isidentifier()</span></code> should evaluate 
+<code class="docutils literal notranslate"><span class="pre">True</span></code>).</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.camera">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">camera</span></span><em class="property"><span class="pre">:</span> <span class="pre">giant.camera.Camera</span></em><a class="headerlink" href="#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.camera" title="Permalink to this definition">¶</a></dt>
@@ -321,6 +331,13 @@ See the <a class="reference internal" href="../../../../camera/giant.camera.Came
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">scene</span></span><em class="property"><span class="pre">:</span> <span class="pre">giant.ray_tracer.scene.Scene</span></em><a class="headerlink" href="#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.scene" title="Permalink to this definition">¶</a></dt>
 <dd><p>The scene which defines the a priori locations of all targets and light sources with respect to the camera.</p>
 <p>You can assume that the scene has been updated for the appropriate image time inside of the class.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.visible_features">
+<span class="sig-name descname"><span class="pre">visible_features</span></span><em class="property"><span class="pre">:</span> <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.visible_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>This variable is used to notify which features are predicted to be visible in the image.</p>
+<p>Each visible feature is identified by its index in the <code class="xref py py-attr docutils literal notranslate"><span class="pre">FeatureCatalogue.features</span></code> list.</p>
 </dd></dl>
 
 </dd></dl>

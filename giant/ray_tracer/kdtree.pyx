@@ -825,7 +825,7 @@ cdef class KDTree(Surface):
                     leaves.append(node)
 
         # determine the order as the order of the maximum number of faces in any of the leaf nodes +2
-        order = np.int64(np.log10(np.max([node.surface.num_faces for node in leaves]))+2)
+        order = np.int64(np.log10(np.max([node.surface.num_faces for node in leaves])))
         # store the order of the tree in the root node, which will propagate to all children nodes
         self.root.order = order
 
@@ -1098,7 +1098,7 @@ cdef class KDTree(Surface):
         """
 
         try:
-            return self.root.order + self.root.id_order
+            return self.root.order + 1 + self.root.id_order
         except IndexError:
             return None
 

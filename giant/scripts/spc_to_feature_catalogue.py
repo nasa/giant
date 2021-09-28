@@ -20,7 +20,7 @@ import os
 from itertools import repeat
 from typing import Tuple, List
 from glob import glob
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
 import pathlib
 
 from giant._typing import PATH
@@ -46,11 +46,14 @@ def _get_parser():
                         default=None)
     parser.add_argument('-m', '--memory_efficient',
                         help='Use the memory efficient triangles instead of the regular ones', action='store_true')
+    parser.add_argument('-u', '--update',
+                        help='use existing kdtree if available', action='store_true')
+
 
     return parser
 
 
-def build_feature(inp: Tuple[int, Tuple[PATH, int, bool, PATH]]) -> Tuple[SurfaceFeature, dict]:
+def build_feature(inp: Tuple[int, Tuple[PATH, int, bool, PATH, bool]]) -> Tuple[SurfaceFeature, dict]:
     """
     Load a maplet and convert it into a GIANT SurfaceFeature, returning the created feature.
     :param inp: the inputs that are needed as a tuple (current_index, (maplet_file, number_of_maplets,
@@ -58,13 +61,39 @@ def build_feature(inp: Tuple[int, Tuple[PATH, int, bool, PATH]]) -> Tuple[Surfac
     :return: The surface feature and a dictionary containing the keys order and bounds about the feature
     """
 
-    ind, (file, n_maps, me, output) = inp
+    ind, (file, n_maps, me, output, update) = inp
 
     start = time.time()
 
     maplet = Maplet(file_name=file)
 
     print(file + ' -- loaded', flush=True)
+
+    # make the output path
+    shape_path = output / (maplet.name + '.pickle')
+
+    if update:
+        if os.path.exists(shape_path):
+            try:
+                with open(shape_path, 'rb') as ifile:
+                    kd = pickle.load(ifile)
+
+                map_info = {'order': kd.order,
+                            'bounds': kd.bounding_box.vertices}
+
+                # Store path to pickle into SurfaceFeature:
+                feat = SurfaceFeature(shape_path.resolve(), 
+                                      maplet.rotation_maplet2body[:, 2], 
+                                      maplet.position_objmap, 
+                                      maplet.name,
+                                      maplet.scale)
+
+                print('map {} of {} finished in {:.3f} seconds'.format(ind, n_maps, time.time() - start), flush=True)
+
+                return feat, map_info
+
+            except:
+                pass
 
     tris = maplet.get_triangles(me=me)
 
@@ -77,17 +106,17 @@ def build_feature(inp: Tuple[int, Tuple[PATH, int, bool, PATH]]) -> Tuple[Surfac
     print(file + ' -- built', flush=True)
 
     # Write KD tree as .pickle:
-    shape_path = os.path.join(output, maplet.name + '.pickle')
-
-    # noinspection PyProtectedMember
-    map_info = {'order': kd.root._id_order + 1 + kd.order,
+    map_info = {'order': kd.order,
                 'bounds': kd.bounding_box.vertices}
 
     with open(shape_path, 'wb') as f:
         pickle.dump(kd, f)
 
     # Store path to pickle into SurfaceFeature:
-    feat = SurfaceFeature(shape_path, maplet.rotation_maplet2body[:, 2], maplet.position_objmap, maplet.name,
+    feat = SurfaceFeature(shape_path.resolve(), 
+                          maplet.rotation_maplet2body[:, 2], 
+                          maplet.position_objmap, 
+                          maplet.name,
                           maplet.scale)
 
     print('map {} of {} finished in {:.3f} seconds'.format(ind, n_maps, time.time() - start), flush=True)
@@ -134,9 +163,10 @@ def main():
     n_maps = len(map_files)
     me: bool = args.memory_efficient
 
-    with Pool() as pool:
+    with Pool(cpu_count()//2) as pool:
         res = pool.map(build_feature, enumerate(zip(map_files,
-                                                    repeat(n_maps), repeat(me), repeat(output_dir))))
+                                                    repeat(n_maps), repeat(me), repeat(output_dir),
+                                                    repeat(args.update))))
 
     sfs = [r[0] for r in res]
     map_info = [r[1] for r in res]

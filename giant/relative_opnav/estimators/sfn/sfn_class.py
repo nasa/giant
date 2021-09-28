@@ -417,6 +417,17 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
     A flag specifying that this RelNav estimator generates and stores templates in the :attr:`templates` attribute
     """
 
+    technique: str = "sfn"
+    """
+    The name for the technique for registering with :class:`.RelativeOpNav`.  
+    
+    If None then the name will default to the name of the module where the class is defined.  
+    
+    This should typically be all lowercase and should not include any spaces or special characters except for ``_`` as 
+    it will be used to make attribute/method names.  (That is ``MyEstimator.technique.isidentifier()`` should evaluate 
+    ``True``).
+    """
+
     def __init__(self, scene: Scene, camera: Camera, image_processing: ImageProcessing,
                  options: Optional[SurfaceFeatureNavigationOptions] = None, brdf: Optional[IlluminationModel] = None,
                  rays: Union[Optional[Rays], List[Rays]] = None,
@@ -683,9 +694,9 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
         unsuitable for any type of batch processing, therefore you should rarely use this option.
         """
 
-        self._visible_features: Optional[List[int]] = None
+        self.visible_features: List[Optional[List[int]]] = [None]*len(self.scene.target_objs)
         """
-        This temporary variable is used to notify which features are predicted to be visible in the image.
+        This variable is used to notify which features are predicted to be visible in the image.
         
         Each visible feature is identified by its index in the :attr:`.FeatureCatalogue.features` list.
         """
@@ -732,7 +743,9 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
         self.show_templates = options.show_templates
 
 
-    def render(self, target_ind: int, target: SceneObject, temperature: Real = 0) -> Tuple[List[np.ndarray], np.ndarray]:
+    def render(self, target_ind: int,
+               target: SceneObject,
+               temperature: Real = 0) -> Tuple[List[np.ndarray], np.ndarray]:
         """
         This method renders each visible feature for the current target according to the current estimate of the
         relative position/orientation between the target and the camera using single bounce ray tracing.
@@ -751,7 +764,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
         in a 2xn array.
 
         Note that before calling this method you must have set the visible feature list in the image to the
-        :attr:`_visible_features` attribute.
+        :attr:`visible_features` attribute.
 
         Typically this method is not used directly by the user and instead is called by the :meth:`estimate` method
         automatically.
@@ -763,24 +776,24 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                  template as a 2xn array.
         """
 
-        if self._visible_features is None:
+        if self.visible_features[target_ind] is None:
             raise ValueError('Cannot call render without having identified which features are visible')
 
         if not isinstance(target.shape, FeatureCatalogue):
             raise ValueError('Cannot use SFN with non feature catalogues')
 
         # initialize the templates list to store the templates
-        self.templates[target_ind] = [None] * len(self._visible_features)
+        self.templates[target_ind] = [None] * len(self.visible_features[target_ind])
         # initialize the intersects list and the template centers list
-        intersects_list: List[Optional[np.ndarray]] = [None] * len(self._visible_features)
+        intersects_list: List[Optional[np.ndarray]] = [None] * len(self.visible_features[target_ind])
 
         # initialize the array for the location of the feature center in each template as well as the computed bearings
         # for each template
-        template_centers = np.empty((2, len(self._visible_features)), dtype=np.float64)
-        self.computed_bearings[target_ind] = np.empty((2, len(self._visible_features)), dtype=np.float64)
+        template_centers = np.empty((2, len(self.visible_features[target_ind])), dtype=np.float64)
+        self.computed_bearings[target_ind] = np.empty((2, len(self.visible_features[target_ind])), dtype=np.float64)
 
         # loop through each possibly visible feature in the image
-        for feature_number, feature_ind in enumerate(self._visible_features):
+        for feature_number, feature_ind in enumerate(self.visible_features[target_ind]):
 
             start = time.time()
 
@@ -845,7 +858,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
             intersects_list[feature_number] = intersects_out
 
             print(f'Feature {target.shape.features[feature_ind].name} number {feature_number + 1} of '
-                  f'{len(self._visible_features)} rendered in {time.time()-start:.3f} seconds', flush=True)
+                  f'{len(self.visible_features[target_ind])} rendered in {time.time()-start:.3f} seconds', flush=True)
 
         # call the garbage collector to get rid of features that have been unloaded, because sometimes python doesn't do
         # this when we want it to
@@ -1026,13 +1039,16 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                         target.change_position(new_center)
 
                 # use the feature finder to find the visible features in the image
-                self._visible_features = target.shape.feature_finder(self.camera.model, self.scene, image.temperature)
+                self.visible_features[target_ind] = target.shape.feature_finder(self.camera.model,
+                                                                                self.scene,
+                                                                                image.temperature)
 
-                if len(self._visible_features) == 0:
+                if len(self.visible_features[target_ind]) == 0:
                     print(f'no visible features for target {target_ind} '
                           f'in image {image.observation_date}. Skipping', flush=True)
                     self.details[target_ind] = {"Failed": "No visible features in image"}
                     self.observed_bearings[target_ind] = None
+                    self.visible_features[target_ind] = None
                     continue
 
                 # render the visible features
@@ -1044,7 +1060,8 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                 correlation_scores = []
 
                 # initialize the observed bearings array
-                self.observed_bearings[target_ind] = np.empty((2, len(self._visible_features)), dtype=np.float64)
+                self.observed_bearings[target_ind] = np.empty((2, len(self.visible_features[target_ind])),
+                                                              dtype=np.float64)
                 self.observed_bearings[target_ind][:] = np.nan
 
                 # image_use is created to preserve the meta data in image
@@ -1055,14 +1072,14 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
 
                 print('Registering Templates with Image...', flush=True)
                 # feature number is the number of the feature in the image
-                # self._visible_features[feature_number] is the index of the feature in the feature catalogue
+                # self.visible_features[target_ind][feature_number] is the index of the feature in the feature catalogue
                 for feature_number, template in enumerate(self.templates[target_ind]):
 
                     if self.show_templates:
                         fig = plt.figure()
                         ax = fig.add_subplot(111)
                         ax.imshow(template, cmap='gray')
-                        ax.set_title(target.shape.features[self._visible_features[feature_number]].name)
+                        ax.set_title(target.shape.features[self.visible_features[target_ind][feature_number]].name)
 
                     # this shift corrects from the center of the template to the center of the feature in the template.
                     # the peak of the correlation surface gives the center of the template in the image, but we want the
@@ -1077,7 +1094,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                         # get the correlation surface between the template and the full image
                         temp_surf = cv2_correlator_2d(image_use, template)
 
-                        search_start = np.round(self.computed_bearings[target_ind][feature_number] + delta)
+                        search_start = np.round(self.computed_bearings[target_ind][:, feature_number] + delta)
                         bounds = [np.maximum(search_start - search_dist_use, 0).astype(int),
                                   np.minimum(search_start + search_dist_use, image.shape[::-1]).astype(int)]
 
@@ -1088,18 +1105,18 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
 
                             search_center = temp_peak + bounds[0]
                             actual_search_distance = 20
-                            adjustment = search_center - delta - self.computed_bearings[target_ind][feature_number]
+                            adjustment = search_center - delta - self.computed_bearings[target_ind][:, feature_number]
 
                         else:
 
                             # if that failed then fall back to the sfn correlator
-                            search_center = self.computed_bearings[target_ind][feature_number] + delta
+                            search_center = self.computed_bearings[target_ind][:, feature_number] + delta
                             actual_search_distance = search_dist_use
                             adjustment = np.zeros((2,), dtype=np.float64)
 
                     else:
                         # if less than 50 then just proceed
-                        search_center = self.computed_bearings[target_ind][feature_number] + delta
+                        search_center = self.computed_bearings[target_ind][:, feature_number] + delta
                         actual_search_distance = search_dist_use
                         adjustment = np.zeros((2,), dtype=np.float64)
 
@@ -1136,7 +1153,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                         self.computed_bearings[target_ind][:, feature_number] + adjustment
 
                     # Print shift and correlation score:
-                    feature_name = target.shape.features[self._visible_features[feature_number]].name
+                    feature_name = target.shape.features[self.visible_features[target_ind][feature_number]].name
                     if not np.isfinite(self.observed_bearings[target_ind][:, feature_number]).all():
                         print(f"{feature_name} :  Landmark location could be not be identified.")
                         print(f"\tPeak correlation score is {correlation_scores[feature_number]}.", flush=True)
@@ -1144,8 +1161,8 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                         shift_to_print = np.round(self.observed_bearings[target_ind][:, feature_number] -
                                                   self.computed_bearings[target_ind][:, feature_number], 3)
 
-                        print(f"{feature_name} : {shift_to_print[0]:>9.3f}, "
-                              f"{shift_to_print[1]:>9.3f} | {correlation_scores[feature_number]*10:d}/10",
+                        print(f"{feature_name} : {shift_to_print[0]:>9.3f}, {shift_to_print[1]:>9.3f} | "
+                              f"{int(np.round(correlation_scores[feature_number]*10)):d}/10",
                               flush=True)
 
                     if self.show_templates:
@@ -1197,7 +1214,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                         else:
                             print('Could not compute PnP solution')
                             self.details[target_ind] = {"Correlation Scores": correlation_scores,
-                                                        "Visible Features": self._visible_features,
+                                                        "Visible Features": self.visible_features[target_ind],
                                                         "Correlation Peak Locations": correlation_peaks,
                                                         "Correlation Surfaces": correlation_surfaces,
                                                         "Target Template Coordinates": template_centers,
@@ -1209,7 +1226,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                     else:
                         print('Insufficient number of landmarks identified to perform PnP.', flush=True)
                         self.details[target_ind] = {"Correlation Scores": correlation_scores,
-                                                    "Visible Features": self._visible_features,
+                                                    "Visible Features": self.visible_features[target_ind],
                                                     "Correlation Peak Locations": correlation_peaks,
                                                     "Correlation Surfaces": correlation_surfaces,
                                                     "Target Template Coordinates": template_centers,
@@ -1220,7 +1237,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
 
             if isinstance(self.details[target_ind], dict):
                 self.details[target_ind].update({"Correlation Scores": correlation_scores,
-                                                 "Visible Features": self._visible_features,
+                                                 "Visible Features": self.visible_features[target_ind],
                                                  "Correlation Peak Locations": correlation_peaks,
                                                  "Correlation Surfaces": correlation_surfaces,
                                                  "Target Template Coordinates": template_centers,
@@ -1228,7 +1245,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                                                  "Space Mask": space_mask})
             else:
                 self.details[target_ind] = {"Correlation Scores": correlation_scores,
-                                            "Visible Features": self._visible_features,
+                                            "Visible Features": self.visible_features[target_ind],
                                             "Correlation Peak Locations": correlation_peaks,
                                             "Correlation Surfaces": correlation_surfaces,
                                             "Target Template Coordinates": template_centers,
@@ -1308,7 +1325,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
         image_points = self.observed_bearings[target_ind][:, valid]
 
         # get the location of the features in the current camera frame
-        valid_lmk_inds = [v for ind, v in enumerate(self._visible_features) if valid[ind]]
+        valid_lmk_inds = [v for ind, v in enumerate(self.visible_features[target_ind]) if valid[ind]]
         world_points = self.scene.target_objs[target_ind].shape.feature_locations[valid_lmk_inds].T
 
         if self.pnp_ransac_iterations:

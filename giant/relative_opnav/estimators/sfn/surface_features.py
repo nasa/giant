@@ -203,12 +203,14 @@ class FeatureCatalogue:
                 bounds.append(feature.bounding_box.vertices)
                 if hasattr(feature.shape, "order"):
 
-                    self.order = max(self.order, feature.shape.root._id_order+1 + feature.shape.order)
+                    self.order = max(self.order, feature.shape.root.id_order + 1 + feature.shape.order)
 
                 elif hasattr(feature.shape, "num_faces"):
 
                     self.order = max(self.order, int(np.log10(feature.shape.num_faces)))
 
+        if not normals:
+            normals = [[]]
         self.feature_normals = np.vstack(normals)
         """
         The normal vectors of the best fit plane for each feature expressed in the current external frame as a nx3 
@@ -220,9 +222,9 @@ class FeatureCatalogue:
         expressed in the internal frame (for instance in the camera frame), not in the base catalogue frame.
         """
 
-        self.feature_bounds: np.ndarray = np.vstack(bounds).reshape((-1, 3, 3 * 6))
+        self.feature_bounds: np.ndarray = np.array(bounds)
         """
-        The vertices of the bounding box of every feature as a nx3x18 numpy array.
+        The vertices of the bounding box of every feature as a nx3x8 numpy array.
 
         Each slice along the first axis of this matrix corresponds to the same index into the :attr:`features` 
         attribute.
@@ -232,6 +234,8 @@ class FeatureCatalogue:
         expressed in the internal frame (for instance in the camera frame, not in the base catalogue frame).
         """
 
+        if not locations:
+            locations = [[]]
         self.feature_locations: np.ndarray = np.vstack(locations)
         """
         The vectors to the center of each feature expressed in the current external frame as a nx3 numpy array.
@@ -1286,18 +1290,35 @@ class VisibleFeatureFinder:
                                               axis=-1, keepdims=True))
 
         # first check the feature list
-        visible_feature_bool = np.isin(self._feature_names, self.feature_list)
+        if self.feature_list is not None:
+            visible_feature_bool = np.isin(self._feature_names, self.feature_list)
+        else:
+            visible_feature_bool = np.ones(len(self._feature_names), dtype=bool)
+
+        if not visible_feature_bool.any():
+            for feature in self.feature_catalogue.features:
+                feature.not_found()
+            return []
 
         # second check the boresight vector offset
         visible_feature_bool[visible_feature_bool] = ((reflectance_vectors[visible_feature_bool] @ boresight_vector) >=
                                                       np.cos(np.deg2rad(self.off_boresight_angle_maximum)))
+        
+        if not visible_feature_bool.any():
+            for feature in self.feature_catalogue.features:
+                feature.not_found()
+            return []
 
         # now check the reflectance angle
         visible_feature_bool[visible_feature_bool] = (
                 (-reflectance_vectors[visible_feature_bool] *
                  self.feature_catalogue.feature_normals[visible_feature_bool]).sum(axis=-1) >=
                 np.cos(np.deg2rad(self.reflectance_angle_maximum)))
-
+        
+        if not visible_feature_bool.any():
+            for feature in self.feature_catalogue.features:
+                feature.not_found()
+            return []
 
         # now check the incidence angle
         sun_direction = scene.light_obj.position.ravel() - target_use.position.ravel()
@@ -1316,6 +1337,11 @@ class VisibleFeatureFinder:
         # need to mark anything as NAN as valid here because it means we don't have a GSD for that feature
         visible_feature_bool[visible_feature_bool] = np.isnan(gsd_ratio) | ((gsd_ratio <= self.gsd_scaling) &
                                                                             (gsd_ratio >= 1/self.gsd_scaling))
+        
+        if not visible_feature_bool.any():
+            for feature in self.feature_catalogue.features:
+                feature.not_found()
+            return []
 
         feature_image_bounds = camera_model.project_onto_image(
             np.hstack(self.feature_catalogue.feature_bounds[visible_feature_bool]), temperature=temperature

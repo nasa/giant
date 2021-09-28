@@ -1058,17 +1058,17 @@ class RelativeOpNav(OpNav):
             return
 
         # get the identified landmarks list this way to catch if it isn't defined or wasn't filled out
-        identified_landmarks = getattr(worker, 'identified_landmarks', [None]*len(self.scene.target_objs))[target_ind]
-        if identified_landmarks is None:
+        visible_features = getattr(worker, 'visible_features', [None]*len(self.scene.target_objs))[target_ind]
+        if visible_features is None:
             raise ValueError('Unable to package landmark observations.  The worker must provide a '
-                             'identified_landmarks attribute and must set it to contain a list of '
+                             'visible_features attribute and must set it to contain a list of '
                              'identified landmark indices for each processed target')
 
         # store the landmark observations for each limb used in the estimation
         landmark_res = []
         for pred, obs, landmark in zip(worker.computed_bearings[target_ind].T,
                                        worker.observed_bearings[target_ind].T,
-                                       identified_landmarks):
+                                       visible_features):
             feature = target.shape.features[landmark]
             landmark_res.append((np.hstack([pred, [0]]), np.hstack([obs, [0]]), 'lmk', image.observation_date,
                                  landmark, feature.body_fixed_center, feature.name, target.name))

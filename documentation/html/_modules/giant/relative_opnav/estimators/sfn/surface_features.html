@@ -294,12 +294,14 @@
                 <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">bounding_box</span><span class="o">.</span><span class="n">vertices</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;order&quot;</span><span class="p">):</span>
 
-                    <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">_id_order</span><span class="o">+</span><span class="mi">1</span> <span class="o">+</span> <span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">id_order</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
 
                 <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;num_faces&quot;</span><span class="p">):</span>
 
                     <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">num_faces</span><span class="p">)))</span>
 
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">normals</span><span class="p">:</span>
+            <span class="n">normals</span> <span class="o">=</span> <span class="p">[[]]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">feature_normals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">normals</span><span class="p">)</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The normal vectors of the best fit plane for each feature expressed in the current external frame as a nx3 </span>
@@ -311,9 +313,9 @@
 <span class="sd">        expressed in the internal frame (for instance in the camera frame), not in the base catalogue frame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">feature_bounds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="mi">6</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_bounds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The vertices of the bounding box of every feature as a nx3x18 numpy array.</span>
+<span class="sd">        The vertices of the bounding box of every feature as a nx3x8 numpy array.</span>
 
 <span class="sd">        Each slice along the first axis of this matrix corresponds to the same index into the :attr:`features` </span>
 <span class="sd">        attribute.</span>
@@ -323,6 +325,8 @@
 <span class="sd">        expressed in the internal frame (for instance in the camera frame, not in the base catalogue frame).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">locations</span><span class="p">:</span>
+            <span class="n">locations</span> <span class="o">=</span> <span class="p">[[]]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">feature_locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">locations</span><span class="p">)</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The vectors to the center of each feature expressed in the current external frame as a nx3 numpy array.</span>
@@ -1377,18 +1381,35 @@
                                               <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 
         <span class="c1"># first check the feature list</span>
-        <span class="n">visible_feature_bool</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_feature_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_list</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">visible_feature_bool</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_feature_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_list</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">visible_feature_bool</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_feature_names</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">visible_feature_bool</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_catalogue</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
+                <span class="n">feature</span><span class="o">.</span><span class="n">not_found</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">[]</span>
 
         <span class="c1"># second check the boresight vector offset</span>
         <span class="n">visible_feature_bool</span><span class="p">[</span><span class="n">visible_feature_bool</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">reflectance_vectors</span><span class="p">[</span><span class="n">visible_feature_bool</span><span class="p">]</span> <span class="o">@</span> <span class="n">boresight_vector</span><span class="p">)</span> <span class="o">&gt;=</span>
                                                       <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">off_boresight_angle_maximum</span><span class="p">)))</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">visible_feature_bool</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_catalogue</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
+                <span class="n">feature</span><span class="o">.</span><span class="n">not_found</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">[]</span>
 
         <span class="c1"># now check the reflectance angle</span>
         <span class="n">visible_feature_bool</span><span class="p">[</span><span class="n">visible_feature_bool</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="p">(</span><span class="o">-</span><span class="n">reflectance_vectors</span><span class="p">[</span><span class="n">visible_feature_bool</span><span class="p">]</span> <span class="o">*</span>
                  <span class="bp">self</span><span class="o">.</span><span class="n">feature_catalogue</span><span class="o">.</span><span class="n">feature_normals</span><span class="p">[</span><span class="n">visible_feature_bool</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;=</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reflectance_angle_maximum</span><span class="p">)))</span>
-
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">visible_feature_bool</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_catalogue</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
+                <span class="n">feature</span><span class="o">.</span><span class="n">not_found</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">[]</span>
 
         <span class="c1"># now check the incidence angle</span>
         <span class="n">sun_direction</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">-</span> <span class="n">target_use</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
@@ -1407,6 +1428,11 @@
         <span class="c1"># need to mark anything as NAN as valid here because it means we don&#39;t have a GSD for that feature</span>
         <span class="n">visible_feature_bool</span><span class="p">[</span><span class="n">visible_feature_bool</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">gsd_ratio</span><span class="p">)</span> <span class="o">|</span> <span class="p">((</span><span class="n">gsd_ratio</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gsd_scaling</span><span class="p">)</span> <span class="o">&amp;</span>
                                                                             <span class="p">(</span><span class="n">gsd_ratio</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">gsd_scaling</span><span class="p">))</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">visible_feature_bool</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_catalogue</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
+                <span class="n">feature</span><span class="o">.</span><span class="n">not_found</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">[]</span>
 
         <span class="n">feature_image_bounds</span> <span class="o">=</span> <span class="n">camera_model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_catalogue</span><span class="o">.</span><span class="n">feature_bounds</span><span class="p">[</span><span class="n">visible_feature_bool</span><span class="p">]),</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span>
