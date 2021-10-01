@@ -894,7 +894,7 @@ class GeneralizedGaussian(KernelBasedCallPSF, _GaussianSkeleton):
                 # assume a single uncertainty for all measurements
                 out._covariance = np.linalg.pinv(jacobian.T @ jacobian) * out.residual_std ** 2
 
-        except np.linalg.linalg.LinAlgError:  # if the LHS was singular
+        except (np.linalg.linalg.LinAlgError, ZeroDivisionError):  # if the LHS was singular
             out = cls(a_coef=np.nan, b_coef=np.nan, c_coef=np.nan, amplitude=np.nan,
                       centroid_x=np.nan, centroid_y=np.nan)
 

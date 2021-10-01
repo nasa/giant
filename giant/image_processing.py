@@ -1605,6 +1605,8 @@ class ImageProcessing:
 
             # for each region, compute the "snr" for each detection
             for noise, slices in zip(noise_estimates, slices):
+                if noise < 1e-6:
+                    continue
                 flat_sliced = roi[slices[0], slices[1]]
                 snr[slices[0], slices[1]] = flat_sliced / noise
 

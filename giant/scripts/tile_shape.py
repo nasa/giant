@@ -35,6 +35,8 @@ from argparse import ArgumentParser
 import pickle  # nosec
 
 import time
+from string import ascii_uppercase
+from itertools import product
 
 import numpy as np
 
@@ -44,9 +46,11 @@ from giant.ray_tracer.kdtree import KDTree
 from giant.relative_opnav.estimators.sfn import SurfaceFeature, FeatureCatalogue
 from giant.catalogues.utilities import unit_to_radec
 from giant.rotations import rot_z, Rotation
+from giant.utilities.stereophotoclinometry import Landmark, Maplet
 
 
-# TODO: pull down updates from orex-nav.
+LMK_LETTERS = map(lambda x: ''.join(x), product(ascii_uppercase, ascii_uppercase))
+
 
 def _get_parser():
 
@@ -63,6 +67,7 @@ def _get_parser():
     parser.add_argument('-c', '--catalogue_output', help='The directory to save the feature results to',
                         default='./feature_catalogue.pickle')
     parser.add_argument('-m', '--memory_efficient', help='use memory efficient triangles', action='store_true')
+    parser.add_argument('-p', '--spc', help='Make spc stuff', action='store_true')
     parser.add_argument('-o', '--objs', help='directory to output objs for each feature to this location '
                                              '(leave none to not make objs)', default=None)
     parser.add_argument('-g', '--gsds', help='The gsds to build features at in meters', nargs='+',
@@ -122,7 +127,7 @@ def determine_centers(gsd, feature_size, body_radius, overlap):
     return feature_locations.T
 
 
-def build_feature(gsd, size, center, shape, me, odir):
+def build_feature(gsd, size, center, shape, me, odir, spc=False):
     """
     :param gsd:
     :param size:
@@ -130,6 +135,7 @@ def build_feature(gsd, size, center, shape, me, odir):
     :param shape:
     :param me:
     :param odir:
+    :param spc:
     :return:
     :rtype: tuple
     """
@@ -181,9 +187,6 @@ def build_feature(gsd, size, center, shape, me, odir):
         print("something didn't hit", flush=True)
         return None, None, None, None
 
-    # determine the center of the feature frame
-    feature_center = rotation_body_to_feature.inv().matrix @ intersects['intersect'].mean(axis=0)
-
     # determine the tesselation of the feature
     indices = np.arange(grid_x.size).reshape(grid_x.shape)
 
@@ -198,6 +201,9 @@ def build_feature(gsd, size, center, shape, me, odir):
 
     # rotate the vertices back into the body fixed frame
     vertices = (rotation_body_to_feature.matrix.T@intersects['intersect'].T).T
+
+    # determine the center of the feature frame
+    feature_center = vertices[vertices.shape[0]//2]
 
     # build the shape
     if me:
@@ -217,11 +223,47 @@ def build_feature(gsd, size, center, shape, me, odir):
         pickle.dump(tree, kfile)  # nosec
 
     # make the feature and return it
-    feature = SurfaceFeature(ofile.resolve(), feature_shapes.normals.mean(axis=0), feature_center, name,
-                             gsd=gsd/1000)
+    feature_normal = feature_shapes.normals.mean(axis=0)
+    feature = SurfaceFeature(ofile.resolve(), feature_normal/np.linal.norm(feature_normal), 
+                             feature_center, name, gsd=gsd/1000)
 
-    map_info = {'order': tree.root._id_order + 1 + tree.order,
+    map_info = {'order': tree.order,
                 'bounds': tree.bounding_box.vertices}
+
+    if spc:
+        lmk = Landmark()
+        lmk.name = spc
+        lmk.size = half_size
+        lmk.scale = gsd/1000
+        lmk.vlm = feature_center.ravel()
+        lmk.rot_map2bod = rotation_body_to_feature.matrix.T
+        
+        lmkdir = Path('.') / 'LMKFILES'
+        lmkdir.mkdir(parents=True, exist_ok=True)
+        lmk.write(lmkdir / (spc + '.LMK'))
+
+        maplet = Maplet()
+        maplet.scale = gsd/1000
+        maplet.size = half_size
+        maplet.position_objmap = feature_center.ravel()
+        maplet.rotation_maplet2body = rotation_body_to_feature.matrix.T
+        
+        heights = intersects['intersect'][:, 2] - (rotation_body_to_feature.matrix @ feature_center.ravel())[2]
+        heights /= maplet.scale
+
+        maplet.hscale = np.abs(heights).max()/np.iinfo('i2').max
+
+        maplet.heights = heights.reshape(2*half_size+1, 2*half_size+1).T
+
+        maplet.albedos = intersects['albedo'].reshape(2*half_size+1, 2*half_size+1).T
+
+        maplet.albedos /= maplet.albedos.mean()
+
+        maplet.albedos = np.clip(maplet.albedos, 0, 2.55)
+
+        mapdir = Path('.') / 'MAPFILES'
+        mapdir.mkdir(parents=True, exist_ok=True)
+        maplet.write(mapdir / (spc + '.MAP'))
 
     return feature, vertices, facets, map_info
 
@@ -250,6 +292,11 @@ def main():
     vertex_str = 'v {} {} {}\n'
     features = []
     feature_info = []
+    numbers = iter(range(1, 9999))
+    letter = next(LMK_LETTERS)
+
+    lmks = []
+
 
     # loop through each requested gsd
     for gind, gsd in enumerate(args.gsds):
@@ -264,9 +311,23 @@ def main():
 
             fstart = time.time()
 
+            if args.spc:
+                try:
+                    spc = letter + '{:04d}'.format(next(numbers))
+
+                except StopIteration:
+                    letter = next(LMK_LETTERS)
+                    numbers = iter(range(1, 9999))
+                    spc = letter + '{:04d}'.format(next(numbers))
+
+                lmks.append(spc)
+
+            else:
+                spc = False
+
             # build the feature
             feature, verts, tris, info = build_feature(gsd, args.size, center, shape, args.memory_efficient,
-                                                       feature_dir)
+                                                       feature_dir, spc=spc)
 
             if feature is None:
                 continue
@@ -284,6 +345,11 @@ def main():
             print('feature {} of {} done in {:.3f} secs'.format(ind+1, len(centers), time.time()-fstart), flush=True)
         print('gsd {} of {} done in {:.3f} secs'.format(gind+1, len(args.gsds), time.time()-gstart), flush=True)
 
+    if args.spc:
+        with Path('./LMRKLIST.TXT').open('w') as ofile:
+            for lmk in lmks:
+                ofile.write(lmk + '\n')
+            ofile.write('END')
     catalogue = FeatureCatalogue(features, map_info=feature_info)
 
     with open(args.catalogue_output, 'wb') as ofile:

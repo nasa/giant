@@ -714,6 +714,7 @@ class Detector:
 
             # get a timer
             start = time.time()
+            _LOGGER.info(f'Analyzing results for image {ind+1} of {sum(self.sopnav.camera.image_mask)}')
 
             if self._needs_processed[ind]:
                 _LOGGER.warning(f'Image {ind}, {image.observation_date.isoformat()} needs to be processed still')
