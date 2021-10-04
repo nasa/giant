@@ -728,7 +728,7 @@ cdef class KDTree(Surface):
         Used to package the tree for pickling/unpickling.
         """
 
-        return self.__class__, (self.surface, self.max_depth, self.root, self._rotation, self._position,
+        return self.__class__, (self.surface, self.max_depth, self.root, self._rotation, self.position,
                                 self.bounding_box, self.reference_ellipsoid)
 
     @property
