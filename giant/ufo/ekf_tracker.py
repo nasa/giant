@@ -49,8 +49,10 @@ import pickle  # nosec
 
 from typing import List, Optional, Callable, Union, Tuple, Hashable, Iterable
 
-from scipy.spatial.ckdtree import cKDTree
+from scipy.spatial.kdtree import KDTree
 import numpy as np
+
+import spiceypy as spice
 
 from giant.image import OpNavImage
 from giant.ray_tracer.scene import Scene
@@ -115,7 +117,7 @@ class Tracker:
                  dynamics: Dynamics,
                  state_initializer: STATE_INITIALIZER_TYPE,
                  search_distance_function: Callable[[ExtendedKalmanFilter], Real],
-                 observation_trees: Optional[List[Optional[cKDTree]]] = None,
+                 observation_trees: Optional[List[Optional[KDTree]]] = None,
                  observation_ids: Optional[List[Optional[List[int]]]] = None,
                  initial_euclidean_threshold: Real = 300,
                  measurement_covariance: Optional[np.ndarray] = None,
@@ -130,7 +132,8 @@ class Tracker:
                  minimum_number_of_measurements: int = 4,
                  maximum_residual_standard_deviation: Real = 20,
                  maximum_time_outs: int = 50,
-                 maximum_tracking_time_per_image: Real = 3600):
+                 maximum_tracking_time_per_image: Real = 3600,
+                 kernels_to_load: Optional[List[str]] = None):
         """
         :param camera: The :class:`.Camera` containing the images to process and the camera model
         :param scene: The :class:`.Scene` describing the location of the central body with respect to the camera.
@@ -140,7 +143,7 @@ class Tracker:
         :param search_distance_function: A callable which takes in an :class:`.ExtendedKalmanFilter` and returns what
                                          the Euclidean search distance should be for that EKF in pixels.  This is only
                                          applied after the first pair has been made
-        :param observation_trees: A list of scipy.spatial cKDTree objects that are built on the pixel locations of the
+        :param observation_trees: A list of scipy.spatial KDTree objects that are built on the pixel locations of the
                                   detections for each image
         :param observation_ids: A list of the ids for each observation contained in the trees in order.
         :param initial_euclidean_threshold: The threshold in pixels for points to be paired form the first image to a
@@ -174,6 +177,9 @@ class Tracker:
                                   terminate all of the processes.
         :param maximum_tracking_time_per_image: The maximum amount of time to attempt tracking in the image before we
                                                 assume something has gone wrong and terminate all of the processes.
+        :param kernels_to_load: The spice kernels to load in each subprocess.  This is required if you are using spice
+                                because the kernel pool does not subsist across processes.  It should either be
+                                ``None`` if you're not using spice or a list of strings if you are.
         """
 
         self.camera: Camera = camera
@@ -189,7 +195,7 @@ class Tracker:
         (it can be a ``Point`` object) and in fact is encouraged not to (to avoid large memory overhead)
         """
 
-        self.observation_trees: List[Optional[cKDTree]] = observation_trees
+        self.observation_trees: List[Optional[KDTree]] = observation_trees
         """
         A list of KDTrees built on the observed UFO locations.
         
@@ -357,6 +363,14 @@ class Tracker:
         A counter for the number of times we have respawned our smoothing processes
         """
 
+        self.kernels_to_load: Optional[List[str]] = kernels_to_load
+        """
+        The spice kernels to load in each subprocess.  
+        
+        This is required if you are using spice because the kernel pool does not subsist across processes.  It should 
+        either be ``None`` if you're not using spice or a list of strings if you are.
+        """
+
     def find_initial_pairs(self, image_ind: int, image: OpNavImage):
         """
         This method finds the initial pairs for the input image.
@@ -452,7 +466,7 @@ class Tracker:
                 continue
 
             # build the kdtree for the predicted locations in the next image so we can do a ball query
-            predicted_kdtree = cKDTree(np.vstack(predicted_pixels))
+            predicted_kdtree = KDTree(np.vstack(predicted_pixels))
 
             # do a ball query with the initial euclidean tolerance to figure out the initial pairs
             full_pairs = predicted_kdtree.query_ball_tree(self.observation_trees[next_image_index],
@@ -632,6 +646,10 @@ class Tracker:
         :param process_number: The number of the process.
         """
 
+        if self.kernels_to_load is not None:
+            for k in self.kernels_to_load:
+                spice.furnsh(k)
+
         if self._ekfs_to_process is None:
             raise ValueError("The work queue hasn't been initialized")
         if self._results is None:
@@ -806,6 +824,8 @@ class Tracker:
 
             self._working[process_number] = False
 
+        spice.kclear()
+
     def _smooth(self, process_number: int):
         """
         This method retrieves an EKF from the queue and smooths it.
@@ -816,6 +836,11 @@ class Tracker:
 
         :param process_number: The number of the process.
         """
+
+        if self.kernels_to_load is not None:
+            for k in self.kernels_to_load:
+                spice.furnsh(k)
+
         if self._smoothing_input is None:
             raise ValueError("The work queue hasn't been initialized")
         if self._smoothing_output is None:
@@ -831,6 +856,7 @@ class Tracker:
                 if isinstance(incoming, str) and incoming == "END":
                     self._smoothing_working[process_number] = False
                     self._smoothing_output.put_retry('DONE')
+
                     break
 
                 ind, ekf = incoming
@@ -872,6 +898,8 @@ class Tracker:
                         _LOGGER.warning('Unable to put the smoothed results on the queue')
                         break
 
+        spice.kclear()
+
     def filter_ekfs(self, ekfs_to_filter: Iterable[ExtendedKalmanFilter], number_of_ekfs: int):
         """
         This method does backwards smoothing on each EKF and figures out which are actually valid
@@ -886,11 +914,17 @@ class Tracker:
 
         smoothed_ekfs: List[Optional[ExtendedKalmanFilter]] = [None] * number_of_ekfs
 
-        for p in self.smoothing_processes:
+        processes: Optional[List[Process]] = self.processes
+        smooth_process: List[Process] = self.smoothing_processes
+        self.processes = None
+        self.smoothing_processes = None
+        for p in smooth_process:
             try:
                 p.start()
             except AssertionError:
                 pass
+        self.processes = processes
+        self.smoothing_processes = smooth_process
 
         for ind, ekf in enumerate(ekfs_to_filter):
 
@@ -908,7 +942,7 @@ class Tracker:
 
         while number_not_done:
             try:
-                result = self._smoothing_output.get(timeout=1)
+                result: Union[str, Tuple[bool, int, ExtendedKalmanFilter]] = self._smoothing_output.get(timeout=1)
 
                 # reset the counter
                 number_timed_out = 0
@@ -1073,11 +1107,17 @@ class Tracker:
                 self._reset_tracking_workers()
 
             # start the process of tracking along these initial pairs
-            for process in self.processes:
+            processes: List[Process] = self.processes
+            smooth_process = self.smoothing_processes
+            self.processes = None
+            self.smoothing_processes = None
+            for process in processes:
                 try:
                     process.start()
                 except AssertionError:
                     pass
+            self.processes = processes
+            self.smoothing_processes = smooth_process
 
             # self._follow(-1)
 

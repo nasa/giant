@@ -1696,6 +1696,8 @@
 
             <span class="c1"># for each region, compute the &quot;snr&quot; for each detection</span>
             <span class="k">for</span> <span class="n">noise</span><span class="p">,</span> <span class="n">slices</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">noise_estimates</span><span class="p">,</span> <span class="n">slices</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">noise</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+                    <span class="k">continue</span>
                 <span class="n">flat_sliced</span> <span class="o">=</span> <span class="n">roi</span><span class="p">[</span><span class="n">slices</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">slices</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
                 <span class="n">snr</span><span class="p">[</span><span class="n">slices</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">slices</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">flat_sliced</span> <span class="o">/</span> <span class="n">noise</span>
 

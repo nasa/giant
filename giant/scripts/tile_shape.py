@@ -224,8 +224,8 @@ def build_feature(gsd, size, center, shape, me, odir, spc=False):
 
     # make the feature and return it
     feature_normal = feature_shapes.normals.mean(axis=0)
-    feature = SurfaceFeature(ofile.resolve(), feature_normal/np.linal.norm(feature_normal), 
-                             feature_center, name, gsd=gsd/1000)
+    feature = SurfaceFeature(ofile.resolve(), feature_normal/np.linalg.norm(feature_normal),
+                             feature_center, name, ground_sample_distance=gsd/1000)
 
     map_info = {'order': tree.order,
                 'bounds': tree.bounding_box.vertices}

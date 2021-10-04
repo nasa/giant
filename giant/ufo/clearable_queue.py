@@ -56,6 +56,8 @@ class ClearableQueue(Queue):
 
     """
 
+    size: SharedCounter
+
     def __init__(self, *args: list, **kwargs: dict):
         ctx = get_context()
         super().__init__(*args, **kwargs, ctx=ctx)
@@ -80,10 +82,21 @@ class ClearableQueue(Queue):
         Gets the results and tries to flush from the holder if anything is in it
         """
         res = super().get(*args, **kwargs)
-        self.size.increment(-1)
+        try:
+            self.size.increment(-1)
+        except AttributeError:
+            print('something is real wrong')
 
         self.flush_holder()
         return res
+
+    def __getstate__(self):
+        return super().__getstate__() + (self.size, self.holder)
+
+    def __setstate__(self, state):
+        self.size = state[-2]
+        self.holder = state[-1]
+        super().__setstate__(state[:-2])
 
     def flush_holder(self):
         """
