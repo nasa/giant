@@ -176,11 +176,19 @@ class FeatureCatalogue:
         Each element should be a :class:`.SurfaceFeature` object which describes the surface feature.
         """
 
-        self.order: int = -1
+        self._order: int = -1
         """
-        This specifies the order (power of 10) of the largest id of the DEM of any shape in the
-        feature catalogues.
+        This specifies the largest order of any of the shapes used to represent the features.
+                
+        This is used to determine which ignore indices apply to the features in this catalogue, for cases where multiple
+        targets are included in a :class:`.Scene`.  In general a user does not need to worry about this number and 
+        should not modify it themselves
+        """
         
+        self._id_order: int = np.int64(np.log10(len(features)))
+        """
+        This specifies the number of digits required to represent all of the features in this catalogue.
+                
         This is used to determine which ignore indices apply to the features in this catalogue, for cases where multiple
         targets are included in a :class:`.Scene`.  In general a user does not need to worry about this number and 
         should not modify it themselves
@@ -196,18 +204,18 @@ class FeatureCatalogue:
             normals.append(feature.normal)
             locations.append(feature.body_fixed_center)
             if not feature.loaded and (map_info is not None):
-                self.order = max(self.order, map_info[find]['order'])
+                self._order = max(self._order, map_info[find]['order'])
                 bounds.append(map_info[find]['bounds'])
 
             else:
                 bounds.append(feature.bounding_box.vertices)
                 if hasattr(feature.shape, "order"):
 
-                    self.order = max(self.order, feature.shape.root.id_order + 1 + feature.shape.order)
+                    self._order = max(self._order, feature.shape.order)
 
                 elif hasattr(feature.shape, "num_faces"):
 
-                    self.order = max(self.order, int(np.log10(feature.shape.num_faces)))
+                    self._order = max(self._order, int(np.log10(feature.shape.num_faces)))
 
         if not normals:
             normals = [[]]
@@ -307,6 +315,18 @@ class FeatureCatalogue:
         
         We do not set this at initialization because it is typically set at run time and is frequently changed
         """
+        
+    @property
+    def order(self) -> int:
+        """
+        This specifies the number of digits reserved for specifying facet ids for features in this catalogue
+                
+        This is used to determine which ignore indices apply to the features in this catalogue, for cases where multiple
+        targets are included in a :class:`.Scene`.  In general a user does not need to worry about this number and 
+        should not modify it themselves
+        """
+        
+        return self._order + self._id_order + 1
 
     @property
     def stale_count_unload_threshold(self) -> int:
@@ -395,7 +415,8 @@ class FeatureCatalogue:
                              bounds: np.ndarray, normals: np.ndarray, locations: np.ndarray,
                              rotation: Rotation, position: np.ndarray,
                              feature_bounding_boxes: Dict[int, AxisAlignedBoundingBox],
-                             include_features: Optional[List[int]], order: int) -> 'FeatureCatalogue':
+                             include_features: Optional[List[int]], order: int,
+                             id_order: Optional[int] = None) -> 'FeatureCatalogue':
         """
         This class method is used to initialize the class from pickle, instead of you usual init method.
 
@@ -425,7 +446,11 @@ class FeatureCatalogue:
         out._rotation = rotation
         out._feature_bounding_boxes = feature_bounding_boxes
         out.include_features = include_features
-        out.order = order
+        out._order = order
+        if id_order is None:
+            out._id_order = np.int64(np.log10(len(features)))
+        else:
+            out._id_order = id_order
 
         return out
 
@@ -436,7 +461,7 @@ class FeatureCatalogue:
 
         return self.__init_from_pickle__, (self.features, self.feature_bounds, self.feature_normals,
                                            self.feature_locations, self._rotation, self._position,
-                                           self._feature_bounding_boxes, self.include_features, self.order)
+                                           self._feature_bounding_boxes, self.include_features, self._order, self._id_order)
 
     @property
     def bounding_box(self) -> AxisAlignedBoundingBox:
@@ -627,8 +652,8 @@ class FeatureCatalogue:
             # modify the ignore inds for ones that apply to this feature
             if ignore_inds is not None:
 
-                ignore_inds[ignore_inds // (10 ** (self.order + 1)) != feature_index] = -1
-                ignore_inds[ignore_inds // (10 ** (self.order + 1)) == feature_index] %= 10 ** (self.order + 1)
+                ignore_inds[ignore_inds // (10 ** (self._order + 1)) != feature_index] = -1
+                ignore_inds[ignore_inds // (10 ** (self._order + 1)) == feature_index] %= 10 ** (self._order + 1)
 
             # trace the feature
             feature_results = feature.trace(rays_local)
@@ -637,7 +662,7 @@ class FeatureCatalogue:
             rays_local.ignore = original_ignore_inds
 
             # update the id for the intersect face based on the current feature index
-            feature_results["facet"][feature_results["check"]] += feature_index * (10 ** (self.order + 1))
+            feature_results["facet"][feature_results["check"]] += feature_index * (10 ** (self._order + 1))
 
             # store the results
             res.append(feature_results)

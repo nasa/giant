@@ -46,10 +46,12 @@ import spiceypy as spice
 import cv2
 
 from giant.relative_opnav.relnav_class import RESULTS_DTYPE
-from giant.utilities.stereophotoclinometry import Summary, Maplet
+from giant.utilities.stereophotoclinometry import Nominal, Summary, Maplet
 from giant.utilities.spice_interface import (et_callable_to_datetime_callable, create_callable_position,
                                              create_callable_orientation)
 from giant.ray_tracer.scene import correct_light_time, correct_stellar_aberration
+from giant.rotations import Rotation
+from giant.camera import Camera
 
 
 MAPLETS = {}
@@ -104,7 +106,7 @@ def main():
 
     with open(args.camera, 'rb') as cfile:
         # added warning to documentation
-        camera = dill.load(cfile)  # nosec
+        camera: Camera = dill.load(cfile)  # nosec
 
     if args.sumfiles is None:
         sumfiles = sorted(glob(join(args.dir, 'SUMFILES', '*.SUM')))
@@ -127,12 +129,14 @@ def main():
     else:
         lmk_displays = sorted(args.lmk_displays)
 
-    sumos = []
+    sumos: list[Summary] = []
+    nomos: list[Nominal] = []
     lmkds = []
 
     for sumf, lmkf in zip(sumfiles, lmk_displays):
 
         sumo = Summary(file_name=sumf)
+        nomo = Nominal(file_name=sumf.replace('SUMFILES', 'NOMINALS').replace('.SUM', '.NOM'))
 
         for mletname in sumo.landmarks.keys():
 
@@ -141,16 +145,18 @@ def main():
                 MAPLETS[mletname] = Maplet(file_name=join(args.dir, 'MAPFILES', mletname + '.MAP'))
     
         sumos.append(sumo)
+        nomos.append(nomo)
         lmkds.append(cv2.imread(lmkf, cv2.IMREAD_GRAYSCALE))
 
     im_times = list(map(lambda x: x.observation_date, camera.images))
 
     res = [None]*len(im_times)
+    details = [None]*len(im_times)
     lmk_disp = [None] * len(im_times)
 
     bounds = timedelta(seconds=1)
 
-    for sumo, lmkd in zip(sumos, lmkds):
+    for sumo, nomo, lmkd in zip(sumos, nomos, lmkds):
         lmk_res = []
 
         diff_list = list(map(lambda x: abs(x - sumo.observation_date), im_times))
@@ -167,7 +173,19 @@ def main():
 
         gimage = camera.images[iind]
 
+        lmk_details = [{'PnP Solution': True,
+                        'PnP Translation': sumo.rotation_target_fixed_to_camera @ nomo.rotation_target_fixed_to_camera.T @ sumo.position_camera_to_target - nomo.position_camera_to_target,
+                        'PnP Rotation': Rotation(sumo.rotation_target_fixed_to_camera @ nomo.rotation_target_fixed_to_camera.T),
+                        'PnP Position': sumo.rotation_target_fixed_to_camera @ sumo.position_camera_to_target,
+                        'PnP Orientation': Rotation(sumo.rotation_target_fixed_to_camera),
+                        'Correlation Scores': [0]*len(sumo.landmarks.keys())}]
+
+
         gmod = camera.model
+
+        with open(sumo.file_name.replace('SUMFILES/', '').replace('.SUM', '.OOT'), 'r') as ootfile:
+
+            oots = ootfile.readlines()
 
         for ind, mletname in enumerate(sumo.landmarks.keys()):
             mlet = MAPLETS[mletname]
@@ -179,7 +197,7 @@ def main():
 
             # determine the position vector from the camera to the maplet at the image time in the inertial frame
             cam2lmkpos_inertial = correct_light_time(lmk_pos, gimage.position, gimage.observation_date)
-            cam2lmkpos_inertial = correct_stellar_aberration(cam2lmkpos_inertial, gimage.velocity.reshape(3, 1))
+            cam2lmkpos_inertial = correct_stellar_aberration(cam2lmkpos_inertial, gimage.velocity)
         
             # determine the position vector from the camera to the maplet at the image time in the camera frame 
             cam2lmkpos_camera = gimage.rotation_inertial_to_camera.matrix @ cam2lmkpos_inertial
@@ -195,10 +213,23 @@ def main():
             lmk_res.append((np.hstack([pred, [0]]), np.hstack([obs, [0]]), 'lmk', gimage.observation_date, ind,
                             mlet.position_objmap, mletname, name))
 
-        res[iind] = np.array(lmk_res, dtype=RESULTS_DTYPE)
-        lmk_disp[iind] = lmkd
+            # get the correlation score
+            for oline in reversed(oots):
+                if mletname in oline:
+                    soline = oline.split()
+                    if len(soline) == 5:
+                        lmk_details[0]['Correlation Scores'][ind] = float(soline[-1])
+                    elif len(soline) == 6:
+                        lmk_details[0]['Correlation Scores'][ind] = float(soline[-2])
+                    else:
+                        print('bad')
+                    break
 
-    results_dict = {'lmk': res, 'lmk_displays': lmk_disp}
+        res[iind] = [np.array(lmk_res, dtype=RESULTS_DTYPE)]
+        lmk_disp[iind] = lmkd
+        details[iind] = lmk_details
+
+    results_dict = {'lmk': res, 'lmk displays': lmk_disp, 'lmk details': details}
 
     with open(args.output, 'wb') as rfile:
         # added warning to documentation

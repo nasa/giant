@@ -1142,7 +1142,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
 
                         if correlation_scores[feature_number] < self.min_corr_score:
                             correlation_peaks[feature_number][:] = np.nan
-                            correlation_scores[feature_number] = 0
+                            # correlation_scores[feature_number] = 0
                     else:
                         correlation_peaks[feature_number][:] = np.nan
                         correlation_scores.append(0)

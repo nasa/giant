@@ -863,7 +863,8 @@ class Nominal:
         """
 
         if file_name is not None:
-            self.read()
+            self.read(file_name)
+            self.file_name = file_name
 
         if image_name is not None:
             self.image_name = image_name

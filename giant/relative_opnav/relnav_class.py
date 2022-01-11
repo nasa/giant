@@ -95,7 +95,7 @@ class documentation. For more details on adding new techniques to the :class:`Re
 
 import time
 
-from copy import copy
+from copy import deepcopy
 
 from warnings import warn
 
@@ -426,8 +426,7 @@ class RelativeOpNav(OpNav):
             else:
                 self._unresolved = UnresolvedCenterFinding(self.scene, self._camera, self._image_processing)
 
-        self.unresolved_details = \
-            [[None] * len(self.scene.target_objs)] * len(self.camera.images)  # type: List[List[Optional[Any]]]
+        self.unresolved_details = [[None] * len(self.scene.target_objs) for _ in range(len(self.camera.images))]
         """
         This attribute stores details from the :mod:`.unresolved` technique for each image/target pair that has 
         been processed.
@@ -455,8 +454,7 @@ class RelativeOpNav(OpNav):
             else:
                 self._cross_correlation = XCorrCenterFinding(self.scene, self._camera, self._image_processing)
 
-        self.cross_correlation_details = \
-            [[None] * len(self.scene.target_objs)] * len(self.camera.images)  # type: List[List[Optional[Any]]]
+        self.cross_correlation_details = [[None] * len(self.scene.target_objs) for _ in range(len(self.camera.images))]
         """
         This attribute stores details from the :mod:`.cross_correlation` technique for each image/target pair that has 
         been processed.
@@ -483,8 +481,7 @@ class RelativeOpNav(OpNav):
             else:
                 self._sfn = SurfaceFeatureNavigation(self.scene, self._camera, self._image_processing)
 
-        self.sfn_details = \
-            [[None] * len(self.scene.target_objs)] * len(self.camera.images)  # type: List[List[Optional[Any]]]
+        self.sfn_details = [[None] * len(self.scene.target_objs) for _ in range(len(self.camera.images))]
         """
         This attribute stores details from the :mod:`.sfn` technique for each image/target pair that has 
         been processed.
@@ -510,8 +507,7 @@ class RelativeOpNav(OpNav):
             else:
                 self._limb_matching = LimbMatching(self.scene, self._camera, self._image_processing)
 
-        self.limb_matching_details = \
-            [[None] * len(self.scene.target_objs)] * len(self.camera.images)  # type: List[List[Optional[Any]]]
+        self.limb_matching_details = [[None] * len(self.scene.target_objs) for _ in range(len(self.camera.images))]
         """
         This attribute stores details from the :mod:`.limb_matching` technique for each image/target pair that has 
         been processed.
@@ -538,8 +534,7 @@ class RelativeOpNav(OpNav):
 
                 self._ellipse_matching = EllipseMatching(self.scene, self._camera, self._image_processing)
 
-        self.ellipse_matching_details = \
-            [[None]*len(self.scene.target_objs)]*len(self.camera.images)  # type: List[List[Optional[Any]]]
+        self.ellipse_matching_details = [[None] * len(self.scene.target_objs) for _ in range(len(self.camera.images))]
         """
         This attribute stores details from the :mod:`.ellipse_matching` technique for each image/target pair that has 
         been processed.
@@ -566,8 +561,7 @@ class RelativeOpNav(OpNav):
 
                 self._moment_algorithm = MomentAlgorithm(self.scene, self._camera, self._image_processing)
 
-        self.moment_algorithm_details = \
-            [[None]*len(self.scene.target_objs)]*len(self.camera.images)  # type: List[List[Optional[Any]]]
+        self.moment_algorithm_details = [[None] * len(self.scene.target_objs) for _ in range(len(self.camera.images))]
         """
         This attribute stores details from the :mod:`.moment_algorithm` technique for each image/target pair that has 
         been processed.
@@ -601,7 +595,7 @@ class RelativeOpNav(OpNav):
             # make the details list for this technique
             details = f'{technique}_details'
 
-            setattr(self, details, [[None]*len(self.scene.target_objs)]*len(self.camera.images))
+            setattr(self, details, [[None] * len(self.scene.target_objs) for _ in range(len(self.camera.images))])
 
     @property
     def scene(self) -> Scene:
@@ -1087,7 +1081,7 @@ class RelativeOpNav(OpNav):
         if not worker.generates_templates:
             raise ValueError("The worker doesn't generate templates which are required to package templates")
 
-        self.saved_templates[image_ind][target_ind] = copy(worker.templates[target_ind])
+        self.saved_templates[image_ind][target_ind] = deepcopy(worker.templates[target_ind])
 
     def _package_details(self, worker: RelNavEstimator, image_ind: int, target_ind: int):
         """
@@ -1108,7 +1102,7 @@ class RelativeOpNav(OpNav):
         if details_list is None:
             raise ValueError(f"Somehow we ended up without a list of details for {worker_name}")
 
-        details_list[image_ind][target_ind] = copy(worker.details[target_ind])
+        details_list[image_ind][target_ind] = deepcopy(worker.details[target_ind])
 
     def process_image(self, worker: RelNavEstimator, image_ind: int, image: OpNavImage,
                       observable_type: List[RelNavObservablesType], include_targets: Optional[List[bool]] = None):

@@ -112,7 +112,7 @@ setup(name='giant',
               "generate_sample_data = giant.scripts.generate_sample_data:main",
               "merge_cameras = giant.scripts.merge_cameras:main",
               "shape_stats = giant.scripts.shape_stats:main",
-              "spc2results = giant.scripts.spc2results:main",
+              "spc_to_results = giant.scripts.spc_to_results:main",
               "spc_to_feature_catalogue = giant.scripts.spc_to_feature_catalogue:main",
               "tile_shape = giant.scripts.tile_shape:main",
           ]
