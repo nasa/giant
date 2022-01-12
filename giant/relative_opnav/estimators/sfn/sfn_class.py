@@ -1393,7 +1393,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                     new_trans, new_rot = self._lls(world_points[:, best_inliers], image_points[:, best_inliers],
                                                    image, image_ind)
                     diff = np.linalg.norm(
-                        self.camera.model.project_onto_image(new_rot.matrix @ (world_points + new_trans),
+                        self.camera.model.project_onto_image(new_rot.matrix @ (world_points + new_trans.reshape(3, 1)),
                                                              temperature=image.temperature, image=image_ind) -
                         image_points, axis=0
                     )
