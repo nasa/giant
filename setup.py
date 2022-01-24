@@ -16,17 +16,17 @@ if platform.lower().startswith('win32'):
     ext_modules = [
         Extension("*",
                   ["giant/ray_tracer/*.pyx"],
-                  extra_compile_args=['/openmp'],
+                  extra_compile_args=['/openmp:llvm'],
                   include_dirs=[numpy.get_include()]
                   ),
         Extension("*",
                   ["giant/ray_tracer/shapes/*.pyx"],
-                  extra_compile_args=['/openmp'],
+                  extra_compile_args=['/openmp:llvm'],
                   include_dirs=[numpy.get_include()]
                   ),
         Extension("*",
                   ["giant/relative_opnav/estimators/sfn/sfn_correlators.pyx"],
-                  extra_compile_args=['/openmp'],
+                  extra_compile_args=['/openmp:llvm'],
                   include_dirs=[numpy.get_include()]
                   )
     ]  # untested...
