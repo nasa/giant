@@ -267,11 +267,19 @@
 <span class="sd">        Each element should be a :class:`.SurfaceFeature` object which describes the surface feature.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        This specifies the order (power of 10) of the largest id of the DEM of any shape in the</span>
-<span class="sd">        feature catalogues.</span>
-<span class="sd">        </span>
+<span class="sd">        This specifies the largest order of any of the shapes used to represent the features.</span>
+<span class="sd">                </span>
+<span class="sd">        This is used to determine which ignore indices apply to the features in this catalogue, for cases where multiple</span>
+<span class="sd">        targets are included in a :class:`.Scene`.  In general a user does not need to worry about this number and </span>
+<span class="sd">        should not modify it themselves</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">features</span><span class="p">)))</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This specifies the number of digits required to represent all of the features in this catalogue.</span>
+<span class="sd">                </span>
 <span class="sd">        This is used to determine which ignore indices apply to the features in this catalogue, for cases where multiple</span>
 <span class="sd">        targets are included in a :class:`.Scene`.  In general a user does not need to worry about this number and </span>
 <span class="sd">        should not modify it themselves</span>
@@ -287,18 +295,18 @@
             <span class="n">normals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">normal</span><span class="p">)</span>
             <span class="n">locations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">body_fixed_center</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">feature</span><span class="o">.</span><span class="n">loaded</span> <span class="ow">and</span> <span class="p">(</span><span class="n">map_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="n">map_info</span><span class="p">[</span><span class="n">find</span><span class="p">][</span><span class="s1">&#39;order&#39;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_order</span><span class="p">,</span> <span class="n">map_info</span><span class="p">[</span><span class="n">find</span><span class="p">][</span><span class="s1">&#39;order&#39;</span><span class="p">])</span>
                 <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">map_info</span><span class="p">[</span><span class="n">find</span><span class="p">][</span><span class="s1">&#39;bounds&#39;</span><span class="p">])</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">bounding_box</span><span class="o">.</span><span class="n">vertices</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;order&quot;</span><span class="p">):</span>
 
-                    <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">id_order</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_order</span><span class="p">,</span> <span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
 
                 <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;num_faces&quot;</span><span class="p">):</span>
 
-                    <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">num_faces</span><span class="p">)))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_order</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">num_faces</span><span class="p">)))</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">normals</span><span class="p">:</span>
             <span class="n">normals</span> <span class="o">=</span> <span class="p">[[]]</span>
@@ -398,6 +406,18 @@
 <span class="sd">        </span>
 <span class="sd">        We do not set this at initialization because it is typically set at run time and is frequently changed</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">order</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This specifies the number of digits reserved for specifying facet ids for features in this catalogue</span>
+<span class="sd">                </span>
+<span class="sd">        This is used to determine which ignore indices apply to the features in this catalogue, for cases where multiple</span>
+<span class="sd">        targets are included in a :class:`.Scene`.  In general a user does not need to worry about this number and </span>
+<span class="sd">        should not modify it themselves</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_order</span> <span class="o">+</span> <span class="mi">1</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">stale_count_unload_threshold</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -486,7 +506,8 @@
                              <span class="n">bounds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">normals</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                              <span class="n">rotation</span><span class="p">:</span> <span class="n">Rotation</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                              <span class="n">feature_bounding_boxes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">AxisAlignedBoundingBox</span><span class="p">],</span>
-                             <span class="n">include_features</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FeatureCatalogue&#39;</span><span class="p">:</span>
+                             <span class="n">include_features</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                             <span class="n">id_order</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FeatureCatalogue&#39;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This class method is used to initialize the class from pickle, instead of you usual init method.</span>
 
@@ -516,7 +537,11 @@
         <span class="n">out</span><span class="o">.</span><span class="n">_rotation</span> <span class="o">=</span> <span class="n">rotation</span>
         <span class="n">out</span><span class="o">.</span><span class="n">_feature_bounding_boxes</span> <span class="o">=</span> <span class="n">feature_bounding_boxes</span>
         <span class="n">out</span><span class="o">.</span><span class="n">include_features</span> <span class="o">=</span> <span class="n">include_features</span>
-        <span class="n">out</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">_order</span> <span class="o">=</span> <span class="n">order</span>
+        <span class="k">if</span> <span class="n">id_order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">_id_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">features</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">_id_order</span> <span class="o">=</span> <span class="n">id_order</span>
 
         <span class="k">return</span> <span class="n">out</span>
 
@@ -527,7 +552,7 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_from_pickle__</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_bounds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_normals</span><span class="p">,</span>
                                            <span class="bp">self</span><span class="o">.</span><span class="n">feature_locations</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position</span><span class="p">,</span>
-                                           <span class="bp">self</span><span class="o">.</span><span class="n">_feature_bounding_boxes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_features</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+                                           <span class="bp">self</span><span class="o">.</span><span class="n">_feature_bounding_boxes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_features</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_order</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">bounding_box</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AxisAlignedBoundingBox</span><span class="p">:</span>
@@ -718,8 +743,8 @@
             <span class="c1"># modify the ignore inds for ones that apply to this feature</span>
             <span class="k">if</span> <span class="n">ignore_inds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 
-                <span class="n">ignore_inds</span><span class="p">[</span><span class="n">ignore_inds</span> <span class="o">//</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">!=</span> <span class="n">feature_index</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-                <span class="n">ignore_inds</span><span class="p">[</span><span class="n">ignore_inds</span> <span class="o">//</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">==</span> <span class="n">feature_index</span><span class="p">]</span> <span class="o">%=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">ignore_inds</span><span class="p">[</span><span class="n">ignore_inds</span> <span class="o">//</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">!=</span> <span class="n">feature_index</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="n">ignore_inds</span><span class="p">[</span><span class="n">ignore_inds</span> <span class="o">//</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">==</span> <span class="n">feature_index</span><span class="p">]</span> <span class="o">%=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
             <span class="c1"># trace the feature</span>
             <span class="n">feature_results</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">rays_local</span><span class="p">)</span>
@@ -728,7 +753,7 @@
             <span class="n">rays_local</span><span class="o">.</span><span class="n">ignore</span> <span class="o">=</span> <span class="n">original_ignore_inds</span>
 
             <span class="c1"># update the id for the intersect face based on the current feature index</span>
-            <span class="n">feature_results</span><span class="p">[</span><span class="s2">&quot;facet&quot;</span><span class="p">][</span><span class="n">feature_results</span><span class="p">[</span><span class="s2">&quot;check&quot;</span><span class="p">]]</span> <span class="o">+=</span> <span class="n">feature_index</span> <span class="o">*</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">feature_results</span><span class="p">[</span><span class="s2">&quot;facet&quot;</span><span class="p">][</span><span class="n">feature_results</span><span class="p">[</span><span class="s2">&quot;check&quot;</span><span class="p">]]</span> <span class="o">+=</span> <span class="n">feature_index</span> <span class="o">*</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
 
             <span class="c1"># store the results</span>
             <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature_results</span><span class="p">)</span>
@@ -1497,7 +1522,7 @@
       &copy;2021 United States Government.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

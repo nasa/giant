@@ -110,7 +110,7 @@
 <p><a class="reference internal" href="../giant.utilities.spice_interface.html#module-giant.utilities.spice_interface" title="giant.utilities.spice_interface"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.utilities.spice_interface</span></code></a>:</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="giant.utilities.spice_interface.SpicePosition">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.utilities.spice_interface.</span></span><span class="sig-name descname"><span class="pre">SpicePosition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corrections</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/utilities/spice_interface.html#SpicePosition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.utilities.spice_interface.SpicePosition" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">giant.utilities.spice_interface.</span></span><span class="sig-name descname"><span class="pre">SpicePosition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corrections</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/utilities/spice_interface.html#SpicePosition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.utilities.spice_interface.SpicePosition" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class creates a callable that returns the position (in km) of one object to another given a python datetime.</p>
 <p>This class works by storing the “static” inputs to the call to the spice function <code class="docutils literal notranslate"><span class="pre">spkpos</span></code> (specifically the
 target, reference frame, corrections, and observer). This makes it easy to define an object that can be used
@@ -134,7 +134,7 @@ and provides more functionality.</p>
 </dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="giant.utilities.spice_interface.SpicePosition.target">
-<span class="sig-name descname"><span class="pre">target</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#giant.utilities.spice_interface.SpicePosition.target" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">target</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#giant.utilities.spice_interface.SpicePosition.target" title="Permalink to this definition">¶</a></dt>
 <dd><p>The object we are computing the position vector to as a string.</p>
 <p>This usually is the name of the object or its integer spice id as a string.  This is passed to the 
 <code class="docutils literal notranslate"><span class="pre">TARG</span></code> input for spkpos.</p>
@@ -142,14 +142,14 @@ and provides more functionality.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="giant.utilities.spice_interface.SpicePosition.reference_frame">
-<span class="sig-name descname"><span class="pre">reference_frame</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#giant.utilities.spice_interface.SpicePosition.reference_frame" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">reference_frame</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#giant.utilities.spice_interface.SpicePosition.reference_frame" title="Permalink to this definition">¶</a></dt>
 <dd><p>The frame we are to compute the position vector in as a string</p>
 <p>For GIANT this should usually be the inertial frame <code class="docutils literal notranslate"><span class="pre">'J200'</span></code>.  This is passed to the <code class="docutils literal notranslate"><span class="pre">REF</span></code> input for spkpos.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="giant.utilities.spice_interface.SpicePosition.corrections">
-<span class="sig-name descname"><span class="pre">corrections</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#giant.utilities.spice_interface.SpicePosition.corrections" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">corrections</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#giant.utilities.spice_interface.SpicePosition.corrections" title="Permalink to this definition">¶</a></dt>
 <dd><p>The corrections we are to apply when computing the position vector.</p>
 <p>Valid inputs are <code class="docutils literal notranslate"><span class="pre">'NONE'</span></code> for no correction, <code class="docutils literal notranslate"><span class="pre">'LT'</span></code> for light time only corrections, <code class="docutils literal notranslate"><span class="pre">'LT+S'</span></code> for light 
 time plus stellar aberration corrections, <code class="docutils literal notranslate"><span class="pre">'CN'</span></code> for converged light time only corrections, and <code class="docutils literal notranslate"><span class="pre">'CN+S'</span></code> for 
@@ -160,7 +160,7 @@ input for spkpos.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="giant.utilities.spice_interface.SpicePosition.observer">
-<span class="sig-name descname"><span class="pre">observer</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#giant.utilities.spice_interface.SpicePosition.observer" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">observer</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#giant.utilities.spice_interface.SpicePosition.observer" title="Permalink to this definition">¶</a></dt>
 <dd><p>The object we are computing the position vector from as a string.</p>
 <p>This usually is the name of the object or its integer spice id as a string.  This is passed to the 
 <code class="docutils literal notranslate"><span class="pre">OBS</span></code> input for spkpos.</p>
@@ -214,7 +214,7 @@ input for spkpos.</p>
       &copy;2021 United States Government.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

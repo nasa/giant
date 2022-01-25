@@ -17,10 +17,14 @@ Once the download is complete, cd into the new giant directory
 
     cd giant
 
-GIANT is designed to work with python 3.5+ so it is likely that we will need to create a new environment in mamba for
+If your are on Windows, you will need to manually install Visual Studio 2017 using the instructions at 
+https://conda-forge.org/docs/maintainer/knowledge_base.html#local-testing and imagemagick (https://imagemagick.org/script/download.php)
+
+GIANT is designed to work with python 3.7+ so it is likely that we will need to create a new environment in mamba for
 our work.  To create an environment from the terminal (or mamba prompt for windows) simply type
 
-    mamba create -n giant_env python=3 opencv matplotlib scipy pandas numpy cython pyqt astropy lxml sphinx spiceypy c-compiler openmp astroquery dill psutil imagemagick 
+    mamba create -n giant_env python=3 opencv matplotlib scipy pandas numpy cython pyqt astropy lxml sphinx spiceypy c-compiler openmp astroquery dill psutil
+
 
 which will create a virtual environment with python and all of the usual python tools (setuptools, pip,
 etc).  Once the virtual environment has been created you can run
@@ -40,12 +44,17 @@ or
 
 to set where to find the system headers.
 
+If you are on Linux or OSX you can also include "imagemagick" at the end of the mamba create command to install imagemagick, or install after 
+activating the environment with 
+
+    mamba install imagemagick.
+
 With our GIANT environment activated we are good to install GIANT.  GIANT is installed like any normal python
-package.  Simply navigate to the root directory of GIANT and type (note that we use the develop option here because
+package.  Simply navigate to the root directory of GIANT and type (note that we use the link option here because
 GIANT is still under development and this allows you to update with a simple git pull.
 
     cd giant
-    python setup.py develop
+    pip install -e
 
 This will install the GIANT package to your virtual environment along with all of its dependencies.  Once GIANT is
 installed you can run some basic tests to make sure everything is working by entering the unittests directory and

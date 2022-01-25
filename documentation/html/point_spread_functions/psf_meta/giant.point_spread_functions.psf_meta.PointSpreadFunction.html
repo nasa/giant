@@ -109,7 +109,7 @@
 <h1>PointSpreadFunction<a class="headerlink" href="#pointspreadfunction" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="giant.point_spread_functions.psf_meta.PointSpreadFunction">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.point_spread_functions.psf_meta.</span></span><span class="sig-name descname"><span class="pre">PointSpreadFunction</span></span><a class="reference internal" href="../../_modules/giant/point_spread_functions/psf_meta.html#PointSpreadFunction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">giant.point_spread_functions.psf_meta.</span></span><span class="sig-name descname"><span class="pre">PointSpreadFunction</span></span><a class="reference internal" href="../../_modules/giant/point_spread_functions/psf_meta.html#PointSpreadFunction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>This abstract base class serves as the template for implementing a point spread function in GIANT.</p>
 <p>A point spread function models how a camera spreads out a point source of light across multiple pixels in an image.
 GIANT uses PSFs both for making rendered templates more realistic for correlation in <a class="reference internal" href="../../giant.relative_opnav.html#module-giant.relative_opnav" title="giant.relative_opnav"><code class="xref py py-mod docutils literal notranslate"><span class="pre">relative_opnav</span></code></a> and for
@@ -126,7 +126,7 @@ for duck typing as abstract methods and properties to help you know you’ve imp
 </div>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals">
-<span class="sig-name descname"><span class="pre">save_residuals</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><em class="property"> <span class="pre">=</span> <span class="pre">False</span></em><a class="headerlink" href="#giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">save_residuals</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class attribute specifies whether to save the residuals when fitting the specified PSF to data.</p>
 <p>Saving the residuals can be important for in depth analysis but can use a lot of space when many fits are being 
 performed and stored so this defaults to off.  To store the residuals simply set this to <code class="docutils literal notranslate"><span class="pre">True</span></code> before 
@@ -135,7 +135,7 @@ initialization.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="giant.point_spread_functions.psf_meta.PointSpreadFunction.centroid">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">centroid</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.point_spread_functions.psf_meta.PointSpreadFunction.centroid" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">centroid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.point_spread_functions.psf_meta.PointSpreadFunction.centroid" title="Permalink to this definition">¶</a></dt>
 <dd><p>This should return the centroid or peak of the initialized PSF as a x, y length 2 numpy array.</p>
 <p>This property is used to enable the PSF class to be used in identifying the center of
 illumination in image processing (see <a class="reference internal" href="../../image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing.centroiding" title="giant.image_processing.ImageProcessing.centroiding"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageProcessing.centroiding</span></code></a>).</p>
@@ -143,21 +143,21 @@ illumination in image processing (see <a class="reference internal" href="../../
 
 <dl class="py property">
 <dt class="sig sig-object py" id="giant.point_spread_functions.psf_meta.PointSpreadFunction.residual_rss">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">residual_rss</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional[float]</span></em><a class="headerlink" href="#giant.point_spread_functions.psf_meta.PointSpreadFunction.residual_rss" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">residual_rss</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.point_spread_functions.psf_meta.PointSpreadFunction.residual_rss" title="Permalink to this definition">¶</a></dt>
 <dd><p>This should return residual sum of squares (RSS) of the post-fit residuals from fitting this PSF to the data.</p>
 <p>If the PSF is not the result of a fit or the <a class="reference internal" href="#giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_residuals</span></code></a> is <code class="docutils literal notranslate"><span class="pre">False</span></code> this will return <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="giant.point_spread_functions.psf_meta.PointSpreadFunction.residual_std">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">residual_std</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional[float]</span></em><a class="headerlink" href="#giant.point_spread_functions.psf_meta.PointSpreadFunction.residual_std" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">residual_std</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.point_spread_functions.psf_meta.PointSpreadFunction.residual_std" title="Permalink to this definition">¶</a></dt>
 <dd><p>This should return the standard deviation of the post-fit residuals from fitting this PSF to the data.</p>
 <p>If the PSF is not the result of a fit or the <a class="reference internal" href="#giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_residuals</span></code></a> is <code class="docutils literal notranslate"><span class="pre">False</span></code> this will return <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="giant.point_spread_functions.psf_meta.PointSpreadFunction.covariance">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">covariance</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional[numpy.ndarray]</span></em><a class="headerlink" href="#giant.point_spread_functions.psf_meta.PointSpreadFunction.covariance" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">covariance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.point_spread_functions.psf_meta.PointSpreadFunction.covariance" title="Permalink to this definition">¶</a></dt>
 <dd><p>This should return the formal covariance of the PSF parameters (if the PSF was fit and not initialized).</p>
 <p>If the PSF is not the result of a fit or the <a class="reference internal" href="#giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals" title="giant.point_spread_functions.psf_meta.PointSpreadFunction.save_residuals"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_residuals</span></code></a> is <code class="docutils literal notranslate"><span class="pre">False</span></code> this will return <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd></dl>
@@ -219,7 +219,7 @@ illumination in image processing (see <a class="reference internal" href="../../
       &copy;2021 United States Government.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

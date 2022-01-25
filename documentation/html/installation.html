@@ -116,26 +116,7 @@ home directory without needing admin privileges, which is a big benefit).</p>
 <p>With mamba installed, we can now set up an environment in which to install giant</p>
 <ol class="arabic simple">
 <li><dl class="simple">
-<dt>Create a new environment to install GIANT to and install the dependencies</dt><dd><ul class="simple">
-<li><p><code class="code docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">create</span> <span class="pre">-n</span> <span class="pre">giant_env</span> <span class="pre">python=3</span> <span class="pre">opencv</span> <span class="pre">matplotlib</span> <span class="pre">scipy</span> <span class="pre">pandas</span> <span class="pre">numpy</span> <span class="pre">cython</span> <span class="pre">pyqt</span> <span class="pre">astropy</span> <span class="pre">lxml</span> <span class="pre">sphinx</span> <span class="pre">spiceypy</span> <span class="pre">c-compiler</span> <span class="pre">openmp</span> <span class="pre">astroquery</span> <span class="pre">dill</span> <span class="pre">psutil</span> <span class="pre">imagemagick</span></code></p></li>
-<li><p>Note that creating a new environment is not required, but is strongly recommended.</p></li>
-<li><p>Note that if you did not install mamba-forge, you need to specify to use the conda-forge repository instead of the default conda repository by adding <code class="code docutils literal notranslate"><span class="pre">-c</span> <span class="pre">conda-forge</span></code> to the <code class="code docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">create</span></code> command.</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>Activate the new environment</dt><dd><ul class="simple">
-<li><p><code class="code docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">giant_env</span></code></p></li>
-<li><p>If you did not create a new environment then this step is not necessary (as long as the mamba python is first
-in your path).</p></li>
-<li><p>You will need to do this step each time you want to use GIANT.</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>Now there are a couple operating system specific instructions.</dt><dd><ul class="simple">
+<dt>Before we begin there are a couple OS specific instructions</dt><dd><ul class="simple">
 <li><dl class="simple">
 <dt>macOS</dt><dd><ul>
 <li><p>You may need to set the environment variable <code class="docutils literal notranslate"><span class="pre">CPATH</span></code> to something like
@@ -146,6 +127,47 @@ line tools to ensure system headers are available</p></li>
 </dd>
 </dl>
 </li>
+<li><dl class="simple">
+<dt>Windows</dt><dd><ul>
+<li><dl class="simple">
+<dt>You will need to install the Visual Studio 2017 developer tools according to the instructions at <a class="reference external" href="https://conda-forge.org/docs/maintainer/knowledge_base.html#local-testing">https://conda-forge.org/docs/maintainer/knowledge_base.html#local-testing</a></dt><dd><ul>
+<li><p>Note that you must do this before activating the environment as described below</p></li>
+<li><p>At this time it looks like Visual Studio 2017 is required (more recent will not work)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>You will need to manually install imagemagick from <a class="reference external" href="https://imagemagick.org/script/download.php">https://imagemagick.org/script/download.php</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Create a new environment to install GIANT to and install the dependencies</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt><code class="code docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">create</span> <span class="pre">-n</span> <span class="pre">giant_env</span> <span class="pre">python=3</span> <span class="pre">opencv</span> <span class="pre">matplotlib</span> <span class="pre">scipy</span> <span class="pre">pandas</span> <span class="pre">numpy</span> <span class="pre">cython</span> <span class="pre">pyqt</span> <span class="pre">astropy</span> <span class="pre">lxml</span> <span class="pre">sphinx</span> <span class="pre">spiceypy</span> <span class="pre">c-compiler</span> <span class="pre">openmp</span> <span class="pre">astroquery</span> <span class="pre">dill</span> <span class="pre">psutil</span></code></dt><dd><ul>
+<li><p>If you are on Mac or Linux you can install imagemagick with the same command by including <code class="docutils literal notranslate"><span class="pre">imagemagick</span></code> at the end of the above command.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Note that creating a new environment is not required, but is strongly recommended.</p></li>
+<li><p>Note that if you did not install mamba-forge, you need to specify to use the conda-forge repository instead of the default conda repository by adding <code class="code docutils literal notranslate"><span class="pre">-c</span> <span class="pre">conda-forge</span></code> to the <code class="code docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">create</span></code> command.</p></li>
+<li><p>Note that if you are on windows, you will unfortunately need to manually install vs2017 according to the instructions <a class="reference external" href="https://conda-forge.org/docs/maintainer/knowledge_base.html#local-testing">https://conda-forge.org/docs/maintainer/knowledge_base.html#local-testing</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Activate the new environment</dt><dd><ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">giant_env</span></code></p></li>
+<li><p>If you did not create a new environment then this step is not necessary (as long as the mamba python is first
+in your path).</p></li>
+<li><p>You will need to do this step each time you want to use GIANT.</p></li>
 </ul>
 </dd>
 </dl>
@@ -166,8 +188,8 @@ line tools to ensure system headers are available</p></li>
 <li><dl class="simple">
 <dt>Install the GIANT package</dt><dd><ul class="simple">
 <li><p><code class="code docutils literal notranslate"><span class="pre">cd</span> <span class="pre">giant</span></code></p></li>
-<li><p><code class="code docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">develop</span></code></p></li>
-<li><p>You can also use “install” instead of “develop” but using “develop” makes it easier to update GIANT in the future.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code></p></li>
+<li><p>You can also omit the “-e” to avoid using links, but using links makes it easier to update GIANT in the future.</p></li>
 <li><p>You will likely see a lot of warnings from the c compiler that can largely be ignored.  If you have an error
 though that is a problem</p></li>
 </ul>
@@ -214,7 +236,7 @@ though that is a problem</p></li>
       &copy;2021 United States Government.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

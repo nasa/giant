@@ -110,38 +110,38 @@
 <p><a class="reference internal" href="../giant.ufo.measurements.html#module-giant.ufo.measurements" title="giant.ufo.measurements"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.ufo.measurements</span></code></a>:</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="giant.ufo.measurements.Measurement">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">giant.ufo.measurements.</span></span><span class="sig-name descname"><span class="pre">Measurement</span></span><a class="reference internal" href="../../_modules/giant/ufo/measurements.html#Measurement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.ufo.measurements.Measurement" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">giant.ufo.measurements.</span></span><span class="sig-name descname"><span class="pre">Measurement</span></span><a class="reference internal" href="../../_modules/giant/ufo/measurements.html#Measurement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.ufo.measurements.Measurement" title="Permalink to this definition">¶</a></dt>
 <dd><p>This ABC defines the interface for a measurement that is expected by the <a class="reference internal" href="../extended_kalman_filter/giant.ufo.extended_kalman_filter.ExtendedKalmanFilter.html#giant.ufo.extended_kalman_filter.ExtendedKalmanFilter" title="giant.ufo.extended_kalman_filter.ExtendedKalmanFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtendedKalmanFilter</span></code></a> class for a
 measurement.</p>
 <p>To implement a new measurement type, simply subclass this class, implement the abstract methods and properties (plus
 whatever you need for the methods/properties) and then use it to feed measurements into the EKF.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="giant.ufo.measurements.Measurement.covariance">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">covariance</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.covariance" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">covariance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.covariance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the covariance of the measurement as a numpy array</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="giant.ufo.measurements.Measurement.observed">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">observed</span></span><em class="property"><span class="pre">:</span> <span class="pre">Union[Sequence,</span> <span class="pre">numpy.ndarray,</span> <span class="pre">numbers.Real]</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.observed" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numbers.Real</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.observed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the observed measurement.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="giant.ufo.measurements.Measurement.observer_location">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">observer_location</span></span><em class="property"><span class="pre">:</span> <span class="pre">giant.ufo.dynamics.Dynamics.State</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.observer_location" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observer_location</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">giant.ufo.dynamics.Dynamics.State</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.observer_location" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the state of the observer at the time the measurement was captured in the base dynamics frame</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="giant.ufo.measurements.Measurement.time">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">time</span></span><em class="property"><span class="pre">:</span> <span class="pre">datetime.datetime</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.time" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">datetime.datetime</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.time" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the time of the measurement as a python datetime object</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="giant.ufo.measurements.Measurement.identity">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">identity</span></span><em class="property"><span class="pre">:</span> <span class="pre">Hashable</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.identity" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Hashable</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.identity" title="Permalink to this definition">¶</a></dt>
 <dd><p>The identity of this measurement.</p>
 <p>This is used primarily by the tracker to link measurement back to observation ids</p>
 </dd></dl>
@@ -197,7 +197,7 @@ whatever you need for the methods/properties) and then use it to feed measuremen
       &copy;2021 United States Government.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
