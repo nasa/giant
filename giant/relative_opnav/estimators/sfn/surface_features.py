@@ -1347,6 +1347,7 @@ class VisibleFeatureFinder:
 
         # now check the incidence angle
         sun_direction = scene.light_obj.position.ravel() - target_use.position.ravel()
+        sun_direction /= np.linalg.norm(sun_direction)
         visible_feature_bool[visible_feature_bool] = (
                 (self.feature_catalogue.feature_normals[visible_feature_bool] @ sun_direction) >=
                 np.cos(np.deg2rad(self.incident_angle_maximum))
