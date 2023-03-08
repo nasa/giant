@@ -188,7 +188,7 @@ class RelativeOpNav(OpNav):
 
     The class acts as a container for the :class:`.Camera`, :class:`.ImageProcessing`, and :class:`.Scene` instances as
     well as for instance of all of the registered RelNav techniques.  By default the registered RelNav techniques are
-    :class:`.XCorrCenterFinding` to :attr:`cross_correlation`, :class:`.EllipseMatching' to :attr:`ellipse_matching`,
+    :class:`.XCorrCenterFinding` to :attr:`cross_correlation`, :class:`.EllipseMatching` to :attr:`ellipse_matching`,
     :class:`.LimbMatching` to :attr:`limb_matching`, :class:`.MomentAlgorithm` to :attr:`.moment_algorithm`, and
     :class:`.UnresolvedCenterFinding` to :attr:`.unresolved`.  Besides storing all of these objects, it handles data
     transfer and collection between the different objects.  Therefore, in general this class will be the exclusive

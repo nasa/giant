@@ -180,7 +180,7 @@ your feature catalogue before using this class. For instance, if your catalogue 
 import gc
 import time
 from dataclasses import dataclass
-from typing import Union, Optional, List, Callable, Tuple
+from typing import Union, Optional, List, Callable, Tuple, Dict, Any
 
 import numpy as np
 
@@ -699,6 +699,66 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
         This variable is used to notify which features are predicted to be visible in the image.
         
         Each visible feature is identified by its index in the :attr:`.FeatureCatalogue.features` list.
+        """
+
+        self.details: List[Dict[str, Any]] = self.details
+        """
+        ================================= ==================================================================================
+        Key                               Description
+        ================================= ==================================================================================
+        ``'Correlation Scores'``          The correlation score at the peak of the correlation surface for each feature as a
+                                          list of floats. The corresponding element will be 0 for any features that were not
+                                          found.  Each element of this list corresponds to the feature according to the
+                                          corresponding element in the ``'Visible Features'`` list. If no potential visible
+                                          features were expected in the image then this is not available.
+        ``'Visible Features'``            The list of feature indices (into the :attr:`.FeatureCatalogue.features` list)
+                                          that were looked for in the image.  Each element of this list corresponds to the
+                                          corresponding element in the :attr:`templates` list.  If no potential visible
+                                          features were expected in the image then this is not available.
+        ``'Correlation Peak Locations'``  The Location of the correlation peaks before correcting it to find the location of
+                                          the location of the feature in the image as a list of size 2 numpy arrays. Each
+                                          element of this list corresponds to the feature according to the corresponding
+                                          element in the ``'Visible Features'`` list.  Any features that were not found in
+                                          the image have ``np.nan`` for their values.  If no potential visible features were
+                                          expected in the image then this is not available.
+        ``'Correlation Surfaces'``        The raw correlation surfaces as 2D arrays of shape
+                                          ``2*search_region+1 x 2*search_region+1``.  Each pixel in the correlation surface
+                                          represents a shift between the predicted and expected location, according to
+                                          :func:`.sfn_correlator`.  Each element of this list corresponds to the feature
+                                          according to the corresponding element in the ``'Visible Features'`` list.  If no
+                                          potential visible features were expected in the image then this is not available.
+        ``'Target Template Coordinates'`` The location of the center of each feature in its corresponding template. Each
+                                          element of this list corresponds to the feature according to the corresponding
+                                          element in the ``'Visible Features'`` list.  If no potential visible features
+                                          were expected in the image then this is not available.
+        ``'Intersect Masks'``             The boolean arrays the shape shapes of each rendered template with ``True`` where
+                                          a ray through that pixel struct the surface of the template and ``False``
+                                          otherwise. Each element of this list corresponds to the feature according to the
+                                          corresponding element in the ``'Visible Features'`` list.  If no potential
+                                          visible features were expected in the image then this is not available.
+        ``'Space Mask'``                  The boolean array the same shape as the image specifying which pixels of the image
+                                          we thought were empty space with a ``True`` and which we though were on the body
+                                          with a ``False``.  If no potential visible features were expected in the image
+                                          then this is not available
+        ``'PnP Solution'``                A boolean indicating whether the PnP solution was successful (``True``) or not.
+                                          This is only available if a PnP solution was attempted.
+        ``'PnP Translation'``             The solved for translation in the original camera frame that minimizes the
+                                          residuals in the PnP solution as a length 3 array with units of kilometers.  This
+                                          is only available if a PnP solution was attempted and the PnP solution was
+                                          successful.
+        ``'PnP Rotation'``                The solved for rotation of the original camera frame that minimizes the
+                                          residuals in the PnP solution as a :class:`.Rotation`.  This
+                                          is only available if a PnP solution was attempted and the PnP solution was
+                                          successful.
+        ``'PnP Position'``                The solved for relative position of the target in the camera frame after the PnP
+                                          solution is applied as a length 3 numpy array in km.
+        ``'PnP Orientation'``             The solved for relative orientation of the target frame with respect to the camera
+                                          frame after the PnP solution is applied as a :class:`.Rotation`.
+        ``'Failed'``                      A message indicating why the SFN failed.  This will only be present if the SFN fit
+                                          failed (so you could do something like ``'Failed' in sfn.details[target_ind]`` to
+                                          check if something failed.  The message should be a human readable description of
+                                          what caused the failure.
+        ================================= ==================================================================================
         """
 
         if options is not None:

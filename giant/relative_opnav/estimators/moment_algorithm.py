@@ -83,7 +83,7 @@ by this technique, refer to the following class documentation.
 
 import warnings
 
-from typing import Union, Optional, List
+from typing import Union, Optional, List, Dict, Any
 
 import numpy as np
 
@@ -259,6 +259,29 @@ class MomentAlgorithm(PhaseCorrector):
         area for the targets.  This is included to account for errors in the a priori scene/shape model for the targets
         as well as the errors introduced by assuming spherical targets.  Since there is only one margin of safety for 
         all targets in a scene, you should set this based on the expected worst case for all of the targets.
+        """
+
+        self.details: List[Dict[str, Any]] = self.details
+        """ 
+        ====================== =============================================================================================
+        Key                    Description
+        ====================== =============================================================================================
+        ``'Fit'``              The fit moment object.  Only available if successful.
+        ``'Phase Correction'`` The phase correction vector used to convert from center of brightness to center of figure.
+                               This will only be available if the fit was successful.  If :attr:`apply_phase_correction` is
+                               ``False`` then this will be an array of 0.
+        ``'Observed Area'``    The area (number of pixels that were considered foreground) observed for this target.
+                               This is only available if the fit was successful.
+        ``'Predicted Area'``   The area (number of pixels that were considered foreground) predicted for this target.
+                               This is only available if the fit was successful.
+        ``'Failed'``           A message indicating why the fit failed.  This will only be present if the fit failed (so you
+                               could do something like ``'Failed' in moment_algorithm.details[target_ind]`` to check if
+                               something failed.  The message should be a human readable description of what called the
+                               failure.
+        ``'Found Segments'``   All of the segments that were found in the image.  This is a tuple of all of the returned
+                               values from :meth:`.ImageProcessing.segment_image`.  This is only included if the fit failed
+                               for some reason.
+        ====================== =============================================================================================
         """
 
     def estimate(self, image: OpNavImage, include_targets: Optional[List[bool]] = None):

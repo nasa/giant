@@ -117,7 +117,7 @@ import warnings
 
 from enum import Enum
 
-from typing import List, Optional, Union, Tuple, Callable
+from typing import List, Optional, Union, Tuple, Callable, Dict, Any
 
 import numpy as np
 
@@ -599,6 +599,22 @@ class EllipseMatching(RelNavEstimator):
                                                                   use_apparent_area=True)
         """
         The moment algorithm instance to use to recenter if we are using limb scanning
+        """
+
+        self.details: List[Dict[str, Any]] = self.details
+        """
+        =========================== ========================================================================================
+        Key                         Description
+        =========================== ========================================================================================
+        ``'Covariance'``            The 3x3 covariance matrix for the estimated relative position in the camera frame based
+                                    on the residuals.  This is only available if successful
+        ``'Surface Limb Points'``   The surface points that correspond to the limb points in the target fixed target
+                                    centered frame.
+        ``'Failed'``                A message indicating why the fit failed.  This will only be present if the fit failed
+                                    (so you could do something like ``'Failed' in limb_matching.details[target_ind]`` to
+                                    check if something failed.  The message should be a human readable description of what
+                                    called the failure.
+        =========================== ========================================================================================
         """
 
 

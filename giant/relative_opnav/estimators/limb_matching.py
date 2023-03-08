@@ -117,7 +117,7 @@ by this technique, refer to the following class documentation.
 
 import warnings
 
-from typing import Union, Optional, List
+from typing import Union, Optional, List, Dict, Any
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
@@ -289,6 +289,31 @@ class LimbMatching(EllipseMatching):
         self._gif_fig = None
         self._gif_writer = None
         self._gif_limbs_line = None
+
+        self.details: List[Dict[str, Any]] = self.details
+        """
+        =========================== ========================================================================================
+        Key                         Description
+        =========================== ========================================================================================
+        ``'Jacobian'``              The Jacobian matrix from the last completed iteration.  Only available if successful.
+        ``'Inlier Ratio'``          The ratio of inliers to outliers for the last completed iteration.  Only available if
+                                    successful.
+        ``'Covariance'``            The 3x3 covariance matrix for the estimated relative position in the camera frame based
+                                    on the residuals.  This is only available if successful
+        ``'Number of iterations'``  The number of iterations that the system converged in.  This is only available if
+                                    successful.
+        ``'Surface Limb Points'``   The surface points that correspond to the limb points in the target fixed target
+                                    centered frame.
+        ``'Failed'``                A message indicating why the fit failed.  This will only be present if the fit failed
+                                    (so you could do something like ``'Failed' in limb_matching.details[target_ind]`` to
+                                    check if something failed.  The message should be a human readable description of what
+                                    called the failure.
+        ``'Prior Residuals'``       The sum of square of the residuals from the prior iteration.  This is only available if
+                                    the fit failed due to divergence.
+        ``'Current Residuals'``     The sum of square of the residuals from the current iteration.  This is only available
+                                    if the fit failed due to divergence.
+        =========================== ========================================================================================
+        """
 
     def compute_jacobian(self, target_object: SceneObject, center: np.ndarray, center_direction: np.ndarray,
                          limb_points_image: np.ndarray, limb_points_camera: np.ndarray,

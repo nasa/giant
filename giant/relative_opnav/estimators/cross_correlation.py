@@ -80,7 +80,7 @@ import warnings
 
 from dataclasses import dataclass
 
-from typing import Optional, Callable, List, Union, Tuple
+from typing import Optional, Callable, List, Union, Tuple, Dict, Any
 
 import numpy as np
 
@@ -316,6 +316,30 @@ class XCorrCenterFinding(RelNavEstimator):
         # apply the options struct if provided
         if options is not None:
             self.apply_options(options)
+
+        self.details: List[Dict[str, Any]] = self.details
+        """
+        ================================= ==================================================================================
+        Key                               Description
+        ================================= ==================================================================================
+        ``'Correlation Score'``           The correlation score at the peak of the correlation surface.  This is only
+                                          available if the fit was successful.
+        ``'Correlation Surface'``         The raw correlation surface as a 2D array.  Each pixel in the correlation surface
+                                          represents the correlation score when the center of the template is lined up with
+                                          the corresponding image pixel.  This is only available if the fit was successful.
+        ``'Correlation Peak Location'``   The Location of the correlation peak before correcting it to find the location of
+                                          the target center of figure. This is only available if the fit was successful.
+        ``'Target Template Coordinates'`` The location of the center of figure of the target in the template.  This is only
+                                          available if the fit was successful.
+        ``'Failed'``                      A message indicating why the fit failed.  This will only be present if the fit
+                                          failed (so you could do something like
+                                          ``'Failed' in cross_correlation.details[target_ind]`` to
+                                          check if something failed.  The message should be a human readable description of
+                                          what caused the failure.
+        ``'Max Correlation'``             The peak value of the correlation surface.  This is only available if the fit
+                                          failed due to too low of a correlation score.
+        ================================= ==================================================================================
+        """
 
     def apply_options(self, options: XCorrCenterFindingOptions):
         """

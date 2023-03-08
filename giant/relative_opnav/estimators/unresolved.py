@@ -55,7 +55,7 @@ import warnings
 
 from enum import Enum, auto
 
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union, Dict, Any
 
 from abc import ABC
 
@@ -156,6 +156,30 @@ class PhaseCorrector(RelNavEstimator, ABC):
 
         if (self.phase_correction_type is PhaseCorrectionType.RASTERED) and (self.brdf is None):
             self.brdf = McEwenIllumination()
+
+        self.details: List[Dict[str, Any]] = self.details
+        """
+        ====================== =============================================================================================
+        Key                    Description
+        ====================== =============================================================================================
+        ``'PSF'``              The fit PSF values.  Only available if successful.  Will be ``None`` if
+                               :attr:`.ImageProcessing.save_psf` is ``False``
+        ``'Phase Correction'`` The phase correction vector used to convert from center of brightness to center of figure.
+                               This will only be available if the fit was successful.  If :attr:`apply_phase_correction` is
+                               ``False`` then this will be an array of 0.
+        ``'SNR'``              The peak signal to noise ratio of the detection.  This will only be set if the fit was
+                               successful.  If :attr:`.ImageProcessing.return_stats` is ``False`` then this will be
+                               ``None``.
+        ``'Max Intensity'``    The intensity of the peak pixel used in the PSF fit.  This will only be set if the fit was
+                               successful.
+        ``'Failed'``           A message indicating why the fit failed.  This will only be present if the fit failed (so you
+                               could do something like ``'Failed' in unresolved.details[target_ind]`` to check if something
+                               failed.  The message should be a human readable description of what called the failure
+        ``'Found Results'``    The points of interest that were found in the search region.  This is only present if the fit
+                               failed because there were more than 1 point of interest in the search region.  The value to
+                               this key is the return from :meth:`.ImageProcessing.locate_subpixel_poi_in_roi`
+        ====================== =============================================================================================
+        """
 
     def simple_phase_correction(self, target_ind: int, target: SceneObject, line_of_sight_sun_image: np.ndarray,
                                 temperature: Real) -> np.ndarray:
