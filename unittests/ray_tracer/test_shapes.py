@@ -245,11 +245,11 @@ class TestTriangle(TestCase):
 
         albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, ::2].mean(axis=-1), 0)
 
-        self.assertEqual(albedo, 1)
+        self.assertAlmostEqual(albedo, 1)
 
         albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 1:].mean(axis=-1), 0)
 
-        self.assertEqual(albedo, 1.5)
+        self.assertAlmostEqual(albedo, 1.5)
 
         albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0].mean(axis=-1), 0)
 

@@ -1392,36 +1392,38 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                     # try to solve the LLS using all of the inliers from the best case
                     new_trans, new_rot = self._lls(world_points[:, best_inliers], image_points[:, best_inliers],
                                                    image, image_ind)
-                    diff = np.linalg.norm(
-                        self.camera.model.project_onto_image(new_rot.matrix @ (world_points + new_trans.reshape(3, 1)),
-                                                             temperature=image.temperature, image=image_ind) -
-                        image_points, axis=0
-                    )
 
-                    inliers = diff < self.second_search_region
-                    standard_deviation = diff[inliers].std()
-                    mean = diff[inliers].mean()
+                    if new_trans is not None:
+                        diff = np.linalg.norm(
+                            self.camera.model.project_onto_image(new_rot.matrix @ (world_points + new_trans.reshape(3, 1)),
+                                                                 temperature=image.temperature, image=image_ind) -
+                            image_points, axis=0
+                        )
 
-                    print('inlier rotation = {}, {}, {}'.format(*np.rad2deg(new_rot.vector)))
-                    print('inlier translation = {}, {}, {}'.format(*new_trans))
-                    print('inlier inliers, std, mean = {}, {}, {}'.format(inliers.sum(), standard_deviation, mean),
-                          flush=True)
+                        inliers = diff < self.second_search_region
+                        standard_deviation = diff[inliers].std()
+                        mean = diff[inliers].mean()
 
-                    # keep either the original best or the fit of the inliers, depending on which is better
-                    if (inliers.sum() >= best_inliers.sum() - 2) and (standard_deviation < best_standard_deviation):
-                        print('keeping new stuff', flush=True)
-                        best_rotation = new_rot
-                        best_translation = new_trans
-                    elif (inliers.sum() > best_inliers.sum()) and (standard_deviation < best_standard_deviation*1.2):
-                        print('keeping new stuff', flush=True)
-                        best_rotation = new_rot
-                        best_translation = new_trans
-                    elif ((inliers.sum() >= best_inliers.sum()) and
-                          (mean < best_mean) and
-                          (standard_deviation < best_standard_deviation*1.3)):
-                        print('keeping new stuff', flush=True)
-                        best_rotation = new_rot
-                        best_translation = new_trans
+                        print('inlier rotation = {}, {}, {}'.format(*np.rad2deg(new_rot.vector)))
+                        print('inlier translation = {}, {}, {}'.format(*new_trans))
+                        print('inlier inliers, std, mean = {}, {}, {}'.format(inliers.sum(), standard_deviation, mean),
+                              flush=True)
+
+                        # keep either the original best or the fit of the inliers, depending on which is better
+                        if (inliers.sum() >= best_inliers.sum() - 2) and (standard_deviation < best_standard_deviation):
+                            print('keeping new stuff', flush=True)
+                            best_rotation = new_rot
+                            best_translation = new_trans
+                        elif (inliers.sum() > best_inliers.sum()) and (standard_deviation < best_standard_deviation*1.2):
+                            print('keeping new stuff', flush=True)
+                            best_rotation = new_rot
+                            best_translation = new_trans
+                        elif ((inliers.sum() >= best_inliers.sum()) and
+                              (mean < best_mean) and
+                              (standard_deviation < best_standard_deviation*1.3)):
+                            print('keeping new stuff', flush=True)
+                            best_rotation = new_rot
+                            best_translation = new_trans
 
             else:
                 # just do lstsq on everything
@@ -1588,7 +1590,24 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                             method='lm',  # use Levenberg-Marquardt
                             ftol=self.lsq_relative_error_tolerance,  # the tolerance in the change in residuals
                             xtol=self.lsq_relative_update_tolerance,  # tolerance in the update
-                            max_nfev=self.max_lsq_iterations)
+                            max_nfev=self.max_lsq_iterations,
+                            x_scale='jac')
+        
+        if (fit.x == 0).all():
+            # needed a better initial guess.  Do a single least squares fit
+            c = np.zeros(6, dtype=np.float64)
+            guess = np.linalg.lstsq(pnp_jacobian_function(c), pnp_residual_function(c))[0]
+            
+            fit2 = least_squares(pnp_residual_function,  # function
+                                 guess,  # initial guess
+                                 jac=pnp_jacobian_function,  # Jacobian matrix
+                                 method='lm',  # use Levenberg-Marquardt
+                                 ftol=self.lsq_relative_error_tolerance,  # the tolerance in the change in residuals
+                                 xtol=self.lsq_relative_update_tolerance,  # tolerance in the update
+                                 max_nfev=self.max_lsq_iterations,
+                                 x_scale='jac')
+            if (fit2.cost <= fit.cost):
+                fit = fit2
 
         if fit.success:
             shift = fit.x[:3]

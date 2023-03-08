@@ -896,8 +896,8 @@ cdef class Ellipsoid(Solid):
                     #    [ r_C^T @ A_C ]
                     #    [  (c x s)^T  ]
                     for j in range(3):
-                        for i in range(3):
-                            coefs[ind, 0, j] += 2*pointsell[ind, j]
+                        # for i in range(3):
+                        coefs[ind, 0, j] = 2*pointsell[ind, j]
 
                         coefs[ind, 1, j] = posell[j]
                         coefs[ind, 2, j] = crosses[ind, j]

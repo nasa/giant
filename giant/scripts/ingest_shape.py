@@ -90,6 +90,34 @@ def read_obj(file: PATH, conv: Real = 1., me: bool = False) -> Union[Triangle64,
         return Triangle64(vecs.astype(np.float64), 1, facets.astype(np.uint32))
 
 
+def read_tab(file: PATH, conv: Real = 1., me: bool = False) -> Union[Triangle64, Triangle32]:
+    """
+    Reads vertice/facet tables from PDS into the GIANT triangle format.
+    
+    Currently this has only been tested on the HELENE model as is not guarnateed to work on other project shape models.
+    
+    :param file:  The file to read the shape model from
+    :param conv:  The conversion factor used to convert the units to kilometers
+    :param me:  Use memory efficient triangles
+    :return: The triangle object representing the shape
+    """
+
+    with open(file, 'r') as f:
+        n_vertices, n_facets = [int(x) for x in f.readline().split()] 
+
+        if me:
+            vertices = np.loadtxt(f, dtype=np.float32, max_rows=n_vertices).reshape(n_vertices, 3) * conv
+        else:
+            vertices = np.loadtxt(f, dtype=np.float64, max_rows=n_vertices).reshape(n_vertices, 3) * conv
+
+        facets = np.loadtxt(f, dtype=np.uint32, max_rows=n_facets).reshape(n_facets, 3)
+
+    if me:
+        return Triangle32(vertices, 1, facets)
+    else:
+        return Triangle64(vertices, 1, facets)
+
+
 def process_dsk(dsk_file: PATH, conv: Real = 1., me: bool = False) -> Union[Triangle64, Triangle32]:
     """
     Ingest a DSK file into a GIANT KDTree.
@@ -255,6 +283,8 @@ def main():
     if args.type is None:
         if ext.lower() == '.obj':
             in_type = 'obj'
+        elif ext.lower() == ".tab":
+            in_type = 'tab'
         elif ext.lower() == '.txt':
             in_type = 'icq'
 
@@ -268,6 +298,8 @@ def main():
 
     if in_type == 'obj':
         tris = read_obj(args.shape, conv=args.conv, me=args.memory_efficient)
+    elif in_type == "tab":
+        tris = read_tab(args.shape, conv=args.conv, me=args.memory_efficient)
     elif in_type == 'icq':
         sobj = ShapeModel(args.shape)
 
@@ -309,7 +341,7 @@ def main():
         mass = args.gm / GCOEF
 
         with Tee('shape_info.txt', mode='w'):
-            describe_shape(tris, mass, args.name, args.pole)
+            describe_shape(kd, mass, args.name, args.pole)
 
     else:
         print('saving')

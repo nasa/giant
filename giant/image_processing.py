@@ -28,7 +28,10 @@ import cv2
 import numpy as np
 import scipy.signal as sig
 from scipy.optimize import fmin
-from scipy.fftpack.helper import next_fast_len
+try:
+    from scipy.fftpack import next_fast_len
+except ImportError:
+    from scipy.fftpack.helper import next_fast_len
 
 
 from giant._typing import ARRAY_LIKE, ARRAY_LIKE_2D, Real

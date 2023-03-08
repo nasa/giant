@@ -33,9 +33,6 @@ class TestCamera(TestCase):
     def load_cmodel(self):
         return PinholeModel(kx=500, ky=500, px=2500, py=3500, focal_length=10, n_rows=5000, n_cols=5000)
 
-    def test_attitude_function(self):
-        return et_callable_to_datetime_callable(create_callable_orientation('J2000', 'MyTestCamera'))
-
     def load_camera(self):
         images = self.load_images()
         cmodel = self.load_cmodel()

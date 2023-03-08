@@ -71,7 +71,11 @@ from abc import ABCMeta, abstractmethod
 from typing import Optional, Tuple
 
 import numpy as np
-from scipy.fftpack.helper import next_fast_len
+
+try:
+    from scipy.fftpack import next_fast_len
+except ImportError:
+    from scipy.fftpack.helper import next_fast_len
 
 import cv2
 
