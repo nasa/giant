@@ -408,7 +408,7 @@ cdef class KDNode:
             double[3] initial_normal
 
             # this is used to determine if the ray has requested to ignore a primitive contained in this node
-            cnp.uint32_t sizer = 10 ** (self._order + 1)
+            cnp.uint32_t sizer = <cnp.uint32_t>(10 ** (self._order + 1))
 
             # for iterating
             size_t i
@@ -444,7 +444,7 @@ cdef class KDNode:
                 # check for intersect with the shapes
                 self.surface._compute_intersect(start, direction, inv_direction, shape_ignore, num_ignore,
                                                hit, intersect, normal, albedo, facet, previous_hit_distance)
-                facet[0] += self.id*(10**(self._order+1))
+                facet[0] += self.id*<cnp.int64_t>(10**(self._order+1))
 
             else:
                 # check for intersect with the left node
@@ -1177,7 +1177,7 @@ cpdef cnp.ndarray get_facet_vertices(KDNode node, size_t facet_id):
 
     # if this is a leaf node then check to see if the vertex is contained in it
     if node.has_surface:
-        sizer = 10 ** (node._order + 1)
+        sizer = <cnp.uint32_t>(10 ** (node._order + 1))
         if (facet_id // sizer) == node.id:
             desired_facet_id = facet_id % sizer
             return node.surface.vertices[node.surface.facets[desired_facet_id]]
