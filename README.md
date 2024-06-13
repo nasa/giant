@@ -1,6 +1,13 @@
 Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
 Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
 
+# NOTE
+We are working a new release for GIANT hopefully before April of 2025 which will have new features and a revamped and much more performant ray tracer that fully works on windows too!
+In the mean time, there is a known issue with one of the dependencies (we're not certain which but we're guessing numpy or cython) GIANT makes use of slowing down the ray tracer by about a factor of ten in our internal testing.  
+With preparations for the upcoming release which will completely fix this issue, we do not have the ability to investigate further at this point in time.
+
+# GIANT
+
 The Goddard Image Analysis and Navigation Tool (GIANT) is a collection of utilities and
 scripts that aims to make all aspects of Optical Navigation (OpNav) and Camera Calibration easy.
 
