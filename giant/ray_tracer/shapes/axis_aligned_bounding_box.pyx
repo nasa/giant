@@ -264,7 +264,7 @@ cdef class AxisAlignedBoundingBox:
     @cython.boundscheck(False)
     @cython.wraparound(False)
     cdef void _compute_intersect(self, const double[:] start, const double[:] inv_direction,
-                                 cnp.uint8_t *res, double *near_distance, double *far_distance) nogil:
+                                 cnp.uint8_t *res, double *near_distance, double *far_distance) noexcept nogil:
         """
         This c method is used to compute the intersect of a single ray with this bounding box.
 
@@ -303,7 +303,7 @@ cdef class AxisAlignedBoundingBox:
     @cython.boundscheck(False)
     @cython.wraparound(False)
     cdef void _trace(self, double[:, :] starts, double[:, :] inv_directions,
-                     cnp.uint8_t[:] res, double[:, :] distances, cnp.uint32_t num_rays) nogil:
+                     cnp.uint8_t[:] res, double[:, :] distances, cnp.uint32_t num_rays) noexcept nogil:
         """
         This c method checks multiple rays to see if they intersect with this box by making multiple calls to
         the _compute_intersect method.

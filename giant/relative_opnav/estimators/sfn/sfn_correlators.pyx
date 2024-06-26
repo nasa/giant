@@ -29,7 +29,7 @@ from libc.math cimport sqrt
 
 @cython.boundscheck(False)
 cdef double compute_cor_score(double[:, :] image, double[:, :] template, unsigned char[:, :] image_mask,
-                              unsigned char[:, :] template_mask, int center_row, int center_col) nogil:
+                              unsigned char[:, :] template_mask, int center_row, int center_col) noexcept nogil:
     """
     This c function computes the pearson product moment correlation coefficient between the image and template overlay
     taking into account the provided masks

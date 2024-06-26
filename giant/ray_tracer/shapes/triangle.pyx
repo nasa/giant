@@ -49,7 +49,7 @@ from cython.parallel import prange, parallel, threadid
 from giant.ray_tracer.shapes.shapes cimport Surface32, Surface64
 
 
-cdef void _solve_3x3sys(double[3][3] mat, double[3] rhs, double[3] solu) nogil:
+cdef void _solve_3x3sys(double[3][3] mat, double[3] rhs, double[3] solu) noexcept nogil:
     """
     This C function solves a 3x3 system of equations using cramer's rule because it is very fast for such a small
     problem.
@@ -160,7 +160,7 @@ cdef class Triangle64(Surface64):
         return sides
 
     @cython.boundscheck(False)
-    cdef void _get_sides(self, cnp.uint32_t face, double[3] side1, double[3] side2) nogil:
+    cdef void _get_sides(self, cnp.uint32_t face, double[3] side1, double[3] side2) noexcept nogil:
         """
         This efficient c function computes the 2 primary sides for the requested face storing them into side1 and side2.
         """
@@ -208,7 +208,7 @@ cdef class Triangle64(Surface64):
                     self._normals[ind, i] /= dist[thread]
 
     @cython.boundscheck(False)
-    cdef double _get_albedo(self, const double[3] rhs, const int face) nogil:
+    cdef double _get_albedo(self, const double[3] rhs, const int face) noexcept nogil:
         """
         This C method determines the interpolated albedo for an intersection point.
 
@@ -300,7 +300,7 @@ cdef class Triangle64(Surface64):
     cdef void _compute_intersect(self, const double[:] start, const double[:] direction, const double[:] inv_direction,
                                  const cnp.int64_t[] ignore, const cnp.uint32_t num_ignore,
                                  cnp.uint8_t *hit, double[:] intersect, double[:] normal, double *albedo,
-                                 cnp.int64_t *facet, double *hit_distance) nogil:
+                                 cnp.int64_t *facet, double *hit_distance) noexcept nogil:
         """
         This C function checks if a ray intersects any of the surfaces contained in a given object.
 
@@ -464,7 +464,7 @@ cdef class Triangle32(Surface32):
         return sides
 
     @cython.boundscheck(False)
-    cdef void _get_sides(self, cnp.uint32_t face, float[3] side1, float[3] side2) nogil:
+    cdef void _get_sides(self, cnp.uint32_t face, float[3] side1, float[3] side2) noexcept nogil:
         """
         This efficient c function computes the 2 primary sides for the requested face storing them into side1 and side2.
         """
@@ -512,7 +512,7 @@ cdef class Triangle32(Surface32):
                     self._normals[ind, i] /= dist[thread]
 
     @cython.boundscheck(False)
-    cdef float _get_albedo(self, const double[3] rhs, const int face) nogil:
+    cdef float _get_albedo(self, const double[3] rhs, const int face) noexcept nogil:
         """
         This C method determines the interpolated albedo for an intersection point.
 
@@ -602,7 +602,7 @@ cdef class Triangle32(Surface32):
     cdef void _compute_intersect(self, const double[:] start, const double[:] direction, const double[:] inv_direction,
                                  const cnp.int64_t[] ignore, const cnp.uint32_t num_ignore,
                                  cnp.uint8_t *hit, double[:] intersect, double[:] normal, double *albedo,
-                                 cnp.int64_t *facet, double *hit_distance) nogil:
+                                 cnp.int64_t *facet, double *hit_distance) noexcept nogil:
         """
         This C function checks if a ray intersects any of the surfaces contained in a given object.
 

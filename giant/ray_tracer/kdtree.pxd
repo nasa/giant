@@ -25,7 +25,7 @@ cdef class KDNode:
     cdef void _compute_intersect(self, const double[:] start, const double[:] direction, const double[:] inv_direction,
                                   const cnp.int64_t[] ignore, const cnp.uint32_t num_ignore, cnp.int64_t[] shape_ignore,
                                   cnp.uint8_t *hit, double[:] intersect, double[:] normal, double *albedo,
-                                  cnp.int64_t *facet, double *previous_hit_distance) nogil
+                                  cnp.int64_t *facet, double *previous_hit_distance) noexcept nogil
 
     cpdef compute_bounding_box(self)
 
