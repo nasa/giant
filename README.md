@@ -3,8 +3,6 @@ Administration.  No copyright is claimed in the United States under Title 17, U.
 
 # NOTE
 We are working a new release for GIANT hopefully before April of 2025 which will have new features and a revamped and much more performant ray tracer that fully works on windows too!
-In the mean time, there is a known issue with one of the dependencies (we're not certain which but we're guessing numpy or cython) GIANT makes use of slowing down the ray tracer by about a factor of ten in our internal testing.  
-With preparations for the upcoming release which will completely fix this issue, we do not have the ability to investigate further at this point in time.
 
 # GIANT
 

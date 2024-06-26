@@ -312,7 +312,7 @@ cdef class Surface(Shape):
     cdef void _compute_intersect(self, const double[:] start, const double[:] direction, const double[:] inv_direction,
                                  const cnp.int64_t[] ignore, const cnp.uint32_t num_ignore,
                                  cnp.uint8_t *hit, double[:] intersect, double[:] normal, double *albedo,
-                                 cnp.int64_t *facet, double *hit_distance) nogil:
+                                 cnp.int64_t *facet, double *hit_distance) noexcept nogil:
         """
         This C method is used to compute the intersect between a single ray and the surfaces contained in this object.
 
@@ -373,7 +373,7 @@ cdef class Surface(Shape):
     cdef void _trace(self, const double[:, :] starts, const double[:, :] directions, const double[:, :] inv_directions,
                      const cnp.int64_t[:, :] ignore, const cnp.uint32_t num_rays, const bint omp,
                      cnp.uint8_t[:] hit, double[:, :] intersect, double[:, :] normal, double[:] albedo,
-                     cnp.int64_t[:] facet, double[:] hit_distances) nogil:
+                     cnp.int64_t[:] facet, double[:] hit_distances) noexcept nogil:
         """
         This C method is used to intersect multiple rays with the surfaces in this object.
 

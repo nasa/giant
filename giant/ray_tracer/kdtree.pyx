@@ -371,7 +371,7 @@ cdef class KDNode:
     cdef void _compute_intersect(self, const double[:] start, const double[:] direction, const double[:] inv_direction,
                                   const cnp.int64_t[] ignore, const cnp.uint32_t num_ignore, cnp.int64_t[] shape_ignore,
                                   cnp.uint8_t *hit, double[:] intersect, double[:] normal, double *albedo,
-                                  cnp.int64_t *facet, double* previous_hit_distance) nogil:
+                                  cnp.int64_t *facet, double* previous_hit_distance) noexcept nogil:
         """
         This method is used to compute the intersect of a single ray with this node.  First the intersect is checked on
         the bounding box for the node.  If this successfully intersects and the intersect distance is less than the
@@ -840,7 +840,7 @@ cdef class KDTree(Surface):
     cdef void _compute_intersect(self, const double[:] start, const double[:] direction, const double[:] inv_direction,
                                  const cnp.int64_t[] ignore, const cnp.uint32_t num_ignore,
                                  cnp.uint8_t *hit, double[:] intersect, double[:] normal, double *albedo,
-                                 cnp.int64_t *facet, double *hit_distance) nogil:
+                                 cnp.int64_t *facet, double *hit_distance) noexcept nogil:
         """
         This C method is used to compute the intersect between a single ray and the surfaces contained in this object.
 
