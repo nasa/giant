@@ -80,22 +80,22 @@ import warnings
 
 from dataclasses import dataclass
 
-from typing import Optional, Callable, List, Union, Tuple, Dict, Any
+from typing import Optional, Callable, List
 
 import numpy as np
 
-from giant.relative_opnav.estimators.estimator_interface_abc import RelNavEstimator, RelNavObservablesType
-from giant.ray_tracer.rays import Rays, compute_rays
-from giant.ray_tracer.scene import Scene, SceneObject
-from giant.ray_tracer.illumination import IlluminationModel, McEwenIllumination
+from giant.relative_opnav.estimators.estimator_interface_abc import RelNavObservablesType
+from giant.ray_tracer.scene import Scene
 from giant.camera import Camera
 from giant.image import OpNavImage
-from giant.image_processing import ImageProcessing, quadric_peak_finder_2d
-from giant._typing import Real
+from giant.image_processing import quadric_peak_finder_2d
+from giant.image_processing.correlators import CORRLATOR_SIGNATURE, cv2_correlator_2d
+
+from giant.relative_opnav.estimators._template_renderer import TemplateRenderer, TemplateRendererOptions
 
 
 @dataclass
-class XCorrCenterFindingOptions:
+class XCorrCenterFindingOptions(TemplateRendererOptions):
     """
     This dataclass serves as one way to control the settings for the :class:`.XCorrCenterFinding` class.
 
@@ -103,27 +103,6 @@ class XCorrCenterFindingOptions:
     :class:`.XCorrCenterFinding` class at initialization (or through the method
     :meth:`.XCorrCenterFinding.apply_options`) to set the settings on the class. This class is the preferred way
     of setting options on the class due to ease of use in IDEs.
-    """
-
-    brdf: Optional[IlluminationModel] = None
-    """
-    The illumination model that transforms the geometric ray tracing results (see :const:`.ILLUM_DTYPE`) into an
-    intensity values. Typically this is one of the options from the :mod:`.illumination` module).
-    """
-
-    rays: Union[Optional[Rays], List[Optional[Rays]]] = None
-    """
-    The rays to use when rendering the template.  If ``None`` then the rays required to render the template will be 
-    automatically computed.  Optionally, a list of :class:`.Rays` objects where each element corresponds to the rays to 
-    use for the corresponding template in the :attr:`.Scene.target_objs` list.  Typically this should be left as 
-    ``None``.
-    """
-
-    grid_size: int = 1
-    """
-    The subsampling to use per pixel when rendering the template.  This should be the number of sub-pixels per side of 
-    a pixel (that is if grid_size=3 then subsampling will be in an equally spaced 3x3 grid -> 9 sub-pixels per pixel).  
-    If ``rays`` is not None then this is ignored
     """
 
     peak_finder:  Callable[[np.ndarray, bool], np.ndarray] = quadric_peak_finder_2d
@@ -150,11 +129,14 @@ class XCorrCenterFindingOptions:
     The number of pixels to search around the a priori predicted center for the peak of the correlation surface.  If 
     ``None`` then searches the entire correlation surface.
     """
+    
+    correlator: CORRLATOR_SIGNATURE = cv2_correlator_2d
+    """
+    The normaized cross correlation routine to use
+    """
 
 
-# TODO: Allow recentering with either the moment algorithm or using a raster rendered template.  If raster rendered
-#  enable scale/rotation correction as well using Josh's technique
-class XCorrCenterFinding(RelNavEstimator):
+class XCorrCenterFinding(TemplateRenderer, XCorrCenterFindingOptions):
     """
     This class implements normalized cross correlation center finding for GIANT.
 
@@ -196,282 +178,24 @@ class XCorrCenterFinding(RelNavEstimator):
         :class:`.Scene` instance.
     """
 
-    observable_type: List[RelNavObservablesType] = [RelNavObservablesType.CENTER_FINDING]
+    observable_type = [RelNavObservablesType.CENTER_FINDING]
     """
     This technique generates CENTER-FINDING bearing observables to the center of figure of a target.
     """
 
-    generates_templates: bool = True
-    """
-    A flag specifying that this RelNav estimator generates and stores templates in the :attr:`templates` attribute.
-    """
-
-    def __init__(self, scene: Scene, camera: Camera, image_processing: ImageProcessing,
-                 options: Optional[XCorrCenterFindingOptions] = None,
-                 brdf: Optional[IlluminationModel] = None, rays: Union[Optional[Rays], List[Rays]] = None,
-                 grid_size: int = 1, peak_finder: Callable[[np.ndarray, bool], np.ndarray] = quadric_peak_finder_2d,
-                 min_corr_score: float = 0.3, blur: bool = True, search_region: Optional[int] = None,
-                 template_overflow_bounds=-1):
+    def __init__(self, scene: Scene, camera: Camera, 
+                 options: Optional[XCorrCenterFindingOptions] = None):
         """
         :param scene: The scene describing the a priori locations of the targets and the light source.
         :param camera: The :class:`.Camera` object containing the camera model and images to be analyzed
         :param image_processing: An instance of :class:`.ImageProcessing`.  This is used for denoising the image and for
                                  generating the correlation surface using :meth:`.denoise_image` and :meth:`correlate`
                                  methods respectively
-        :param options: A dataclass specifying the options to set for this instance.  If provided it takes preference
-                        over all key word arguments, therefore it is not recommended to mix methods.
-        :param brdf: The illumination model that transforms the geometric ray tracing results (see
-                     :const:`.ILLUM_DTYPE`) into a intensity values. Typically this is one of the options from the
-                     :mod:`.illumination` module).
-        :param rays: The rays to use when rendering the template.  If ``None`` then the rays required to render the
-                     template will be automatically computed.  Optionally, a list of :class:`.Rays` objects where each
-                     element corresponds to the rays to use for the corresponding template in the
-                     :attr:`.Scene.target_objs` list.  Typically this should be left as ``None``.
-        :param grid_size: The subsampling to use per pixel when rendering the template.  This should be the number of
-                          sub-pixels per side of a pixel (that is if grid_size=3 then subsampling will be in an equally
-                          spaced 3x3 grid -> 9 sub-pixels per pixel).  If ``rays`` is not None then this is ignored
-        :param peak_finder: The peak finder function to use. This should be a callable that takes in a 2D surface as a
-                            numpy array and returns the (x,y) location of the peak of the surface.
-        :param min_corr_score: The minimum correlation score to accept for something to be considered found in an image.
-                               The correlation score is the Pearson Product Moment Coefficient between the image and the
-                               template. This should be a number between -1 and 1, and in nearly every cast a number
-                               between 0 and 1.  Setting this to -1 essentially turns the minimum correlation score
-                               check off.
-        :param blur: A flag to perform a Gaussian blur on the correlation surface before locating the peak to remove
-                     high frequency noise
-        :param search_region: The number of pixels to search around the a priori predicted center for the peak of the
-                              correlation surface.  If ``None`` then searches the entire correlation surface.
-        :param template_overflow_bounds: The number of pixels to render in the template that overflow outside of the
-                                         camera field of view.  Set to a number less than 0 to accept all overflow
-                                         pixels in the template.  Set to a number greater than or equal to 0 to limit
-                                         the number of overflow pixels.
+        :param options: A dataclass specifying the options to set for this instance.
 
         """
 
-        super().__init__(scene, camera, image_processing)
-
-        self.template_overflow_bounds = template_overflow_bounds
-        """
-        The number of pixels to render in the template that overflow outside of the camera field of view.  
-        
-        Set to a number less than 0 to accept all overflow pixels in the template.  Set to a number greater than or 
-        equal to 0 to limit the number of overflow pixels. 
-        
-        This setting can be particularly important in cases where the body fills significantly more than the field of 
-        view of the camera because the camera distortion models are usually undefined as you get outside of the field 
-        of view.  In most typical cases where you can see the entire body in the field of view though this setting 
-        should have little to no impact and can safely be left at -1
-        """
-
-        self.rays: Union[Optional[Rays], List[Optional[Rays]]] = rays
-        """
-        The rays to trace to render the template, or ``None`` if the rays are to be computed automatically.
-        """
-
-        self.grid_size: int = grid_size
-        """
-        The size of each side of the subpixel grid to sample when rendering the template.  
-        
-        A ``grid_size`` of 3 would lead to a 3x3 sampling for each pixel or 9 rays per pixel.  
-        
-        See :func:`.compute_rays` for details.
-        """
-
-        if brdf is None:
-            brdf = McEwenIllumination()
-
-        self.brdf: IlluminationModel = brdf
-        """
-        A callable to translate illumination inputs (:data:`.ILLUM_DTYPE`) into intensity values in the template. 
-        
-        Typically this is one of the options from :mod:`.illumination`
-        """
-
-        self.peak_finder: Callable[[np.ndarray, bool], np.ndarray] = peak_finder
-        """
-        A callable to extract the peak location from a correlation surface.
-        
-        See :func:`.quadric_peak_finder_2d` for an example/details.
-        """
-
-        self.search_region: Optional[int] = search_region
-        """
-        The region to search around the a priori predicted center location for each target in the correlation surface 
-        for a peak.
-        
-        If set to ``None`` then the entire correlation surface is searched.
-        """
-
-        self.blur: bool = blur
-        """
-        A flag specifying whether to apply a Gaussian blur to the correlation surface before attempting to find the peak
-        to try and remove high-frequency noise.
-        """
-
-        self.min_corr_score: float = min_corr_score
-        """
-        The minimum correlation score to accept as a successfully located target.
-        """
-
-        # apply the options struct if provided
-        if options is not None:
-            self.apply_options(options)
-
-        self.details: List[Dict[str, Any]] = self.details
-        """
-        ================================= ==================================================================================
-        Key                               Description
-        ================================= ==================================================================================
-        ``'Correlation Score'``           The correlation score at the peak of the correlation surface.  This is only
-                                          available if the fit was successful.
-        ``'Correlation Surface'``         The raw correlation surface as a 2D array.  Each pixel in the correlation surface
-                                          represents the correlation score when the center of the template is lined up with
-                                          the corresponding image pixel.  This is only available if the fit was successful.
-        ``'Correlation Peak Location'``   The Location of the correlation peak before correcting it to find the location of
-                                          the target center of figure. This is only available if the fit was successful.
-        ``'Target Template Coordinates'`` The location of the center of figure of the target in the template.  This is only
-                                          available if the fit was successful.
-        ``'Failed'``                      A message indicating why the fit failed.  This will only be present if the fit
-                                          failed (so you could do something like
-                                          ``'Failed' in cross_correlation.details[target_ind]`` to
-                                          check if something failed.  The message should be a human readable description of
-                                          what caused the failure.
-        ``'Max Correlation'``             The peak value of the correlation surface.  This is only available if the fit
-                                          failed due to too low of a correlation score.
-        ================================= ==================================================================================
-        """
-
-    def apply_options(self, options: XCorrCenterFindingOptions):
-        """
-        This method applies the input options to the current instance.
-
-        The input options should be an instance of :class:`.XcorrCenterFindingOptions`.
-
-        When calling this method every setting will be updated, even ones you did not specifically set in the provided
-        ``options`` input.  Any you did not specifically modify will be reset to the default value.  Typically the best
-        way to change a single setting is through direct attribute access on this class, or by maintaining a copy of the
-        original options structure used to initialize this class and then updating it before calling this method.
-
-        :param options: The options to apply to the current instance
-        """
-        self.rays = options.rays
-        self.grid_size = options.grid_size
-        if options.brdf is None:
-            self.brdf = McEwenIllumination()
-        else:
-            self.brdf = options.brdf
-        self.peak_finder = options.peak_finder
-        self.search_region = options.search_region
-        self.blur = options.blur
-        self.min_corr_score = options.min_corr_score
-
-    def render(self, target_ind: int, target: SceneObject, temperature: Real = 0) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        This method returns the computed illumination values for the given target and the (sub)pixels that each
-        illumination value corresponds to
-
-        The illumination values are computed by (a) determining the rays to trace through the scene (either user
-        specified or by a call to :meth:`compute_rays`), (b) performing a single bounce ray trace through the scene
-        using a call to :meth:`.Scene.get_illumination_inputs`, and then (c) converting the results of the ray trace
-        into illumination values using :attr:`brdf`.
-
-        :param target_ind: index into the :attr:`.Scene.target_objs` list of the target being rendering
-        :param target: the :class:`.SceneObject` for the target being rendered
-        :param temperature: The temperature of the camera at the time the scene is being rendered.
-        :return: the computed illumination values for each ray and the pixel coordinates for each ray.
-        """
-
-        # determine the rays to trace through the scene
-        if self.rays is None:
-            # compute the rays required to render the requested target
-            (rays, uv), _ = self.compute_rays(target, temperature=temperature)
-
-        elif isinstance(self.rays, Rays):
-
-            rays = self.rays
-            # compute the pixel location of each ray
-            uv = self.camera.model.project_onto_image(rays.start + rays.direction, temperature=temperature)
-
-        elif self.rays[target_ind] is None:
-            # compute the rays required to render the requested target
-            (rays, uv), _ = self.compute_rays(target, temperature=temperature)
-
-        else:
-
-            rays = self.rays[target_ind]
-
-            # compute the pixel location of each ray
-            uv = self.camera.model.project_onto_image(rays.start + rays.direction, temperature=temperature)
-
-        print('Rendering {} rays'.format(rays.num_rays), flush=True)
-        illum_inputs = self.scene.get_illumination_inputs(rays)
-
-        # compute the illumination for each ray and return it along with the pixel location for each ray
-        return self.brdf(illum_inputs), uv
-
-    def compute_rays(self, target: SceneObject,
-                     temperature: Real = 0) -> Tuple[Tuple[Rays, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
-        """
-        This method computes the required rays to render a given target based on the location of the target in the
-        image.
-
-        This method first determines which pixels to trace. If a circumscribing sphere is defined for the target,
-        the edges of the sphere are used to compute the required pixels; otherwise, the bounding box is used. The pixels
-        are checked to be sure they are contained in the image.  If the expected target location is completely outside
-        of the image then it is relocated to be in the center of the image (for rendering purposes). The requested
-        subsampling for each pixel is then applied, and the sub-pixels are then converted into rays originating at the
-        camera origin using the :class:`.CameraModel`.
-
-        :param target: The target that is being rendered
-        :param temperature: The temperature of the camera at the time the target is being rendered
-        :return: The rays to trace through the scene and the  the pixel coordinates for each ray as a tuple, plus
-                 the bounds of the pixel coordinates
-        """
-        local_min, local_max = target.get_bounding_pixels(self.camera.model, temperature=temperature)
-
-        # If the template size is too small artificially increase it so we can get the PSF in there
-        if ((local_max - local_min) < 5).any():
-            local_max += 3
-            local_min -= 3
-
-        # Determine the actual bounds to use for the template so that it is within the image
-        if self.template_overflow_bounds >= 0:
-            min_inds = np.maximum(local_min, [-self.template_overflow_bounds, 
-                                              -self.template_overflow_bounds])
-
-            max_inds = np.minimum(local_max, [self.camera.model.n_cols + self.template_overflow_bounds, 
-                                              self.camera.model.n_rows + self.template_overflow_bounds])
-        else:
-            min_inds = np.maximum(local_min, [0, 0])
-
-            max_inds = np.minimum(local_max, [self.camera.model.n_cols, self.camera.model.n_rows])
-
-        # If the min inds are greater than the max inds then they body is outside of the FOV, move it to the center of
-        # the image as a work around and restart
-        if np.any(min_inds > max_inds):
-
-            warnings.warn("the predicted location of the body is outside of the FOV.  \n"
-                          "We are moving the object to the middle of the FOV and attempting to render that way\n")
-
-            # set the target fully along the z-axis of the camera
-            pos = target.position.copy()
-            pos[-1] = np.linalg.norm(pos)
-            pos[:2] = 0
-
-            # change the target position
-            target.change_position(pos)
-
-            # recurse to compute the rays for the new target location
-            return self.compute_rays(target, temperature=temperature)
-
-        else:
-            # Compute the rays for the template
-            if self.template_overflow_bounds >= 0:
-                return compute_rays(self.camera.model, (min_inds[1], max_inds[1]), (min_inds[0], max_inds[0]),
-                                    grid_size=self.grid_size, temperature=temperature), (min_inds, max_inds)
-            else:
-                return compute_rays(self.camera.model, (local_min[1], local_max[1]), (local_min[0], local_max[0]),
-                                    grid_size=self.grid_size, temperature=temperature), (local_min, local_max)
+        super().__init__(scene, camera, options=options, options_type=XCorrCenterFindingOptions)
 
     def estimate(self, image: OpNavImage, include_targets: Optional[List[bool]] = None):
         """
@@ -494,55 +218,30 @@ class XCorrCenterFinding(RelNavEstimator):
         """
 
         # Make sure the image is single precision for use with opencv
-        # noinspection PyTypeChecker
-        image = image.astype(np.float32)  # type: OpNavImage
+        image = image.astype(np.float32)  # type: ignore
 
         for target_ind, target in self.target_generator(include_targets):
-
-            # Do the ray trace and render the template
-            illums, locs = self.render(target_ind, target, temperature=image.temperature)
+            
+            template, bounds = self.prepare_template(target_ind, target, image.temperature)
+            
+            self.templates[target_ind] = template
 
             # Compute the expected location of the object in the image
-            self.computed_bearings[target_ind] = self.camera.model.project_onto_image(
+            computed = self.camera.model.project_onto_image(
                 target.position,
                 temperature=image.temperature
             ).ravel()
 
-            # Get the expected bounds of the template in the image
-            # noinspection PyArgumentList
-            bounds = (locs.min(axis=1).round(), locs.max(axis=1).round())
-
-            # Compute the size of the template in pixels
-            template_size = (bounds[1] - bounds[0]) + 1
-
-            # Initialize the template matrix
-            self.templates[target_ind] = np.zeros(template_size[::-1].astype(int))
-
-            # Compute the subscripts into the template
-            subs = (locs - bounds[0].reshape(2, 1)).round().astype(int)
-
-            # use numpy fancy stuff to add the computed brightness for each ray to the appropriate pixels
-            np.add.at(self.templates[target_ind], (subs[1], subs[0]), illums.flatten())
-
-            # Apply the psf of the camera to the template
-            if self.camera.psf is not None:
-                self.templates[target_ind] = self.camera.psf(self.templates[target_ind])
-
+            self.computed_bearings[target_ind] = computed
+            
             # Determine the center of the body in the template
-            center_of_template = self.computed_bearings[target_ind] - bounds[0]
-
-            if self.image_processing.denoise_flag:
-                # Try to remove noise from the image
-                # noinspection PyTypeChecker
-                image = self.image_processing.denoise_image(image)
-                # Not sure if we should also do the template here or not.  Probably
-                # self.templates[target_ind] = self._image_processing.denoise_image(self.templates[target_ind])
+            center_of_template = computed - bounds[0]
 
             # Perform the correlation between the image and the template
-            correlation_surface = self.image_processing.correlate(image, self.templates[target_ind])
+            correlation_surface = self.correlator(image, template)
 
             # Get the middle of the template
-            temp_middle = np.floor(np.flipud(np.array(self.templates[target_ind].shape)) / 2)
+            temp_middle = np.floor(np.flipud(np.array(template.shape)) / 2)
 
             # Figure out the delta between the middle of the template and the center of the body in the template
             delta = temp_middle - center_of_template
@@ -551,7 +250,7 @@ class XCorrCenterFinding(RelNavEstimator):
                 # If we want to restrict our search for the peak of the correlation surface around the a priori center
 
                 # Compute the center of the search region
-                search_start = np.round(self.computed_bearings[target_ind] + delta).astype(int)
+                search_start = np.round(computed + delta).astype(int)
 
                 # Compute the beginning of the search region in pixels
                 begin_roi = search_start - self.search_region

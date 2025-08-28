@@ -38,12 +38,12 @@ segmenting an image into foreground/background objects from the :class:`.ImagePr
 ============================================= ==========================================================================
 Parameter                                     Description
 ============================================= ==========================================================================
-:attr:`.ImageProcessing.otsu_levels`          The number of levels to attempt to segments the histogram into using
+:attr:`.ImageSegmenter.otsu_levels`           The number of levels to attempt to segments the histogram into using
                                               multi-level Otsu thresholding.
-:attr:`.ImageProcessing.minimum_segment_area` The minimum size of a segment for it to be considered a foreground object.
+:attr:`.ImageSegmenter.minimum_segment_area`  The minimum size of a segment for it to be considered a foreground object.
                                               This can be determined automatically using the :attr:`use_apparent_area`
                                               flag of this class.
-:attr:`.ImageProcessing.minimum_segment_dn`   The minimum DN value for a segment to be considered foreground.  This can
+:attr:`.ImageSegmenter.minimum_segment_dn`    The minimum DN value for a segment to be considered foreground.  This can
                                               be used to help separate background segments that are slightly brighter
                                               due to stray light or other noise issues.
 ============================================= ==========================================================================
@@ -83,7 +83,9 @@ by this technique, refer to the following class documentation.
 
 import warnings
 
-from typing import Union, Optional, List, Dict, Any
+from typing import  Optional, List
+
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -93,18 +95,82 @@ from giant.point_spread_functions import Moment
 
 from giant.camera import Camera
 from giant.image import OpNavImage
-from giant.image_processing import ImageProcessing
 from giant.ray_tracer.scene import Scene
-from giant.ray_tracer.illumination import IlluminationModel
-from giant._typing import Real
+from giant.utilities.mixin_classes.user_option_configured import UserOptionConfigured
+
+from giant.image_processing.image_segmenter import ImageSegmenter, ImageSegmenterOptions
 
 
 from giant.relative_opnav.estimators.estimator_interface_abc import RelNavObservablesType
-from giant.relative_opnav.estimators.unresolved import PhaseCorrector, PhaseCorrectionType
+from giant.relative_opnav.estimators.unresolved import PhaseCorrector, PhaseCorrectorOptions
+
+@dataclass
+class MomentAlgorithmOptions(PhaseCorrectorOptions):
+    """
+    :param use_apparent_area: A boolean flag specifying whether to predict the minimum apparent area we should
+                                consider when segmenting the image into foreground/background objects.
+    :param apparent_area_margin_of_safety: The margin of safety we will use to decrease the predicted apparent area
+                                            to account for errors in the a priori scene/shape model as well as errors
+                                            introduced by assuming a spherical object.  The predicted apparent area
+                                            will be divided by this number and then supplied as the
+                                            :attr:`~.ImageProcessing.minimum_segment_area` attribute.  This should
+                                            always be >= 1.
+    :param search_distance: The search radius to search around the predicted centers for the observed centers of
+                            the target objects.  This is used as a limit, so that if the closest segmented object to
+                            a predicted target location is greater than this then the target is treated as not
+                            found.  Additionally, if multiple segmented regions fall within this distance of the
+                            target then we treat it as ambiguous and not found.
+    :param apply_phase_correction: A boolean flag specifying whether to apply the phase correction to the observed
+                                    center of brightness to get closer to the center of figure based on the predicted
+                                    apparent diameter of the object.
+    :param phase_correction_type: The type of phase correction to use.  Should be one of the PhaseCorrectionType
+                                    enum values
+    :param brdf: The illumination model to use to compute the illumination values if the ``RASTERED`` phase
+                    correction type is used.  If the ``RASTERED`` phase correction type is not used this is ignored.
+                    If this is left as ``None`` and the ``Rastered`` phase correction type is used, this will default
+                    to the McEwen Model, :class:`.McEwenIllumination`.
+    """
+    use_apparent_area: bool = True
+    """
+    A boolean flag specifying whether to use the predicted apparent area (number of pixels) of the illuminated 
+    target in the image to threshold what is considered a foreground object in the image.
+    """
+
+    apparent_area_margin_of_safety: float = 2
+    """
+    The margin of safety used to decrease the predicted apparent area for each target.
+    
+    This value should always be >= 1, as the predicted area is divided by this to get the effective minimum apparent
+    area for the targets.  This is included to account for errors in the a priori scene/shape model for the targets
+    as well as the errors introduced by assuming spherical targets.  Since there is only one margin of safety for 
+    all targets in a scene, you should set this based on the expected worst case for all of the targets.
+    """
+
+    search_distance: Optional[int] = None
+    """
+    Half of the distance to search around the predicted centers for the observed centers of the target objects in 
+    pixels.
+    
+    This is also used to identify ambiguous target to segmented area pairings.  That is, if 2 segmented areas are 
+    within this value of the predicted center of figure for a target, then that target is treated as not found and a
+    warning is printed.
+    
+    If this is ``None`` then the closest segmented object from the image to the predicted center of figure of the 
+    target in the image is always chosen.
+    """
+
+    apply_phase_correction: bool = True
+    """
+    A boolean flag specifying whether to apply the phase correction or not
+    """
+    
+    image_segmenter_options: ImageSegmenterOptions | None = None
+    """
+    The options to use to configure the image segmenter for detecting the object in the image
+    """
 
 
-
-class MomentAlgorithm(PhaseCorrector):
+class MomentAlgorithm(UserOptionConfigured[MomentAlgorithmOptions], PhaseCorrector, MomentAlgorithmOptions):
     """
     This class implements GIANT's version of moment based center finding for extracting bearing measurements to resolved
     or or unresolved targets in an image.
@@ -181,108 +247,28 @@ class MomentAlgorithm(PhaseCorrector):
         image time.  This class does not update the scene automatically.
     """
 
-    technique: str = 'moment_algorithm'
+    technique = 'moment_algorithm'
     """
     The name of the technique identifier in the :class:`.RelativeOpNav` class.
     """
 
-    observable_type: List[RelNavObservablesType] = [RelNavObservablesType.CENTER_FINDING]
+    observable_type = [RelNavObservablesType.CENTER_FINDING]
     """
     The type of observables this technique generates.
     """
 
-    def __init__(self, scene: Scene, camera: Camera, image_processing: ImageProcessing,
-                 use_apparent_area: bool = True,
-                 apparent_area_margin_of_safety: Real = 2, search_distance: Optional[int] = None,
-                 apply_phase_correction: bool = True,
-                 phase_correction_type: Union[PhaseCorrectionType, str] = PhaseCorrectionType.SIMPLE,
-                 brdf: Optional[IlluminationModel] = None):
+    def __init__(self, scene: Scene, camera: Camera,
+                options: Optional[MomentAlgorithmOptions] = None):
         """
         :param scene: The :class:`.Scene` object containing the target, light, and obscuring objects.
         :param camera: The :class:`.Camera` object containing the camera model and images to be utilized
         :param image_processing: The :class:`.ImageProcessing` object to be used to process the images
-        :param use_apparent_area: A boolean flag specifying whether to predict the minimum apparent area we should
-                                  consider when segmenting the image into foreground/background objects.
-        :param apparent_area_margin_of_safety: The margin of safety we will use to decrease the predicted apparent area
-                                               to account for errors in the a priori scene/shape model as well as errors
-                                               introduced by assuming a spherical object.  The predicted apparent area
-                                               will be divided by this number and then supplied as the
-                                               :attr:`~.ImageProcessing.minimum_segment_area` attribute.  This should
-                                               always be >= 1.
-        :param search_distance: The search radius to search around the predicted centers for the observed centers of
-                                the target objects.  This is used as a limit, so that if the closest segmented object to
-                                a predicted target location is greater than this then the target is treated as not
-                                found.  Additionally, if multiple segmented regions fall within this distance of the
-                                target then we treat it as ambiguous and not found.
-        :param apply_phase_correction: A boolean flag specifying whether to apply the phase correction to the observed
-                                       center of brightness to get closer to the center of figure based on the predicted
-                                       apparent diameter of the object.
-        :param phase_correction_type: The type of phase correction to use.  Should be one of the PhaseCorrectionType
-                                      enum values
-        :param brdf: The illumination model to use to compute the illumination values if the ``RASTERED`` phase
-                     correction type is used.  If the ``RASTERED`` phase correction type is not used this is ignored.
-                     If this is left as ``None`` and the ``Rastered`` phase correction type is used, this will default
-                     to the McEwen Model, :class:`.McEwenIllumination`.
+        :param options: A dataclass specifying the options to set for this instance.
         """
-        super().__init__(scene, camera, image_processing, phase_correction_type=phase_correction_type, brdf=brdf)
-
-
-        self.search_distance: Optional[int] = search_distance
-        """
-        Half of the distance to search around the predicted centers for the observed centers of the target objects in 
-        pixels.
         
-        This is also used to identify ambiguous target to segmented area pairings.  That is, if 2 segmented areas are 
-        within this value of the predicted center of figure for a target, then that target is treated as not found and a
-        warning is printed.
+        super().__init__(MomentAlgorithmOptions, scene, camera, options=options)
         
-        If this is ``None`` then the closest segmented object from the image to the predicted center of figure of the 
-        target in the image is always chosen.
-        """
-
-        self.apply_phase_correction: bool = apply_phase_correction
-        """
-        A boolean flag specifying whether to apply the phase correction or not
-        """
-
-        self.use_apparent_area: bool = use_apparent_area
-        """
-        A boolean flag specifying whether to use the predicted apparent area (number of pixels) of the illuminated 
-        target in the image to threshold what is considered a foreground object in the image.
-        """
-
-        self.apparent_area_margin_of_safety: float = float(apparent_area_margin_of_safety)
-        """
-        The margin of safety used to decrease the predicted apparent area for each target.
-        
-        This value should always be >= 1, as the predicted area is divided by this to get the effective minimum apparent
-        area for the targets.  This is included to account for errors in the a priori scene/shape model for the targets
-        as well as the errors introduced by assuming spherical targets.  Since there is only one margin of safety for 
-        all targets in a scene, you should set this based on the expected worst case for all of the targets.
-        """
-
-        self.details: List[Dict[str, Any]] = self.details
-        """ 
-        ====================== =============================================================================================
-        Key                    Description
-        ====================== =============================================================================================
-        ``'Fit'``              The fit moment object.  Only available if successful.
-        ``'Phase Correction'`` The phase correction vector used to convert from center of brightness to center of figure.
-                               This will only be available if the fit was successful.  If :attr:`apply_phase_correction` is
-                               ``False`` then this will be an array of 0.
-        ``'Observed Area'``    The area (number of pixels that were considered foreground) observed for this target.
-                               This is only available if the fit was successful.
-        ``'Predicted Area'``   The area (number of pixels that were considered foreground) predicted for this target.
-                               This is only available if the fit was successful.
-        ``'Failed'``           A message indicating why the fit failed.  This will only be present if the fit failed (so you
-                               could do something like ``'Failed' in moment_algorithm.details[target_ind]`` to check if
-                               something failed.  The message should be a human readable description of what called the
-                               failure.
-        ``'Found Segments'``   All of the segments that were found in the image.  This is a tuple of all of the returned
-                               values from :meth:`.ImageProcessing.segment_image`.  This is only included if the fit failed
-                               for some reason.
-        ====================== =============================================================================================
-        """
+        self.image_segmenter = ImageSegmenter(self.image_segmenter_options)
 
     def estimate(self, image: OpNavImage, include_targets: Optional[List[bool]] = None):
         """
@@ -306,7 +292,7 @@ class MomentAlgorithm(PhaseCorrector):
                                 then all are processed (no, the irony is not lost on me...)
         """
         # store the original segment area from image processing in case we overwrite it
-        original_segment_area = self.image_processing.minimum_segment_area
+        original_segment_area = self.image_segmenter.minimum_segment_area
 
         # loop through the requested targets and compute their expected apparent area
         expected_areas = []
@@ -334,10 +320,10 @@ class MomentAlgorithm(PhaseCorrector):
             # get the minimum area corrected by the margin of safety
             minimum_area = min(expected_areas)/self.apparent_area_margin_of_safety
             # set it to the appropriate attribute
-            self.image_processing.minimum_segment_area = minimum_area
+            self.image_segmenter.minimum_segment_area = minimum_area
 
         # Now segment the image using Otsu/connected components
-        segments, foreground, segment_stats, segment_centroids = self.image_processing.segment_image(image)
+        segments, foreground, segment_stats, segment_centroids = self.image_segmenter(image)
 
         used_segments = []
 
@@ -358,7 +344,7 @@ class MomentAlgorithm(PhaseCorrector):
             for segment_ind, centroid in enumerate(segment_centroids):
                 distance = np.linalg.norm(centroid - self.computed_bearings[target_ind])
 
-                if closest_ind is None:
+                if closest_ind is None or closest_distance is None:
                     if self.search_distance is not None:
                         if distance < self.search_distance:
                             closest_ind = segment_ind
@@ -394,7 +380,7 @@ class MomentAlgorithm(PhaseCorrector):
                               f'adjusting the apriori scene conditions to be better or adjusting the image processing '
                               f'settings to find more or less segmented object')
                 # set the other observed bearing to np.nan
-                self.observed_bearings[other_target][:] = np.nan
+                self.observed_bearings[other_target] = np.zeros(2, dtype=np.float64) + np.nan
 
                 # set this observed bearing to np.nan
                 self.observed_bearings[target_ind] = np.zeros(2, dtype=np.float64)+np.nan
@@ -456,4 +442,4 @@ class MomentAlgorithm(PhaseCorrector):
                                         'Predicted Area': expected_areas[target_ind]}
 
         # reset the image processing minimum segment area in case we messed with it
-        self.image_processing.minimum_segment_area = original_segment_area
+        self.image_segmenter.minimum_segment_area = original_segment_area

@@ -18,14 +18,14 @@ allowing us to more accurately estimate the trajectory of the camera through tim
 One of the most common ways of extracting observations of each feature is through cross correlation, using a very
 similar technique to that describe in :mod:`.cross_correlation`.  Essentially we render what we think each feature will
 look like based on the current knowledge of the relative position and orientation of the camera with respect to each
-feature (the features are stored in a special catalogue called a :class:`.FeatureCatalogue`).  We then take the rendered
+feature (the features are stored in a special catalog called a :class:`.FeatureCatalog`).  We then take the rendered
 template and use normalized cross correlation to identify the location of the feature in the image.  After we have
 identified the features in the image, we optionally solve a PnP problem to refine our knowledge of the spacecraft state
 and then repeat the process to correct any errors in the observations created by errors in our initial state estimates.
 
 In more detail, GIANT implements this using the following steps
 
-#. Identify which features we think should be visible in the image using the :attr:`.FeatureCatalogue.feature_finder`
+#. Identify which features we think should be visible in the image using the :attr:`.FeatureCatalog.feature_finder`
 #. For each feature we predict should be visible, render the template based on the a priori relative state between the
    camera and the feature using a single bounce ray trace and the routines from :mod:`.ray_tracer`.
 #. Perform 2D normalized cross correlation for every possible alignment between the center of the templates and the
@@ -46,7 +46,7 @@ Tuning
 
 There are a few more tuning options in SFN verses normal cross correlation.  The first, and likely most important
 tuning is for identifying potentially visible features in an image.  For this, you actually want to set the
-:attr:`.FeatureCatalogue.feature_finder` attribute to be something that will correctly determine which features are
+:attr:`.FeatureCatalog.feature_finder` attribute to be something that will correctly determine which features are
 possibly visible (typically to an instance of :class:`.VisibleFeatureFinder`).  We discuss the tuning for the
 :class:`.VisibleFeatureFinder` here, though you could concievably use something else if you desired.
 
@@ -70,8 +70,8 @@ in the image so that you don't waste time considering features that won't work f
 parameters can contribute to this, but some of the most important are the ``gsd_scaling``, which should typically be
 around 2 and the ``off_boresight_angle_maximum`` which should typically be just a little larger than the half diagonal
 field of view of the detector to avoid possibly overflowing values in the projection computation and processing features
-that are actually way outside the field of view.  Note that since you set the feature finder on each feature catalogue,
-this means that you can have different tunings for different feature catalogues (if you have multiple in a scene).
+that are actually way outside the field of view.  Note that since you set the feature finder on each feature catalog,
+this means that you can have different tunings for different feature catalogs (if you have multiple in a scene).
 
 Next we have the parameters that control the actual rendering/correlation for each feature.  These are the same as for
 :mod:`.cross_correlation`.
@@ -139,8 +139,8 @@ Parameter                                                       Description
                                                                 for each target in the image (for instance from
                                                                 :mod:`.cross_correlation`) to use to set the a priori
                                                                 relative state information between the camera and the
-                                                                feature catalogue
-:attr:`~SurfaceFeatureNavigation.cf_index`                      The mapping of feature catalogue number to column of the
+                                                                feature catalog
+:attr:`~SurfaceFeatureNavigation.cf_index`                      The mapping of feature catalog number to column of the
                                                                 ``cf_result`` array.
 =============================================================== ========================================================
 
@@ -166,31 +166,25 @@ details on using the :class:`.RelativeOpNav` interface, please refer to the :mod
 more details on using the technique class directly, as well as a description of the ``details`` dictionaries produced
 by this technique, refer to the following class documentation.
 
-One implementation detail we do want to note is that you should set your :attr:`.FeatureCatalogue.feature_finder` on
-your feature catalogue before using this class. For instance, if your catalogue is stored in a file called
+One implementation detail we do want to note is that you should set your :attr:`.FeatureCatalog.feature_finder` on
+your feature catalog before using this class. For instance, if your catalog is stored in a file called
 ``'features.pickle'``
 
     >>> import pickle
     >>> from giant.relative_opnav.estimators.sfn.surface_features import VisibleFeatureFinder
     >>> with open('features.pickle', 'rb') as in_file:
-    >>>     fc = pickle.load(in_file)  # type: VisibleFeatureFinder
+    >>>     fc: VisibleFeatureFinder = pickle.load(in_file) 
     >>> fc.feature_finder = VisibleFeatureFinder(fc, gsd_scaling=2.5)
 """
 
 import gc
 import time
 from dataclasses import dataclass
-from typing import Union, Optional, List, Callable, Tuple, Dict, Any
+from typing import Union, Optional, List, Callable, Tuple, cast
 
 import numpy as np
 
 from scipy.optimize import least_squares
-
-try:
-    from scipy.special import comb
-
-except ImportError:
-    from scipy.misc import comb
 
 import cv2
 
@@ -198,38 +192,88 @@ from matplotlib import pyplot as plt
 
 import giant.rotations as rot
 from giant.camera import Camera
-from giant.relative_opnav.estimators.cross_correlation import XCorrCenterFinding, XCorrCenterFindingOptions
 from giant.rotations import Rotation, rotvec_to_rotmat
 from giant.ray_tracer.rays import compute_rays
-from giant.ray_tracer.illumination import IlluminationModel
 from giant.ray_tracer.scene import Scene, SceneObject
 from giant.ray_tracer.rays import Rays
-from giant.image_processing import ImageProcessing
 from giant.image_processing import otsu, cv2_correlator_2d, quadric_peak_finder_2d
 from giant.image import OpNavImage
 from giant.utilities.outlier_identifier import get_outliers
 from giant.utilities.random_combination import RandomCombinations
-from giant.relative_opnav.estimators.sfn.surface_features import FeatureCatalogue
-from giant.relative_opnav.estimators.estimator_interface_abc import RelNavObservablesType
-
-from giant._typing import SCALAR_OR_ARRAY, Real, NONEARRAY
-
+from giant.utilities.mixin_classes import UserOptionConfigured
+from giant.relative_opnav.estimators.sfn.surface_features import FeatureCatalog
+from giant.relative_opnav.estimators.estimator_interface_abc import RelNavObservablesType, RelNavEstimator
+from giant.relative_opnav.estimators._template_renderer import TemplateRendererOptions
 from giant.relative_opnav.estimators.sfn.sfn_correlators import sfn_correlator
+
+from giant._typing import SCALAR_OR_ARRAY, NONEARRAY, DOUBLE_ARRAY
 
 
 @dataclass
-class SurfaceFeatureNavigationOptions(XCorrCenterFindingOptions):
+class SurfaceFeatureNavigationOptions(TemplateRendererOptions):
     """
     This dataclass serves as one way to control the settings for the :class:`.SurfaceFeatureNavigation` class.
 
     You can set any of the options on an instance of this dataclass and pass it to the
-    :class:`.SurfaceFeatureNavigation` class at initialization (or through the method
-    :meth:`.SurfaceFeatureNavigation.apply_options`) to set the settings on the class. This class is the preferred way
-    of setting options on the class due to ease of use in IDEs.
+    :class:`.SurfaceFeatureNavigation` class at initialization to set the settings on the class. 
+    This class is the preferred way of setting options on the class due to ease of use in IDEs.
+    
+    :param min_corr_score: The minimum correlation score to accept for something to be considered found in an image.
+                            The correlation score is the Pearson Product Moment Coefficient between the image and the
+                            template. This should be a number between -1 and 1, and in nearly every cast a number
+                            between 0 and 1.  Setting this to -1 essentially turns the minimum correlation score
+                            check off.
+    :param blur: A flag to perform a Gaussian blur on the correlation surface before locating the peak to remove
+                    high frequency noise
+    :param search_region: The number of pixels to search around the a priori predicted center for the peak of the
+                            correlation surface.  If ``None`` then searches the entire correlation surface.
+    :param run_pnp_solver: A flag specifying whether to use the PnP solver to correct errors in the initial
+                            relative state between the camera and the target body
+    :param pnp_ransac_iterations: The number of RANSAC iterations to attempt in the PnP solver.  Set to 0 to turn
+                                    the RANSAC component of the PnP solver
+    :param second_search_region: The distance around the nominal location to search for each feature in the image
+                                    after correcting errors using the PnP solver.
+    :param measurement_sigma: The uncertainty to assume for each measurement in pixels. This is used to set the
+                                relative weight between the observed landmarks are the a priori knowledge in the PnP
+                                problem. See the :attr:`measurement_sigma` documentation for a description of valid
+                                inputs.
+    :param position_sigma: The uncertainty to assume for the relative position vector in kilometers. This is used to
+                            set the relative weight between the observed landmarks and the a priori knowledge in the
+                            PnP problem. See the :attr:`position_sigma` documentation for a description of valid
+                            inputs.  If the ``state_sigma`` input is not ``None`` then this is ignored.
+    :param attitude_sigma: The uncertainty to assume for the relative orientation rotation vector in radians. This
+                            is used to set the relative weight between the observed landmarks and the a priori
+                            knowledge in the PnP problem. See the :attr:`attitude_sigma` documentation for a
+                            description of valid inputs.  If the ``state_sigma`` input is not ``None`` then this is
+                            ignored.
+    :param state_sigma: The uncertainty to assume for the relative position vector and orientation rotation vector
+                        in kilometers and radians respectively. This is used to set the relative weight between the
+                        observed landmarks and the a priori knowledge in the PnP problem. See the
+                        :attr:`state_sigma` documentation for a description of valid inputs.  If this input is not
+                        ``None`` then the ``attitude_sigma`` and ``position_sigma`` inputs are ignored.
+    :param max_lsq_iterations: The maximum number of iterations to make in the least squares solution to the PnP
+                                problem.
+    :param lsq_relative_error_tolerance: The relative tolerance in the residuals to signal convergence in the least
+                                            squares solution to the PnP problem.
+    :param lsq_relative_update_tolerance: The relative tolerance in the update vector to signal convergence in the
+                                            least squares solution to the PnP problem
+    :param cf_results: A numpy array containing the center finding residuals for the target that the feature
+                        catalog is a part of.  If present this is used to correct errors in the a priori line of
+                        sight to the target before searching for features in the image.
+    :param cf_index: A list that maps the features catalogs contained in the ``scene`` (in order) to the
+                        appropriate column of the ``cf_results`` matrix.  If left blank the mapping is assumed to be
+                        in like order
+    :param show_templates: A flag to show the rendered templates for each feature "live".  This is useful for
+                            debugging but in general should not be used.
+    """
+    
+    peak_finder:  Callable[[np.ndarray, bool], np.ndarray] = quadric_peak_finder_2d
+    """
+    The peak finder function to use. This should be a callable that takes in a 2D surface as a numpy array and returns 
+    the (x,y) location of the peak of the surface.
     """
 
-    # override the min correlation score
-    min_corr_score: float = 0.5
+    min_corr_score: float = 0.3
     """
     The minimum correlation score to accept for something to be considered found in an image. The correlation score 
     is the Pearson Product Moment Coefficient between the image and the template. This should be a number between -1 
@@ -237,10 +281,15 @@ class SurfaceFeatureNavigationOptions(XCorrCenterFindingOptions):
     correlation score check off. 
     """
 
-    # the search region must be an integer here, no None allowed
-    search_region: int = 10
+    blur: bool = True
     """
-    The number of pixels to search around the a priori predicted center for the peak of the correlation surface.  
+    A flag to perform a Gaussian blur on the correlation surface before locating the peak to remove high frequency noise
+    """
+
+    search_region: Optional[int] = None
+    """
+    The number of pixels to search around the a priori predicted center for the peak of the correlation surface.  If 
+    ``None`` then searches the entire correlation surface.
     """
 
     run_pnp_solver: bool = False
@@ -309,14 +358,14 @@ class SurfaceFeatureNavigationOptions(XCorrCenterFindingOptions):
 
     cf_results: Optional[np.ndarray] = None
     """ 
-    A numpy array containing the center finding residuals for the target that the feature catalogue is a part of.  If 
+    A numpy array containing the center finding residuals for the target that the feature catalog is a part of.  If 
     present this is used to correct errors in the a priori line of sight to the target before searching for features 
     in the image.
     """
 
     cf_index: Optional[List[int]] = None
     """
-    A list that maps the features catalogues contained in the ``scene`` (in order) to the appropriate column of the 
+    A list that maps the features catalogs contained in the ``scene`` (in order) to the appropriate column of the 
     ``cf_results`` matrix.  If left blank the mapping is assumed to be in like order
     """
 
@@ -325,9 +374,14 @@ class SurfaceFeatureNavigationOptions(XCorrCenterFindingOptions):
     A flag to show the rendered templates for each feature "live". This is useful for debugging but in general should 
     not be used.
     """
+    
+    def override_options(self):
+
+        if self.second_search_region is None:
+            self.second_search_region = self.search_region
 
 
-class SurfaceFeatureNavigation(XCorrCenterFinding):
+class SurfaceFeatureNavigation(UserOptionConfigured[SurfaceFeatureNavigationOptions], SurfaceFeatureNavigationOptions, RelNavEstimator):
     """
     This class implements surface feature navigation using normalized cross correlation template matching for GIANT.
 
@@ -335,7 +389,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
     identification of visible features in the image, the rendering of the templates for each feature, the actual cross
     correlation, the identification of the peaks of the correlation surfaces, and optionally the solution of a PnP
     problem based on the observed feature locations in the image.  This is all handled in the :meth:`estimate` method
-    and is performed for each requested target.  Note that targets must have shapes of :class:`.FeatureCatalogue` to use
+    and is performed for each requested target.  Note that targets must have shapes of :class:`.FeatureCatalog` to use
     this class.
 
     When all of the required data has been successfully loaded into an instance of this class, the :meth:`estimate`
@@ -353,7 +407,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                                       found.  Each element of this list corresponds to the feature according to the
                                       corresponding element in the ``'Visible Features'`` list. If no potential visible
                                       features were expected in the image then this is not available.
-    ``'Visible Features'``            The list of feature indices (into the :attr:`.FeatureCatalogue.features` list)
+    ``'Visible Features'``            The list of feature indices (into the :attr:`.FeatureCatalog.features` list)
                                       that were looked for in the image.  Each element of this list corresponds to the
                                       corresponding element in the :attr:`templates` list.  If no potential visible
                                       features were expected in the image then this is not available.
@@ -407,17 +461,17 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
         image time.  This class does not update the scene automatically.
     """
 
-    observable_type: List[RelNavObservablesType] = [RelNavObservablesType.LANDMARK]
+    observable_type = [RelNavObservablesType.LANDMARK]
     """
     This technique generates LANDMARK bearing observables to the center of landmarks in the image.
     """
-
-    generates_templates: bool = True
+    
+    generates_templates = True
     """
-    A flag specifying that this RelNav estimator generates and stores templates in the :attr:`templates` attribute
+    A flag specifying that this RelNav estimator generates and stores templates in the :attr:`templates` attribute.
     """
 
-    technique: str = "sfn"
+    technique = "sfn"
     """
     The name for the technique for registering with :class:`.RelativeOpNav`.  
     
@@ -428,384 +482,31 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
     ``True``).
     """
 
-    def __init__(self, scene: Scene, camera: Camera, image_processing: ImageProcessing,
-                 options: Optional[SurfaceFeatureNavigationOptions] = None, brdf: Optional[IlluminationModel] = None,
-                 rays: Union[Optional[Rays], List[Rays]] = None,
-                 grid_size: int = 1, peak_finder: Callable[[np.ndarray, bool], np.ndarray] = quadric_peak_finder_2d,
-                 min_corr_score: float = 0.5, blur: bool = True, search_region: int = 10,
-                 run_pnp_solver: bool = False, pnp_ransac_iterations: int = 0,
-                 second_search_region: Optional[int] = None,
-                 measurement_sigma: SCALAR_OR_ARRAY = 1, position_sigma: Optional[SCALAR_OR_ARRAY] = None,
-                 attitude_sigma: Optional[SCALAR_OR_ARRAY] = None, state_sigma: NONEARRAY = None,
-                 max_lsq_iterations: Optional[int] = None, lsq_relative_error_tolerance: float = 1e-8,
-                 lsq_relative_update_tolerance: float = 1e-8,
-                 cf_results: NONEARRAY = None, cf_index: Optional[List[int]] = None,
-                 show_templates: bool = False):
+    def __init__(self, scene: Scene, camera: Camera, options: Optional[SurfaceFeatureNavigationOptions] = None):
         """
         :param scene: The scene describing the a priori locations of the targets and the light source.
         :param camera: The :class:`.Camera` object containing the camera model and images to be analyzed
-        :param image_processing: An instance of :class:`.ImageProcessing`.  This is used for denoising the image and for
-                                 generating the correlation surface using :meth:`.denoise_image` and :meth:`correlate`
-                                 methods respectively
-        :param options: A dataclass specifying the options to set for this instance.  If provided it takes preference
-                        over all key word arguments, therefore it is not recommended to mix methods.
-        :param brdf: The illumination model that transforms the geometric ray tracing results (see
-                     :const:`.ILLUM_DTYPE`) into a intensity values. Typically this is one of the options from the
-                     :mod:`.illumination` module).
-        :param rays: The rays to use when rendering the template.  If ``None`` then the rays required to render the
-                     template will be automatically computed.  Optionally, a list of :class:`.Rays` objects where each
-                     element corresponds to the rays to use for the corresponding template in the
-                     :attr:`.Scene.target_objs` list.  Typically this should be left as ``None``.
-        :param grid_size: The subsampling to use per pixel when rendering the template.  This should be the number of
-                          sub-pixels per side of a pixel (that is if grid_size=3 then subsampling will be in an equally
-                          spaced 3x3 grid -> 9 sub-pixels per pixel).  If ``rays`` is not None then this is ignored
-        :param peak_finder: The peak finder function to use. This should be a callable that takes in a 2D surface as a
-                            numpy array and returns the (x,y) location of the peak of the surface.
-        :param min_corr_score: The minimum correlation score to accept for something to be considered found in an image.
-                               The correlation score is the Pearson Product Moment Coefficient between the image and the
-                               template. This should be a number between -1 and 1, and in nearly every cast a number
-                               between 0 and 1.  Setting this to -1 essentially turns the minimum correlation score
-                               check off.
-        :param blur: A flag to perform a Gaussian blur on the correlation surface before locating the peak to remove
-                     high frequency noise
-        :param search_region: The number of pixels to search around the a priori predicted center for the peak of the
-                              correlation surface.  If ``None`` then searches the entire correlation surface.
-        :param run_pnp_solver: A flag specifying whether to use the PnP solver to correct errors in the initial
-                               relative state between the camera and the target body
-        :param pnp_ransac_iterations: The number of RANSAC iterations to attempt in the PnP solver.  Set to 0 to turn
-                                      the RANSAC component of the PnP solver
-        :param second_search_region: The distance around the nominal location to search for each feature in the image
-                                     after correcting errors using the PnP solver.
-        :param measurement_sigma: The uncertainty to assume for each measurement in pixels. This is used to set the
-                                  relative weight between the observed landmarks are the a priori knowledge in the PnP
-                                  problem. See the :attr:`measurement_sigma` documentation for a description of valid
-                                  inputs.
-        :param position_sigma: The uncertainty to assume for the relative position vector in kilometers. This is used to
-                               set the relative weight between the observed landmarks and the a priori knowledge in the
-                               PnP problem. See the :attr:`position_sigma` documentation for a description of valid
-                               inputs.  If the ``state_sigma`` input is not ``None`` then this is ignored.
-        :param attitude_sigma: The uncertainty to assume for the relative orientation rotation vector in radians. This
-                               is used to set the relative weight between the observed landmarks and the a priori
-                               knowledge in the PnP problem. See the :attr:`attitude_sigma` documentation for a
-                               description of valid inputs.  If the ``state_sigma`` input is not ``None`` then this is
-                               ignored.
-        :param state_sigma: The uncertainty to assume for the relative position vector and orientation rotation vector
-                            in kilometers and radians respectively. This is used to set the relative weight between the
-                            observed landmarks and the a priori knowledge in the PnP problem. See the
-                            :attr:`state_sigma` documentation for a description of valid inputs.  If this input is not
-                            ``None`` then the ``attitude_sigma`` and ``position_sigma`` inputs are ignored.
-        :param max_lsq_iterations: The maximum number of iterations to make in the least squares solution to the PnP
-                                   problem.
-        :param lsq_relative_error_tolerance: The relative tolerance in the residuals to signal convergence in the least
-                                             squares solution to the PnP problem.
-        :param lsq_relative_update_tolerance: The relative tolerance in the update vector to signal convergence in the
-                                              least squares solution to the PnP problem
-        :param cf_results: A numpy array containing the center finding residuals for the target that the feature
-                           catalogue is a part of.  If present this is used to correct errors in the a priori line of
-                           sight to the target before searching for features in the image.
-        :param cf_index: A list that maps the features catalogues contained in the ``scene`` (in order) to the
-                         appropriate column of the ``cf_results`` matrix.  If left blank the mapping is assumed to be
-                         in like order
-        :param show_templates: A flag to show the rendered templates for each feature "live".  This is useful for
-                               debugging but in general should not be used.
+        :param options: A dataclass specifying the options to set for this instance.
         """
-
-        super().__init__(scene, camera, image_processing,
-                         brdf=brdf, rays=rays, grid_size=grid_size, peak_finder=peak_finder,
-                         min_corr_score=min_corr_score, blur=blur, search_region=search_region)
-
-        self.run_pnp_solver: bool = run_pnp_solver
-        """
-        This turns on/off the PnP solver that attempts to estimate the best position/pointing for each image based on
-        the observed landmark locations in the image.
         
-        The PnP solver is useful if you expect a large initial error in your camera position, particularly radially, 
-        since it can help to reduce biases that can occur based on distortion fields and scale errors.
-        """
-
-        self.pnp_ransac_iterations: int = pnp_ransac_iterations
-        """
-        The number of RANSAC iterations to go through in the PnP solver, if being used.
+        super().__init__(SurfaceFeatureNavigationOptions, scene, camera, options=options)
         
-        The RANSAC algorithm can help to reject outliers from the PnP solution, making it much more useful, therefore it 
-        is strongly encouraged to use it.  To disable the RANSAC algorithm set this to 0.
-        """
-
-        if second_search_region is None:
-            second_search_region = self.search_region
-
-        self.second_search_region: int = second_search_region
-        """
-        The second search region is used as the search region after completing a PnP iteration.
-        
-        This is useful to reject outliers from the set of landmarks found after the PnP iteration since they will not be
-        run through the PnP solver/RANSAC algorithms.
-        
-        Typically this should be no less than 3 pixels to ensure that we have enough rough to identify the peak of the 
-        correlation surface.
-        """
-
-        self.measurement_sigma: SCALAR_OR_ARRAY = measurement_sigma
-        """
-        The 1 sigma uncertainty for the measurement as either a scalar (same uncertainty for each axis, no correlation),
-        a 1D array of length 2 (different uncertainty for each axis x, y), or a 2D array of shape 2x2 (full measurement 
-        covariance matrix).
-        
-        This measurement sigma is applied to every measurement equally in the PnP solver and is used to weight the 
-        observations with respect to the a priori state.  The default is 1 pixel for each axis.
-        """
-
-        self.position_sigma: Optional[SCALAR_OR_ARRAY] = position_sigma
-        """
-        The 1 sigma uncertainty of the a priori relative position between the camera and the target in units of 
-        kilometers.
-        
-        This can be provided as a scalar, in which case the sigma is applied to each axis of the position vector, a 1D 
-        array of length 3 where the sigma is specified per axis (x,y,z), or as a 2D array of shape 3x3 where the full 
-        position covariance matrix is provided.
-        
-        This sigma is applied to the state update portion of the PnP solver to weight the a priori state vs the
-        the measurement observations.  
-        
-        If this is set to ``None`` then we will check if :attr:`state_sigma` is not ``None`` and use that instead.
-        If :attr:`state_sigma` is also ``None`` we will assume this to be 1 kilometer for each axis.  If both 
-        :attr:`state_sigma` and this attribute are not ``None``, :attr:`state_sigma` will take precedence.
-        """
-
-        self.attitude_sigma: Optional[SCALAR_OR_ARRAY] = attitude_sigma
-        """
-        The 1 sigma uncertainty of the a priori relative orientation between the camera and the target in units of 
-        radians.
-        
-        The relative orientation is expressed as a length 3 rotation vector (a unit vector specifying the rotation axis 
-        multiplied by the angle to rotate about that axis in radians).
-
-        This can be provided as a scalar, in which case the sigma is applied to each axis of the rotation vector, a 1D 
-        array of length 3 where the sigma is specified per axis (x,y,z), or as a 2D array of shape 3x3 where the full 
-        rotation covariance matrix is provided.
-
-        This sigma is applied to the state update portion of the PnP solver to weight the a priori state vs the
-        the measurement observations
-        
-        If this is set to ``None`` then we will check if :attr:`state_sigma` is not ``None`` and use that instead.
-        If :attr:`state_sigma` is also ``None`` we will assume this to be 0.02 degrees for each axis of the rotation 
-        vector.  If both :attr:`state_sigma` and this attribute are not ``None``, :attr:`state_sigma` will take 
-        precedence.
-        """
-
-        self.state_sigma: NONEARRAY = state_sigma
-        """
-        The 1 sigma uncertainty of the a priori relative state (position+orientation) between the camera and the target.
-        
-        The state vector is the concatenation of the relative position vector in kilometers, and a length 3 rotation 
-        vector (a unit vector specifying the rotation axis multiplied by the angle to rotate about that axis in 
-        radians).
-        
-        This can be provided as a 1D length 6 array, in which case the first 3 elements are applied to the relative 
-        position with units of kilometers and the last 3 elements are applied to the rotation vector with units of 
-        radians, or as a 2D 6x6 state covariance matrix.
-        
-        This sigma is applied to the state update portion of the PnP solver to weight the a priori state vs the
-        the measurement observations
-        
-        If this is set to ``None`` then we will use :attr:`position_sigma` and :attr:`attitude_sigma` instead.  If this
-        is not ``None`` then it will take precedence over anything set in :attr:`position_sigma` and 
-        :attr:`attitude_sigma`.
-        """
-
-        self.max_lsq_iterations: Optional[int] = max_lsq_iterations
-        """
-        The maximum number of iteration steps to take when trying to solve the PnP problem.
-        
-        If this is set to ``None`` then the maximum number of steps will be set to approximately ``100*(N+7)`` where 
-        ``N`` is the number of measurements (2 times the number of landmarks observed).  Typically things converge much
-        faster than this however.
-        
-        This is passed to the ``max_nfev`` argument in the ``least_squares`` solver from scipy.
-        """
-
-        self.lsq_relative_error_tolerance: float = lsq_relative_error_tolerance
-        """
-        The relative error tolerance condition at which the least squares solution is considered final.
-        
-        This essentially stops solving the linearized least squares problem once the change in the error (residuals) 
-        from one iteration to the next is less than this value times the actual measurement values.
-        
-        This is passed to the ``ftol`` argument in the ``least_squares`` solver from scipy.
-        """
-
-        self.lsq_relative_update_tolerance: float = lsq_relative_update_tolerance
-        """
-        The relative update tolerance condition at which the least squares solution is considered final.
-
-        This essentially stops solving the linearized least squares problem once the change in the solution vector
-        from one iteration to the next is less than this value times the current estimate of the solution vector.
-
-        This is passed to the ``xtol`` argument in the ``least_squares`` solver from scipy.
-        """
-
-        self.cf_results: NONEARRAY = cf_results
-        """
-        A numpy array specifying the location of the center of figure of the target body in each image.
-        
-        This is used to correct any large shift errors in the image plane before attempting to find features on the 
-        target.  This can be very useful as surface feature navigation typically works best when there are smaller a 
-        priori error.  The way it is used is that after updating the :attr:`scene` for the current image, the location 
-        of each target being estimated is shifted to lie along the line of sight vector specified by this input at the 
-        same distance as before.
-        
-        This should be a 2D numpy array of shape at least n_images x n_feature_catalogues where n_images are the number
-        of images in the :attr:`camera` and n_feature_catalogues are the number of feature catalogues in the 
-        :attr:`scene` with a dtype of :attr:`RESULTS_DTYPE`.  By default it is assumed that each column of this array
-        corresponds to each feature catalogue in the scene in order, however, you can change this using the 
-        :attr:`cf_index` attribute.
-        
-        If this is set to ``None`` then the a priori knowledge of the relative state between the camera and the target 
-        is not modified.
-        """
-
-        if cf_index is None:
-            cf_index = list(range(len(self.scene.target_objs)))
-
-        self.cf_index: List[int] = cf_index
-        """
-        The key to map each feature catalogue included in the scene (in order) to the corresponding column of the 
-        :attr:`cf_results` when correcting gross shifts in the a priori knowledge of the camera relative to the target.
-        
-        By default this assumes that each column of the :attr:`cf_results` array corresponds to the each feature 
-        catalogue in the :attr:`scene` in order.  This works well in many cases where you're considering only a single
-        target in the image (and thus have the global shape as the first target, and the feature catalogue as the second 
-        target) but if you have multiple bodies then you may need to modify this. 
-        For instance say you have 2 bodies in the images.  In you :attr:`scene` you have the global shape of the first 
-        body  as the first target, the feature catalogue for the first body as the second target, the global shape of 
-        the second body as the third target, and the feature catalogue for the second body as the fourth target. In 
-        this case you would want to make this attribute be [0, 2] to map the first feature catalogue to the first target
-        results and the second catalogue to the third target results.  We admit this is slightly confusing so best 
-        practice is to use separate scenes for global shapes and feature catalogues using the same order in each.
-        
-        If :attr:`cf_results` is ``None`` then this attribute is ignored.
-        """
-
-        self.show_templates: bool = show_templates
-        """
-        This flag specifies to show the templates/images as they are correlated.
-        
-        This can be useful for debugging (if you aren't finding any features in images for instance) but also is 
-        unsuitable for any type of batch processing, therefore you should rarely use this option.
-        """
+        if self.cf_index is None:
+            self.cf_index = list(range(len(scene.target_objs)))
+        else:
+            self.cf_index = self.cf_index
 
         self.visible_features: List[Optional[List[int]]] = [None]*len(self.scene.target_objs)
         """
         This variable is used to notify which features are predicted to be visible in the image.
         
-        Each visible feature is identified by its index in the :attr:`.FeatureCatalogue.features` list.
+        Each visible feature is identified by its index in the :attr:`.FeatureCatalog.features` list.
         """
-
-        self.details: List[Dict[str, Any]] = self.details
-        """
-        ================================= ==================================================================================
-        Key                               Description
-        ================================= ==================================================================================
-        ``'Correlation Scores'``          The correlation score at the peak of the correlation surface for each feature as a
-                                          list of floats. The corresponding element will be 0 for any features that were not
-                                          found.  Each element of this list corresponds to the feature according to the
-                                          corresponding element in the ``'Visible Features'`` list. If no potential visible
-                                          features were expected in the image then this is not available.
-        ``'Visible Features'``            The list of feature indices (into the :attr:`.FeatureCatalogue.features` list)
-                                          that were looked for in the image.  Each element of this list corresponds to the
-                                          corresponding element in the :attr:`templates` list.  If no potential visible
-                                          features were expected in the image then this is not available.
-        ``'Correlation Peak Locations'``  The Location of the correlation peaks before correcting it to find the location of
-                                          the location of the feature in the image as a list of size 2 numpy arrays. Each
-                                          element of this list corresponds to the feature according to the corresponding
-                                          element in the ``'Visible Features'`` list.  Any features that were not found in
-                                          the image have ``np.nan`` for their values.  If no potential visible features were
-                                          expected in the image then this is not available.
-        ``'Correlation Surfaces'``        The raw correlation surfaces as 2D arrays of shape
-                                          ``2*search_region+1 x 2*search_region+1``.  Each pixel in the correlation surface
-                                          represents a shift between the predicted and expected location, according to
-                                          :func:`.sfn_correlator`.  Each element of this list corresponds to the feature
-                                          according to the corresponding element in the ``'Visible Features'`` list.  If no
-                                          potential visible features were expected in the image then this is not available.
-        ``'Target Template Coordinates'`` The location of the center of each feature in its corresponding template. Each
-                                          element of this list corresponds to the feature according to the corresponding
-                                          element in the ``'Visible Features'`` list.  If no potential visible features
-                                          were expected in the image then this is not available.
-        ``'Intersect Masks'``             The boolean arrays the shape shapes of each rendered template with ``True`` where
-                                          a ray through that pixel struct the surface of the template and ``False``
-                                          otherwise. Each element of this list corresponds to the feature according to the
-                                          corresponding element in the ``'Visible Features'`` list.  If no potential
-                                          visible features were expected in the image then this is not available.
-        ``'Space Mask'``                  The boolean array the same shape as the image specifying which pixels of the image
-                                          we thought were empty space with a ``True`` and which we though were on the body
-                                          with a ``False``.  If no potential visible features were expected in the image
-                                          then this is not available
-        ``'PnP Solution'``                A boolean indicating whether the PnP solution was successful (``True``) or not.
-                                          This is only available if a PnP solution was attempted.
-        ``'PnP Translation'``             The solved for translation in the original camera frame that minimizes the
-                                          residuals in the PnP solution as a length 3 array with units of kilometers.  This
-                                          is only available if a PnP solution was attempted and the PnP solution was
-                                          successful.
-        ``'PnP Rotation'``                The solved for rotation of the original camera frame that minimizes the
-                                          residuals in the PnP solution as a :class:`.Rotation`.  This
-                                          is only available if a PnP solution was attempted and the PnP solution was
-                                          successful.
-        ``'PnP Position'``                The solved for relative position of the target in the camera frame after the PnP
-                                          solution is applied as a length 3 numpy array in km.
-        ``'PnP Orientation'``             The solved for relative orientation of the target frame with respect to the camera
-                                          frame after the PnP solution is applied as a :class:`.Rotation`.
-        ``'Failed'``                      A message indicating why the SFN failed.  This will only be present if the SFN fit
-                                          failed (so you could do something like ``'Failed' in sfn.details[target_ind]`` to
-                                          check if something failed.  The message should be a human readable description of
-                                          what caused the failure.
-        ================================= ==================================================================================
-        """
-
-        if options is not None:
-            self.apply_options(options)
-
-    def apply_options(self, options: SurfaceFeatureNavigationOptions):
-        """
-        This method applies the input options to the current instance.
-
-        The input options should be an instance of :class:`.SurfaceFeatureNavigationOptions`.
-
-        When calling this method every setting will be updated, even ones you did not specifically set in the provided
-        ``options`` input.  Any you did not specifically modify will be reset to the default value.  Typically the best
-        way to change a single setting is through direct attribute access on this class, or by maintaining a copy of the
-        original options structure used to initialize this class and then updating it before calling this method.
-
-        :param options: The options to apply to the current instance
-        """
-
-        super().apply_options(options)
-
-        self.run_pnp_solver = options.run_pnp_solver
-        self.pnp_ransac_iterations = options.pnp_ransac_iterations
-
-        if options.second_search_region is None:
-            self.second_search_region = self.search_region
-        else:
-            self.second_search_region = options.second_search_region
-
-        self.measurement_sigma = options.measurement_sigma
-        self.position_sigma = options.position_sigma
-        self.attitude_sigma = options.attitude_sigma
-        self.state_sigma = options.state_sigma
-        self.max_lsq_iterations = options.max_lsq_iterations
-        self.lsq_relative_update_tolerance = options.lsq_relative_update_tolerance
-        self.lsq_relative_error_tolerance = options.lsq_relative_error_tolerance
-        self.cf_results = options.cf_results
-        if options.cf_index is None:
-            self.cf_index = list(range(len(self.scene.target_objs)))
-        else:
-            self.cf_index = options.cf_index
-        self.show_templates = options.show_templates
 
 
     def render(self, target_ind: int,
                target: SceneObject,
-               temperature: Real = 0) -> Tuple[List[np.ndarray], np.ndarray]:
+               temperature: float = 0) -> Tuple[List[np.ndarray], np.ndarray]:
         """
         This method renders each visible feature for the current target according to the current estimate of the
         relative position/orientation between the target and the camera using single bounce ray tracing.
@@ -836,27 +537,27 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                  template as a 2xn array.
         """
 
-        if self.visible_features[target_ind] is None:
+        if (visible_features := self.visible_features[target_ind]) is None:
             raise ValueError('Cannot call render without having identified which features are visible')
 
-        if not isinstance(target.shape, FeatureCatalogue):
-            raise ValueError('Cannot use SFN with non feature catalogues')
+        if not isinstance(target.shape, FeatureCatalog):
+            raise ValueError('Cannot use SFN with non feature catalogs')
 
         # initialize the templates list to store the templates
-        self.templates[target_ind] = [None] * len(self.visible_features[target_ind])
+        self.templates[target_ind] = cast(list[DOUBLE_ARRAY | None], [None] * len(visible_features))
         # initialize the intersects list and the template centers list
-        intersects_list: List[Optional[np.ndarray]] = [None] * len(self.visible_features[target_ind])
+        intersects_list: List[np.ndarray] = []
 
         # initialize the array for the location of the feature center in each template as well as the computed bearings
         # for each template
-        template_centers = np.empty((2, len(self.visible_features[target_ind])), dtype=np.float64)
-        self.computed_bearings[target_ind] = np.empty((2, len(self.visible_features[target_ind])), dtype=np.float64)
+        template_centers = np.empty((2, len(visible_features)), dtype=np.float64)
+        self.computed_bearings[target_ind] = np.empty((2, len(visible_features)), dtype=np.float64)
 
         # loop through each possibly visible feature in the image
-        for feature_number, feature_ind in enumerate(self.visible_features[target_ind]):
+        for feature_number, feature_ind in enumerate(visible_features):
 
             start = time.time()
-
+            
             # figure out what rays to trace.  Hopefully we are doing this ourselves because things might go wonky
             # otherwise
             if self.rays is None:
@@ -864,17 +565,17 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
             elif isinstance(self.rays, Rays):
                 rays = self.rays
                 locs = self.camera.model.project_onto_image(rays.start + rays.direction, temperature=temperature)
-                bounds = (locs.min(axis=1, initial=None).round(), locs.max(axis=1, initial=None).round())
+                bounds = (locs.min(axis=1, initial=None).round(), locs.max(axis=1, initial=None).round()) # type: ignore
             elif self.rays[target_ind] is None:
                 (rays, locs), bounds = self.compute_rays(target.shape, feature_ind, temperature=temperature)
             elif isinstance(self.rays[target_ind], list):
-                rays = self.rays[target_ind][feature_ind]
+                rays = self.rays[target_ind][feature_ind] # type: ignore
                 locs = self.camera.model.project_onto_image(rays.start + rays.direction, temperature=temperature)
-                bounds = (locs.min(axis=1, initial=None).round(), locs.max(axis=1, initial=None).round())
+                bounds = (locs.min(axis=1, initial=None).round(), locs.max(axis=1, initial=None).round()) # type: ignore
             else:
-                rays = self.rays[target_ind]
+                rays: Rays = self.rays[target_ind]  # type: ignore
                 locs = self.camera.model.project_onto_image(rays.start + rays.direction, temperature=temperature)
-                bounds = (locs.min(axis=1, initial=None).round(), locs.max(axis=1, initial=None).round())
+                bounds = (locs.min(axis=1, initial=None).round(), locs.max(axis=1, initial=None).round()) # type: ignore
 
             print('Tracing {} rays'.format(rays.num_rays), flush=True)
 
@@ -891,7 +592,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
             # make the arrays for the template and the intersect mask
             intersects_out = np.ones(template_size[::-1].astype(int), dtype=bool)
 
-            self.templates[target_ind][feature_number] = np.zeros(template_size[::-1].astype(int))
+            template = np.zeros(template_size[::-1].astype(int))
 
             # figure out the subscripts into the template/intersect mask arrays
             subs = (locs - bounds[0].reshape(2, 1)).round().astype(int)
@@ -905,20 +606,22 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
             # hit the surface.  Something to consider for the future.
             np.logical_and.at(intersects_out, (subs[1], subs[0]), intersects['check'])
 
-            np.add.at(self.templates[target_ind][feature_number], (subs[1], subs[0]), illums.flatten())
+            np.add.at(template, (subs[1], subs[0]), illums.flatten())
 
-            self.templates[target_ind][feature_number] = self.camera.psf(self.templates[target_ind][feature_number])
+            if self.camera.psf is not None:
+                template = self.camera.psf(template)
 
             # compute the bearing to the center of the feature in the image/template.
-            self.computed_bearings[target_ind][:, feature_number] = self.camera.model.project_onto_image(
-                target.shape.feature_locations[feature_ind], temperature=temperature
-            )
-            template_centers[:, feature_number] = (self.computed_bearings[target_ind][:, feature_number] - bounds[0])
+            computed = self.camera.model.project_onto_image(target.shape.feature_locations[feature_ind], temperature=temperature) 
 
-            intersects_list[feature_number] = intersects_out
+            self.computed_bearings[target_ind][:, feature_number] = computed # type: ignore 
+            template_centers[:, feature_number] = (computed - bounds[0]) # type: ignore
 
+            intersects_list.append(intersects_out)
+
+            self.templates[target_ind][feature_number] = template # type: ignore
             print(f'Feature {target.shape.features[feature_ind].name} number {feature_number + 1} of '
-                  f'{len(self.visible_features[target_ind])} rendered in {time.time()-start:.3f} seconds', flush=True)
+                  f'{len(visible_features)} rendered in {time.time()-start:.3f} seconds', flush=True)
 
         # call the garbage collector to get rid of features that have been unloaded, because sometimes python doesn't do
         # this when we want it to
@@ -927,9 +630,9 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
         return intersects_list, template_centers
 
     # noinspection PyMethodOverriding
-    def compute_rays(self, feature_catalogue: FeatureCatalogue,
+    def compute_rays(self, feature_catalog: FeatureCatalog,
                      feature_ind: int,
-                     temperature: Real = 0) -> Tuple[Tuple[Rays, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
+                     temperature: float = 0) -> Tuple[Tuple[Rays, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
         """
         This method computes the required rays to render a given feature based on the current estimate of the location
         and orientation of the feature in the image.
@@ -939,19 +642,19 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
         requested subsampling for each pixel is then applied, and the sub-pixels are then converted into rays
         originating at the camera origin using the :class:`.CameraModel`.
 
-        :param feature_catalogue: The feature catalogue which contains the feature we are rendering
-        :param feature_ind: The index of the feature in the feature catalogue that we are rendering
+        :param feature_catalog: The feature catalog which contains the feature we are rendering
+        :param feature_ind: The index of the feature in the feature catalog that we are rendering
         :param temperature: The temperature of the camera at the time the feature is being rendered
         :return: The rays to trace through the scene and the pixel coordinates for each ray as a tuple, plus
                  the bounds of the pixel coordinates
         """
 
         # the feature bounds are already in the camera frame at this point (at least they should be...)
-        bounds = feature_catalogue.feature_bounds[feature_ind]
+        bounds = feature_catalog.feature_bounds[feature_ind]
         image_locs = self.camera.model.project_onto_image(bounds, temperature=temperature)
 
-        local_min: np.ndarray = np.floor(image_locs.min(axis=1, initial=None))
-        local_max: np.ndarray = np.ceil(image_locs.max(axis=1, initial=None))
+        local_min: np.ndarray = np.floor(image_locs.min(axis=1, initial=None))  # type: ignore
+        local_max: np.ndarray = np.ceil(image_locs.max(axis=1, initial=None))  # type: ignore
 
         rays_pix = compute_rays(self.camera.model, (local_min[1], local_max[1]), (local_min[0], local_max[0]),
                                 grid_size=self.grid_size, temperature=temperature)
@@ -977,10 +680,10 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
         features.  Therefore if you aren't seeding your SFN with center finding results you don't need to worry about
         this.
 
-        Once the initial preparation is complete, for each requested target that is a :class:`.FeatureCatalogue` we seek
+        Once the initial preparation is complete, for each requested target that is a :class:`.FeatureCatalog` we seek
         feature locations that are visible in the image. This is done by first predicting which features from the
-        catalogue should be visible in the image using the a priori relative state knowledge between the camera and the
-        feature catalogue and the :attr:`.FeatureCatalogue.feature_finder` function which is usually an instance of
+        catalog should be visible in the image using the a priori relative state knowledge between the camera and the
+        feature catalog and the :attr:`.FeatureCatalog.feature_finder` function which is usually an instance of
         :class:`.VisibleFeatureFinder`.  Once potentially visible features have been determined, we render a predicted
         template of each feature using a single bounce ray tracer.  We then do spatial cross correlation between the
         template and the image within a specified search region (if the search region is too large we attempt global
@@ -1002,21 +705,6 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
         :param include_targets: A list specifying whether to process the corresponding target in
                                 :attr:`.Scene.target_objs` or ``None``.  If ``None`` then all targets are processed.
         """
-
-        # first check if the sfn correlator is being used.  If it isn't then use it anyway and prepare to put things
-        # back when we're done
-        if self.image_processing.correlator != sfn_correlator:
-            print('The image processing correlation function `ip.correlator` must be '
-                  '`giant.relative_opnav.sfn.sfn_correlator`.  Fixing', flush=True)
-            fix_oc = True
-            oc = self.image_processing.correlator
-            oc_kwargs = self.image_processing.correlator_kwargs
-            self.image_processing.correlator = sfn_correlator
-
-        else:
-            fix_oc = False
-            oc = None
-            oc_kwargs = None
 
         # If using PnP solver, iterate the rendering and registration twice:
         outer_iterations = 1
@@ -1076,9 +764,11 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                     search_dist_use = self.search_region
                 else:
                     search_dist_use = self.second_search_region
+                    
+                assert search_dist_use is not None
 
-                if not isinstance(target.shape, FeatureCatalogue):
-                    print(f"All targets in SFN must be feature catalogues. Skipping target {target_ind}", flush=True)
+                if not isinstance(target.shape, FeatureCatalog):
+                    print(f"All targets in SFN must be feature catalogs. Skipping target {target_ind}", flush=True)
                     processed = False
                     break
 
@@ -1099,11 +789,13 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                         target.change_position(new_center)
 
                 # use the feature finder to find the visible features in the image
-                self.visible_features[target_ind] = target.shape.feature_finder(self.camera.model,
-                                                                                self.scene,
-                                                                                image.temperature)
+                visible_features = target.shape.feature_finder(self.camera.model,
+                                                               self.scene,
+                                                               image.temperature)
+                
+                self.visible_features[target_ind] = visible_features
 
-                if len(self.visible_features[target_ind]) == 0:
+                if len(visible_features) == 0:
                     print(f'no visible features for target {target_ind} '
                           f'in image {image.observation_date}. Skipping', flush=True)
                     self.details[target_ind] = {"Failed": "No visible features in image"}
@@ -1120,26 +812,25 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                 correlation_scores = []
 
                 # initialize the observed bearings array
-                self.observed_bearings[target_ind] = np.empty((2, len(self.visible_features[target_ind])),
-                                                              dtype=np.float64)
-                self.observed_bearings[target_ind][:] = np.nan
+                self.observed_bearings[target_ind] = np.empty((2, len(visible_features)),
+                                                              dtype=np.float64) + np.nan
 
-                # image_use is created to preserve the meta data in image
-                if self.image_processing.denoise_flag:
-                    image_use = self.image_processing.denoise_image(image_32)
-                else:
-                    image_use = image_32
+                image_use = image_32
 
                 print('Registering Templates with Image...', flush=True)
                 # feature number is the number of the feature in the image
-                # self.visible_features[target_ind][feature_number] is the index of the feature in the feature catalogue
-                for feature_number, template in enumerate(self.templates[target_ind]):
+                # self.visible_features[target_ind][feature_number] is the index of the feature in the feature catalog
+                templates = self.templates[target_ind]
+                assert templates is not None
+                for feature_number, template in enumerate(templates):  # type: ignore
+                    
+                    assert isinstance(template, np.ndarray)
 
                     if self.show_templates:
                         fig = plt.figure()
                         ax = fig.add_subplot(111)
                         ax.imshow(template, cmap='gray')
-                        ax.set_title(target.shape.features[self.visible_features[target_ind][feature_number]].name)
+                        ax.set_title(target.shape.features[visible_features[feature_number]].name)
 
                     # this shift corrects from the center of the template to the center of the feature in the template.
                     # the peak of the correlation surface gives the center of the template in the image, but we want the
@@ -1147,14 +838,17 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                     temp_middle = np.floor(np.flipud(np.asarray(template.shape, dtype=np.float64)) / 2)
 
                     delta = temp_middle - template_centers[:, feature_number]
+                    
+                    computed = self.computed_bearings[target_ind][:, feature_number] # type: ignore
+                    assert isinstance(computed, np.ndarray)
 
                     # if the search distance is greater than 50, attempt to use the normal correlator first since
                     # it will be faster and then shrink to a smaller search distance
                     if search_dist_use > 50:
                         # get the correlation surface between the template and the full image
-                        temp_surf = cv2_correlator_2d(image_use, template)
+                        temp_surf = cv2_correlator_2d(image_use, template) # type: ignore
 
-                        search_start = np.round(self.computed_bearings[target_ind][:, feature_number] + delta)
+                        search_start = np.round(computed + delta) 
                         bounds = [np.maximum(search_start - search_dist_use, 0).astype(int),
                                   np.minimum(search_start + search_dist_use, image.shape[::-1]).astype(int)]
 
@@ -1165,30 +859,28 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
 
                             search_center = temp_peak + bounds[0]
                             actual_search_distance = 20
-                            adjustment = search_center - delta - self.computed_bearings[target_ind][:, feature_number]
+                            adjustment = search_center - delta - computed
 
                         else:
 
                             # if that failed then fall back to the sfn correlator
-                            search_center = self.computed_bearings[target_ind][:, feature_number] + delta
+                            search_center = computed + delta 
                             actual_search_distance = search_dist_use
                             adjustment = np.zeros((2,), dtype=np.float64)
 
                     else:
                         # if less than 50 then just proceed
-                        search_center = self.computed_bearings[target_ind][:, feature_number] + delta
+                        search_center = computed + delta 
                         actual_search_distance = search_dist_use
                         adjustment = np.zeros((2,), dtype=np.float64)
 
                     # set the kwargs for the correlator
-                    # TODO: consider adding an option to turn off the intersects/space masks
-                    self.image_processing.correlator_kwargs = {"intersects": intersects[feature_number],
-                                                               "space_mask": space_mask,
-                                                               "search_dist": actual_search_distance,
-                                                               "center_predicted": search_center}
-
                     # make the correlation surface and find the peak of it
-                    correlation_surfaces.append(self.image_processing.correlate(image_use, template))
+                    correlation_surfaces.append(sfn_correlator(image_use, template, 
+                                                               space_mask=space_mask, 
+                                                               intersects=intersects[feature_number], 
+                                                               search_dist=actual_search_distance, 
+                                                               center_predicted=search_center))
 
                     correlation_peaks.append(self.peak_finder(correlation_surfaces[feature_number], self.blur).ravel())
 
@@ -1209,17 +901,16 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
 
                     adjustment += correlation_peaks[feature_number] - actual_search_distance
 
-                    self.observed_bearings[target_ind][:, feature_number] = \
-                        self.computed_bearings[target_ind][:, feature_number] + adjustment
+                    observed = computed + adjustment
+                    self.observed_bearings[target_ind][:, feature_number] =  observed  # type: ignore
 
                     # Print shift and correlation score:
-                    feature_name = target.shape.features[self.visible_features[target_ind][feature_number]].name
-                    if not np.isfinite(self.observed_bearings[target_ind][:, feature_number]).all():
+                    feature_name = target.shape.features[visible_features[feature_number]].name
+                    if not np.isfinite(self.observed_bearings[target_ind][:, feature_number]).all(): # type: ignore
                         print(f"{feature_name} :  Landmark location could be not be identified.")
                         print(f"\tPeak correlation score is {correlation_scores[feature_number]}.", flush=True)
                     else:
-                        shift_to_print = np.round(self.observed_bearings[target_ind][:, feature_number] -
-                                                  self.computed_bearings[target_ind][:, feature_number], 3)
+                        shift_to_print = np.round(observed - computed, 3) # type: ignore
 
                         print(f"{feature_name} : {shift_to_print[0]:>9.3f}, {shift_to_print[1]:>9.3f} | "
                               f"{int(np.round(correlation_scores[feature_number]*10)):d}/10",
@@ -1228,9 +919,11 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                     if self.show_templates:
                         plt.show()
 
-                if self.observed_bearings[target_ind] is not None:
+                all_observed = self.observed_bearings[target_ind]
+                all_computed = self.computed_bearings[target_ind]
+                if all_observed  is not None and all_computed is not None:
                     # compute statistics on the results and print them
-                    diffs = self.observed_bearings[target_ind] - self.computed_bearings[target_ind]
+                    diffs = all_observed - all_computed
                     valid = np.isfinite(diffs).all(axis=0)
                     diffed_mean = diffs[:, valid].mean(axis=-1)
                     diffed_std = diffs[:, valid].std(axis=-1)
@@ -1241,7 +934,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                 # PnP Solver:
                 if self.run_pnp_solver and (iteration == 0):
                     # check for which landmarks are valid
-                    valid = np.isfinite(self.observed_bearings[target_ind]).all(axis=0)
+                    valid = np.isfinite(all_observed).all(axis=0)
 
                     # check that we have enough points to solve the PnP problem effectively
                     if valid.sum() >= 2:
@@ -1251,7 +944,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
 
                         # if we got a valid shift report it and continue to the next iteration, otherwise break and just
                         # stick with what we've got
-                        if delta_pos is not None:
+                        if delta_pos is not None and delta_quat is not None:
 
                             print(f'Shifting target position by: {delta_pos} km')
                             print(f'Rotating target orientation by: {np.rad2deg(delta_quat.vector)} degrees',
@@ -1296,13 +989,13 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                         break
 
             if isinstance(self.details[target_ind], dict):
-                self.details[target_ind].update({"Correlation Scores": correlation_scores,
+                self.details[target_ind].update({"Correlation Scores": correlation_scores, # type: ignore
                                                  "Visible Features": self.visible_features[target_ind],
                                                  "Correlation Peak Locations": correlation_peaks,
                                                  "Correlation Surfaces": correlation_surfaces,
                                                  "Target Template Coordinates": template_centers,
                                                  "Intersect Masks": intersects,
-                                                 "Space Mask": space_mask})
+                                                 "Space Mask": space_mask}) 
             else:
                 self.details[target_ind] = {"Correlation Scores": correlation_scores,
                                             "Visible Features": self.visible_features[target_ind],
@@ -1316,11 +1009,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                 target_number += 1
                 print(f'Target {target_number} complete in {time.time()-start:.3f} seconds', flush=True)
 
-        if fix_oc:
-            self.image_processing.correlator = oc
-            self.image_processing.correlator_kwargs = oc_kwargs
-
-    def pnp_solver(self, target_ind: int, image: OpNavImage, image_ind: int) -> Tuple[np.ndarray, Rotation]:
+    def pnp_solver(self, target_ind: int, image: OpNavImage, image_ind: int) -> Tuple[np.ndarray, Rotation] | tuple[None, None]:
         r"""
         This method attempts to solve for an update to the relative position/orientation of the target with respect to
         the image based on the observed feature locations in the image.
@@ -1370,9 +1059,12 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                  current camera frame to the new camera frame if successful or ``None``, ``None``
         """
         # first identify outliers
-        valid = np.isfinite(self.observed_bearings[target_ind]).all(axis=0)
+        observed = self.observed_bearings[target_ind]
+        computed = self.computed_bearings[target_ind]
+        assert isinstance(observed, np.ndarray) and isinstance(computed, np.ndarray)
+        valid: np.ndarray = np.isfinite(observed).all(axis=0) # type: ignore
 
-        a_priori_residuals = self.observed_bearings[target_ind][:, valid] - self.computed_bearings[target_ind][:, valid]
+        a_priori_residuals = observed[:, valid] - computed[:, valid]
 
         a_priori_errors = np.linalg.norm(a_priori_residuals, axis=0)
 
@@ -1382,11 +1074,15 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
         valid[valid] = ~outliers
 
         # get the valid image points
-        image_points = self.observed_bearings[target_ind][:, valid]
+        image_points = observed[:, valid]
 
         # get the location of the features in the current camera frame
-        valid_lmk_inds = [v for ind, v in enumerate(self.visible_features[target_ind]) if valid[ind]]
-        world_points = self.scene.target_objs[target_ind].shape.feature_locations[valid_lmk_inds].T
+        visible_features = self.visible_features[target_ind]
+        assert visible_features is not None
+        fc = self.scene.target_objs[target_ind].shape
+        assert isinstance(fc, FeatureCatalog)
+        valid_lmk_inds = [v for ind, v in enumerate(visible_features) if valid[ind]]
+        world_points = fc.feature_locations[valid_lmk_inds].T
 
         if self.pnp_ransac_iterations:
 
@@ -1409,7 +1105,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                                                 image, image_ind)
 
                     # if we failed move on
-                    if shift is None:
+                    if shift is None or rotation is None:
                         continue
 
                     # reproject the points and find inliers
@@ -1444,6 +1140,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
 
                 # at this point print out the best RANSAC solution
                 if best_inliers.any():
+                    assert best_rotation is not None and best_translation is not None
                     print('best inliers = {} of {}'.format(best_inliers.sum(), world_points.shape[1]))
                     print('resid std, mean = {}, {}'.format(best_standard_deviation, best_mean))
                     print('best rotation = {}, {}, {}'.format(*np.rad2deg(best_rotation.vector)))
@@ -1453,10 +1150,10 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                     new_trans, new_rot = self._lls(world_points[:, best_inliers], image_points[:, best_inliers],
                                                    image, image_ind)
 
-                    if new_trans is not None:
+                    if new_trans is not None and new_rot is not None:
                         diff = np.linalg.norm(
                             self.camera.model.project_onto_image(new_rot.matrix @ (world_points + new_trans.reshape(3, 1)),
-                                                                 temperature=image.temperature, image=image_ind) -
+                                                                temperature=image.temperature, image=image_ind) -
                             image_points, axis=0
                         )
 
@@ -1467,7 +1164,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                         print('inlier rotation = {}, {}, {}'.format(*np.rad2deg(new_rot.vector)))
                         print('inlier translation = {}, {}, {}'.format(*new_trans))
                         print('inlier inliers, std, mean = {}, {}, {}'.format(inliers.sum(), standard_deviation, mean),
-                              flush=True)
+                            flush=True)
 
                         # keep either the original best or the fit of the inliers, depending on which is better
                         if (inliers.sum() >= best_inliers.sum() - 2) and (standard_deviation < best_standard_deviation):
@@ -1479,8 +1176,8 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
                             best_rotation = new_rot
                             best_translation = new_trans
                         elif ((inliers.sum() >= best_inliers.sum()) and
-                              (mean < best_mean) and
-                              (standard_deviation < best_standard_deviation*1.3)):
+                            (mean < best_mean) and
+                            (standard_deviation < best_standard_deviation*1.3)):
                             print('keeping new stuff', flush=True)
                             best_rotation = new_rot
                             best_translation = new_trans
@@ -1498,10 +1195,10 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
             best_translation = shift
 
         # return the best
-        return best_translation, best_rotation
+        return best_translation, best_rotation  # type: ignore
 
     def _lls(self, world_points: np.ndarray, image_points: np.ndarray,
-             image: OpNavImage, image_ind: int) -> Tuple[np.ndarray, Rotation]:
+             image: OpNavImage, image_ind: int) -> Tuple[np.ndarray, Rotation] | tuple[None, None]:
         """
         Solves the PnP problem using Levenberg-Marquardt linearized least squares by a call to the
         :func:`least_squares` function from scipy.
@@ -1527,15 +1224,15 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
             if self.position_sigma is None:
                 position_sigma = np.ones(3, dtype=np.float64)
             elif np.isscalar(self.position_sigma):
-                position_sigma = np.zeros(3, dtype=np.float64)+self.position_sigma
+                position_sigma = np.zeros(3, dtype=np.float64) + cast(float, self.position_sigma) 
             else:
-                position_sigma = self.position_sigma
+                position_sigma: np.ndarray = cast(np.ndarray, self.position_sigma)
             if self.attitude_sigma is None:
                 attitude_sigma = np.ones(3, dtype=np.float64)*np.deg2rad(0.02)
             elif np.isscalar(self.attitude_sigma):
-                attitude_sigma = np.zeros(3, dtype=np.float64) + self.attitude_sigma
+                attitude_sigma = np.zeros(3, dtype=np.float64) + cast(float, self.attitude_sigma) 
             else:
-                attitude_sigma = self.attitude_sigma
+                attitude_sigma = cast(np.ndarray, self.attitude_sigma)
 
             if (position_sigma.ndim == 1) and (attitude_sigma.ndim == 1):
                 state_sigma = np.concatenate([position_sigma, attitude_sigma])
@@ -1556,7 +1253,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
         if self.measurement_sigma is None:
             measurement_sigma = np.ones(image_points.size)
         elif np.isscalar(self.measurement_sigma):
-            measurement_sigma = np.ones(image_points.size)*self.measurement_sigma
+            measurement_sigma = np.ones(image_points.size)*cast(float, self.measurement_sigma)
         elif np.ndim(self.measurement_sigma) == 1:
             measurement_sigma = (np.ones((1, image_points.shape[1]), dtype=np.float64) *
                                  np.reshape(self.measurement_sigma, (2, 1))).T.ravel()
@@ -1627,12 +1324,12 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
             # build the jacobian matrix that predicts how a change in the orientation changes the projected location of
             # the points
             # this is a 2n x 3 matrix
-            jac_ip_wrt_or = np.vstack(jac_ip_wrt_cp @ rot.skew(shifted_world_points))
+            jac_ip_wrt_or = np.vstack(jac_ip_wrt_cp @ rot.skew(shifted_world_points)) # type: ignore
 
             # build the jacobian matrix that predicts how a change in the shift changes the projected location of
             # the points
             # this is a 2n x 3 matrix
-            jac_ip_wrt_shift = np.vstack(jac_ip_wrt_cp@rotation_matrix)
+            jac_ip_wrt_shift = np.vstack(jac_ip_wrt_cp@rotation_matrix) # type: ignore
 
             # build the full jacobian matrix (the identity matrix at the bottom is because we are doing an update)
             out = np.vstack([np.hstack([jac_ip_wrt_shift, jac_ip_wrt_or]), np.eye(6)])
@@ -1646,7 +1343,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
         # now solve the least squares problem
         fit = least_squares(pnp_residual_function,  # function
                             np.zeros(6, dtype=np.float64),  # initial guess
-                            jac=pnp_jacobian_function,  # Jacobian matrix
+                            jac=pnp_jacobian_function,  # type: ignore
                             method='lm',  # use Levenberg-Marquardt
                             ftol=self.lsq_relative_error_tolerance,  # the tolerance in the change in residuals
                             xtol=self.lsq_relative_update_tolerance,  # tolerance in the update
@@ -1660,7 +1357,7 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
             
             fit2 = least_squares(pnp_residual_function,  # function
                                  guess,  # initial guess
-                                 jac=pnp_jacobian_function,  # Jacobian matrix
+                                 jac=pnp_jacobian_function,  # type: ignore
                                  method='lm',  # use Levenberg-Marquardt
                                  ftol=self.lsq_relative_error_tolerance,  # the tolerance in the change in residuals
                                  xtol=self.lsq_relative_update_tolerance,  # tolerance in the update
@@ -1678,4 +1375,4 @@ class SurfaceFeatureNavigation(XCorrCenterFinding):
             shift = None
             rotation = None
 
-        return shift, rotation
+        return shift, rotation # type: ignore

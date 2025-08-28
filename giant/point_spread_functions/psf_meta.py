@@ -68,18 +68,14 @@ For examples of how this is done, refer to the pre-defined PSFs in :mod:`.gaussi
 
 from abc import ABCMeta, abstractmethod
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Self
 
 import numpy as np
-
-try:
-    from scipy.fftpack import next_fast_len
-except ImportError:
-    from scipy.fftpack.helper import next_fast_len
+from scipy.fftpack import next_fast_len
 
 import cv2
 
-from .._typing import ARRAY_LIKE, Real, NONEARRAY
+from giant._typing import ARRAY_LIKE, NONEARRAY
 
 
 def _fft_convolve_1d(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -127,7 +123,7 @@ class PointSpreadFunction(metaclass=ABCMeta):
     .. note:: Because this is an ABC, you cannot create an instance of this class (it will raise a ``TypeError``)
     """
 
-    save_residuals = False  # type: bool
+    save_residuals: bool = False 
     """
     This class attribute specifies whether to save the residuals when fitting the specified PSF to data.
 
@@ -148,7 +144,7 @@ class PointSpreadFunction(metaclass=ABCMeta):
 
     @abstractmethod
     def apply_1d(self, image_1d: np.ndarray, direction: Optional[np.ndarray] = None,
-                 step: Real = 1) -> np.ndarray:
+                 step: float = 1) -> np.ndarray:
         """
         Applies the defined PSF using the stored parameters to the 1D image scans provided.
 
@@ -196,7 +192,7 @@ class PointSpreadFunction(metaclass=ABCMeta):
 
     @classmethod
     @abstractmethod
-    def fit(cls, x: ARRAY_LIKE, y: ARRAY_LIKE, z: ARRAY_LIKE) -> __qualname__:
+    def fit(cls, x: ARRAY_LIKE, y: ARRAY_LIKE, z: ARRAY_LIKE) -> Self:
         """
         This function fits the defined PSF to the input data and returns an initialize version of the class based on the
         fit.
@@ -266,7 +262,7 @@ class PointSpreadFunction(metaclass=ABCMeta):
         :return: The total volume contained under the PSF
         """
 
-    def compare(self, other: __qualname__) -> float:
+    def compare(self, other: Self) -> float:
         """
         For real PSFs, this method generates how well the PSF matches another between 0 and 1, with 1 being a perfect
         match and 0 being a horrible match.
@@ -275,6 +271,16 @@ class PointSpreadFunction(metaclass=ABCMeta):
         """
 
         return float(np.clip(np.corrcoef(self.generate_kernel().ravel(), other.generate_kernel().ravel())[0, 1], 0, 1))
+    
+    @abstractmethod
+    def shift_centroid(self, shift: ARRAY_LIKE) -> None:
+        """
+        Shift the centroid.
+        
+        :param shift: the shift to apply as a len array like x, y 
+        """
+        
+        pass
 
 
 class KernelBasedApply1DPSF(PointSpreadFunction, metaclass=ABCMeta):
@@ -290,7 +296,7 @@ class KernelBasedApply1DPSF(PointSpreadFunction, metaclass=ABCMeta):
     """
 
     def apply_1d_sized(self, image_1d: np.ndarray, size: int,
-                       direction: Optional[np.ndarray] = None, step: Real = 1) -> np.ndarray:
+                       direction: Optional[np.ndarray] = None, step: float = 1) -> np.ndarray:
         """
         Applies the defined PSF using the stored parameters to the 1D image scans provided with a given kernel size.
 
@@ -388,7 +394,7 @@ class SizedPSF(PointSpreadFunction, metaclass=ABCMeta):
         :param size: The size of the kernel to generate.
         """
 
-        self.size = 1  # type: int
+        self.size: int = 1 
         """
         The size of the kernel to return on a call to :meth:`generate_kernel`.
         
@@ -413,7 +419,7 @@ class SizedPSF(PointSpreadFunction, metaclass=ABCMeta):
         """
 
         pass
-
+    
     def generate_kernel(self, size: Optional[int] = None):
         r"""
         Generates a square kernel centered at the centroid of the PSF normalized to have a volume (sum) of 1 for the
@@ -447,13 +453,16 @@ class SizedPSF(PointSpreadFunction, metaclass=ABCMeta):
         return kernel
 
 
-    def compare(self, other: __qualname__) -> float:
+    def compare(self, other: PointSpreadFunction) -> float:
         """
         For real PSFs, this method generates how well the PSF matches another between 0 and 1, with 1 being a perfect
         match and 0 being a horrible match.
 
         Typically this is evaluated as the clipped pearson product moment coefficient between the kernels of the 2 psfs.
         """
+        
+        if not isinstance(other, SizedPSF):
+            return 0
 
         size = min(max(self.size, other.size), 10)
 
@@ -483,18 +492,18 @@ class IterativeNonlinearLSTSQPSF(PointSpreadFunction, metaclass=ABCMeta):
     updated class parameters
     """
 
-    max_iter = 20  # type: int
+    max_iter: int = 20 
     """
     An integer defining the maximum number of iterations to attempt in the iterative least squares solution.
     """
 
-    atol = 1e-10  # type: float
+    atol: float = 1e-10 
     """
     The absolute tolerance cut-off for the iterative least squares. (The iteration will cease when the new estimate is 
     within this tolerance for every element from the previous estimate)
     """
 
-    rtol = 1e-10  # type: float
+    rtol: float = 1e-10 
     """
     The relative tolerance cut-off for the iterative least squares. (The iteration will cease when the maximum percent 
     change in the state vector from one iteration to the next is less than this value)
@@ -660,14 +669,14 @@ class IterativeNonlinearLSTSQwBackground(IterativeNonlinearLSTSQPSF, metaclass=A
     The background terms are stored in instance attributes :attr:`bg_b_coef`, :attr:`bg_c_coef`, and :attr:`bg_d_coef`.
     """
 
-    def __init__(self, bg_b_coef: Optional[Real] = None, bg_c_coef: Optional[Real] = None,
-                 bg_d_coef: Optional[Real] = None, **kwargs):
+    def __init__(self, bg_b_coef: Optional[float] = None, bg_c_coef: Optional[float] = None,
+                 bg_d_coef: Optional[float] = None, **kwargs):
         """
         :param bg_b_coef: The x slope of the background gradient
         :param bg_c_coef: They y slope of the background gradient
         :param bg_d_coef: The constant offset of the background gradient
         """
-        self.bg_b_coef = 0.0   # type: float
+        self.bg_b_coef: float = 0.0  
         """
         The x slope of the background gradient
         """
@@ -675,7 +684,7 @@ class IterativeNonlinearLSTSQwBackground(IterativeNonlinearLSTSQPSF, metaclass=A
         if bg_b_coef is not None:
             self.bg_b_coef = float(bg_b_coef)
 
-        self.bg_c_coef = 0.0  # type: float
+        self.bg_c_coef: float = 0.0 
         """
         The y slope of the background gradient
         """
@@ -683,7 +692,7 @@ class IterativeNonlinearLSTSQwBackground(IterativeNonlinearLSTSQPSF, metaclass=A
         if bg_c_coef is not None:
             self.bg_c_coef = float(bg_c_coef)
 
-        self.bg_d_coef = 0.0  # type: float
+        self.bg_d_coef: float = 0.0 
         """
         The constant offset of the background gradient
         """
@@ -750,7 +759,7 @@ class IterativeNonlinearLSTSQwBackground(IterativeNonlinearLSTSQPSF, metaclass=A
         return self.bg_b_coef*x+self.bg_c_coef*y+self.bg_d_coef
 
     @classmethod
-    def fit_bg(cls, x: ARRAY_LIKE, y: ARRAY_LIKE, z: ARRAY_LIKE) -> __qualname__:
+    def fit_bg(cls, x: ARRAY_LIKE, y: ARRAY_LIKE, z: ARRAY_LIKE) -> Self:
         """
         This method tries to fit the background using linear least squares without worrying about any PSF included.
 
@@ -806,20 +815,20 @@ class InitialGuessIterativeNonlinearLSTSQPSF(IterativeNonlinearLSTSQPSF, metacla
 
         super().__init__()
 
-        self._covariance = None  # type: NONEARRAY
+        self._covariance: NONEARRAY = None 
         """
         The covariance of the fit as a nxn array (for n state elements) or None, depending on if
         :attr:`~PointSpreadFunction.save_residuals` is ``True``.
         """
 
-        self._residuals = None  # type: NONEARRAY
+        self._residuals: NONEARRAY = None 
         """
         The residuals of the fit as a length m array (for m observations) or None, depending on if
         :attr:`~PointSpreadFunction.save_residuals` is ``True``.
         """
 
     @classmethod
-    def fit_lstsq(cls, x: ARRAY_LIKE, y: ARRAY_LIKE, z: ARRAY_LIKE) -> __qualname__:
+    def fit_lstsq(cls, x: ARRAY_LIKE, y: ARRAY_LIKE, z: ARRAY_LIKE) -> Self:
         """
         This fits a PSF to a surface using iterative non-linear least squares estimation.
 
@@ -881,8 +890,8 @@ class InitialGuessIterativeNonlinearLSTSQPSFwBackground(IterativeNonlinearLSTSQw
     residuals of the fit if requested.
     """
 
-    def __init__(self, bg_b_coef: Optional[Real] = None, bg_c_coef: Optional[Real] = None,
-                 bg_d_coef: Optional[Real] = None, **kwargs):
+    def __init__(self, bg_b_coef: Optional[float] = None, bg_c_coef: Optional[float] = None,
+                 bg_d_coef: Optional[float] = None, **kwargs):
         """
         :param bg_b_coef: The x slope of the background gradient
         :param bg_c_coef: They y slope of the background gradient
@@ -891,20 +900,20 @@ class InitialGuessIterativeNonlinearLSTSQPSFwBackground(IterativeNonlinearLSTSQw
 
         super().__init__(bg_b_coef, bg_c_coef, bg_d_coef, **kwargs)
 
-        self._covariance = None  # type: NONEARRAY
+        self._covariance: NONEARRAY = None 
         """
         The covariance of the fit as a nxn array (for n state elements) or None, depending on if
         :attr:`~PointSpreadFunction.save_residuals` is ``True``.
         """
 
-        self._residuals = None  # type: NONEARRAY
+        self._residuals: NONEARRAY = None 
         """
         The residuals of the fit as a length m array (for m observations) or None, depending on if
         :attr:`~PointSpreadFunction.save_residuals` is ``True``.
         """
 
     @classmethod
-    def fit_lstsq(cls, x: ARRAY_LIKE, y: ARRAY_LIKE, z: ARRAY_LIKE) -> __qualname__:
+    def fit_lstsq(cls, x: ARRAY_LIKE, y: ARRAY_LIKE, z: ARRAY_LIKE) -> Self:
         """
         This fits a PSF to a surface using iterative non-linear least squares estimation.
 
@@ -1009,5 +1018,8 @@ class InitialGuessIterativeNonlinearLSTSQPSFwBackground(IterativeNonlinearLSTSQw
 
         if extras is None:
             extras = 0
+            
+        x = np.asanyarray(x)
+        y = np.asanyarray(y)
 
         return self.evaluate_bg(x, y) + extras

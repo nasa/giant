@@ -3,7 +3,7 @@
 
 
 """
-Tile a shape model into SurfaceFeatures in a FeatureCatalogue.
+Tile a shape model into SurfaceFeatures in a FeatureCatalog.
 
 This script tiles an existing shape model in a GIANT format (:mod:`.shapes`, :mod:`.kdtree`, :mod:`.surface_feature`,
 etc) into a :class:`.FeatureCatalgoue` of :class:`.SurfaceFeatures`.  The features are sampled uniformly from the
@@ -43,8 +43,8 @@ import numpy as np
 from giant.ray_tracer.rays import Rays
 from giant.ray_tracer.shapes import Triangle64, Triangle32
 from giant.ray_tracer.kdtree import KDTree
-from giant.relative_opnav.estimators.sfn import SurfaceFeature, FeatureCatalogue
-from giant.catalogues.utilities import unit_to_radec
+from giant.relative_opnav.estimators.sfn import SurfaceFeature, FeatureCatalog
+from giant.utilities.spherical_coordinates import unit_to_radec
 from giant.rotations import rot_z, Rotation
 from giant.utilities.stereophotoclinometry import Landmark, Maplet
 
@@ -64,8 +64,8 @@ def _get_parser():
     parser.add_argument('shape', help='path to the shape file directory')
     parser.add_argument('-f', '--feature_output', help='The directory to save the feature results to',
                         default='./features')
-    parser.add_argument('-c', '--catalogue_output', help='The directory to save the feature results to',
-                        default='./feature_catalogue.pickle')
+    parser.add_argument('-c', '--catalog_output', help='The directory to save the feature results to',
+                        default='./feature_catalog.pickle')
     parser.add_argument('-m', '--memory_efficient', help='use memory efficient triangles', action='store_true')
     parser.add_argument('-p', '--spc', help='Make spc stuff', action='store_true')
     parser.add_argument('-o', '--objs', help='directory to output objs for each feature to this location '
@@ -171,7 +171,7 @@ def build_feature(gsd, size, center, shape, me, odir, spc=False):
 
     rays = Rays(np.vstack([grid_x.ravel(), grid_y.ravel(), np.zeros(grid_x.size)]), np.array([0, 0, 1]))
 
-    if isinstance(shape, FeatureCatalogue):
+    if isinstance(shape, FeatureCatalog):
         shape.include_features = None
 
     # rotate the shape into the feature frame
@@ -191,7 +191,7 @@ def build_feature(gsd, size, center, shape, me, odir, spc=False):
     indices = np.arange(grid_x.size).reshape(grid_x.shape)
 
     half_no_tris = indices[:-1, :-1].size
-    facets = np.zeros((2*half_no_tris, 3), dtype=np.long)
+    facets = np.zeros((2*half_no_tris, 3), dtype=np.uint32)
     facets[:half_no_tris, 0] = indices[:-1, :-1].ravel()
     facets[:half_no_tris, 1] = indices[:-1, 1:].ravel()
     facets[:half_no_tris, 2] = indices[1:, :-1].ravel()
@@ -338,7 +338,7 @@ def main():
                     for vec in verts:
                         objfile.write(vertex_str.format(*vec))
                     for facet in tris:
-                        objfile.write(facet_str.format(*facet))
+                        objfile.write(facet_str.format(*facet+1))
             features.append(feature)
             feature_info.append(info)
 
@@ -350,11 +350,11 @@ def main():
             for lmk in lmks:
                 ofile.write(lmk + '\n')
             ofile.write('END')
-    catalogue = FeatureCatalogue(features, map_info=feature_info)
+    catalog = FeatureCatalog(features, map_info=feature_info)
 
-    with open(args.catalogue_output, 'wb') as ofile:
+    with open(args.catalog_output, 'wb') as ofile:
         # Added warning to documentation
-        pickle.dump(catalogue, ofile)  # nosec
+        pickle.dump(catalog, ofile)  # nosec
 
 
 if __name__ == '__main__':

@@ -273,8 +273,10 @@ class _MosaicMaker:
 
     def prepare_mosaic_bins(self):
 
+        assert self.prepare_mosaic_images is not None, "the mosaic images must be prepared at this point"
         prepared_imgs = self.prepared_mosaic_images
         self.prepared_mosaic_images = None
+        
         with Pool() as pool:
             self.mosaic_image_bins = pool.map(self.bin_image, prepared_imgs)
         self.prepared_mosaic_images = prepared_imgs
@@ -293,13 +295,13 @@ class _MosaicMaker:
         best_scale = 1
         best_match = None
         for mind, mbin in enumerate(self.mosaic_image_bins):
-            score = pearsonr(image_bin, mbin)[0]
+            score = pearsonr(image_bin, mbin).correlation
             rotation = None
 
             if self.allow_rotation:
                 for r in [cv2.ROTATE_180, cv2.ROTATE_90_CLOCKWISE, cv2.ROTATE_90_COUNTERCLOCKWISE]:
                     mbinr = cv2.rotate(mbin.reshape(self.sub_grid_check, self.sub_grid_check), r).ravel()
-                    scorer = pearsonr(image_bin, mbinr)
+                    scorer = pearsonr(image_bin, mbinr).correlation
 
                     if scorer > score:
                         score = scorer

@@ -2,7 +2,7 @@
 # Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
 
 
-from typing import Optional, Tuple, Union, Callable
+from typing import Optional, Tuple, Union, Callable, Self
 
 import numpy as np
 
@@ -11,15 +11,11 @@ from giant.ray_tracer.shapes.axis_aligned_bounding_box import AxisAlignedBoundin
 from giant.ray_tracer.rays import Rays
 from giant.rotations import Rotation
 
-from numbers import Real, Complex
-
 from giant._typing import ARRAY_LIKE
 
-NUMBER = Union[Real, Complex]
-
-def quadratic_equations(a: Union[NUMBER, ARRAY_LIKE],
-                        b: Union[NUMBER, ARRAY_LIKE],
-                        c: Union[NUMBER, ARRAY_LIKE]) -> Union[Tuple[NUMBER, NUMBER],
+def quadratic_equations(a: Union[complex, ARRAY_LIKE],
+                        b: Union[complex, ARRAY_LIKE],
+                        c: Union[complex, ARRAY_LIKE]) -> Union[Tuple[complex, complex],
                                                                Tuple[np.ndarray, np.ndarray]]: ...
 
 class Ellipsoid(Solid):
@@ -64,9 +60,9 @@ class Ellipsoid(Solid):
 
     def compute_albedos(self, body_centered_vecs: np.ndarray) -> np.ndarray: ...
 
-    def rotate(self, rotation: Union[Rotation, ARRAY_LIKE]): ...
+    def rotate(self, rotation: Union[Rotation, ARRAY_LIKE]) -> Self: ...
 
-    def translate(self, translation: np.ndarray): ...
+    def translate(self, translation: np.ndarray) -> Self: ...
 
     def find_limbs(self, scan_center_dir: np.ndarray,
                    scan_dirs: np.ndarray,

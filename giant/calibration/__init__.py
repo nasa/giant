@@ -18,7 +18,7 @@ The :class:`.Calibration` class is a subclass of the :class:`.StellarOpNav` clas
 identifying stars and estimating updated attitude information for single images.  In addition to the
 :class:`.StellarOpNav` functionality, the :class:`.Calibration` class also provides the interfaces for using identified
 stars in multiple images to estimate updates to geometric camera model (camera calibration,
-:meth:`~.Calibration.estimate_calibration`) and the alignment between the camera frame and a base frame
+:meth:`~.Calibration.estimate_geometric_calibration`) and the alignment between the camera frame and a base frame
 (:meth:`~.Calibration.estimate_static_alignment` and :meth:`~.Calibration.estimate_temperature_dependent_alignment`).
 While these methods make it easy to get everything packaged appropriately, GIANT also exposes all of the substeps to you
 if you need them to do a more advanced analysis.
@@ -74,14 +74,18 @@ tutorial.
     >>> with data.open('rb') as pfile:
     >>>     camera = pickle.load(pfile)
     >>> # import the stellar opnav class
-    >>> from giant.calibration.calibration_class import Calibration
-    >>> # import the default catalogue
-    >>> from giant.catalogues.giant_catalogue import GIANTCatalogue
+    >>> from giant.calibration.calibration_class import Calibration, CalibrationOptions
+    >>> # import the default catalog
+    >>> from giant.catalogs.giant_catalog import GIANTCatalog
     >>> # set the estimation parameters for the camera model
     >>> camera.model.estimation_parameters = ["fx", "fy", "px", "py", "k1"]
     >>> # form the calibration object
-    >>> cal = Calibration(camera, image_processing_kwargs={'centroid_size': 1, 'poi_threshold': 10},
-    ...                   star_identification_kwargs={'max_magnitude': 5, 'tolerance': 20})
+    >>> opts = CalibrationOptions()
+    >>> opts.point_of_interest_finder_options.threshold = 10
+    >>> opts.point_of_interest_finder_options.centroid_size = 1
+    >>> opts.star_id_options.max_magnitude = 5
+    >>> opts.star_id_options.tolerance = 20
+    >>> cal = Calibration(camera, options=opts)
     >>> # identify stars
     >>> cal.id_stars()
     >>> cal.sid_summary()  # print a summary of the star id results
@@ -97,15 +101,22 @@ tutorial.
     >>> from giant.stellar_opnav.visualizer import show_id_results
     >>> show_id_results(cal)
     >>> # estimate the geometric camera model
-    >>> cal.estimate_calibration()
-    >>> cal.calib_summary()
+    >>> cal.estimate_geometric_calibration()
+    >>> cal.geometric_calibration_summary()
 """
 
-# noinspection PyUnresolvedReferences
-from ..stellar_opnav import DavenportQMethod, StarID  # import these so they are also available here
-from .calibration_class import Calibration
-from .estimators import (CalibrationEstimator, IterativeNonlinearLSTSQ, LMAEstimator, StaticAlignmentEstimator,
-                         TemperatureDependentAlignmentEstimator)
+import giant.calibration.estimators as estimators
+import giant.calibration.calibration_class as calibration_class
 
-__all__ = ['Calibration', 'DavenportQMethod', 'StarID', 'CalibrationEstimator', 'IterativeNonlinearLSTSQ',
-           'LMAEstimator', 'StaticAlignmentEstimator', 'TemperatureDependentAlignmentEstimator']
+from giant.calibration.calibration_class import Calibration, CalibrationOptions
+from giant.calibration.estimators import (static_alignment_estimator, 
+                                          temperature_dependent_alignment_estimator, 
+                                          evaluate_temperature_dependent_alignment, TemperatureDependentResults,
+                                          IterativeNonlinearLSTSQ, IterativeNonlinearLstSqOptions, 
+                                          LMAEstimator, LMAEstimatorOptions)
+
+__all__ = ['Calibration', 'CalibrationOptions', 
+           'static_alignment_estimator', 
+           'temperature_dependent_alignment_estimator', 'evaluate_temperature_dependent_alignment', 'TemperatureDependentResults',
+           'IterativeNonlinearLSTSQ', 'IterativeNonlinearLstSqOptions', 
+           'LMAEstimator', 'LMAEstimatorOptions']

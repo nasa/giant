@@ -460,6 +460,8 @@ cdef class AxisAlignedBoundingBox:
                 # if the box hasn't been rotated store the inverse rotation
                 self._rotation = Rotation(rotation).inv()
 
+        return self
+
     def translate(self, translation):
         """
         translate(self, translation)
@@ -486,3 +488,5 @@ cdef class AxisAlignedBoundingBox:
         self._min_sides += trans_array
 
         self._max_sides += trans_array
+
+        return self

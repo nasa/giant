@@ -2,7 +2,7 @@
 # Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
 
 
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, Self
 
 import numpy as np
 
@@ -23,7 +23,7 @@ class AxisAlignedBoundingBox:
 
     def __reduce__(self) -> Tuple['AxisAlignedBoundingBox', Tuple[np.ndarray, np.ndarray, Optional[Rotation]]]: ...
 
-    def __eq__(self, other: Optional['AxisAlignedBoundingBox']) -> bool: ...
+    def __eq__(self, other: object) -> bool: ...
 
     @property
     def min_sides(self) -> np.ndarray: ...
@@ -44,9 +44,9 @@ class AxisAlignedBoundingBox:
 
     def compute_intersect(self, ray: Rays, return_distances: bool = False) -> Union[bool, Tuple[bool, np.ndarray]]: ...
 
-    def rotate(self, rotation: Union[Rotation, ARRAY_LIKE]): ...
+    def rotate(self, rotation: Union[Rotation, ARRAY_LIKE]) -> Self: ...
 
-    def translate(self, translation: ARRAY_LIKE): ...
+    def translate(self, translation: ARRAY_LIKE) -> Self: ...
 
 
 

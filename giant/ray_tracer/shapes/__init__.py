@@ -18,7 +18,7 @@ use case for each, but generally knowing these 2 is sufficient.
 
 Generally a user probably won't have much direct interaction with this subpackage, as there are many higher level
 scripts and modules that handle things for you, like :mod:`.ingest_shape`, :mod:`.tile_shape`,
-:mod:`.spc_to_feature_catalogue`, and :mod:`.scene`, but understanding what is going on under the hood can be beneficial
+:mod:`.spc_to_feature_catalog`, and :mod:`.scene`, but understanding what is going on under the hood can be beneficial
 so we do recommend at least skimming through this documentation.
 """
 
@@ -28,7 +28,7 @@ import numpy as np
 from giant.ray_tracer.shapes.shape import Shape
 from giant.ray_tracer.shapes.point import Point
 from giant.ray_tracer.shapes.axis_aligned_bounding_box import AxisAlignedBoundingBox
-from giant.ray_tracer.shapes.surface import Surface, Surface64, Surface32
+from giant.ray_tracer.shapes.surface import Surface, Surface64, Surface32, RawSurface
 from giant.ray_tracer.shapes.triangle import Triangle64, Triangle32
 from giant.ray_tracer.shapes.solid import Solid
 from giant.ray_tracer.shapes.ellipsoid import Ellipsoid
@@ -38,4 +38,4 @@ np.seterr(divide='ignore', invalid='ignore')
 
 
 __all__ = ['Shape', 'Point', 'AxisAlignedBoundingBox', 'Surface', 'Surface32', 'Surface64', 'Triangle64', 'Triangle32',
-           'Solid', 'Ellipsoid']
+           'Solid', 'Ellipsoid', 'RawSurface']

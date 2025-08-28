@@ -106,7 +106,7 @@ import warnings
 
 import numpy as np
 
-from giant._typing import ARRAY_LIKE, NONEARRAY, Real, NONENUM
+from giant._typing import ARRAY_LIKE, NONEARRAY, NONENUM, F_ARRAY_LIKE
 from giant.rotations import rotvec_to_rotmat, Rotation
 from giant.camera_models.pinhole_model import PinholeModel
 
@@ -172,7 +172,7 @@ class OwenModel(PinholeModel):
 
     """
 
-    def __init__(self, intrinsic_matrix: NONEARRAY = None, focal_length: Real = 1., field_of_view: NONENUM = None,
+    def __init__(self, intrinsic_matrix: NONEARRAY = None, focal_length: float = 1., field_of_view: NONENUM = None,
                  use_a_priori: bool = False, distortion_coefficients: NONEARRAY = None, misalignment: NONEARRAY = None,
                  estimation_parameters: Union[str, Sequence] = 'basic',
                  kx: NONENUM = None, ky: NONENUM = None, kxy: NONENUM = None, kyx: NONENUM = None, px: NONENUM = None,
@@ -635,7 +635,7 @@ class OwenModel(PinholeModel):
 
         return pinhole_locations + distortion_values
 
-    def get_projections(self, points_in_camera_frame: ARRAY_LIKE, image: int = 0, temperature: Real = 0) \
+    def get_projections(self, points_in_camera_frame: ARRAY_LIKE, image: int = 0, temperature: float = 0) \
             -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         This method computes and returns the pinhole, and pixel locations for a set of
@@ -697,7 +697,7 @@ class OwenModel(PinholeModel):
                 camera_points = rotvec_to_rotmat(self.misalignment).squeeze() @ camera_points
 
         # get the pinhole locations of the points
-        pinhole_locations = self.focal_length * camera_points[:2] / camera_points[2]  # type: np.ndarray
+        pinhole_locations: np.ndarray = self.focal_length * camera_points[:2] / camera_points[2] 
 
         # get the distorted pinhole locations of the points
         image_locations = self.apply_distortion(pinhole_locations)
@@ -710,7 +710,7 @@ class OwenModel(PinholeModel):
 
         return pinhole_locations, image_locations, picture_locations
 
-    def project_onto_image(self, points_in_camera_frame: ARRAY_LIKE, image: int = 0, temperature: Real = 0) \
+    def project_onto_image(self, points_in_camera_frame: ARRAY_LIKE, image: int = 0, temperature: float = 0) \
             -> np.ndarray:
         """
         This method transforms 3D points or directions expressed in the camera frame into the corresponding 2D image
@@ -750,8 +750,8 @@ class OwenModel(PinholeModel):
 
         return picture_locations
 
-    def _compute_ddistortion_dgnomic(self, gnomic_location: ARRAY_LIKE, radius: Real, radius2: Real, radius3: Real,
-                                     radius4: Real) -> np.ndarray:
+    def _compute_ddistortion_dgnomic(self, gnomic_location: ARRAY_LIKE, radius: float, radius2: float, radius3: float, # type: ignore
+                                     radius4: float) -> np.ndarray:
         r"""
         Computes the partial derivative of the distortion with respect to a change in the gnomic location
 
@@ -797,7 +797,7 @@ class OwenModel(PinholeModel):
             return np.zeros((2, 2))
 
     @staticmethod
-    def _compute_dpixel_dintrinsic(gnomic_location_distorted: ARRAY_LIKE) -> np.ndarray:
+    def _compute_dpixel_dintrinsic(gnomic_location_distorted: F_ARRAY_LIKE) -> np.ndarray:
         r"""
         computes the partial derivative of the pixel location with respect to a change in one of the intrinsic matrix
         parameters given the gnomic location of the point we are computing the derivative for.
@@ -884,8 +884,8 @@ class OwenModel(PinholeModel):
                          ddist_gnom_dtangential_y, ddist_gnom_dtangential_x,
                          ddist_gnom_dpinwheel1, ddist_gnom_dpinwheel2]).T
 
-    def _get_jacobian_row(self, unit_vector_camera: np.ndarray, image: int, num_images: int,
-                          temperature: Real = 0) -> np.ndarray:
+    def _get_jacobian_row(self, unit_vector_camera: ARRAY_LIKE, image: int, num_images: int,
+                          temperature: float = 0) -> np.ndarray:
         r"""
         Calculates the Jacobian matrix for a single point.
 
@@ -914,7 +914,7 @@ class OwenModel(PinholeModel):
         """
 
         # ensure the input is an array and the right shape
-        unit_vector_camera = np.asarray(unit_vector_camera).reshape(3)
+        unit_vector_camera = np.asanyarray(unit_vector_camera).reshape(3)
 
         # get the required projections for the point
         gnomic_location, gnomic_location_distorted, pixel_location = self.get_projections(unit_vector_camera,
@@ -937,7 +937,7 @@ class OwenModel(PinholeModel):
                 cam_point = unit_vector_camera
 
         # compute the radial distance from the optical axis as well as its powers
-        radius = np.linalg.norm(gnomic_location)
+        radius = float(np.linalg.norm(gnomic_location))
         radius2 = radius ** 2
         radius3 = radius * radius2
         radius4 = radius2 ** 2
@@ -1007,7 +1007,7 @@ class OwenModel(PinholeModel):
 
         return jacobian_row
 
-    def apply_update(self, update_vec):
+    def apply_update(self, update_vec: F_ARRAY_LIKE):
         r"""
         This method takes in a delta update to camera parameters (:math:`\Delta\mathbf{c}`) and applies the update
         to the current instance in place.
@@ -1030,7 +1030,7 @@ class OwenModel(PinholeModel):
         jacobian_parameters = np.hstack([getattr(self.element_dict[element], 'start', self.element_dict[element])
                                          for element in self.estimation_parameters])
 
-        update_vec = self._fix_update_vector(update_vec, jacobian_parameters)
+        update_vec = self._fix_update_vector(np.asanyarray(update_vec, dtype=np.float64), jacobian_parameters)
 
         update_vec = np.asarray(update_vec).flatten()
 

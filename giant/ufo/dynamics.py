@@ -44,7 +44,7 @@ from pathlib import Path
 # we minimize the security risk here by using FTPS
 import ftplib  # nosec
 
-from typing import Optional, List, Dict, Tuple, Union, Callable, ClassVar
+from typing import Optional, List, Dict, Tuple, Union, Callable, ClassVar, Self, cast
 
 import numpy as np
 
@@ -204,7 +204,7 @@ class Dynamics(metaclass=ABCMeta):
             :return: a list of numpy arrays
             """
 
-            return list(map(np.ravel, [self.position, self.velocity, self.covariance]))
+            return list(map(np.ravel, [self.position, self.velocity, self.covariance])) # pyright: ignore[reportArgumentType]
 
         @vector.setter
         def vector(self, val: np.ndarray):
@@ -213,7 +213,7 @@ class Dynamics(metaclass=ABCMeta):
             self.velocity = val[3:6]
             self.covariance = val[6:].reshape(6, 6)
 
-        def __sub__(self, other: __qualname__) -> __qualname__:
+        def __sub__(self, other: Self) -> Self:
             """
             This computes the relative state from other to self.
 
@@ -251,7 +251,7 @@ class Dynamics(metaclass=ABCMeta):
 
             return out
 
-        def __add__(self, other) -> __qualname__:
+        def __add__(self, other: Self) -> Self:
             """
             This computes adds the relative state other to self.
 
@@ -282,8 +282,9 @@ class Dynamics(metaclass=ABCMeta):
 
             out.position = other.position + delta_orientation.matrix@self.position
             out.velocity = other.velocity + delta_orientation.matrix@self.velocity
-
-            out.covariance = delta_orientation.matrix@self.covariance@delta_orientation.matrix.T
+            
+            if self.covariance is not None:
+                out.covariance = delta_orientation.matrix@self.covariance@delta_orientation.matrix.T
 
             return out
 
@@ -483,18 +484,13 @@ class SpiceGravityDynamics(Dynamics):
         gm = self.gravity_parameters.get(body)
 
         if gm is None:
-            gm = spice.bodvrd(body, 'GM', 1)[1]
+            gm = cast(int, spice.bodvrd(body, 'GM', 1)[1])
 
         return gm
 
     def compute_state_dynamics(self, state: np.ndarray, et_time: float,
-                               return_intermediaries: bool = False) -> Union[List[np.ndarray],
-                                                                             Tuple[List[np.ndarray],
-                                                                                   Tuple[float,
-                                                                                         List[np.ndarray],
-                                                                                         List[np.ndarray],
-                                                                                         List[float],
-                                                                                         List[float]]]]:
+                               return_intermediaries: bool = False) -> Tuple[List[np.ndarray],
+                                                                             Tuple[ list | float | np.ndarray, ...]]:
         """
         This computes the dynamics for just the "state" part of the state vector (not the covariance)
 
@@ -520,7 +516,7 @@ class SpiceGravityDynamics(Dynamics):
         velocity: np.ndarray = state[3:6]
 
         # distance to central body
-        radial_distance_cb: float = np.linalg.norm(position)
+        radial_distance_cb: float = float(np.linalg.norm(position))
 
         # compute the gravitational acceleration due to the central body
         acceleration_gravity: np.ndarray = -self.gm_cb*position/radial_distance_cb**3
@@ -533,8 +529,8 @@ class SpiceGravityDynamics(Dynamics):
         for body, gm in zip(self.other_bodies, self.gm_other_bodies):
             position_cb_to_bodies.append(spice.spkpos(body, et_time, 'J2000', 'LT+S', self.center_body)[0])
             position_sc_to_bodies.append(position_cb_to_bodies[-1] - position)
-            radial_distance_sc_to_bodies.append(np.linalg.norm(position_sc_to_bodies[-1]))
-            radial_distance_cb_to_bodies.append(np.linalg.norm(position_cb_to_bodies[-1]))
+            radial_distance_sc_to_bodies.append(float(np.linalg.norm(position_sc_to_bodies[-1])))
+            radial_distance_cb_to_bodies.append(float(np.linalg.norm(position_cb_to_bodies[-1])))
 
             acceleration_gravity += gm*(position_sc_to_bodies[-1]/radial_distance_sc_to_bodies[-1]**3 +
                                         position_cb_to_bodies[-1]/radial_distance_cb_to_bodies[-1]**3)
@@ -544,7 +540,7 @@ class SpiceGravityDynamics(Dynamics):
                                                       position_cb_to_bodies, position_sc_to_bodies,
                                                       radial_distance_cb_to_bodies, radial_distance_sc_to_bodies)
         else:
-            return [velocity, acceleration_gravity]
+            return [velocity, acceleration_gravity], ()
 
     def compute_covariance_dynamics(self, state: np.ndarray, et_time: float, radial_distance_cb: float,
                                     position_sc_to_bodies: List[np.ndarray],
@@ -650,8 +646,9 @@ class SpiceGravityDynamics(Dynamics):
                     radial_distance_sc_to_bodies) = self.compute_state_dynamics(state, time, return_intermediaries=True)
 
         out_dynamics = np.concatenate(dynamics + [
-            self.compute_covariance_dynamics(state, time, radial_distance_cb,
-                                             position_sc_to_bodies, radial_distance_sc_to_bodies).ravel()
+            self.compute_covariance_dynamics(state, time, cast(float, radial_distance_cb),
+                                             cast(list[np.ndarray], position_sc_to_bodies), 
+                                             cast(list[float], radial_distance_sc_to_bodies)).ravel()
         ])
 
         if np.isnan(out_dynamics).any():
@@ -792,16 +789,9 @@ class SolRadAndGravityDynamics(SpiceGravityDynamics):
         The conversion from kilometers to AU
         """
 
-    def compute_state_dynamics(self, state: np.ndarray, et_time: float,
-                               return_intermediaries: bool = False) -> Union[List[np.ndarray],
-                                                                             Tuple[List[np.ndarray],
-                                                                                   Tuple[float,
-                                                                                         List[np.ndarray],
-                                                                                         List[np.ndarray],
-                                                                                         List[float],
-                                                                                         List[float],
-                                                                                         np.ndarray,
-                                                                                         float]]]:
+    def compute_state_dynamics(self, state: np.ndarray, et_time: float, # pyright: ignore[reportIncompatibleMethodOverride]
+                               return_intermediaries: bool = False) -> Tuple[List[np.ndarray],
+                                                                             Tuple[float | list | np.ndarray, ...]]:
         """
         This computes the dynamics for just the "state" part of the state vector (not the covariance)
 
@@ -827,14 +817,14 @@ class SolRadAndGravityDynamics(SpiceGravityDynamics):
 
         others = [o.lower() for o in self.other_bodies]
 
-        if 'sun' in others:
+        if 'sun' in others and return_intermediaries:
             location = others.index('sun')
 
-            sun_direction = intermediaries[2][location].copy()
-            sun_distance = intermediaries[3][location]
+            sun_direction = cast(list[np.ndarray], intermediaries[2])[location].copy()
+            sun_distance = float(cast(list[float], intermediaries[3])[location])
         else:
             sun_direction = state[:3] - spice.spkpos('sun', et_time, 'J2000', 'LT+S', self.center_body)[0]
-            sun_distance = np.linalg.norm(sun_direction)
+            sun_distance = float(np.linalg.norm(sun_direction))
 
         sun_direction /= sun_distance
         sun_distance *= self.km_to_au
@@ -842,8 +832,12 @@ class SolRadAndGravityDynamics(SpiceGravityDynamics):
         dynamics[1] += self.compute_solar_radiation_acceleration(state, sun_direction, sun_distance)
 
         dynamics.append(np.array([0.0]))
+        
+        if return_intermediaries:
 
-        return dynamics, intermediaries + (sun_direction, sun_distance)
+            return dynamics, intermediaries + (sun_direction, sun_distance)
+        else:
+            return dynamics, ()
 
     def compute_solar_radiation_acceleration(self, state: np.ndarray,
                                              direction_sun_to_sc: np.ndarray,
@@ -861,7 +855,7 @@ class SolRadAndGravityDynamics(SpiceGravityDynamics):
         return (state[6]*self.solar_constant/(distance_sun_to_sc**2)*direction_sun_to_sc/self.speed_of_light)/1000
 
     # noinspection PyMethodOverriding
-    def _compute_d_acceleration_d_position(self, state: np.ndarray, radial_distance_cb: float,
+    def _compute_d_acceleration_d_position(self, state: np.ndarray, radial_distance_cb: float, # pyright: ignore[reportIncompatibleMethodOverride]
                                            position_sc_to_bodies: List[np.ndarray],
                                            radial_distance_sc_to_bodies: List[float],
                                            direction_sun_to_sc: np.ndarray,
@@ -900,8 +894,7 @@ class SolRadAndGravityDynamics(SpiceGravityDynamics):
         return super()._compute_d_acceleration_d_position(state, radial_distance_cb, position_sc_to_bodies,
                                                           radial_distance_sc_to_bodies) + dasr_dpos
 
-    # noinspection PyMethodOverriding
-    def compute_covariance_dynamics(self, state: np.ndarray, et_time: float, radial_distance_cb: float,
+    def compute_covariance_dynamics(self, state: np.ndarray, et_time: float, radial_distance_cb: float, # pyright: ignore[reportIncompatibleMethodOverride]
                                     position_sc_to_bodies: List[np.ndarray],
                                     radial_distance_sc_to_bodies: List[float],
                                     direction_sun_to_sc: np.ndarray,
@@ -981,9 +974,11 @@ class SolRadAndGravityDynamics(SpiceGravityDynamics):
                     sun_direction, sun_distance) = self.compute_state_dynamics(state, time, return_intermediaries=True)
 
         out_dynamics = np.concatenate(dynamics + [
-            self.compute_covariance_dynamics(state, time, radial_distance_cb,
-                                             position_sc_to_bodies, radial_distance_sc_to_bodies,
-                                             sun_direction, sun_distance).ravel()])
+            self.compute_covariance_dynamics(state, time, cast(float, radial_distance_cb),
+                                             cast(list[np.ndarray], position_sc_to_bodies), 
+                                             cast(list[float], radial_distance_sc_to_bodies),
+                                             cast(np.ndarray, sun_direction), 
+                                             cast(float, sun_distance)).ravel()])
 
         if np.isnan(out_dynamics).any():
             raise ValueError('NaN in Dynamics')

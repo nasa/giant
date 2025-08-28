@@ -42,7 +42,7 @@ from giant.camera_models import BrownModel
 from giant.image import OpNavImage, ExposureType
 from giant.rotations import Rotation, euler_to_rotmat
 
-from giant.catalogues.giant_catalogue import GIANTCatalogue
+from giant.catalogs.giant_catalog import GIANTCatalog
 
 from giant.stellar_opnav.star_identification import StarID
 
@@ -87,7 +87,7 @@ def _get_parser() -> ArgumentParser:
                           epilog=warning)
 
 
-PSF = Gaussian(sigma_x=1, sigma_y=2, size=5)  # type: Gaussian
+PSF: Gaussian = Gaussian(sigma_x=1, sigma_y=2, size=5) 
 """
 The camera point spread function.
 
@@ -110,7 +110,7 @@ def _render_stars(camera_to_render: Camera) -> None:
     for _, image_to_render in camera_to_render:
         start = time.time()
         # make the SID object to get the star locations
-        sid = StarID(MODEL, catalogue=GIANTCatalogue(), max_magnitude=5.5,
+        sid = StarID(MODEL, catalog=GIANTCatalog(), max_magnitude=5.5,
                      a_priori_rotation_cat2camera=image_to_render.rotation_inertial_to_camera,
                      camera_position=image_to_render.position, camera_velocity=image_to_render.velocity)
 
@@ -122,7 +122,7 @@ def _render_stars(camera_to_render: Camera) -> None:
         mref = 2.5
         inten_ref = 2 ** 14
 
-        for ind, point in enumerate(sid.queried_catalogue_image_points.T):
+        for ind, point in enumerate(sid.queried_catalog_image_points.T):
             rows = np.round(drows + point[1]).astype(int)
             cols = np.round(dcols + point[0]).astype(int)
 
@@ -133,7 +133,7 @@ def _render_stars(camera_to_render: Camera) -> None:
                 use_cols = cols[valid_check]
 
                 # compute the intensity
-                inten = 10 ** (-(sid.queried_catalogue_star_records.iloc[ind].mag - mref) / 2.5) * inten_ref
+                inten = 10 ** (-(sid.queried_catalog_star_records.iloc[ind].mag - mref) / 2.5) * inten_ref
                 psf.amplitude = inten
                 psf.centroid_x = point[0]
                 psf.centroid_y = point[1]

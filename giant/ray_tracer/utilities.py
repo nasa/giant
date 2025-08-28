@@ -14,21 +14,30 @@ you have some non-typical use.
 """
 
 import copy
-from typing import Tuple, Optional, Union
+import datetime 
+from typing import Tuple, Optional, Union, Callable, Sequence
 
 import numpy as np
+from numpy.typing import NDArray
 
 from giant.ray_tracer.rays import Rays
 
 from giant.ray_tracer.shapes.ellipsoid import Ellipsoid
 from giant.ray_tracer.shapes.triangle import Triangle64, Triangle32
 from giant.ray_tracer.shapes.shape import Shape
-from giant._typing import Real, ARRAY_LIKE
+from giant.rotations import rotvec_to_rotmat
+from giant._typing import ARRAY_LIKE
+
+
+SPEED_OF_LIGHT = 299792.458  # km/sec
+"""
+The speed of light in kilometers per second
+"""
 
 
 def find_limbs(shape: Shape, scan_center_dir: ARRAY_LIKE, scan_dirs: ARRAY_LIKE,
-               observer_position: Optional[ARRAY_LIKE] = None, initial_step: Real = 1, max_iterations: int = 25,
-               rtol: Real = 1e-12, atol: Real = 1e-12) -> np.ndarray:
+               observer_position: Optional[ARRAY_LIKE] = None, initial_step: float = 1, max_iterations: int = 25,
+               rtol: float = 1e-12, atol: float = 1e-12) -> np.ndarray:
     r"""
     This helper function determines the limb points for any traceable shape (visible edge of the shape) that would be
     visible for an observer located at ``observer_position`` looking toward ``scan_center_dir`` along the
@@ -67,11 +76,14 @@ def find_limbs(shape: Shape, scan_center_dir: ARRAY_LIKE, scan_dirs: ARRAY_LIKE,
                  indicates convergence.
     :return: the vectors from the observer to the limbs in the current frame as a 3xn array
     """
+    
+    scan_dirs = np.asanyarray(scan_dirs)
+    scan_center_dir = np.asanyarray(scan_center_dir)
 
     if observer_position is not None:
         single_start = np.array(observer_position).reshape(3, 1)
     else:
-        single_start = np.zeros(3, dtype=np.float64)
+        single_start = np.zeros((3, 1), dtype=np.float64)
 
     start = np.broadcast_to(single_start, (3, scan_dirs.shape[1]))
 
@@ -111,7 +123,7 @@ def find_limbs(shape: Shape, scan_center_dir: ARRAY_LIKE, scan_dirs: ARRAY_LIKE,
 
     res["intersect"][~res["check"]] = final_res["intersect"]
 
-    return res["intersect"].T - observer_position.reshape(3, 1)
+    return res["intersect"].T - single_start
 
 
 def compute_com(tris: Union[Triangle64, Triangle32]) -> np.ndarray:
@@ -251,7 +263,7 @@ def ref_ellipse(verts: np.ndarray) -> Ellipsoid:
     return Ellipsoid(center=center, ellipsoid_matrix=ellipsmat)
 
 
-def to_block(vals: ARRAY_LIKE) -> np.ndarray:
+def to_block(vals: Sequence[Sequence[int] | NDArray[np.integer] | int] | NDArray[np.integer]) -> NDArray[np.integer]:
     """
     This helper function takes a list of lists/arrays and puts them all into a single contiguous array
 
@@ -304,7 +316,7 @@ def to_block(vals: ARRAY_LIKE) -> np.ndarray:
     return out
 
 
-def compute_stats(tris: Union[Triangle64, Triangle32], mass: Real) -> Tuple[np.ndarray, float, float, np.ndarray,
+def compute_stats(tris: Union[Triangle64, Triangle32], mass: float) -> Tuple[np.ndarray, float, float, np.ndarray,
                                                                             np.ndarray, np.ndarray, np.ndarray]:
     """
     Compute statistics on a shape tessellated using Triangles.
@@ -383,3 +395,112 @@ def compute_stats(tris: Union[Triangle64, Triangle32], mass: Real) -> Tuple[np.n
     moments, rotation_matrix = np.linalg.eigh(i_matrix_com)
 
     return com, volume, areas.sum(), i_matrix, i_matrix_com, moments, rotation_matrix
+
+def correct_stellar_aberration_fsp(camera_to_target_position_inertial: np.ndarray,
+                                   camera_velocity_inertial: np.ndarray) -> np.ndarray:
+    """
+    Correct for stellar aberration using linear addition.
+
+    Note that this only roughly corrects for the direction, it messes up the distance to the object, therefore you
+    should favor the :func:`.correct_stellar_aberration` function which uses rotations and thus doesn't mess with the
+    distance.
+
+    Note that this assumes that the units for the input are all in kilometers and kilometers per secon.  If they are not
+    you will get unexpected results.
+
+    :param camera_to_target_position_inertial: The vector from the camera to the target in the inertial frame
+    :param camera_velocity_inertial: The velocity of the camera in the inertial frame relative to the SSB
+    :return: the vector from the camera to the target in the inertial frame corrected for stellar aberration
+    """
+    # this is only good for adjusting the unit vector. Don't use if you need anything involving range
+
+    return (camera_to_target_position_inertial + np.linalg.norm(camera_to_target_position_inertial, axis=0) *
+            camera_velocity_inertial / SPEED_OF_LIGHT)
+
+
+def correct_stellar_aberration(camera_to_target_position_inertial: np.ndarray,
+                               camera_velocity_inertial: np.ndarray) -> np.ndarray:
+    """
+    Correct for stellar aberration using rotations.
+
+    This works by computing the rotation about the aberation axis and then applying this rotation to the vector from the
+    camera to the target in the inertial frame.  This is accurate and doesn't mess up the distance to the target.  It
+    should therefore always be preferred to :func:`.correct_stellar_aberration_fsp`
+
+    Note that this assumes that the units for the input are all in kilometers and kilometers per secon.  If they are not
+    you will get unexpected results.
+
+    :param camera_to_target_position_inertial: The vector from the camera to the target in the inertial frame
+    :param camera_velocity_inertial: The velocity of the camera in the inertial frame relative to the SSB
+    :return: the vector from the camera to the target in the inertial frame corrected for stellar aberration
+    """
+    velocity_mag = np.linalg.norm(camera_velocity_inertial)
+
+    if velocity_mag != 0:
+
+        aberration_axis = np.cross(camera_to_target_position_inertial, camera_velocity_inertial / velocity_mag, axis=0)
+
+        aberration_axis_magnitude = np.linalg.norm(aberration_axis, axis=0, keepdims=True)
+
+        velocity_sin_angle = (aberration_axis_magnitude /
+                              (np.linalg.norm(camera_to_target_position_inertial, axis=0, keepdims=True)))
+
+        aberration_angle = np.arcsin(velocity_mag * velocity_sin_angle / SPEED_OF_LIGHT)
+
+        aberration_axis /= aberration_axis_magnitude
+
+        if (np.ndim(camera_to_target_position_inertial) > 1) and (np.shape(camera_to_target_position_inertial)[-1] > 1):
+
+            return np.matmul(rotvec_to_rotmat(aberration_axis * aberration_angle),
+                             camera_to_target_position_inertial.T.reshape(-1, 3, 1)).squeeze().T
+
+        else:
+            return np.matmul(rotvec_to_rotmat(aberration_axis * aberration_angle),
+                             camera_to_target_position_inertial)
+
+    else:
+        return camera_to_target_position_inertial
+    
+    
+def correct_light_time(target_location_inertial: Callable[[datetime.datetime], np.ndarray],
+                       camera_location_inertial: np.ndarray,
+                       time: datetime.datetime) -> np.ndarray:
+    """
+    Correct an inertial position to include the time of flight for light to travel between the target and the camera.
+
+    This function iteratively calculates the time of flight of light between a target and a camera and then returns
+    the relative vector between the camera and the target accounting for light time (the apparent relative vector) in
+    inertial space.  This is done by passing a callable object for target location which accepts a python datetime
+    object and returns the inertial location of the target at that time (this is usually a function wrapped around a
+    call to spice).
+
+    Note that this assumes that the units for the input are all in kilometers.  If they are not you will get unexpected
+    results.
+
+    :param target_location_inertial: A callable object which inputs a python datetime object and outputs the inertial
+                                    location of the target at the given time
+    :param camera_location_inertial: The location of the camera in inertial space at the time the image was captured
+    :param time: The time the image was captured
+    :return: The apparent vector from the target to the camera in inertial space
+    """
+
+    time_of_flight = 0
+
+    camera_location_inertial = np.asarray(camera_location_inertial).ravel()
+
+    for _ in range(10):
+
+        target_location_reflect = np.asarray(
+            target_location_inertial(time - datetime.timedelta(seconds=time_of_flight))
+        ).ravel()
+
+        time_of_flight_new = float(np.linalg.norm(camera_location_inertial - target_location_reflect) / SPEED_OF_LIGHT)
+
+        if (time_of_flight_new - time_of_flight) < 1e-8:
+            time_of_flight = time_of_flight_new
+            break
+
+        time_of_flight = time_of_flight_new
+
+    return (target_location_inertial(time - datetime.timedelta(seconds=time_of_flight)).ravel() -
+            camera_location_inertial)

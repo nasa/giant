@@ -105,7 +105,7 @@ import numpy as np
 
 from giant.camera_models.pinhole_model import PinholeModel
 from giant.rotations import rotvec_to_rotmat, Rotation
-from giant._typing import NONENUM, NONEARRAY, ARRAY_LIKE, Real
+from giant._typing import NONENUM, NONEARRAY, ARRAY_LIKE, F_ARRAY_LIKE
 
 
 class BrownModel(PinholeModel):
@@ -188,11 +188,6 @@ class BrownModel(PinholeModel):
         :param distortion_coefficients: A numpy array of shape (6,) containing the six distortion coefficients in order.
                                         Note that this array is overwritten with any distortion coefficients that are
                                         specified independently.
-        :param misalignment: either a numpy array of shape (3,) or a list of numpy arrays of shape(3,) with each array
-                             corresponding to a single image (the list of numpy arrays is only valid when estimating
-                             multiple misalignments)
-        :param estimation_parameters: A string or list of strings specifying which model parameters to include in the
-                                      calibration
         :param fx: The pixel pitch along the x axis in units of pixels
         :param fy: The pixel pitch along the y axis in units of pixels
         :param kx: The pixel pitch along the x axis in units of pixels
@@ -211,6 +206,15 @@ class BrownModel(PinholeModel):
         :param tiptilt_x: the tip/tilt/decentering distortion coefficient corresponding to the x term
         :param p1: the tip/tilt/decentering distortion coefficient corresponding to the y term
         :param p2: the tip/tilt/decentering distortion coefficient corresponding to the x term
+        :param temperature_coefficients: The temperature polynomial coefficients as a length 3 Sequence
+        :param a1: the linear coefficient of the focal length temperature dependence
+        :param a2: the quadratic coefficient of the focal length temperature dependence
+        :param a3: the cubic coefficient of the focal length temperature dependence
+        :param misalignment: either a numpy array of shape (3,) or a list of numpy arrays of shape(3,) with each array
+                             corresponding to a single image (the list of numpy arrays is only valid when estimating
+                             multiple misalignments)
+        :param estimation_parameters: A string or list of strings specifying which model parameters to include in the
+                                      calibration
         :param n_rows: the number of rows of the active image array
         :param n_cols: the number of columns in the active image array
         """
@@ -303,7 +307,8 @@ class BrownModel(PinholeModel):
         self.estimation_parameters = estimation_parameters
 
         # add the distortion parameters to the important variables
-        self.important_attributes = self.important_attributes + ['k1', 'k2', 'k3', 'p1', 'p2', 'alpha']
+        self.important_attributes = self.important_attributes + \
+            ['k1', 'k2', 'k3', 'p1', 'p2', 'alpha']
         """
         A list specifying the important attributes the must be saved/loaded for this camera model to be completely 
         reconstructed. 
@@ -560,7 +565,8 @@ class BrownModel(PinholeModel):
 
         if val != 1:
 
-            raise AttributeError('The focal length is constrained to be length 1 and is read only for this model')
+            raise AttributeError(
+                'The focal length is constrained to be length 1 and is read only for this model')
 
         else:
             self._focal_length = 1
@@ -643,7 +649,8 @@ class BrownModel(PinholeModel):
         rows_cols = rows * cols
 
         # compute the radial distortion
-        radial_distortion = (self.k1 * radius2 + self.k2 * radius4 + self.k3 * radius6) * pinhole_locations
+        radial_distortion = (self.k1 * radius2 + self.k2 *
+                             radius4 + self.k3 * radius6) * pinhole_locations
 
         # compute the tip/tilt/decentering distortion
         decentering_distortion = np.vstack([self.p1 * 2 * rows_cols + self.p2 * (radius2 + 2 * cols * cols),
@@ -656,7 +663,7 @@ class BrownModel(PinholeModel):
         return pinhole_locations + radial_distortion + decentering_distortion
 
     def get_projections(self, points_in_camera_frame: ARRAY_LIKE,
-                        image: int = 0, temperature: Real = 0) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+                        image: int = 0, temperature: float = 0) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         This method computes and returns the pinhole, and pixel locations for a set of
         3D points expressed in the camera frame.
@@ -706,30 +713,34 @@ class BrownModel(PinholeModel):
 
         # apply misalignment to the points
         if self.estimate_multiple_misalignments:
-            if np.any(self.misalignment[image]):  # optimization to avoid matrix multiplication
+            # optimization to avoid matrix multiplication
+            if np.any(self.misalignment[image]):
                 points_in_camera_frame = rotvec_to_rotmat(self.misalignment[image]).squeeze() @ \
-                                         points_in_camera_frame
+                    points_in_camera_frame
 
         else:
             if np.any(self.misalignment):  # optimization to avoid matrix multiplication
-                points_in_camera_frame = rotvec_to_rotmat(self.misalignment).squeeze() @ points_in_camera_frame
+                points_in_camera_frame = rotvec_to_rotmat(
+                    self.misalignment).squeeze() @ points_in_camera_frame
 
         # get the unitless image plane location
-        pinhole_locations = points_in_camera_frame[:2] / points_in_camera_frame[2]
+        pinhole_locations = points_in_camera_frame[:2] / \
+            points_in_camera_frame[2]
 
         # get the distorted image plane location
-        image_locations = self.apply_distortion(pinhole_locations)
+        image_locations = self.apply_distortion(pinhole_locations) 
 
         # add the temperature based scaling
         image_locations *= self.get_temperature_scale(temperature)
 
         # get the pixel locations of the points, need to mess with transposes due to numpy broadcasting rules
-        picture_locations = ((self.intrinsic_matrix[:, :2] @ image_locations).T + self.intrinsic_matrix[:, 2]).T
+        picture_locations = (
+            (self.intrinsic_matrix[:, :2] @ image_locations).T + self.intrinsic_matrix[:, 2]).T
 
         return pinhole_locations, image_locations, picture_locations
 
     def project_onto_image(self, points_in_camera_frame: ARRAY_LIKE, image: int = 0,
-                           temperature: Real = 0) -> np.ndarray:
+                           temperature: float = 0) -> np.ndarray:
         """
         This method transforms 3D points or directions expressed in the camera frame into the corresponding 2D image
         locations.
@@ -764,11 +775,12 @@ class BrownModel(PinholeModel):
         :return: A shape (2,) or shape (2, n) numpy array of image points (with units of pixels)
         """
 
-        _, __, picture_locations = self.get_projections(points_in_camera_frame, image, temperature=temperature)
+        _, __, picture_locations = self.get_projections(
+            points_in_camera_frame, image, temperature=temperature)
 
         return picture_locations
 
-    def compute_pixel_jacobian(self, vectors_in_camera_frame: ARRAY_LIKE, image: int = 0, temperature: Real = 0) \
+    def compute_pixel_jacobian(self, vectors_in_camera_frame: ARRAY_LIKE, image: int = 0, temperature: float = 0) \
             -> np.ndarray:
         r"""
         This method computes the Jacobian matrix :math:`\partial\mathbf{x}_P/\partial\mathbf{x}_C` where
@@ -806,7 +818,8 @@ class BrownModel(PinholeModel):
 
             # get the camera point after misalignment and shift from principle frame is applied
             if self.estimate_multiple_misalignments:
-                if np.any(self.misalignment[image]):  # optimization to avoid matrix multiplication
+                # optimization to avoid matrix multiplication
+                if np.any(self.misalignment[image]):
                     mis = rotvec_to_rotmat(self.misalignment[image]).squeeze()
                     cam_point = mis @ vector
 
@@ -837,7 +850,8 @@ class BrownModel(PinholeModel):
                                                                              radius2, radius4, radius6)
 
             # get the partial derivative of the pixel location of the point with respect to the dist gnomic location
-            dpix_ddist_gnom = self._compute_dpixel_ddistorted_gnomic(temperature=temperature)
+            dpix_ddist_gnom = self._compute_dpixel_ddistorted_gnomic(
+                temperature=temperature)
 
             # compute the partial derivative of the misaligned vector with respect to a change in the input vector
             dcam_point_dvector = mis
@@ -880,7 +894,7 @@ class BrownModel(PinholeModel):
         return np.eye(2) - self._compute_ddistortion_dgnomic(distorted_gnomic_location,
                                                              radius2, radius4, radius6)
 
-    def _compute_ddistortion_dgnomic(self, gnomic: ARRAY_LIKE,
+    def _compute_ddistortion_dgnomic(self, gnomic: ARRAY_LIKE, # type: ignore
                                      radius2: float, radius4: float, radius6: float) -> np.ndarray:
         r"""
         Computes the partial derivative of the distorted gnomic location with respect to a change in the gnomic location
@@ -902,6 +916,8 @@ class BrownModel(PinholeModel):
         :param radius6: The radial distance to the sixth power from the optical axis
         :return: The partial derivative of the distortion with respect to a change in the gnomic location
         """
+        
+        gnomic = np.asanyarray(gnomic)
 
         row = gnomic[1]
         col = gnomic[0]
@@ -941,7 +957,7 @@ class BrownModel(PinholeModel):
         return self._compute_ddistortion_dgnomic(gnomic, radius2, radius4, radius6) + np.eye(2)
 
     @staticmethod
-    def _compute_dpixel_dintrinsic(gnomic_location_distorted: ARRAY_LIKE) -> np.ndarray:
+    def _compute_dpixel_dintrinsic(gnomic_location_distorted: F_ARRAY_LIKE) -> np.ndarray:
         r"""
         computes the partial derivative of the pixel location with respect to a change in one of the intrinsic matrix
         parameters given the gnomic location of the point we are computing the derivative for.
@@ -1007,14 +1023,16 @@ class BrownModel(PinholeModel):
         ddist_gnom_dr6 = radius6 * gnomic_loc
 
         # compute the partial derivative of the tip/tilt/prism terms
-        ddist_gnom_dp1 = [2 * gnomic_loc[0] * gnomic_loc[1], radius2 + 2 * gnomic_loc[1] ** 2]
-        ddist_gnom_dp2 = [radius2 + 2 * gnomic_loc[0] ** 2, 2 * gnomic_loc[0] * gnomic_loc[1]]
+        ddist_gnom_dp1 = [2 * gnomic_loc[0] *
+                          gnomic_loc[1], radius2 + 2 * gnomic_loc[1] ** 2]
+        ddist_gnom_dp2 = [radius2 + 2 * gnomic_loc[0]
+                          ** 2, 2 * gnomic_loc[0] * gnomic_loc[1]]
 
         # compute the partial derivative of the distorted gnomic location with respect to the distortion coefficients
         return np.array([ddist_gnom_dr2, ddist_gnom_dr4, ddist_gnom_dr6, ddist_gnom_dp1, ddist_gnom_dp2]).T
 
     def _get_jacobian_row(self, unit_vector_camera: ARRAY_LIKE, image: int, num_images: int,
-                          temperature: Real = 0) -> np.ndarray:
+                          temperature: float = 0) -> np.ndarray:
         r"""
         Calculates the Jacobian matrix for a single point.
 
@@ -1067,15 +1085,18 @@ class BrownModel(PinholeModel):
 
         # get the camera point after misalignment and shift from principle frame is applied
         if self.estimate_multiple_misalignments:
-            if np.any(self.misalignment[image]):  # optimization to avoid matrix multiplication
-                cam_point = rotvec_to_rotmat(self.misalignment[image]).squeeze() @ unit_vector_camera
+            # optimization to avoid matrix multiplication
+            if np.any(self.misalignment[image]):
+                cam_point = rotvec_to_rotmat(
+                    self.misalignment[image]).squeeze() @ unit_vector_camera
 
             else:
                 cam_point = unit_vector_camera
 
         else:
             if np.any(self.misalignment):  # optimization to avoid matrix multiplication
-                cam_point = rotvec_to_rotmat(self.misalignment).squeeze() @ unit_vector_camera
+                cam_point = rotvec_to_rotmat(
+                    self.misalignment).squeeze() @ unit_vector_camera
 
             else:
                 cam_point = unit_vector_camera
@@ -1084,7 +1105,7 @@ class BrownModel(PinholeModel):
 
         # compute the radial distance from the optical axis as well as its powers
         # noinspection PyTypeChecker
-        radius2 = np.sum(np.power(image_loc, 2), axis=0)  # type: float
+        radius2: float = np.sum(np.power(image_loc, 2), axis=0) 
         radius4 = radius2 ** 2
         radius6 = radius4 * radius2
 
@@ -1093,13 +1114,16 @@ class BrownModel(PinholeModel):
         # --------------------------------------------------------------------------------------------------------------
 
         # get the partial derivative of the distorted gnomic location with respect to the gnomic location
-        ddist_gnom_dgnom = self._compute_ddistorted_gnomic_dgnomic(image_loc, radius2, radius4, radius6)
+        ddist_gnom_dgnom = self._compute_ddistorted_gnomic_dgnomic(
+            image_loc, radius2, radius4, radius6)
 
         # get the partial derivative of the pixel location of the point with respect to the distorted location
-        dpix_ddist_gnom = self._compute_dpixel_ddistorted_gnomic(temperature=temperature)
+        dpix_ddist_gnom = self._compute_dpixel_ddistorted_gnomic(
+            temperature=temperature)
 
         # get the partial derivative of the camera location with respect to a change in the misalignment vector
-        dcam_point_dmisalignment = self._compute_dcamera_point_dmisalignment(unit_vector_camera)
+        dcam_point_dmisalignment = self._compute_dcamera_point_dmisalignment(
+            unit_vector_camera)
 
         # get the partial derivative of the gnomic location with respect to the point in the camera frame
         dgnom_dcam_point = self._compute_dgnomic_dcamera_point(cam_point)
@@ -1118,7 +1142,8 @@ class BrownModel(PinholeModel):
         # --------------------------------------------------------------------------------------------------------------
 
         # compute the partial derivative of the distorted gnomic location with respect to the distortion coefficients
-        dist_gnom_ddist = self._compute_ddistorted_gnomic_ddistortion(image_loc, radius2, radius4, radius6)
+        dist_gnom_ddist = self._compute_ddistorted_gnomic_ddistortion(
+            image_loc, radius2, radius4, radius6)
 
         # compute the partial derivative of the pixel location with respect to the distortion coefficients
         dpix_ddist = dpix_ddist_gnom @ dist_gnom_ddist
@@ -1127,16 +1152,19 @@ class BrownModel(PinholeModel):
         # get the partial derivative of the measurement with respect to the temperature coefficients
         # --------------------------------------------------------------------------------------------------------------
 
-        dpix_dtemperature = self._compute_dpixel_dtemperature_coeffs(image_loc_dist, temperature=temperature)
+        dpix_dtemperature = self._compute_dpixel_dtemperature_coeffs(
+            image_loc_dist, temperature=temperature)
 
         # stack everything together
         if self.estimate_multiple_misalignments:
             jacobian_row = np.hstack([dpix_dintrinsic, dpix_ddist, dpix_dtemperature,
-                                      np.zeros((2, image * 3)), dpix_dmisalignment,
+                                      np.zeros((2, image * 3)
+                                               ), dpix_dmisalignment,
                                       np.zeros((2, (num_images - image - 1) * 3))])
 
         else:
-            jacobian_row = np.hstack([dpix_dintrinsic, dpix_ddist, dpix_dtemperature, dpix_dmisalignment])
+            jacobian_row = np.hstack(
+                [dpix_dintrinsic, dpix_ddist, dpix_dtemperature, dpix_dmisalignment])
 
         return jacobian_row
 
@@ -1162,7 +1190,7 @@ class BrownModel(PinholeModel):
         jacobian_parameters = np.hstack([getattr(self.element_dict[element], 'start', self.element_dict[element])
                                          for element in self.estimation_parameters])
 
-        update_vec = self._fix_update_vector(update_vec, jacobian_parameters)
+        update_vec = self._fix_update_vector(np.asanyarray(update_vec, dtype=np.float64), jacobian_parameters)
 
         update_vec = np.asarray(update_vec).ravel()
 
@@ -1209,7 +1237,8 @@ class BrownModel(PinholeModel):
 
             elif parameter == 13 or parameter == '13:':
 
-                misalignment_updates = update_vec[ind:].reshape(3, -1, order='F')
+                misalignment_updates = update_vec[ind:].reshape(
+                    3, -1, order='F')
 
                 if self.estimate_multiple_misalignments:
                     self.misalignment = [(Rotation(update.T) * Rotation(self.misalignment[ind])).vector
@@ -1217,7 +1246,8 @@ class BrownModel(PinholeModel):
 
                 else:
                     self.misalignment = (
-                            Rotation(misalignment_updates) * Rotation(self.misalignment)
+                        Rotation(misalignment_updates) *
+                        Rotation(self.misalignment)
                     ).vector
 
                 break

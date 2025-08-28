@@ -5,11 +5,14 @@
 """
 Defines a PSF object for estimating centroids using a moment (center-of-illumination) algorithm.
 """
+
+from typing import Self
+
 import numpy as np
 
-from .psf_meta import PointSpreadFunction
+from giant.point_spread_functions.psf_meta import PointSpreadFunction
 
-from .._typing import NONENUM, ARRAY_LIKE, Real, NONEARRAY
+from giant._typing import NONENUM, ARRAY_LIKE, NONEARRAY
 
 
 class Moment(PointSpreadFunction):
@@ -30,12 +33,12 @@ class Moment(PointSpreadFunction):
         :param centroid_y: The y component of the centroid in pixels
         """
 
-        self.centroid_x = 0.0  # type: float
+        self.centroid_x: float = 0.0 
         """
         The x location of the centroid
         """
 
-        self.centroid_y = 0.0  # type: float
+        self.centroid_y: float = 0.0 
         """
         The y location of the centroid
         """
@@ -59,7 +62,7 @@ class Moment(PointSpreadFunction):
         return image
 
     def apply_1d(self, image_1d: np.ndarray, direction: NONEARRAY = None,
-                 step: Real = 1) -> np.ndarray:
+                 step: float = 1) -> np.ndarray:
         """
         Just returns the input scan lines as is.
 
@@ -89,10 +92,10 @@ class Moment(PointSpreadFunction):
         :return: An array of zeros
         """
 
-        return np.zeros(x.shape, dtype=np.float64)
+        return np.zeros(np.shape(x), dtype=np.float64)
 
     @classmethod
-    def fit(cls, x: ARRAY_LIKE, y: ARRAY_LIKE, z: ARRAY_LIKE) -> __qualname__:
+    def fit(cls, x: ARRAY_LIKE, y: ARRAY_LIKE, z: ARRAY_LIKE) -> Self:
         r"""
         This function identifies the centroid of the PSF for the input data using a moment algorithm (center of
         illumination).
@@ -131,6 +134,17 @@ class Moment(PointSpreadFunction):
         """
 
         return np.array([self.centroid_x, self.centroid_y])
+    
+    def shift_centroid(self, shift: ARRAY_LIKE) -> None:
+        """
+        Shift the centroid.
+        
+        :param shift: the shift to apply as a len array like x, y 
+        """
+        shift = np.asanyarray(shift).ravel()
+        assert shift.shape == (2,), "the shift must be length 2"
+        self.centroid_x += shift[0]
+        self.centroid_y += shift[1]
 
     @property
     def residual_rss(self) -> NONENUM:

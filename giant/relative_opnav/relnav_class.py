@@ -101,27 +101,29 @@ from warnings import warn
 
 from functools import partialmethod
 
-from typing import Optional, List, Type, Iterable, Tuple, Any, Dict, Union
+from typing import Optional, List, Type, Iterable, Tuple, Any, Dict, Union, Iterator
 
 import numpy as np
+from numpy.typing import NDArray
 
 from giant.opnav_class import OpNav
 from giant.camera import Camera
-from giant.image_processing import ImageProcessing
 from giant.ray_tracer.scene import Scene, SceneObject
 from giant.ray_tracer.shapes import Ellipsoid
 from giant.image import OpNavImage
 
-from giant._typing import Real, NONEARRAY, PATH, ARRAY_LIKE_2D
+from giant._typing import NONEARRAY, PATH, DOUBLE_ARRAY
 
 from giant.relative_opnav.estimators import RelNavObservablesType, RelNavEstimator
-from giant.relative_opnav.estimators.limb_matching import LimbMatching
-from giant.relative_opnav.estimators.ellipse_matching import EllipseMatching
-from giant.relative_opnav.estimators.moment_algorithm import MomentAlgorithm
-from giant.relative_opnav.estimators.unresolved import UnresolvedCenterFinding
-from giant.relative_opnav.estimators.cross_correlation import XCorrCenterFinding
-from giant.relative_opnav.estimators.sfn import FeatureCatalogue
-from giant.relative_opnav.estimators.sfn import SurfaceFeatureNavigation
+from giant.relative_opnav.estimators.limb_matching import LimbMatching, LimbMatchingOptions
+from giant.relative_opnav.estimators.ellipse_matching import EllipseMatching, EllipseMatchingOptions
+from giant.relative_opnav.estimators.moment_algorithm import MomentAlgorithm, MomentAlgorithmOptions
+from giant.relative_opnav.estimators.unresolved import UnresolvedCenterFinding, UnresolvedCenterFindingOptions
+from giant.relative_opnav.estimators.cross_correlation import XCorrCenterFinding, XCorrCenterFindingOptions
+from giant.relative_opnav.estimators.constraint_matching import ConstraintMatching
+from giant.relative_opnav.estimators.sfn import FeatureCatalog
+from giant.relative_opnav.estimators.sfn import SurfaceFeatureNavigation, SurfaceFeatureNavigationOptions
+
 
 
 
@@ -188,7 +190,7 @@ class RelativeOpNav(OpNav):
 
     The class acts as a container for the :class:`.Camera`, :class:`.ImageProcessing`, and :class:`.Scene` instances as
     well as for instance of all of the registered RelNav techniques.  By default the registered RelNav techniques are
-    :class:`.XCorrCenterFinding` to :attr:`cross_correlation`, :class:`.EllipseMatching` to :attr:`ellipse_matching`,
+    :class:`.XCorrCenterFinding` to :attr:`cross_correlation`, :class:`.EllipseMatching' to :attr:`ellipse_matching`,
     :class:`.LimbMatching` to :attr:`limb_matching`, :class:`.MomentAlgorithm` to :attr:`.moment_algorithm`, and
     :class:`.UnresolvedCenterFinding` to :attr:`.unresolved`.  Besides storing all of these objects, it handles data
     transfer and collection between the different objects.  Therefore, in general this class will be the exclusive
@@ -201,7 +203,7 @@ class RelativeOpNav(OpNav):
     objects as well as providing the appropriate data to the objects.  Finally, for each registered technique this
     class provides the opportunity to pass either a pre-initialized instance of the object as a key word argument
     (using ``{technique}=instance``) or the keyword arguments to use to initialize the instance (using
-    ``{technique}_kwargs=dict``) as part of the ``__init__`` method for this class.
+    ``{technique}_options=UserOptions``) as part of the ``__init__`` method for this class.
 
     This class also provides a simple method for automatically determining which RelNav technique to use based on the
     expected apparent diameter of a target in the image, as well as the type of the shape representing the target in the
@@ -217,7 +219,7 @@ class RelativeOpNav(OpNav):
     detailed key names to indicate what each value means, but they can technically be any python object.  The
     documentation for each technique will describe what is included in the details output.
 
-    When initializing this class, most of the initial options can be set using the ``*_kwargs`` inputs with
+    When initializing this class, most of the initial options can be set using the ``*_options`` inputs with
     dictionaries specifying the keyword arguments and values. Alternatively, you can provide already initialized
     instances of the objects if you want a little more control or want to use a subclass instead of the registered
     class itself.  You should see the documentation for the registered techniques and the :class:`.ImageProcessing`
@@ -232,7 +234,8 @@ class RelativeOpNav(OpNav):
                               "ellipse_matching": EllipseMatching,
                               "limb_matching": LimbMatching,
                               "moment_algorithm": MomentAlgorithm,
-                              "unresolved": UnresolvedCenterFinding}  # type: Dict[str, Type[RelNavEstimator]]
+                              "unresolved": UnresolvedCenterFinding,
+                              "constraint_matching": ConstraintMatching}  # type: Dict[str, Type[RelNavEstimator]]
     """
     This dictionary contains all registered techniques with the RelativeOpNav class.
     
@@ -244,7 +247,8 @@ class RelativeOpNav(OpNav):
                  "ellipse_matching",
                  "limb_matching",
                  "moment_algorithm",
-                 "unresolved"]  # type: List[str]
+                 "unresolved",
+                 "constraint_matching"]  # type: List[str]
     """
     The list contains the built in techniques that are pre-registered with the RelativeOpNav class.  
     
@@ -253,16 +257,22 @@ class RelativeOpNav(OpNav):
     completion and static type checking purposes.
     """
 
-    def __init__(self, camera: Camera, scene: Scene, extended_body_cutoff: Real = 3,
+    def __init__(self, camera: Camera, scene: Scene, extended_body_cutoff: float = 3,
                  save_templates: bool = False,
-                 image_processing: Optional[ImageProcessing] = None, image_processing_kwargs: Optional[dict] = None,
                  cross_correlation: Optional[XCorrCenterFinding] = None,
-                 cross_correlation_kwargs: Optional[dict] = None,
-                 unresolved: Optional[UnresolvedCenterFinding] = None, unresolved_kwargs: Optional[dict] = None,
-                 ellipse_matching: Optional[EllipseMatching] = None, ellipse_matching_kwargs: Optional[dict] = None,
-                 limb_matching: Optional[LimbMatching] = None, limb_matching_kwargs: Optional[dict] = None,
-                 moment_algorithm: Optional[MomentAlgorithm] = None, moment_algorithm_kwargs: Optional[dict] = None,
-                 sfn: Optional[SurfaceFeatureNavigation] = None, sfn_kwargs: Optional[dict] = None,
+                 cross_correlation_options: Optional[XCorrCenterFindingOptions] = None,
+                 unresolved: Optional[UnresolvedCenterFinding] = None,
+                 unresolved_options: Optional[UnresolvedCenterFindingOptions] = UnresolvedCenterFindingOptions(),
+                 ellipse_matching: Optional[EllipseMatching] = None,
+                 ellipse_matching_options: Optional[EllipseMatchingOptions] = EllipseMatchingOptions(),
+                 limb_matching: Optional[LimbMatching] = None,
+                 limb_matching_options: Optional[LimbMatchingOptions] = LimbMatchingOptions(),
+                 moment_algorithm: Optional[MomentAlgorithm] = None,
+                 moment_algorithm_options: Optional[MomentAlgorithmOptions] = MomentAlgorithmOptions(),
+                 constraint_matching: Optional[ConstraintMatching] = None,
+                 constraint_matching_kwargs: Optional[dict] = None,
+                 sfn: Optional[SurfaceFeatureNavigation] = None,
+                 sfn_options: Optional[SurfaceFeatureNavigationOptions] = SurfaceFeatureNavigationOptions(),
                  **kwargs):
         """
         :param camera: The :class:`.Camera` containing the camera model and images to be analyzed
@@ -273,48 +283,49 @@ class RelativeOpNav(OpNav):
                                      extracting observables from the images.
         :param save_templates: A flag specifying whether to save the templates generated for cross-correlation based
                                techniques to the :attr:`saved_templates` attribute.
-        :param image_processing: An already initialized instance of :class:`.ImageProcessing` (or a subclass).  If not
-                                 ``None`` then ``image_processing_kwargs`` are ignored.
-        :param image_processing_kwargs: The keyword arguments to pass to the :class:`.ImageProcessing` class
-                                        constructor.  These are ignored if argument ``image_processing`` is not ``None``
         :param cross_correlation: An already initialized instance of :class:`.XCorrCenterFinding` (or a subclass).  If
-                                  not ``None`` then ``cross_correlation_kwargs`` are ignored.
-        :param cross_correlation_kwargs: The keyword arguments to pass to the :class:`.XCorrCenterFinding` class
+                                  not ``None`` then ``cross_correlation_options`` are ignored.
+        :param cross_correlation_options: The options to pass to the :class:`.XCorrCenterFinding` class
                                          constructor.  These are ignored if argument ``cross_correlation is not ``None``
         :param unresolved: An already initialized instance of :class:`.UnresolvedCenterFinding` (or a subclass).  If
-                           not ``None`` then ``unresolved_kwargs`` are ignored.
-        :param unresolved_kwargs: The keyword arguments to pass to the :class:`.UnresolvedCenterFinding` class
+                           not ``None`` then ``unresolved_options`` are ignored.
+        :param unresolved_options: The options to pass to the :class:`.UnresolvedCenterFinding` class
                                   constructor. These are ignored if argument ``unresolved`` is not ``None``
         :param ellipse_matching: An already initialized instance of :class:`.EllipseMatching` (or a subclass).
-                                 If not ``None`` then ``ellipse_matching_kwargs`` are ignored.
-        :param ellipse_matching_kwargs: The keyword arguments to pass to the :class:`.EllipseMatching` class
+                                 If not ``None`` then ``ellipse_matching_options`` are ignored.
+        :param ellipse_matching_options: The options to pass to the :class:`.EllipseMatching` class
                                         constructor. These are ignored if argument ``ellipse_matching`` is not ``None``
         :param limb_matching: An already initialized instance of :class:`.LimbMatching` (or a subclass).  If not
-                              ``None`` then ``limb_matching_kwargs`` are ignored
-        :param limb_matching_kwargs: The key word arguments to pass to the :class:`.LimbMatching` class constructor.
+                              ``None`` then ``limb_matching_options`` are ignored
+        :param limb_matching_options: The options to pass to the :class:`.LimbMatching` class constructor.
                                      These are ignored if argument ``limb_matching`` is not ``None``.
         :param moment_algorithm: An already initialized instance of :class:`.MomentAlgorithm` (or a subclass).  If not
-                                 ``None`` then ``moment_algorithm_kwargs`` are ignored.
-        :param moment_algorithm_kwargs: The key word arguments to pass to the :class:`.MomentAlgorithm` class
+                                 ``None`` then ``moment_algorithm_options`` are ignored.
+        :param moment_algorithm_options: The options to pass to the :class:`.MomentAlgorithm` class
                                         constructor.  These are ignored if argument ``moment_algorithm`` is not
                                         ``None``.
+        :param constraint_matching: An already initialized instance of :class:`.ConstraingMatching` (or a subclass).  If
+                                    not ``None`` then ``constraint_matching_kwargs`` are ignored.
+        :param constraint_matching_kwargs: The keyword arguments to pass to the :class:`.ConstraingMatching` class
+                                           constructor. These are ignored if argument ``constraint_matching`` is not
+                                           ``None``.
         :param sfn: An already initialized instance of :class:`.SurfaceFeatureNavigation` (or a subclass).  If not
-                    ``None`` then ``sfn_kwargs`` are ignored.
-        :param sfn_kwargs: The key word arguments to pass to the :class:`.SurfaceFeatureNavigation` class constructor.
+                    ``None`` then ``sfn_options`` are ignored.
+        :param sfn_options: The options to pass to the :class:`.SurfaceFeatureNavigation` class constructor.
                            These are ignored if argument ``sfn`` is not ``None``.
         :param kwargs: Extra arguments for other registered RelNav techniques.  These should take the same form as above
-                       (``{technique_name}={technique_instance}`` or ``{technique_name}_kwargs=dict()``).  Any that are
+                       (``{technique_name}={technique_instance}`` or ``{technique_name}_options=technique_nameOptions()``).  Any that are
                        not supplied are defaulted to ``None``.
         """
 
         # make a call to the super class
-        super().__init__(camera, image_processing=image_processing, image_processing_kwargs=image_processing_kwargs)
+        super().__init__(camera)
 
         # initialize the auto update flag to false.  It will be set with the scene
         self._auto_update = False
 
         # set the scene, which also sets the _auto_update attribute
-        self._scene = None
+        self._scene = scene
         self.scene = scene
 
         # initialize the variables to store the results
@@ -355,8 +366,8 @@ class RelativeOpNav(OpNav):
         landmarks in the image/target pair.  Each element can (and likely will) have a different length.
         """
 
-        self.constraint_results = [[None] * len(self.scene.target_objs)
-                                   for _ in range(len(self.camera.images))]  # type: List[List[NONEARRAY]]
+        self.constraint_matching_results = [[None] * len(self.scene.target_objs)
+                                            for _ in range(len(self.camera.images))]  # type: List[List[NONEARRAY]]
         """
         This list of lists contains image constraint results for all images/targets in the scene after an image 
         constraint technique is used.
@@ -384,7 +395,7 @@ class RelativeOpNav(OpNav):
         limbs in the image/target pair.  Each element can have a different length.
         """
 
-        self.saved_templates = [[None] * len(self.scene.target_objs) for _ in range(len(self.camera.images))]
+        self.saved_templates: list[list[None | DOUBLE_ARRAY]] = [[None] * len(self.scene.target_objs) for _ in range(len(self.camera.images))]
         """
         This list of lists contains the templates generated by many of the techniques for inspection.
         
@@ -395,7 +406,7 @@ class RelativeOpNav(OpNav):
         containing the templates for each landmark (if doing landmark navigation)
         """
 
-        self.save_templates = save_templates  # type: bool
+        self.save_templates: bool = save_templates 
         """
         This flag specifies whether to save rendered templates from techniques that rely on cross-correlation.
         
@@ -404,7 +415,7 @@ class RelativeOpNav(OpNav):
         turning this option on.
         """
 
-        self.extended_body_cutoff = float(extended_body_cutoff)  # type: float
+        self.extended_body_cutoff: float = float(extended_body_cutoff) 
         """
         The apparent diameter of a target in pixels when we should switch from using unresolved techniques to 
         resolved techniques for center finding.
@@ -415,16 +426,11 @@ class RelativeOpNav(OpNav):
         # store the classes that do the hard work
 
         # unresolved
+        if unresolved is None:
+
+            unresolved = UnresolvedCenterFinding(self.scene, self._camera, options=unresolved_options)
+            
         self._unresolved = unresolved
-
-        if self._unresolved is None:
-
-            if unresolved_kwargs is not None:
-                self._unresolved = UnresolvedCenterFinding(self.scene, self._camera, self._image_processing,
-                                                           **unresolved_kwargs)
-
-            else:
-                self._unresolved = UnresolvedCenterFinding(self.scene, self._camera, self._image_processing)
 
         self.unresolved_details = [[None] * len(self.scene.target_objs) for _ in range(len(self.camera.images))]
         """
@@ -443,16 +449,12 @@ class RelativeOpNav(OpNav):
         """
 
         # cross correlation
+        if cross_correlation is None:
+
+            cross_correlation = XCorrCenterFinding(self.scene, self._camera, cross_correlation_options)
+            
         self._cross_correlation = cross_correlation
 
-        if self._cross_correlation is None:
-
-            if cross_correlation_kwargs is not None:
-                self._cross_correlation = XCorrCenterFinding(self.scene, self._camera, self._image_processing,
-                                                             **cross_correlation_kwargs)
-
-            else:
-                self._cross_correlation = XCorrCenterFinding(self.scene, self._camera, self._image_processing)
 
         self.cross_correlation_details = [[None] * len(self.scene.target_objs) for _ in range(len(self.camera.images))]
         """
@@ -471,15 +473,11 @@ class RelativeOpNav(OpNav):
         """
 
         # sfn
+        if sfn is None:
+            sfn = SurfaceFeatureNavigation(self.scene, self._camera, options = sfn_options)
+            
         self._sfn = sfn
 
-        if self._sfn is None:
-            if sfn_kwargs is not None:
-                self._sfn = SurfaceFeatureNavigation(self.scene, self._camera, self._image_processing,
-                                                     **sfn_kwargs)
-
-            else:
-                self._sfn = SurfaceFeatureNavigation(self.scene, self._camera, self._image_processing)
 
         self.sfn_details = [[None] * len(self.scene.target_objs) for _ in range(len(self.camera.images))]
         """
@@ -498,14 +496,10 @@ class RelativeOpNav(OpNav):
         """
 
         # limb matching
-        self._limb_matching = limb_matching
+        if limb_matching is None:
+            limb_matching = LimbMatching(self.scene, self._camera, options=limb_matching_options)
 
-        if self._limb_matching is None:
-            if limb_matching_kwargs is not None:
-                self._limb_matching = LimbMatching(self.scene, self._camera, self._image_processing,
-                                                   **limb_matching_kwargs)
-            else:
-                self._limb_matching = LimbMatching(self.scene, self._camera, self._image_processing)
+        self._limb_matching = limb_matching
 
         self.limb_matching_details = [[None] * len(self.scene.target_objs) for _ in range(len(self.camera.images))]
         """
@@ -523,16 +517,10 @@ class RelativeOpNav(OpNav):
         """
 
         # ellipse matching
+        if ellipse_matching is None:
+            ellipse_matching = EllipseMatching(self.scene, self._camera, options=ellipse_matching_options)
+            
         self._ellipse_matching = ellipse_matching
-
-        if self._ellipse_matching is None:
-            if ellipse_matching_kwargs is not None:
-                self._ellipse_matching = EllipseMatching(self.scene, self._camera, self._image_processing,
-                                                         **ellipse_matching_kwargs)
-
-            else:
-
-                self._ellipse_matching = EllipseMatching(self.scene, self._camera, self._image_processing)
 
         self.ellipse_matching_details = [[None] * len(self.scene.target_objs) for _ in range(len(self.camera.images))]
         """
@@ -550,16 +538,10 @@ class RelativeOpNav(OpNav):
         """
 
         # moment algorithm
+        if moment_algorithm is None:
+            moment_algorithm = MomentAlgorithm(self.scene, self._camera, options=moment_algorithm_options)
+            
         self._moment_algorithm = moment_algorithm
-
-        if self._moment_algorithm is None:
-            if moment_algorithm_kwargs is not None:
-                self._moment_algorithm = MomentAlgorithm(self.scene, self._camera, self._image_processing,
-                                                         **moment_algorithm_kwargs)
-
-            else:
-
-                self._moment_algorithm = MomentAlgorithm(self.scene, self._camera, self._image_processing)
 
         self.moment_algorithm_details = [[None] * len(self.scene.target_objs) for _ in range(len(self.camera.images))]
         """
@@ -576,6 +558,30 @@ class RelativeOpNav(OpNav):
         For a description of what the provided details include, see the :attr:`.MomentAlgorithm.details` documentation.
         """
 
+        # constraint matching
+        if constraint_matching is None:
+
+            constraint_matching = ConstraintMatching(self.scene, self._camera, constraint_matching_kwargs)
+
+        self._constraint_matching = constraint_matching
+
+
+        self.constraint_matching_details = [[None] * len(self.scene.target_objs) for _ in range(len(self.camera.images))]
+        """
+        This attribute stores details from the :mod:`.constraint_matching` technique for each image/target pair that has 
+        been processed.
+
+        The details are stored as a list of list of object (typically dictionaries) where each element of the outer list
+        corresponds to the same element number in the :attr:`.Camera.images` list and each element of the inner list
+        corresponds to the same element number in the :attr:`.Scene.target_objs` list.
+
+        If an image/target pair has not been processed by the :mod:`.constraint_matching` technique then the corresponding
+        element will still be set to ``None``. 
+
+        For a description of what the provided details include, see the :attr:`.ConstraintMatching.details` 
+        documentation.
+        """
+
         for technique, technique_obj in self._registered_techniques.items():
 
             if technique in self._builtins:  # we've already dealt with these so skip them
@@ -584,13 +590,9 @@ class RelativeOpNav(OpNav):
             internal = '_' + technique
             setattr(self, internal, kwargs.get(technique))
             if getattr(self, internal) is None:
-                technique_kwargs = kwargs.get(technique+'_kwargs')
+                technique_options = kwargs.get(technique+'_options')
 
-                if technique_kwargs is not None:
-                    setattr(self, internal, technique_obj(self.scene, self._camera, self._image_processing,
-                                                          **technique_kwargs))
-                else:
-                    setattr(self, internal, technique_obj(self.scene, self._camera, self._image_processing))
+                setattr(self, internal, technique_obj(self.scene, self._camera, options=technique_options))
 
             # make the details list for this technique
             details = f'{technique}_details'
@@ -735,7 +737,29 @@ class RelativeOpNav(OpNav):
 
         self._unresolved = val
 
-    def add_images(self, data: Union[Iterable[Union[PATH, ARRAY_LIKE_2D]], PATH, ARRAY_LIKE_2D],
+    @property
+    def constraint_matching(self) -> ConstraintMatching:
+        """
+        The ``ConstraintMatching`` instance to use when extracting constraint observables from images using keypoint
+        matching.
+
+        This should be an instance of the :class:`.ConstraintMatching` class or a subclass.
+
+        See the :class:`.ConstraintMatching` documentation for more details.
+        """
+        return self._constraint_matching
+
+    @constraint_matching.setter
+    def constraint_matching(self, val: ConstraintMatching):
+
+        if not isinstance(val, ConstraintMatching):
+            warn("The constraint_matching object should probably subclass ConstraintMatching.  "
+                 "We'll assume you know what your doing for now but see the ConstraintMatching documentation for "
+                 "details")
+
+        self._constraint_matching = val
+
+    def add_images(self, data: Iterable[PATH | NDArray] | PATH | NDArray,
                    parse_data: bool = True, preprocessor: bool = True):
         """
         This is essentially an alias to the :meth:`.Camera.add_images` method, but it also expands various lists to
@@ -760,7 +784,7 @@ class RelativeOpNav(OpNav):
         :param preprocessor: A flag to specify whether to run the preprocessor after loading an image.
         """
 
-        super().add_images(data, parse_data=parse_data)
+        super().add_images(data, parse_data=parse_data, preprocessor=preprocessor)
 
         if isinstance(data, (list, tuple)):
             generator = data
@@ -900,10 +924,10 @@ class RelativeOpNav(OpNav):
         cls._registered_techniques[technique] = technique_class
 
         # define the getter/setter for the technique instance
-        def getter(self: cls) -> technique_class:
+        def getter(self):
             return getattr(self, internal)
 
-        def setter(self: cls, val: technique_class):
+        def setter(self, val):
 
             if not isinstance(val, technique_class):
                 warn(f"The {technique} object should probably subclass {technique_class.__name__}.  "
@@ -967,8 +991,8 @@ class RelativeOpNav(OpNav):
             return
 
         self.center_finding_results[image_ind,
-                                    target_ind] = (np.hstack([worker.computed_bearings[target_ind], [0]]),  # predicted
-                                                   np.hstack([worker.observed_bearings[target_ind], [0]]),  # measured
+                                    target_ind] = (np.hstack([worker.computed_bearings[target_ind], [0]]),  # type: ignore
+                                                   np.hstack([worker.observed_bearings[target_ind], [0]]),  # type: ignore
                                                    'cof',  # type
                                                    image.observation_date,  # observation date
                                                    target_ind,  # landmark id
@@ -1026,8 +1050,8 @@ class RelativeOpNav(OpNav):
 
         # store the limb observations for each limb used in the estimation
         limb_obs = []
-        for pred, obs, limb_position in zip(worker.computed_bearings[target_ind].T,
-                                            worker.observed_bearings[target_ind].T,
+        for pred, obs, limb_position in zip(worker.computed_bearings[target_ind].T, # type: ignore
+                                            worker.observed_bearings[target_ind].T, # type: ignore
                                             limbs_camera.T):
             limb_position_body = target.orientation.matrix.T @ limb_position
             limb_obs.append((np.hstack([pred, [0]]), np.hstack([obs, [0]]), 'lim', image.observation_date, 0,
@@ -1058,16 +1082,83 @@ class RelativeOpNav(OpNav):
                              'visible_features attribute and must set it to contain a list of '
                              'identified landmark indices for each processed target')
 
-        # store the landmark observations for each limb used in the estimation
+        # store the landmark observations for each landmark used in the estimation
         landmark_res = []
-        for pred, obs, landmark in zip(worker.computed_bearings[target_ind].T,
-                                       worker.observed_bearings[target_ind].T,
+        fc = target.shape
+        assert isinstance(fc, FeatureCatalog), "Target must contain a feature catalog"
+        for pred, obs, landmark in zip(worker.computed_bearings[target_ind].T, # type: ignore
+                                       worker.observed_bearings[target_ind].T, # type: ignore
                                        visible_features):
-            feature = target.shape.features[landmark]
+            feature = fc.features[landmark]
             landmark_res.append((np.hstack([pred, [0]]), np.hstack([obs, [0]]), 'lmk', image.observation_date,
                                  landmark, feature.body_fixed_center, feature.name, target.name))
 
         self.landmark_results[image_ind][target_ind] = np.array(landmark_res, dtype=RESULTS_DTYPE)
+
+    def _package_constraints(self, worker: RelNavEstimator, image_ind: int, target_ind: int, target: SceneObject,
+                             image: OpNavImage):
+        """
+        This stores constraint results in the constraint_matching_results attribute from the provided worker
+
+        :param worker: The worker that extracted the center finding observables
+        :param image_ind: The index of the image the observables were extracted from
+        :param target_ind: The index of the target the observables are of
+        :param target: The target the observables are of
+        :param image: The image the observables were extracted from
+        """
+
+        # check if this wasn't processed for this target
+        if worker.observed_bearings[target_ind] is None:
+            return
+
+        # get the identified constraints list this way to catch if it isn't defined or wasn't filled out
+        constraint_ids = getattr(worker, 'constraint_ids', [None]*len(self.scene.target_objs))[target_ind]
+        if constraint_ids is None:
+            raise ValueError('Unable to package constraint observations.  The worker must provide a '
+                             'constraint_ids attribute and must set it to contain a list of '
+                             'identified constraint keys for each processed target.')
+
+        # get the identified constraints list this way to catch if it isn't defined or wasn't filled out
+        constraints = getattr(worker, 'constraints', [None] * len(self.scene.target_objs))[target_ind]
+
+        if worker.computed_bearings[target_ind] is None:
+            computed_bearings = np.zeros((len(constraint_ids), 2))
+        else:
+            computed_bearings = worker.computed_bearings[target_ind].T # type: ignore
+
+        constraint_positions = getattr(worker, 'constraint_positions',
+                                        [np.zeros((len(constraint_ids), 3))]*len(self.scene.target_objs))[target_ind]
+
+        # store the constraint observations for each constraint used in the estimation
+        constraint_res = []
+
+        if not constraints:
+            n_iter = 1
+        else:
+            n_iter = 2
+
+        for n in range(n_iter):
+            if n_iter > 1:
+                observed_bearings = worker.observed_bearings[target_ind][n, :, :].T # type: ignore
+                image_dates = []
+                for constraint_id in constraint_ids:
+                    image_dates.append(constraints[constraint_id][0][2*n])
+            else:
+                observed_bearings = worker.observed_bearings[target_ind].T # type: ignore
+                image_dates = []
+                for constraint_id in constraint_ids:
+                    image_dates.append(image.observation_date)
+
+            for pred, obs, image_date, constraint_id, constraint_position in zip(computed_bearings,
+                                                                                 observed_bearings,
+                                                                                 image_dates,
+                                                                                 constraint_ids,
+                                                                                 constraint_positions):
+                constraint_res.append((np.hstack([pred, [0]]), np.hstack([obs, [0]]), 'con', image_date,
+                                       constraint_id, constraint_position,
+                                       'CONST{}'.format(constraint_id), target.name))
+
+        self.constraint_matching_results[image_ind][target_ind] = np.array(constraint_res, dtype=RESULTS_DTYPE)
 
     def _package_templates(self, worker: RelNavEstimator, image_ind: int, target_ind: int):
         """
@@ -1097,7 +1188,7 @@ class RelativeOpNav(OpNav):
 
         worker_name = self._resolve_technique_name(worker)
 
-        details_list = getattr(self, f'{worker_name}_details')  # type: List[List[Optional[Any]]]
+        details_list: List[List[Optional[Any]]] = getattr(self, f'{worker_name}_details') 
 
         if details_list is None:
             raise ValueError(f"Somehow we ended up without a list of details for {worker_name}")
@@ -1148,6 +1239,10 @@ class RelativeOpNav(OpNav):
 
                 self._package_landmarks(worker, image_ind, target_ind, target, image)
 
+            if RelNavObservablesType.CONSTRAINT in observable_type:
+
+                self._package_constraints(worker, image_ind, target_ind, target, image)
+
             if self.save_templates and worker.generates_templates:
 
                 self._package_templates(worker, image_ind, target_ind)
@@ -1185,7 +1280,7 @@ class RelativeOpNav(OpNav):
         """
 
         # get the actual worker
-        worker_inst = getattr(self, worker_name, None)  # type: RelNavEstimator
+        worker_inst: RelNavEstimator | None = getattr(self, worker_name, None) 
 
         # something was wrong with the name
         if worker_inst is None:
@@ -1234,13 +1329,14 @@ class RelativeOpNav(OpNav):
         number of images to process.
 
         :param image_ind: The image that is to be processed or ``None`` to process all turned on images in the camera
-        :return: The iterable that yields (image_index, image) pairs and then number of images in that iterable
+        :return: The iterator that yields (image_index, image) pairs and then number of images in that iterable
         """
 
         if image_ind is not None:
             # make a generator expression the returns the image to be processed and its index.
-            # note that we need to "call" the lambda expression to get a generator
-            generator = (lambda: (yield image_ind, self.camera.images[image_ind]))()
+            def single_image_generator():
+                yield image_ind, self.camera.images[image_ind]
+            generator = single_image_generator()
             # set the number of images to be 1
             num_images = 1
         else:
@@ -1267,7 +1363,7 @@ class RelativeOpNav(OpNav):
            the target/image pair is processed based on the type of object it is
 
            - If the target is a :class:`.Ellipsoid` then the target is processed using :mod:`.ellipse_matching`
-           - If the target is a :class:`.FeatureCatalogue` then the target is processed using :mod:`.sfn`
+           - If the target is a :class:`.FeatureCatalog` then the target is processed using :mod:`.sfn`
            - Otherwise the target is processed using :mod:`.cross_correlation`
 
         :param image_ind: An index specifying which image to process or ``None`` to indicate that all turned on images
@@ -1319,7 +1415,7 @@ class RelativeOpNav(OpNav):
                                        include_targets=target_mask)
                     self._ellipse_matching.reset()  # reset so we don't pollute other images/targets
 
-                elif isinstance(target.shape, FeatureCatalogue):  # if this is a feature catalogue try SFN
+                elif isinstance(target.shape, FeatureCatalog):  # if this is a feature catalog try SFN
 
                     self.process_image(self._sfn, image_index, image, [RelNavObservablesType.RELATIVE_POSITION,
                                                                        RelNavObservablesType.LANDMARK],
@@ -1452,3 +1548,27 @@ class RelativeOpNav(OpNav):
         """
 
         self.default_estimator('_moment_algorithm', [RelNavObservablesType.CENTER_FINDING], image_ind, include_targets)
+
+    def constraint_matching_estimate(self, image_ind: Optional[int] = None, include_targets: Optional[List[bool]] = None):
+        """
+        This method loops applies the :mod:`.constraint_matching` technique to image/target pairs.
+
+        This method does nothing to check if it makes sense to apply the constraint matching technique to each pair, it
+        just attempts to and if something fails then the results are recorded appropriately.  If you are looking for
+        something that will attempt to automatically choose the right technique to use for each image/target pair, see
+        the :meth:`auto_estimate` method instead.
+
+        The results from applying the :mod:`.constraint_matching` technique to each image/target pair are stored in the
+        :attr:`constraint_matching_results` attribute.  If the :attr:`save_templates` is set to true, then this will also
+        save the rendered templates the :attr:`saved_templates` attribute.  Finally, this will save fit information for
+        each image/target pair to the :attr:`constraint_matching` attribute.
+
+        This method dispatches to the :meth:`default_estimator` method which provides more details on what is happening.
+
+        :param image_ind: An index specifying which image to process or ``None`` to indicate that all turned on images
+                          should be processed.
+        :param include_targets: A list of booleans specifying which targets in the scene should be processed or ``None``
+                                to indicate that all targets in the scene should be processed
+        """
+
+        self.default_estimator('_constraint_matching', [RelNavObservablesType.CONSTRAINT], image_ind, include_targets)

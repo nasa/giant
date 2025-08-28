@@ -347,5 +347,8 @@ from giant.relative_opnav.estimators.limb_matching import LimbScanner, LimbExtra
 from giant.relative_opnav.estimators.moment_algorithm import MomentAlgorithm
 from giant.relative_opnav.estimators.unresolved import UnresolvedCenterFinding
 
+from giant.relative_opnav.estimators.constraint_matching import ConstraintMatching
+
 __all__ = ['RelNavObservablesType', 'RelNavEstimator', 'XCorrCenterFinding', 'EllipseMatching', 'LimbScanner',
-           'LimbExtractionMethods', 'LimbMatching', 'MomentAlgorithm', 'UnresolvedCenterFinding']
+           'LimbExtractionMethods', 'LimbMatching', 'MomentAlgorithm', 'UnresolvedCenterFinding',
+           'ConstraintMatching']

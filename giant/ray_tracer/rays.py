@@ -27,13 +27,14 @@ are planning to use this feature.
 """
 
 
-from typing import Optional, Iterable, Union, Tuple
+from typing import Optional, Union, Tuple, cast, Iterator, Self
 
 import numpy as np
+from numpy.typing import NDArray
 
 from giant.rotations import Rotation
 from giant.camera_models.camera_model import CameraModel
-from giant._typing import ARRAY_LIKE, Real
+from giant._typing import ARRAY_LIKE, DOUBLE_ARRAY 
 
 
 INTERSECT_DTYPE: np.dtype = np.dtype([('check', bool), ('distance', np.float64),
@@ -113,23 +114,20 @@ class Rays:
                        each ray)
         """
         # set up the hidden attributes
-        self._start = None
-        self._direction = None
-        # inv direction is 1/direction
-        self._inv_direction = None
-        self._ignore = None
-
         self.num_rays: int = 1
         """
         The number of rays contained in the object.
         """
+        
+        self.num_rays, self._start, self._direction = self._validate_start_and_direction(start, direction)
+        self._inv_direction = 1.0/self._direction
+        self._ignore = None
+
 
         # use the property setters to handle things effectively
-        self.start = start
-        self.direction = direction
         self.ignore = ignore
 
-    def __iter__(self) -> Iterable['Rays']:
+    def __iter__(self) -> Iterator['Rays']:
         """
         Iterate 1 at a time through the rays contained in this object.
         """
@@ -156,7 +154,7 @@ class Rays:
 
             yield self
 
-    def __getitem__(self, item: Union[int, ARRAY_LIKE, slice]) -> 'Rays':
+    def __getitem__(self, item: int | NDArray | slice | list[int]) -> 'Rays':
         """
         Select a subset of the rays contained in this object.
 
@@ -168,13 +166,14 @@ class Rays:
         if self.num_rays > 1:
             starts, directions = np.broadcast_arrays(self._start.reshape(3, -1), self._direction.reshape(3, -1))
 
-            if (self.ignore is not None) and isinstance(self.ignore, (list, np.ndarray, tuple)):
+            if (self.ignore is not None):
+                if isinstance(self.ignore, np.ndarray):
 
-                return Rays(starts.T[item].T, directions.T[item].T, ignore=self.ignore[item])
+                    return Rays(starts.T[item].T, directions.T[item].T, ignore=self.ignore[item])
 
-            elif self.ignore is not None:
+                else:
 
-                return Rays(starts.T[item].T, directions.T[item].T, ignore=self.ignore)
+                    return Rays(starts.T[item].T, directions.T[item].T, ignore=self.ignore)
 
             else:
 
@@ -191,7 +190,7 @@ class Rays:
 
         return self.num_rays
 
-    def rotate(self, rotation: Union[Rotation, ARRAY_LIKE]):
+    def rotate(self, rotation: Union[Rotation, ARRAY_LIKE]) -> Self:
         """
         Rotates the start location(s) and the direction(s) of the ray(s) in place.
 
@@ -209,8 +208,10 @@ class Rays:
             self._start = np.matmul(Rotation(rotation).matrix, self._start)
 
         self._inv_direction = 1 / self._direction
+        
+        return self
 
-    def translate(self, translation: ARRAY_LIKE):
+    def translate(self, translation: ARRAY_LIKE) -> Self:
         """
         Translates the start location(s) of the ray(s) in place.
 
@@ -219,15 +220,17 @@ class Rays:
         :param translation: an array like vector
         """
 
-        translation_array = np.asarray(translation).astype(np.float64).squeeze()
+        translation_array = np.asanyarray(translation, dtype=np.float64).squeeze()
 
-        if (self._start.ndim > 1) and (translation.ndim == 1):
+        if (self._start.ndim > 1) and (translation_array.ndim == 1):
             translation_array = translation_array.reshape(3, -1)
 
         self._start += translation_array
+        
+        return self
 
     @property
-    def start(self) -> np.ndarray:
+    def start(self) -> DOUBLE_ARRAY:
         """
         The beginning location(s) of the ray(s) as an 3xn array of start locations (if n==1 then a flat 3 component
         array is returned).
@@ -246,25 +249,33 @@ class Rays:
     @start.setter
     def start(self, val: ARRAY_LIKE):
 
-        val_array = np.asarray(val).squeeze().astype(np.float64)
+        self.num_rays, self._start, _ = self._validate_start_and_direction(val, self.direction)
+        
+    @staticmethod
+    def _validate_start_and_direction(start: ARRAY_LIKE, direction: ARRAY_LIKE) -> tuple[int, DOUBLE_ARRAY, DOUBLE_ARRAY]:
+        start_array = np.asanyarray(start, dtype=np.float64).squeeze()
+        direction_array = np.asanyarray(direction, dtype=np.float64).squeeze()
 
-        if val_array.shape and (val_array.shape[0] != 3):
-            raise ValueError("The first axis must have a length of 3")
+        if start_array.shape and (start_array.shape[0] != 3):
+            raise ValueError("The first axis of the start array must have a length of 3")
+        if direction_array.shape and (direction_array.shape[0] != 3):
+            raise ValueError("The first axis of the direction array must have a length of 3")
+        
+        num_rays = 1
 
-        if val_array.ndim == 2:
-            if ((self._direction is not None) and (self._direction.ndim == 2) and
-                    (val_array.shape[-1] != self._direction.shape[-1])):
+        if start_array.ndim == 2:
+            if (direction_array.ndim == 2) and (start_array.shape[-1] != direction_array.shape[-1]):
 
                 raise ValueError("The start and direction arrays must have the same shape.")
 
-            self.num_rays = max(self.num_rays, val_array.shape[-1])
-        else:
-            self.num_rays = max(self.num_rays, 1)
+            num_rays = start_array.shape[-1]
+        elif direction_array.ndim == 2:
+            num_rays = direction_array.shape[-1]
 
-        self._start = val_array
+        return num_rays, start_array, direction_array
 
     @property
-    def direction(self) -> np.ndarray:
+    def direction(self) -> DOUBLE_ARRAY:
         """
         The direction vector(s) of the ray(s) as an 3xn array of vector(s)  (if n==1 then a flat 3 component array is
         returned).
@@ -283,26 +294,11 @@ class Rays:
     @direction.setter
     def direction(self, val: ARRAY_LIKE):
 
-        val_array = np.asarray(val).squeeze().astype(np.float64)
-
-        if (not val_array.shape) or (val_array.shape[0] != 3):
-            raise ValueError("The first axis must have a length of 3")
-
-        if val_array.ndim == 2:
-            if ((self._start is not None) and (self._start.ndim == 2) and
-                    (val_array.shape[-1] != self._start.shape[-1])):
-
-                raise ValueError("The start and direction arrays must have the same shape.")
-
-            self.num_rays = max(self.num_rays, val_array.shape[-1])
-        else:
-            self.num_rays = max(self.num_rays, 1)
-
-        self._direction = val_array
-        self._inv_direction = 1 / self._direction
+        self.num_rays, _, self._direction = self._validate_start_and_direction(val, self.direction)
+        self._inv_direction = 1.0 / self._direction
 
     @property
-    def inv_direction(self) -> np.ndarray:
+    def inv_direction(self) -> DOUBLE_ARRAY:
         """
         The inverse of the direction vectors (1/directions) as a 3xn array (if n==1 then a flat 3 component array is
         returned).
@@ -319,7 +315,7 @@ class Rays:
         return self._inv_direction
 
     @property
-    def ignore(self) -> Optional[ARRAY_LIKE]:
+    def ignore(self) -> Optional[NDArray[np.integer] | int]:
         """
         An array of the full ids of whatever you are trying to ignore for specific rays or None.
 
@@ -330,12 +326,16 @@ class Rays:
         return self._ignore
 
     @ignore.setter
-    def ignore(self, val):
+    def ignore(self, val: ARRAY_LIKE | None | int):
+        if val is not None and np.shape(val):
+            val = np.asanyarray(val)
+            if not np.issubdtype(val.dtype, np.integer):
+                raise ValueError('The ignore array must be integral')
+            
+        self._ignore = cast(NDArray[np.integer] | int | None, val)
 
-        self._ignore = val
 
-
-def compute_rays(model: CameraModel, rows: ARRAY_LIKE, cols: ARRAY_LIKE, grid_size: int = 1, temperature: Real = 0,
+def compute_rays(model: CameraModel, rows: ARRAY_LIKE, cols: ARRAY_LIKE, grid_size: int = 1, temperature: float = 0,
                  image_number: int = 0) -> Tuple[Rays, np.ndarray]:
     """
     Compute rays passing through the given row, col pairs for the given camera in the camera frame.
@@ -384,6 +384,18 @@ def compute_rays(model: CameraModel, rows: ARRAY_LIKE, cols: ARRAY_LIKE, grid_si
                          :meth:`.CameraModel.pixels_to_unit`
     :return: The rays passing through the requested pixels in the camera frame and the subpixel locations
     """
+    
+    rows = np.asanyarray(rows)
+    cols = np.asanyarray(cols)
+    
+    if not rows.ndim == 1:
+        raise ValueError('rows must be 1 dimentional')
+    if not cols.ndim == 1:
+        raise ValueError('cols must be 1 dimentional')
+    if not np.issubdtype(rows.dtype, np.integer):
+        raise ValueError('rows must be of integral type')
+    if not np.issubdtype(cols.dtype, np.integer):
+        raise ValueError('cols must be of integral type')
 
     if len(rows) == 2:
         # determine the spacing between each grid point in pixels
@@ -397,7 +409,7 @@ def compute_rays(model: CameraModel, rows: ARRAY_LIKE, cols: ARRAY_LIKE, grid_si
                                  np.arange(rows[0] - grid_start, rows[1] + 0.5, grid_dist))
 
     # stack the columns and rows into a single xy matrix
-    uv = np.vstack([cols.ravel(), rows.ravel()])
+    uv = np.vstack([cols.ravel(), rows.ravel()], dtype=np.float64)
 
     # get the direction vectors for each ray
     directions = model.pixels_to_unit(uv, temperature=temperature, image=image_number)

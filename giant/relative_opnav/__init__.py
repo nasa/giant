@@ -50,8 +50,9 @@ you can get to from :mod:`.relative_opnav.estimators`.
 
 from giant.relative_opnav.relnav_class import RelativeOpNav
 
-from giant.relative_opnav.estimators.cross_correlation import XCorrCenterFinding
-from giant.relative_opnav.estimators.unresolved import UnresolvedCenterFinding
-from giant.relative_opnav.estimators.ellipse_matching import EllipseMatching
+from giant.relative_opnav.estimators.cross_correlation import XCorrCenterFinding, XCorrCenterFindingOptions
+from giant.relative_opnav.estimators.unresolved import UnresolvedCenterFinding, UnresolvedCenterFindingOptions
+from giant.relative_opnav.estimators.ellipse_matching import EllipseMatching, EllipseMatchingOptions
+from giant.relative_opnav.estimators.constraint_matching import ConstraintMatching
 
-__all__ = ['RelativeOpNav', 'XCorrCenterFinding', 'EllipseMatching', 'UnresolvedCenterFinding']
+__all__ = ['RelativeOpNav', 'XCorrCenterFinding', 'XCorrCenterFindingOptions', 'EllipseMatching', 'EllipseMatchingOptions' ,'UnresolvedCenterFinding', 'UnresolvedCenterFindingOptions', 'ConstraintMatching']

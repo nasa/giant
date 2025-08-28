@@ -35,5 +35,7 @@ from giant.camera_models.pinhole_model import PinholeModel
 from giant.camera_models.owen_model import OwenModel
 from giant.camera_models.brown_model import BrownModel
 from giant.camera_models.opencv_model import OpenCVModel
+from giant.camera_models.fisheye_model import FisheyeModel
+from giant.camera_models.split_camera import SplitCamera
 
-__all__ = ['PinholeModel', 'OwenModel', 'BrownModel', 'OpenCVModel', 'ReturnShape', 'save', 'load', 'CameraModel']
+__all__ = ['PinholeModel', 'OwenModel', 'BrownModel', 'OpenCVModel', 'ReturnShape', 'save', 'load', 'CameraModel', 'FisheyeModel', 'SplitCamera']

@@ -36,7 +36,7 @@ import numpy as np
 from giant.ufo.dynamics import Dynamics, PN_TYPE
 from giant.ufo.measurements import Measurement
 
-from giant._typing import SCALAR_OR_ARRAY, Real
+from giant._typing import F_SCALAR_OR_ARRAY, DOUBLE_ARRAY
 
 
 # TODO: provide a Monte filter interface at some point
@@ -232,7 +232,7 @@ class ExtendedKalmanFilter:
         self.long_residuals = [(residual*np.nan, residual)]
 
     def propagate_and_predict(self, measurement: Measurement) -> Tuple[Optional[Dynamics.State],
-                                                                       Optional[SCALAR_OR_ARRAY]]:
+                                                                       Optional[F_SCALAR_OR_ARRAY]]:
         """
         This function integrates to the new measurement time and predicts the measurement at that time based on the
         propagated state.
@@ -253,7 +253,7 @@ class ExtendedKalmanFilter:
 
     def process_measurement(self, measurement: Measurement,
                             pre_update_state: Optional[Dynamics.State] = None,
-                            pre_update_predicted_measurement: Optional[SCALAR_OR_ARRAY] = None,
+                            pre_update_predicted_measurement: Optional[F_SCALAR_OR_ARRAY] = None,
                             backwards: bool = False, backwards_index: int = 0) -> Optional[np.ndarray]:
         """
         This does a update step for a new measurement.
@@ -318,10 +318,11 @@ class ExtendedKalmanFilter:
         updated_state = deepcopy(pre_update_state)
         updated_state.update_state(state_update)
 
-        identity_minus_ko = np.eye(len(updated_state), dtype=np.float64) - kalman_gain@observation_matrix
+        identity_minus_ko: DOUBLE_ARRAY = np.eye(len(updated_state), dtype=np.float64) - kalman_gain@observation_matrix
 
-        updated_state.covariance = (identity_minus_ko@updated_state.covariance@identity_minus_ko.T +
-                                    kalman_gain @ measurement_covariance @ kalman_gain.T)
+        if updated_state.covariance is not None:
+            updated_state.covariance = (identity_minus_ko@updated_state.covariance@identity_minus_ko.T +
+                                        kalman_gain @ measurement_covariance @ kalman_gain.T)
 
         # get the post-fit residuals
         post_update_residuals = measurement.observed - measurement.predict(updated_state)
@@ -345,7 +346,7 @@ class ExtendedKalmanFilter:
 
         return state_update
 
-    def smooth(self, maximum_sigma_update: Real = 5) -> bool:
+    def smooth(self, maximum_sigma_update: float = 5) -> bool:
         """
         This method performs backwards smoothing (kind-of) for all measurements processed by this EKF.
 
@@ -365,9 +366,8 @@ class ExtendedKalmanFilter:
         """
 
         original_pn = None
-        if hasattr(self.dynamics, 'process_noise'):
-            original_pn = self.dynamics.process_noise
-            self.dynamics.process_noise = _negate_pn(original_pn)
+        if (original_pn := getattr(self.dynamics, 'process_noise')) is not None:
+            setattr(self.dynamics, "process_noise", _negate_pn(original_pn))
 
         skip = False
 
@@ -380,7 +380,8 @@ class ExtendedKalmanFilter:
                 skip = True
                 break
 
-            if np.isnan(self.state_history[backwards_index][1].covariance).any():
+            
+            if (b1c := self.state_history[backwards_index][1].covariance) is not None and np.isnan(b1c).any():
                 _LOGGER.debug("Got a NaN in the covariance while smoothing.  Stopping.")
                 skip = True
                 break
@@ -388,8 +389,8 @@ class ExtendedKalmanFilter:
             state_size = len(self.state_history[backwards_index][0])
 
             # compute how big of an update we made
-            sigma_jump = np.abs(np.linalg.pinv(self.state_history[backwards_index][0].covariance) @
-                                state_update[:state_size])
+            assert (b0c := self.state_history[backwards_index][0].covariance) is not None
+            sigma_jump = np.abs(np.linalg.pinv(b0c) @ state_update[:state_size])
 
             if (sigma_jump >= maximum_sigma_update).any():
                 _LOGGER.debug(f"Had too large of an update in the smoothing {sigma_jump}. Stopping")
@@ -398,7 +399,7 @@ class ExtendedKalmanFilter:
                 break
 
         if hasattr(self.dynamics, 'process_noise'):
-            self.dynamics.process_noise = original_pn
+            setattr(self.dynamics, "process_noise", original_pn)
 
         return not skip
 

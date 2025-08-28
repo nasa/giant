@@ -7,7 +7,7 @@ from multiprocessing import Value, get_context
 
 from queue import Empty
 
-from typing import Any
+from typing import Any, cast
 
 
 class SharedCounter:
@@ -60,18 +60,15 @@ class ClearableQueue(Queue):
 
     def __init__(self, *args: list, **kwargs: dict):
         ctx = get_context()
-        super().__init__(*args, **kwargs, ctx=ctx)
+        super().__init__(*args, **kwargs, ctx=ctx) # pyright: ignore[reportArgumentType]
         self.size = SharedCounter(0)
 
         self.holder = []
 
     @property
     def maxsize(self) -> int:
-
-        if hasattr(self, '_maxsize'):
-            return self._maxsize
-        else:
-            return -1
+        
+        return getattr(self, "_maxsize", -1)
 
     def put(self, *args, **kwargs):
         super().put(*args, **kwargs)
@@ -91,12 +88,12 @@ class ClearableQueue(Queue):
         return res
 
     def __getstate__(self):
-        return super().__getstate__() + (self.size, self.holder)
+        return cast(tuple, super().__getstate__()) + (self.size, self.holder)
 
     def __setstate__(self, state):
         self.size = state[-2]
         self.holder = state[-1]
-        super().__setstate__(state[:-2])
+        super().__setstate__(state[:-2]) # pyright: ignore[reportAttributeAccessIssue]
 
     def flush_holder(self):
         """
@@ -120,8 +117,8 @@ class ClearableQueue(Queue):
         self.flush_holder()
         return res
 
-    def put_nowait(self, item: Any) -> None:
-        res = super().put_nowait(item)
+    def put_nowait(self, obj: Any) -> None:
+        res = super().put_nowait(obj)
         self.size.increment(1)
         return res
 

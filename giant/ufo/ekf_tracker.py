@@ -33,6 +33,7 @@ import logging
 from copy import deepcopy, copy
 
 from multiprocessing import Process, cpu_count, Array
+from multiprocessing.sharedctypes import SynchronizedArray
 
 from tempfile import TemporaryFile
 
@@ -47,9 +48,11 @@ from datetime import timedelta
 # no real risk hear because the pickle files are created by this script itself
 import pickle  # nosec
 
-from typing import List, Optional, Callable, Union, Tuple, Hashable, Iterable
+from typing import List, Optional, Callable, Union, Tuple, Hashable, Iterable, cast
 
-from scipy.spatial.kdtree import KDTree
+from io import FileIO, BufferedRandom
+
+from scipy.spatial import KDTree
 import numpy as np
 
 import spiceypy as spice
@@ -62,7 +65,7 @@ from giant.ufo.measurements import OpticalBearingMeasurement
 from giant.ufo.dynamics import Dynamics
 from giant.ufo.clearable_queue import ClearableQueue
 
-from giant._typing import Real, PATH
+from giant._typing import PATH
 
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -77,7 +80,7 @@ The 0 timedelta constant
 """
 
 
-def _pickle_generator(file: TemporaryFile) -> Iterable[ExtendedKalmanFilter]:
+def _pickle_generator(file: FileIO | BufferedRandom) -> Iterable[ExtendedKalmanFilter]:
     """
     Simple generator to work through the pickled objects in a file
     :param file: the file object to work on
@@ -116,10 +119,10 @@ class Tracker:
     def __init__(self, camera: Camera, scene: Scene,
                  dynamics: Dynamics,
                  state_initializer: STATE_INITIALIZER_TYPE,
-                 search_distance_function: Callable[[ExtendedKalmanFilter], Real],
+                 search_distance_function: Callable[[ExtendedKalmanFilter], float],
                  observation_trees: Optional[List[Optional[KDTree]]] = None,
-                 observation_ids: Optional[List[Optional[List[int]]]] = None,
-                 initial_euclidean_threshold: Real = 300,
+                 observation_ids: Optional[List[Optional[List[Hashable]]]] = None,
+                 initial_euclidean_threshold: float = 300,
                  measurement_covariance: Optional[np.ndarray] = None,
                  maximum_image_timedelta: timedelta = timedelta(hours=1),
                  maximum_paths_per_image: int = 10,
@@ -130,9 +133,9 @@ class Tracker:
                  expected_convergence_number: int = 4,
                  reduced_paths_forward_per_image: int = 3,
                  minimum_number_of_measurements: int = 4,
-                 maximum_residual_standard_deviation: Real = 20,
+                 maximum_residual_standard_deviation: float = 20,
                  maximum_time_outs: int = 50,
-                 maximum_tracking_time_per_image: Real = 3600,
+                 maximum_tracking_time_per_image: float = 3600,
                  kernels_to_load: Optional[List[str]] = None):
         """
         :param camera: The :class:`.Camera` containing the images to process and the camera model
@@ -195,14 +198,14 @@ class Tracker:
         (it can be a ``Point`` object) and in fact is encouraged not to (to avoid large memory overhead)
         """
 
-        self.observation_trees: List[Optional[KDTree]] = observation_trees
+        self.observation_trees: List[Optional[KDTree]] = observation_trees if observation_trees is not None else []
         """
         A list of KDTrees built on the observed UFO locations.
         
         If any elements are ``None`` then it is assumed that no detections exist for that image.
         """
 
-        self.observation_ids: List[Optional[List[Hashable]]] = observation_ids
+        self.observation_ids: List[Optional[List[Hashable]]] = observation_ids if observation_ids is not None else []
         """
         A list of the ids for each observation contained in the trees.
         
@@ -271,7 +274,7 @@ class Tracker:
         tracked and can take up a lot of memory.
         """
 
-        self.search_distance_function: Callable[[ExtendedKalmanFilter], Real] = search_distance_function
+        self.search_distance_function: Callable[[ExtendedKalmanFilter], float] = search_distance_function
         """
         A function which returns what the search distance should be in pixels when trying to match the current EKF to 
         new images.
@@ -322,7 +325,7 @@ class Tracker:
         A Queue used to specify what ekfs need to be processed
         """
 
-        self._working: Optional[Array] = None
+        self._working: Optional[SynchronizedArray] = None
         """
         A shared array of boolean values specifying whether each processor is actively working
         """
@@ -336,7 +339,7 @@ class Tracker:
 
         self._smoothing_output: Optional[ClearableQueue] = None
 
-        self._smoothing_working: Optional[Array] = None
+        self._smoothing_working: Optional[SynchronizedArray] = None
 
         self.smoothing_processes: Optional[List[Process]] = None
         """
@@ -389,16 +392,19 @@ class Tracker:
         _LOGGER.info(f'Processing image {image_ind}, {image.observation_date}')
 
         # get the detections and ids
-        detections = self.observation_trees[image_ind].data if self.observation_trees[image_ind] is not None else None
+        if (otree := self.observation_trees[image_ind]) is not None:
+            detections = otree.data 
+        else:
+            detections = None
         detection_ids = self.observation_ids[image_ind]
 
-        if detections is None:
+        if detections is None or detection_ids is None:
             _LOGGER.warning(f'No detections for {image_ind}, {image.observation_date}')
 
             return
 
         # initialize a list to store the ekfs in
-        filters = []
+        filters: list[ExtendedKalmanFilter] = []
 
         # update the scene to the current time
         self.scene.update(image)
@@ -488,7 +494,8 @@ class Tracker:
                     #     predicted_kdtree.data[predicted_index], self.initial_euclidean_threshold / 2
                     # )
 
-                    sorted_pairs = sorted(zip(np.linalg.norm(self.observation_trees[next_image_index].data[pairs] -
+                    assert (tree:= self.observation_trees[next_image_index])  is not None
+                    sorted_pairs = sorted(zip(np.linalg.norm(tree.data[pairs] -
                                                              predicted_kdtree.data[predicted_index], axis=-1), pairs))
 
                     pairs = [x[1] for x in list(sorted_pairs)[:self.maximum_paths_per_image]]
@@ -498,7 +505,8 @@ class Tracker:
                 valid_pairs = True
 
                 for pair in pairs:
-                    if self.observation_ids[next_image_index][pair] in self.confirmed_particles:
+                    assert (next_observation_id := self.observation_ids[next_image_index]) is not None
+                    if next_observation_id[pair] in self.confirmed_particles:
                         # skip particles we have already tracked
                         continue
 
@@ -506,13 +514,13 @@ class Tracker:
                     new_ekf = deepcopy(ekf)
 
                     # get rid of the state initializer because it isn't needed anymore and makes problems with pickling
-                    new_ekf.state_initializer = None
+                    new_ekf.state_initializer = None  # pyright: ignore[reportAttributeAccessIssue]
 
                     # do the measurement update
-                    new_measurement = OpticalBearingMeasurement(self.observation_trees[next_image_index].data[pair],
+                    new_measurement = OpticalBearingMeasurement(cast(KDTree, self.observation_trees[next_image_index]).data[pair],
                                                                 self.camera.model, next_image, next_camera_state,
                                                                 self.measurement_covariance,
-                                                                identity=self.observation_ids[next_image_index][pair])
+                                                                identity=next_observation_id[pair])
 
                     state_update = new_ekf.process_measurement(
                         new_measurement, pre_update_state=predicted_states[predicted_index],
@@ -522,7 +530,7 @@ class Tracker:
                     if state_update is None:
                         _LOGGER.debug(f'Failed to propagate EKF {new_ekf.identity}.')
                     else:
-
+                        assert self._ekfs_to_process is not None
                         self._ekfs_to_process.put_retry(new_ekf)
 
             if valid_pairs:
@@ -554,13 +562,16 @@ class Tracker:
 
         self._n_respawns += 1
 
-        self._results.clear()
+        if self._results is not None:
+            self._results.clear()
 
-        self._ekfs_to_process.clear()
+        if self._ekfs_to_process is not None:
+            self._ekfs_to_process.clear()
 
         # fix any dead processes
         for ind, process in enumerate(self.processes):
-            self._working[ind] = False
+            if self._working is not None:
+                self._working[ind] = False
             try:
                 process.join()
                 process.close()
@@ -583,8 +594,10 @@ class Tracker:
                 continue
             process.close()
 
-        self._results.close()
-        self._ekfs_to_process.close()
+        if self._results is not None:
+            self._results.close()
+        if self._ekfs_to_process is not None:
+            self._ekfs_to_process.close()
 
     def _initialize_smoothing_workers(self) -> None:
         """
@@ -608,17 +621,21 @@ class Tracker:
 
         self._n_smoothing_respawns += 1
 
-        self._smoothing_input.clear()
+        if self._smoothing_input is not None:
+            self._smoothing_input.clear()
 
-        self._smoothing_output.clear()
+        if self._smoothing_output is not None:
+            self._smoothing_output.clear()
 
         # fix any dead processes
-        for ind, process in enumerate(self.smoothing_processes):
-            self._smoothing_working[ind] = False
-            process.join()
-            process.close()
-            self.smoothing_processes[ind] = Process(target=self._smooth, args=(ind,),
-                                                    name=f'Smoother {ind}.{self._n_smoothing_respawns}')
+        if self.smoothing_processes is not None:
+            for ind, process in enumerate(self.smoothing_processes):
+                if self._smoothing_working is not None:
+                    self._smoothing_working[ind] = False
+                process.join()
+                process.close()
+                self.smoothing_processes[ind] = Process(target=self._smooth, args=(ind,),
+                                                        name=f'Smoother {ind}.{self._n_smoothing_respawns}')
 
     def _tear_down_smoothing_workers(self):
         """
@@ -634,8 +651,10 @@ class Tracker:
                 continue
             process.close()
 
-        self._results.close()
-        self._ekfs_to_process.close()
+        if self._results is not None:
+            self._results.close()
+        if self._ekfs_to_process is not None:
+            self._ekfs_to_process.close()
 
     def _follow(self, process_number: int):
         """
@@ -665,7 +684,7 @@ class Tracker:
                 self._working[process_number] = False
                 if True in self._working:
                     _LOGGER.debug(f'QUEUE was empty for process {process_number} but another process is still working.'
-                                  f'Process status: {str(list(self._working))}')
+                                  f'Process status: {str(list(self._working))}') # pyright: ignore[reportArgumentType]
                     continue
 
                 else:
@@ -726,7 +745,7 @@ class Tracker:
                 # the state failed to propagate
                 if predicted_state is None:
                     continue
-
+                assert isinstance(predicted_pixels, np.ndarray)
                 # get the innovation matrix
                 last_measurement = ekf.measurement_history[-1]
                 measurement_jacobian = last_measurement.compute_jacobian(predicted_state)
@@ -740,23 +759,24 @@ class Tracker:
                     information_matrix = np.linalg.pinv(innovation_covariance)
 
                 # query the tree to get the potential next points using the search distance
-                pairs = self.observation_trees[next_image_index].query_ball_point(predicted_pixels.ravel(),
-                                                                                  search_distance)
+                assert (next_tree := self.observation_trees[next_image_index]) is not None
+                pairs = next_tree.query_ball_point(predicted_pixels.ravel(), search_distance)
 
                 # loop through and filter out paths that are already taken and don't meet the mahalanobis distance
 
                 # create these lists to store pairs that require more consideration
                 keep_pairs = []
                 keep_mahalanobis_distances = []
+                
+                assert (next_observation_ids := self.observation_ids[next_image_index]) is not None
 
                 for pair in pairs:
-                    if self.observation_ids[next_image_index][pair] in self.confirmed_particles:
+                    if next_observation_ids[pair] in self.confirmed_particles:
                         # skip if we've already used this particle
                         continue
 
                     # compute the mahalanobis distance
-                    pixel_separation = (self.observation_trees[next_image_index].data[pair].ravel() -
-                                        predicted_pixels.ravel())
+                    pixel_separation = (next_tree.data[pair].ravel() - predicted_pixels.ravel())
 
                     mahalanobis_distance_squared = pixel_separation @ information_matrix @ pixel_separation
 
@@ -792,10 +812,10 @@ class Tracker:
                     new_ekf = deepcopy(ekf)
 
                     # make a measurement for this pair
-                    new_measurement = OpticalBearingMeasurement(self.observation_trees[next_image_index].data[pair],
+                    new_measurement = OpticalBearingMeasurement(next_tree.data[pair],
                                                                 self.camera.model, next_image, next_camera_state,
                                                                 self.measurement_covariance,
-                                                                identity=self.observation_ids[next_image_index][pair])
+                                                                identity=next_observation_ids[pair])
 
                     # perform a measurement update using this path
                     new_ekf.process_measurement(new_measurement, predicted_state, predicted_pixels)
@@ -853,9 +873,12 @@ class Tracker:
             try:
                 incoming: Union[Tuple[int, ExtendedKalmanFilter], str] = self._smoothing_input.get(timeout=2)
 
-                if isinstance(incoming, str) and incoming == "END":
-                    self._smoothing_working[process_number] = False
-                    self._smoothing_output.put_retry('DONE')
+                if isinstance(incoming, str):
+                    if incoming == "END":
+                        self._smoothing_working[process_number] = False
+                        self._smoothing_output.put_retry('DONE')
+                    else:
+                        _LOGGER.warning(f"Received {incoming} which is not expected")
 
                     break
 
@@ -871,7 +894,7 @@ class Tracker:
                 num_time_out += 1
                 if True in self._smoothing_working:
                     _LOGGER.debug(f'QUEUE was empty for process {process_number} but another process is still working.'
-                                  f'Process status: {str(list(self._smoothing_working))}')
+                                  f'Process status: {str(list(self._smoothing_working))}') # pyright: ignore[reportArgumentType]
                     continue
 
                 elif num_time_out >= self.maximum_time_outs:
@@ -914,10 +937,10 @@ class Tracker:
 
         smoothed_ekfs: List[Optional[ExtendedKalmanFilter]] = [None] * number_of_ekfs
 
-        processes: Optional[List[Process]] = self.processes
-        smooth_process: List[Process] = self.smoothing_processes
-        self.processes = None
-        self.smoothing_processes = None
+        processes: List[Process] = self.processes
+        smooth_process: List[Process] = self.smoothing_processes if self.smoothing_processes is not None else []
+        self.processes = []
+        self.smoothing_processes = []
         for p in smooth_process:
             try:
                 p.start()
@@ -925,13 +948,15 @@ class Tracker:
                 pass
         self.processes = processes
         self.smoothing_processes = smooth_process
+        
+        assert self._smoothing_input is not None and self._smoothing_output is not None
 
         for ind, ekf in enumerate(ekfs_to_filter):
 
             if len(ekf.measurement_history) < self.minimum_number_of_measurements:
                 removes.append(ind)
                 continue
-
+            
             self._smoothing_input.put_retry((ind, ekf))
 
         for _ in range(cpu_count()):
@@ -947,10 +972,13 @@ class Tracker:
                 # reset the counter
                 number_timed_out = 0
 
-                if isinstance(result, str) and (result == 'DONE'):
-                    number_not_done -= 1
-                    _LOGGER.info(f'{number_not_done} processes still smoothing.  Approximately '
-                                 f'{self._smoothing_input.qsize()} things still to do')
+                if isinstance(result, str):
+                    if (result == 'DONE'):
+                        number_not_done -= 1
+                        _LOGGER.info(f'{number_not_done} processes still smoothing.  Approximately '
+                                    f'{self._smoothing_input.qsize()} things still to do')
+                    else: 
+                        _LOGGER.warning(f"received an unexpected {result}")
 
                 elif result[0]:
                     # compute and store the standard deviation and mean
@@ -994,6 +1022,7 @@ class Tracker:
                 continue
 
             # store the set of the measurement ids
+            assert ekf is not None
             id_sets.append({meas.identity for meas in ekf.measurement_history})
 
         for rm in removes[::-1]:
@@ -1039,6 +1068,7 @@ class Tracker:
         for ind, ekf in enumerate(smoothed_ekfs):
 
             # get the initial particle in this track
+            assert ekf is not None
             start_id = ekf.measurement_history[0].identity
 
             # see if we've considered other tracks that contain this particle already
@@ -1109,7 +1139,7 @@ class Tracker:
             # start the process of tracking along these initial pairs
             processes: List[Process] = self.processes
             smooth_process = self.smoothing_processes
-            self.processes = None
+            self.processes = []
             self.smoothing_processes = None
             for process in processes:
                 try:
@@ -1126,6 +1156,8 @@ class Tracker:
 
             number_to_complete = len(self.processes)
             number_timed_out = 0
+            
+            assert self._results is not None
 
             with TemporaryFile('wb+') as ekfs_to_smooth:
 

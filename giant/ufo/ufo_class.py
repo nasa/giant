@@ -39,17 +39,17 @@ from typing import Optional, Dict, Any, Callable
 
 import pandas as pd
 
-from scipy.spatial.ckdtree import cKDTree
+from scipy.spatial import KDTree
 
 from giant.camera import Camera
 from giant.ray_tracer.scene import Scene
 
-from giant.stellar_opnav.stellar_class import StellarOpNav
+from giant.stellar_opnav.stellar_class import StellarOpNav, StellarOpNavOptions
 from giant.ufo.detector import Detector
 from giant.ufo.ekf_tracker import Tracker, Dynamics, STATE_INITIALIZER_TYPE, ExtendedKalmanFilter
 from giant.point_spread_functions.gaussians import IterativeGeneralizedGaussianWBackground
 
-from giant._typing import PATH, Real
+from giant._typing import PATH
 
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -83,11 +83,10 @@ class UFO:
     """
 
     def __init__(self, camera: Camera, scene: Scene, dynamics: Dynamics, state_initializer: STATE_INITIALIZER_TYPE,
-                 search_distance_function: Callable[[ExtendedKalmanFilter], Real],
+                 search_distance_function: Callable[[ExtendedKalmanFilter], float],
                  detector_kwargs: Optional[Dict[str, Any]] = None,
                  tracker_kwargs: Optional[Dict[str, Any]] = None,
-                 initial_image_processing_kwargs: Optional[Dict[str, Any]] = None,
-                 initial_star_id_kwargs: Optional[Dict[str, Any]] = None,
+                 initial_sopnav_options: Optional[StellarOpNavOptions] = None,
                  tracking_quality_code_minimum: int = 3,
                  identify_hot_pixels_and_unmatched_stars: bool = True,
                  clear_detector_before_tracking: bool = True,
@@ -104,11 +103,8 @@ class UFO:
                                          applied after the first pair has been made
         :param detector_kwargs: The key word arguments to pass to the :class:`.Detector` class
         :param tracker_kwargs: The key word arguments to pass to the :class:`.Tracker` class
-        :param initial_image_processing_kwargs: The key word arguments to use to initialize the
-                                                :class:`.ImageProcessing` instance before it is passed to the
-                                                :class:`.Detector`
-        :param initial_star_id_kwargs: The key word arguments to use to initialize the :class:`.StarId` class before it
-                                       is passed to the :class:`.Detector`
+        :param initial_sopnav_options: The options struct to use to initialize the :class:`.StellarOpNav` instance
+                                                instance before it is passed to the :class:`.Detector`
         :param tracking_quality_code_minimum: The minimum quality code to pass a possible detection to the tracking
                                               algorithm
         :param identify_hot_pixels_and_unmatched_stars: A flag specifying whether to attempt to filter out hot pixels
@@ -120,18 +116,7 @@ class UFO:
                                                        detection visualizations
         """
 
-        # make sure we have decent initial image processing settings
-        if initial_image_processing_kwargs is None:
-            IterativeGeneralizedGaussianWBackground.save_residuals = True
-            initial_image_processing_kwargs = {'denoise_flag': True, 'return_stats': True, 'save_psf': True,
-                                               'centroiding': IterativeGeneralizedGaussianWBackground}
-
-        # make sure we have decent initial star id settings
-        if initial_star_id_kwargs is None:
-            initial_star_id_kwargs = {'use_mp': False}
-
-        sopnav = StellarOpNav(camera, image_processing_kwargs=initial_image_processing_kwargs,
-                              star_id_kwargs=initial_star_id_kwargs)
+        sopnav = StellarOpNav(camera, options=initial_sopnav_options)
 
         if detector_kwargs is None:
             detector_kwargs = {}
@@ -230,11 +215,13 @@ class UFO:
             self.detector.clear_results()
 
         # get the dataframe of detections
-        ufos = self.detector.detection_data_frame
+        if self.detector.detection_data_frame is None:
+            raise ValueError('must call detect before track')
+        ufos: pd.DataFrame = self.detector.detection_data_frame
 
         _LOGGER.info(f'Filtering {ufos.shape[0]} detections by quality code > {self.tracking_quality_code_minimum}')
         # filter based on the quality code
-        ufos: pd.DataFrame = ufos.loc[ufos.loc[:, "quality_code"] >= self.tracking_quality_code_minimum]
+        ufos = ufos.loc[ufos.loc[:, "quality_code"] >= self.tracking_quality_code_minimum]
         _LOGGER.info(f'{ufos.shape[0]} detections retained')
 
         for image, grp in ufos.groupby('image_file'):
@@ -247,8 +234,8 @@ class UFO:
         _LOGGER.info('Building detection KDTrees')
         for image_file, group in ufos.groupby("image_file"):
 
-            kd_trees.append(cKDTree(group.loc[:, ['x_raw', 'y_raw']].values))
-            ids.append(ufos.index.values)
+            kd_trees.append(KDTree(group.loc[:, ['x_raw', 'y_raw']].to_numpy()))
+            ids.append(ufos.index.to_numpy())
 
         # feed this data to the tracker
         self.tracker.observation_trees = kd_trees
@@ -274,7 +261,7 @@ class UFO:
             _LOGGER.warning('The detector has not been run yet')
         else:
             _LOGGER.info(f'Saving detection results to {detection_results}')
-            self.detector.save_results(detection_results)
+            self.detector.save_results(str(detection_results))
 
         if not self.tracker.confirmed_filters:
             _LOGGER.warning('The tracker has not been run yet')
@@ -302,6 +289,8 @@ class UFO:
                              replaced with the name of the image.
         """
         from giant.ufo.visualizer import show_detections
+        if self.detector.detection_data_frame is None:
+            raise ValueError('Must call detect before visualize_detection_results')
         _LOGGER.info(f'Filtering {self.detector.detection_data_frame.shape[0]} detections by quality code > '
                      f'{self.visual_inspection_quality_code_minimum}')
         quality_test = self.detector.detection_data_frame.quality_code >= self.visual_inspection_quality_code_minimum

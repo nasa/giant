@@ -2,7 +2,7 @@
 # Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
 
 
-from typing import Union, Optional, Tuple
+from typing import Union, Optional, Tuple, Self
 
 import numpy as np
 
@@ -12,11 +12,11 @@ from giant.ray_tracer.shapes.shape import Shape
 from giant.ray_tracer.rays import Rays
 from giant.rotations import Rotation
 
-from giant._typing import Real, ARRAY_LIKE
+from giant._typing import ARRAY_LIKE
 
 
 def find_limbs_surface(target: ARRAY_LIKE, scan_center_dir: ARRAY_LIKE, scan_dirs: ARRAY_LIKE,
-                       observer_position: Optional[ARRAY_LIKE] = None, initial_step: Optional[Real]=None,
+                       observer_position: Optional[ARRAY_LIKE] = None, initial_step: Optional[float]=None,
                        max_iterations: int = 25, rtol: float = 1e-12, atol: float = 1e-12) -> np.ndarray: ...
 
 class Surface(Shape):
@@ -38,19 +38,19 @@ class Surface(Shape):
 
 class RawSurface(Surface):
 
-    def __init__(self, vertices: ARRAY_LIKE, albedos: Union[ARRAY_LIKE, Real], facets: ARRAY_LIKE,
+    def __init__(self, vertices: ARRAY_LIKE, albedos: Union[ARRAY_LIKE, float], facets: ARRAY_LIKE,
                  normals: Optional[ARRAY_LIKE] = None, compute_bounding_box: bool = True,
                  bounding_box: Optional[AxisAlignedBoundingBox] = None,
                  compute_reference_ellipsoid: bool = True, reference_ellipsoid: Optional[Ellipsoid] = None): ...
 
-    def __reduce__(self) -> Tuple[__qualname__, Tuple[np.ndarray, Union[np.ndarray, Real], np.ndarray, bool,
+    def __reduce__(self) -> Tuple[type[Self], Tuple[np.ndarray, Union[np.ndarray, float], np.ndarray, bool,
                                                       Optional[AxisAlignedBoundingBox], bool, Optional[Ellipsoid]]]: ...
 
-    def __eq__(self, other: 'RawSurface') -> bool: ...
+    def __eq__(self, other: object) -> bool: ...
 
-    def merge(self, other: __qualname__,
+    def merge(self, other: Self,
               compute_bounding_box: bool = True,
-              compute_reference_ellipsoid: bool = True) -> __qualname__: ...
+              compute_reference_ellipsoid: bool = True) -> Self: ...
 
     @property
     def facets(self) -> np.ndarray: ...
@@ -62,7 +62,7 @@ class RawSurface(Surface):
     def albedos(self) -> Union[float, np.ndarray]: ...
 
     @ albedos.setter
-    def albedos(self, val: Union[ARRAY_LIKE, Real]): ...
+    def albedos(self, val: Union[ARRAY_LIKE, float]): ...
 
     @property
     def stacked_vertices(self) -> np.ndarray: ...
@@ -82,9 +82,9 @@ class RawSurface(Surface):
     @property
     def num_faces(self) -> int: ...
 
-    def rotate(self, rotation: Union[Rotation, ARRAY_LIKE]): ...
+    def rotate(self, rotation: Union[Rotation, ARRAY_LIKE]) -> Self: ...
 
-    def translate(self, translation: ARRAY_LIKE): ...
+    def translate(self, translation: ARRAY_LIKE) -> Self: ...
 
     def compute_bounding_box(self): ...
 

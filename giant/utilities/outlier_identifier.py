@@ -10,10 +10,10 @@ the :func:`.get_outliers` documentation for more details.
 """
 import numpy as np
 
-from .._typing import ARRAY_LIKE, Real
+from giant._typing import ARRAY_LIKE
 
 
-def get_outliers(samples: ARRAY_LIKE, sigma_cutoff: Real = 4) -> np.ndarray:
+def get_outliers(samples: ARRAY_LIKE, sigma_cutoff: float = 4) -> np.ndarray:
     r"""
     This function can be used to identify outliers in a 1 dimensional set of data.
 
@@ -30,7 +30,7 @@ def get_outliers(samples: ARRAY_LIKE, sigma_cutoff: Real = 4) -> np.ndarray:
     sigma threshold and anything greater than or equal to this value is labeled as an outlier
 
     .. math::
-        \sigma_{mad} = 1.4826\frac{\left|\mathbf{x}-\widetilde{\mathbf{x}}\right|}{mad}
+        \sigma_{mad} = \frac{\left|\mathbf{x}-\widetilde{\mathbf{x}}\right|}{1.4826 mad}
 
     To use this function, simply enter a 1 dimensional data set and optionally the desired sigma threshold and you will
     get out a numpy boolean array which is True where the identified outliers are
@@ -52,14 +52,15 @@ def get_outliers(samples: ARRAY_LIKE, sigma_cutoff: Real = 4) -> np.ndarray:
     """
 
     # compute the distance each sample is from the median of the samples
-    median_distances = np.abs(np.array(samples) - np.median(samples))
+    asamples = np.asanyarray(samples)
+    median_distances = np.abs(asamples - np.median(asamples))
 
     # the median of the median distances
     median_distance = np.median(median_distances)
 
     # compute the median distance sigma score for each point
-    median_sigmas = 1.4826*median_distances/median_distance if median_distance else \
-        median_distances/np.mean(median_distances)
+    median_sigmas = median_distances / (1.4826 * median_distance) if median_distance else \
+        median_distances / (1.4826 * np.mean(median_distances))
 
     # find outliers based on the specified sigma level
     outliers = median_sigmas >= sigma_cutoff

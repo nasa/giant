@@ -29,8 +29,8 @@ Tuning
 ------
 
 The primary control for tuning this technique is through the tuning of the
-:meth:`.ImageProcessing.locate_subpixel_poi_in_roi` method.  There are a number of tuning parameters
-for this method and we direct you to its documentation for more details.
+:class:`.PointOfInterestFinder` clas.  There are a number of tuning parameters
+for this class and we direct you to its documentation for more details.
 
 In addition, there are a few tuning parameters for the class itself.
 The search region is controlled by the :attr:`~.UnresolvedCenterFinding.search_distance` attribute.  This should be an
@@ -55,22 +55,26 @@ import warnings
 
 from enum import Enum, auto
 
-from typing import List, Optional, Tuple, Union, Dict, Any
+from typing import List, Optional, Tuple, cast
 
 from abc import ABC
 
 import numpy as np
 
+from dataclasses import dataclass, field
+
 from giant.ray_tracer.rays import Rays
 from giant.ray_tracer.scene import Scene, SceneObject
 from giant.ray_tracer.illumination import IlluminationModel, McEwenIllumination
+from giant.ray_tracer.shapes.triangle import Triangle32, Triangle64
+from giant.ray_tracer._typing import Traceable
 from giant.camera import Camera
 from giant.image import OpNavImage
-from giant.image_processing import ImageProcessing
+from giant.image_processing.point_source_finder import PointOfInterestFinder, PointOfInterestFinderOptions
+from giant.utilities.options import UserOptions
+from giant.utilities.mixin_classes.user_option_configured import UserOptionConfigured
 
 from giant.relative_opnav.estimators.estimator_interface_abc import RelNavEstimator, RelNavObservablesType
-
-from giant._typing import Real
 
 
 class PhaseCorrectionType(Enum):
@@ -92,9 +96,27 @@ class PhaseCorrectionType(Enum):
     not roughly spherical in shape.  However, it is also much more computationally expensive and the newly realized 
     accuracy could be useless if the object is still very small in the FOV of the camera.
     """
+    
 
+@dataclass
+class PhaseCorrectorOptions(UserOptions):
+    
+        phase_correction_type: PhaseCorrectionType  = PhaseCorrectionType.SIMPLE
+        """
+        The type of phase correction to use, if requested.
 
-class PhaseCorrector(RelNavEstimator, ABC):
+        See :class:`.PhaseCorrectionType` for details.
+        """
+
+        brdf: IlluminationModel = field(default_factory=McEwenIllumination)
+        """
+        The illumination model used to convert geometry into expected illumination.  
+
+        This is only used if the ``RASTERED`` phase correction type is chosen and is ignored otherwise.
+        """
+        
+        
+class PhaseCorrector(RelNavEstimator, PhaseCorrectorOptions, ABC):
     """
     This class adds phase correction capabilities to RelNavEstimator.
 
@@ -120,69 +142,19 @@ class PhaseCorrector(RelNavEstimator, ABC):
     refer to the :mod:`.relative_opnav.estimators` documentation.
     """
 
-    def __init__(self, scene: Scene, camera: Camera, image_processing: ImageProcessing,
-                 phase_correction_type: Union[PhaseCorrectionType, str] = PhaseCorrectionType.SIMPLE,
-                 brdf: Optional[IlluminationModel] = None):
+    def __init__(self, scene: Scene, camera: Camera,
+                 options: PhaseCorrectorOptions | None = None):
         """
         :param scene: The :class:`.Scene` object containing the target, light, and obscuring objects.
         :param camera: The :class:`.Camera` object containing the camera model and images to be utilized
-        :param image_processing: The :class:`.ImageProcessing` object to be used to process the images
-        :param phase_correction_type: The type of phase correction to use.  Should be one of the PhaseCorrectionType
+        :param options: The options configuring the phase corrections
                                       enum values
-        :param brdf: The illumination model to use to compute the illumination values if the ``RASTERED`` phase
-                     correction type is used.  If the ``RASTERED`` phase correction type is not used this is ignored.
-                     If this is left as ``None`` and the ``Rastered`` phase correction type is used, this will default
-                     to the McEwen Model, :class:`.McEwenIllumination`.
         """
 
-        super().__init__(scene, camera, image_processing)
-
-        self.phase_correction_type: PhaseCorrectionType = phase_correction_type
-        """
-        The type of phase correction to use, if requested.
-
-        See :class:`.PhaseCorrectionType` for details.
-        """
-
-        if isinstance(self.phase_correction_type, str):
-            self.phase_correction_type = PhaseCorrectionType[self.phase_correction_type.upper()]
-
-        self.brdf: IlluminationModel = brdf
-        """
-        The illumination model used to convert geometry into expected illumination.  
-
-        This is only used if the ``RASTERED`` phase correction type is chosen and is ignored otherwise.
-        """
-
-        if (self.phase_correction_type is PhaseCorrectionType.RASTERED) and (self.brdf is None):
-            self.brdf = McEwenIllumination()
-
-        self.details: List[Dict[str, Any]] = self.details
-        """
-        ====================== =============================================================================================
-        Key                    Description
-        ====================== =============================================================================================
-        ``'PSF'``              The fit PSF values.  Only available if successful.  Will be ``None`` if
-                               :attr:`.ImageProcessing.save_psf` is ``False``
-        ``'Phase Correction'`` The phase correction vector used to convert from center of brightness to center of figure.
-                               This will only be available if the fit was successful.  If :attr:`apply_phase_correction` is
-                               ``False`` then this will be an array of 0.
-        ``'SNR'``              The peak signal to noise ratio of the detection.  This will only be set if the fit was
-                               successful.  If :attr:`.ImageProcessing.return_stats` is ``False`` then this will be
-                               ``None``.
-        ``'Max Intensity'``    The intensity of the peak pixel used in the PSF fit.  This will only be set if the fit was
-                               successful.
-        ``'Failed'``           A message indicating why the fit failed.  This will only be present if the fit failed (so you
-                               could do something like ``'Failed' in unresolved.details[target_ind]`` to check if something
-                               failed.  The message should be a human readable description of what called the failure
-        ``'Found Results'``    The points of interest that were found in the search region.  This is only present if the fit
-                               failed because there were more than 1 point of interest in the search region.  The value to
-                               this key is the return from :meth:`.ImageProcessing.locate_subpixel_poi_in_roi`
-        ====================== =============================================================================================
-        """
+        super().__init__(scene, camera)
 
     def simple_phase_correction(self, target_ind: int, target: SceneObject, line_of_sight_sun_image: np.ndarray,
-                                temperature: Real) -> np.ndarray:
+                                temperature: float) -> np.ndarray:
         """
         This method computes the simple phase correction assuming the target is a sphere.
 
@@ -223,7 +195,7 @@ class PhaseCorrector(RelNavEstimator, ABC):
 
         return correction
 
-    def rastered_phase_correction(self, target_ind: int, target: SceneObject, temperature: Real):
+    def rastered_phase_correction(self, target_ind: int, target: SceneObject, temperature: float):
         """
         This method computes the phase correction by raster rendering the target to determine the offset from the center
         of illumination to the center of figure.
@@ -248,34 +220,41 @@ class PhaseCorrector(RelNavEstimator, ABC):
         """
 
         # get the rasterized illumination
-        brightness, centers, vertices = self._scene.raster_render(target_ind, self.brdf)
+        brightness, centers, _ = self.scene.raster_render(target_ind, self.brdf)
 
         illuminated_facets = brightness > 0
 
-        # get the area
-        illuminated_sides = target.shape.sides[illuminated_facets]
-        # compute the norm of the cross product of the sides for the triangles divided by 2
-        areas = np.linalg.norm(np.cross(illuminated_sides[..., 0], illuminated_sides[..., 1]), axis=-1)/2
+        if isinstance(target.shape, (Triangle64, Triangle32)):
+            # get the area
+            illuminated_sides = target.shape.sides[illuminated_facets]
+            # compute the norm of the cross product of the sides for the triangles divided by 2
+            areas = np.linalg.norm(np.cross(illuminated_sides[..., 0], illuminated_sides[..., 1]), axis=-1)/2
 
-        # compute the photo-center offset in the camera frame
-        facet_brightness = areas*brightness[illuminated_facets]
-        photo_center_offset = (facet_brightness*centers[illuminated_facets]).sum(axis=0)/facet_brightness.sum()
+            # compute the photo-center offset in the camera frame
+            facet_brightness = areas*brightness[illuminated_facets]
+            photo_center_offset = (facet_brightness*centers[illuminated_facets]).sum(axis=0)/facet_brightness.sum()
+        else:
+            # we probably shouldn't end up here
+            photo_center_offset = (brightness[illuminated_facets]*centers[illuminated_facets]).sum(axis=0)/brightness[illuminated_facets].sum()
 
         # project the photo center into the camera
-        image_photo_center = self._camera.model.project_onto_image(photo_center_offset, temperature=temperature)
+        image_photo_center = self.camera.model.project_onto_image(photo_center_offset, temperature=temperature)
 
         # compute and return the offset from the photo center to the center of figure
         return self.computed_bearings[target_ind] - image_photo_center
 
     def compute_line_of_sight_sun_image(self, target: SceneObject) -> np.ndarray:
         # get the line of sight from the sun in the image
+        if self.scene.light_obj is None:
+            raise ValueError('The light_obj must be specified by this point')
+        lpos = getattr(self.scene.light_obj.shape, "position", self.scene.light_obj.position)
         line_of_sight_sun = target.position-self.scene.light_obj.position.ravel()
         line_of_sight_sun /= np.linalg.norm(line_of_sight_sun)
         line_of_sight_sun_image = self.camera.model.project_directions(line_of_sight_sun)
 
         return line_of_sight_sun_image
 
-    def compute_phase_correction(self, target_ind: int, target: SceneObject, temperature: Real,
+    def compute_phase_correction(self, target_ind: int, target: SceneObject, temperature: float,
                                  line_of_sight_sun_image: Optional[np.ndarray] = None):
         """
         The method computes the phase correction assuming a spherical target.
@@ -313,8 +292,39 @@ class PhaseCorrector(RelNavEstimator, ABC):
         else:
             return self.rastered_phase_correction(target_ind, target, temperature)
 
+@dataclass
+class UnresolvedCenterFindingOptions(PhaseCorrectorOptions):
+    """
+    :param search_distance: The search radius to search around the predicted centers for the observed centers of
+                            the target objects
+    :param apply_phase_correction: A boolean flag specifying whether to apply the phase correction to the observed
+                                    center of brightness to get closer to the center of figure based on the predicted
+                                    apparent diameter of the object.
+    :param phase_correction_type: The type of phase correction to use.  Should be one of the PhaseCorrectionType
+                                    enum values
+    :param brdf: The illumination model to use to compute the illumination values if the ``RASTERED`` phase
+                    correction type is used.  If the ``RASTERED`` phase correction type is not used this is ignored.
+                    If this is left as ``None`` and the ``Rastered`` phase correction type is used, this will default
+                    to the McEwen Model, :class:`.McEwenIllumination
+    """
+    search_distance: int = 15
+    """
+    Half of the distance to search around the predicted centers for the observed centers of the target objects in 
+    pixels.
+    """
 
-class UnresolvedCenterFinding(PhaseCorrector):
+    apply_phase_correction: bool = False
+    """
+    A boolean flag specifying whether to apply the phase correction or not
+    """
+    
+    point_of_interest_finder_options: PointOfInterestFinderOptions | None = None
+    """
+    The options to use to configure the point of interest finder
+    """
+
+
+class UnresolvedCenterFinding(UserOptionConfigured[UnresolvedCenterFindingOptions], PhaseCorrector, UnresolvedCenterFindingOptions):
     """
     This class implements GIANT's version of unresolved center finding for extracting bearing measurements to unresolved
     targets in an image.
@@ -375,48 +385,30 @@ class UnresolvedCenterFinding(PhaseCorrector):
         image time.  This class does not update the scene automatically.
     """
 
-    technique: str = 'unresolved'
+    technique = 'unresolved'
     """
     The name of the technique identifier in the :class:`.RelativeOpNav` class.
     """
 
-    observable_type: List[RelNavObservablesType] = [RelNavObservablesType.CENTER_FINDING]
+    observable_type = [RelNavObservablesType.CENTER_FINDING]
     """
     The type of observables this technique generates.
     """
 
-    def __init__(self, scene: Scene, camera: Camera, image_processing: ImageProcessing,
-                 search_distance: int = 15, apply_phase_correction: bool = False,
-                 phase_correction_type: Union[PhaseCorrectionType, str] = PhaseCorrectionType.SIMPLE,
-                 brdf: Optional[IlluminationModel] = None):
+    def __init__(self, scene: Scene, camera: Camera, 
+                options: Optional[UnresolvedCenterFindingOptions] = None):
         """
         :param scene: The :class:`.Scene` object containing the target, light, and obscuring objects.
         :param camera: The :class:`.Camera` object containing the camera model and images to be utilized
         :param image_processing: The :class:`.ImageProcessing` object to be used to process the images
-        :param search_distance: The search radius to search around the predicted centers for the observed centers of
-                                the target objects
-        :param apply_phase_correction: A boolean flag specifying whether to apply the phase correction to the observed
-                                       center of brightness to get closer to the center of figure based on the predicted
-                                       apparent diameter of the object.
-        :param phase_correction_type: The type of phase correction to use.  Should be one of the PhaseCorrectionType
-                                      enum values
-        :param brdf: The illumination model to use to compute the illumination values if the ``RASTERED`` phase
-                     correction type is used.  If the ``RASTERED`` phase correction type is not used this is ignored.
-                     If this is left as ``None`` and the ``Rastered`` phase correction type is used, this will default
-                     to the McEwen Model, :class:`.McEwenIllumination`.
+        :param options: A dataclass specifying the options to set for this instance.
         """
-
-        super().__init__(scene, camera, image_processing, phase_correction_type=phase_correction_type, brdf=brdf)
-
-        self.search_distance: int = int(search_distance)
+        
+        super().__init__(UnresolvedCenterFindingOptions, scene, camera, options=options)
+        
+        self.point_of_interest_finder = PointOfInterestFinder(self.point_of_interest_finder_options)
         """
-        Half of the distance to search around the predicted centers for the observed centers of the target objects in 
-        pixels.
-        """
-
-        self.apply_phase_correction: bool = apply_phase_correction
-        """
-        A boolean flag specifying whether to apply the phase correction or not
+        The instance of the point of interest finder to use when identifying the center of the uneresolved target
         """
 
 
@@ -438,6 +430,11 @@ class UnresolvedCenterFinding(PhaseCorrector):
         :param include_targets: An argument specifying which targets should be processed for this image.  If ``None``
                                 then all are processed (no, the irony is not lost on me...)
         """
+        
+        if self.scene.light_obj is None:
+            raise ValueError('The light_obj cannot be None at this point')
+        
+        lpos = getattr(self.scene.light_obj.shape, "position", self.scene.light_obj.position)
 
         # process each requested target
         for target_ind, target in self.target_generator(include_targets):
@@ -446,9 +443,10 @@ class UnresolvedCenterFinding(PhaseCorrector):
             relative_position = target.position.ravel()
 
             # predict where the target should be
-            self.computed_bearings[target_ind] = self.camera.model.project_onto_image(relative_position,
-                                                                                      temperature=image.temperature)
+            predicted = self.camera.model.project_onto_image(relative_position, temperature=image.temperature)
 
+            self.computed_bearings[target_ind] = predicted
+            
             # check if this is being obscured by anything in the scene so we can't see it
             # also store the closest other object in the scene in the image
 
@@ -457,7 +455,7 @@ class UnresolvedCenterFinding(PhaseCorrector):
                            -relative_position.ravel() / np.linalg.norm(relative_position))
 
             # trace a ray from the object to the sun.  If we strike something the object is shadowed
-            shad_dir = self.scene.light_obj.shape.location.ravel() - relative_position.ravel()
+            shad_dir = lpos.ravel() - relative_position.ravel()
             shad_ray = Rays(relative_position.ravel(), shad_dir / np.linalg.norm(shad_dir))
 
             if self.scene.obscuring_objs is not None:
@@ -473,6 +471,9 @@ class UnresolvedCenterFinding(PhaseCorrector):
             for obscurer in possible_obscurers:
                 if obscurer is target:
                     continue
+                
+                if not isinstance(obscurer.shape, Traceable):
+                    raise ValueError('The obscurer must be traceable')
 
                 # trace a ray from the target to the camera to see if we strike anything on the way
                 ores = obscurer.shape.trace(vis_ray)
@@ -494,9 +495,9 @@ class UnresolvedCenterFinding(PhaseCorrector):
                     stop_processing = True
                     break
 
-                image_distance = np.linalg.norm(self.camera.model.project_onto_image(obscurer.position.ravel(),
+                image_distance = float(np.linalg.norm(self.camera.model.project_onto_image(obscurer.position.ravel(),
                                                                                      temperature=image.temperature) -
-                                                self.computed_bearings[target_ind])
+                                                      predicted))
 
                 closest_other_distance = min(closest_other_distance, image_distance)
 
@@ -509,10 +510,10 @@ class UnresolvedCenterFinding(PhaseCorrector):
                               f"the search distance is {self.search_distance}")
 
             # determine the pixels we will search for the target in
-            lr_search = self.computed_bearings[target_ind][0].round().astype(int) + np.arange(-self.search_distance,
-                                                                                              self.search_distance)
-            ud_search = self.computed_bearings[target_ind][1].round().astype(int) + np.arange(-self.search_distance,
-                                                                                              self.search_distance)
+            predicted_int = predicted.round().astype(np.int64)
+            lr_search = predicted_int[0] + np.arange(-self.search_distance, self.search_distance)
+            ud_search = predicted_int[1] + np.arange(-self.search_distance, self.search_distance)
+            
             # check that we are within the field of view for our search region
             top_bound = ud_search < 0
             bottom_bound = ud_search >= image.shape[0]
@@ -528,28 +529,14 @@ class UnresolvedCenterFinding(PhaseCorrector):
 
             # build the region of interest to search
             # noinspection PyTypeChecker
-            roi: Tuple[np.ndarray, np.ndarray] = np.meshgrid(lr_search[~fov_test], ud_search[~fov_test])[::-1]
+            roi: Tuple[np.ndarray, np.ndarray] = cast(tuple[np.ndarray, np.ndarray], np.meshgrid(lr_search[~fov_test], ud_search[~fov_test])[::-1])
 
             # use the star centroiding to find the pixel level location of the object
             # note that this will call denoise_image for us if it is turned on
-            res = self.image_processing.locate_subpixel_poi_in_roi(image, roi)
+            res = self.point_of_interest_finder(image, roi)
 
             # parse the output
-            if self.image_processing.save_psf:
-                if self.image_processing.return_stats:
-                    points, illums, psfs, _, snrs = res
-                else:
-                    points, illums, psfs = res
-                    snrs = None
-            else:
-                if self.image_processing.return_stats:
-                    points, illums, _, snrs = res
-                else:
-                    points, illums = res
-                    snrs = None
-                psfs = None
-
-            points = points.T
+            points = np.atleast_2d(res.centroids)
 
             if len(points) > 1:
                 # TODO: consider picking the closest point to the a priori in this instance and throwing a warning
@@ -584,10 +571,9 @@ class UnresolvedCenterFinding(PhaseCorrector):
                 else:
                     correction = np.zeros(2, dtype=np.float64)
 
-                self.details[target_ind] = {'PSF': psfs,
+                self.details[target_ind] = {'Point of Interest Results': res,
                                             'Phase Correction': correction,
-                                            'SNR': snrs,
-                                            'Max intensity': illums}
+                                            }
 
             else:
                 warnings.warn('unable to locate subpixel center for epoch: {0} obj: {1}'.format(image.observation_date,

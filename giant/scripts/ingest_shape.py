@@ -60,10 +60,10 @@ from giant.utilities.tee import Tee
 
 from giant.scripts.shape_stats import describe_shape, GCOEF
 
-from giant._typing import PATH, Real
+from giant._typing import PATH
 
 
-def read_obj(file: PATH, conv: Real = 1., me: bool = False) -> Union[Triangle64, Triangle32]:
+def read_obj(file: PATH, conv: float = 1., me: bool = False) -> Union[Triangle64, Triangle32]:
     """
     Reads simply formatted obj files into the GIANT triangle format.
 
@@ -90,7 +90,7 @@ def read_obj(file: PATH, conv: Real = 1., me: bool = False) -> Union[Triangle64,
         return Triangle64(vecs.astype(np.float64), 1, facets.astype(np.uint32))
 
 
-def read_tab(file: PATH, conv: Real = 1., me: bool = False) -> Union[Triangle64, Triangle32]:
+def read_tab(file: PATH, conv: float = 1., me: bool = False) -> Union[Triangle64, Triangle32]:
     """
     Reads vertice/facet tables from PDS into the GIANT triangle format.
     
@@ -118,7 +118,7 @@ def read_tab(file: PATH, conv: Real = 1., me: bool = False) -> Union[Triangle64,
         return Triangle64(vertices, 1, facets)
 
 
-def process_dsk(dsk_file: PATH, conv: Real = 1., me: bool = False) -> Union[Triangle64, Triangle32]:
+def process_dsk(dsk_file: PATH, conv: float = 1., me: bool = False) -> Union[Triangle64, Triangle32]:
     """
     Ingest a DSK file into a GIANT KDTree.
 
@@ -287,7 +287,6 @@ def main():
             in_type = 'tab'
         elif ext.lower() == '.txt':
             in_type = 'icq'
-
         elif ext.lower() == ".bds":
             in_type = 'dsk'
 

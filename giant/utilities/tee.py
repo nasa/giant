@@ -16,15 +16,15 @@ tee both STDOUT and STDERR to the same file.  Both of these classes can be used 
 
 import sys
 
-from typing import Union, IO, Optional
+from typing import Union, Optional, TextIO
 
 from enum import Enum
 
 import os
 
-from io import IOBase
+from io import IOBase 
 
-from .._typing import PATH
+from giant._typing import PATH, WriteableTarget
 
 
 class REDIRECT(Enum):
@@ -83,66 +83,66 @@ class Tee:
 
     inspiration: https://stackoverflow.com/a/24583265/3431189
     """
-    def __init__(self, file: Union[PATH, IO], redirect: Union[REDIRECT, str] = REDIRECT.STDOUT, mode: str = "a+",
+    def __init__(self, file: Union[PATH, WriteableTarget], redirect: Union[REDIRECT, str] = REDIRECT.STDOUT, mode: str = "a+",
                  buff: int = -1):
         """
-        :param file: The file to write to as a string or a ``IO`` object which defines write, flush, and close
+        :param file: The file to write to as a string or a ``WriteableTarget`` object which defines write, flush, and close
                      methods.
         :param redirect: Whether to redirect STDOUT or STDERR to the file.
         :param mode: The mode to open the file with.  Should be either 'w', 'a+', or 'r+'.  Ignored if ``file`` is
-                     ``IO``
+                     ``WriteableTarget``
         :param buff: How to buffer the file.  Should be -1 (for system default) or >= 1. Ignored if ``file`` is
-                     ``IO``
+                     ``WriteableTarget``
         """
 
         # grab the originals
-        self.stdout = None  # type: Optional[IO]
+        self._stdout: Optional[TextIO] = None 
         """
         A copy of the original STDOUT when ``redirect`` is set to ``STDOUT`` and this is open, otherwise ``None``
         """
 
-        self.stderr = None  # type: Optional[IO]
+        self._stderr: Optional[TextIO] = None 
         """
         A copy of the original STDERR when ``redirect`` is set to ``STDERR`` and this is closed, otherwise ``None``
         """
 
-        self.file = None  # type: Optional[IO]
+        self._file: Optional[WriteableTarget] = None 
         """
         The file object to tee to or ``None`` if this is closed.
         """
 
-        if isinstance(file, IOBase):
-            self.file = file
+        if isinstance(file, WriteableTarget):
+            self._file = file
         else:
-            self.file = open(file, mode=mode, buffering=buff)
+            self._file = open(file, mode=mode, buffering=buff)
 
-        self.redirect = redirect if isinstance(redirect, REDIRECT) else REDIRECT(redirect.lower())  # type: REDIRECT
+        self.redirect: REDIRECT = redirect if isinstance(redirect, REDIRECT) else REDIRECT(redirect.lower()) 
         """
         Specifies whether to tee STDOUT or STDERR to the file.
         """
 
-        # store the appropriate IO object and replace it
+        # store the appropriate WriteableTarget object and replace it
         if self.redirect == REDIRECT.STDOUT:
-            self.stdout = sys.stdout
+            self._stdout = sys.stdout
             sys.stdout = self
         elif self.redirect == REDIRECT.STDERR:
-            self.stderr = sys.stderr
+            self._stderr = sys.stderr
             sys.stderr = self
 
     def __repr__(self) -> str:
         return 'Tee({}, redirect={})'.format(repr(self.file), self.redirect)
 
     def __str__(self) -> str:
-        if self.file is None:
+        if self._file is None:
             if self.redirect == REDIRECT.STDOUT:
                 return "Closed Tee for STDOUT"
             else:
                 return "Closed Tee for STDERR"
         else:
             if self.redirect == REDIRECT.STDOUT:
-                return "Open Tee for STDOUT to {}".format(self.file.name)
+                return "Open Tee for STDOUT to {}".format(str(self._file))
             else:
-                return "Open Tee for STDERR to {}".format(self.file.name)
+                return "Open Tee for STDERR to {}".format(str(self._file))
 
     def __del__(self):
         self.close()
@@ -152,6 +152,36 @@ class Tee:
 
     def __exit__(self, *args):
         self.close()
+        
+    @property
+    def tty_destination(self) -> TextIO:
+        """
+        Returns the appropriate stdout or stderr depending on the selected REDIRECT option.
+        
+        :raises ValueError: If the tee has already been closed
+        """
+        
+        match self.redirect:
+            case REDIRECT.STDOUT:
+                if self._stdout is None:
+                    raise ValueError('It looks like you have called close before you should have')
+                return self._stdout
+            
+            case REDIRECT.STDERR:
+                if self._stderr is None:
+                    raise ValueError('It looks like you have called close before you should have')
+                return self._stderr
+            
+    @property
+    def file(self) -> WriteableTarget:
+        """
+        Returns the writeable object to Tee to.
+        
+        :raises ValueError: if the Tee has already been closed
+        """
+        if self._file is None:
+            raise ValueError('It looks like you have called close before you should have')
+        return self._file
 
     def write(self, message: str) -> None:
         """
@@ -161,21 +191,10 @@ class Tee:
         :param message: The message to print
         :raises ValueError: If close method was called prior to this call
         """
-        if self.redirect == REDIRECT.STDOUT:
-            if self.stdout is None:
-                raise ValueError('Close method already called')
-            else:
-                self.stdout.write(message)
-        elif self.redirect == REDIRECT.STDERR:
-            if self.stderr is None:
-                raise ValueError('Close method already called')
-            else:
-                self.stderr.write(message)
+        
+        self.tty_destination.write(message)
 
-        if self.file is None:
-            raise ValueError('Close method already called')
-        else:
-            self.file.write(message)
+        self.file.write(message)
 
     def flush(self) -> None:
         """
@@ -185,16 +204,10 @@ class Tee:
         :raises ValueError: If close method was called prior to this call
         """
 
-        if self.file is None:
-            raise ValueError('Close method already called')
-        else:
-            if self.redirect == REDIRECT.STDOUT:
-                self.stdout.flush()
-            elif self.redirect == REDIRECT.STDERR:
-                self.stderr.flush()
-
-            self.file.flush()
-            os.fsync(self.file.fileno())
+        self.tty_destination.flush()
+        self.file.flush()
+        if hasattr(self.file, 'fileno'):
+            os.fsync(getattr(self.file, 'fileno')())
 
     def close(self) -> None:
         """
@@ -204,19 +217,21 @@ class Tee:
         It is safe to call this multiple times, however, all subsequent calls will do nothing.
         """
         # reset STDOUT to what it was
-        if self.stdout is not None:
-            sys.stdout = self.stdout
-            self.stdout = None
+        if self._stdout is not None:
+            sys.stdout = self._stdout
+            self._stdout = None
 
         # reset STDERR to what it was
-        if self.stderr is not None:
-            sys.stderr = self.stderr
-            self.stderr = None
+        if self._stderr is not None:
+            sys.stderr = self._stderr
+            self._stderr = None
 
         # close file
-        if self.file is not None:
+        try:
             self.file.close()
-            self.file = None
+            self._file = None
+        except ValueError:
+            pass
 
 
 class DoubleTee:
@@ -261,39 +276,34 @@ class DoubleTee:
 
     """
 
-    def __init__(self, file: Union[PATH, IO], mode: str = "a+", buff: int = -1):
+    def __init__(self, file: Union[PATH, WriteableTarget], mode: str = "a+", buff: int = -1):
         """
-        :param file: The file to write to as a string or a ``IO`` object which defines write, flush, and close
+        :param file: The file to write to as a string or a ``WriteableTarget`` object which defines write, flush, and close
                      methods.
         :param mode: The mode to open the file with.  Should be either 'w', 'a', or 'r+'.  Ignored if ``file`` is
-                     ``IO``
+                     ``WriteableTarget``
         :param buff: How to buffer the file.  Should be -1 (for system default) or >= 1. Ignored if ``file`` is
-                     ``IO``
+                     ``WriteableTarget``
         """
 
-        if isinstance(file, IOBase):
-            tfile = file
-        else:
-            tfile = open(file, mode=mode, buffering=buff)
-
-        self.stdout = Tee(tfile, redirect=REDIRECT.STDOUT)  # type: Tee
+        self.stdout: Tee = Tee(file, mode=mode, buff=buff, redirect=REDIRECT.STDOUT) 
         """
         An instance of Tee for teeing stdout to the requested file
         """
 
-        self.stderr = Tee(tfile, redirect=REDIRECT.STDERR)  # type: Tee
+        self.stderr: Tee = Tee(self.stdout.file, redirect=REDIRECT.STDERR) 
         """
         An instance of Tee for teeing stderr to the requested file
         """
 
     def __repr__(self) -> str:
-        return 'DoubleTee({})'.format(repr(self.stdout.file))
+        return 'DoubleTee({})'.format(repr(self.stdout._file))
 
     def __str__(self) -> str:
-        if self.stdout.file is None:
+        try:
+            return "Open DoubleTee to {}".format(str(self.stdout.file))
+        except ValueError:
             return "Closed DoubleTee"
-        else:
-            return "Open DoubleTee to {}".format(self.stdout.file.name)
 
     def __del__(self) -> None:
         """

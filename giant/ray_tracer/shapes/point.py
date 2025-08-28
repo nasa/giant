@@ -15,7 +15,7 @@ used to represent the light source (the sun) in the scene, though you could also
 navigation using :mod:`.unresolved`.
 """
 
-from typing import Union
+from typing import Union, Self
 
 import numpy as np
 
@@ -45,12 +45,12 @@ class Point:
         :param location: The starting location in the current frame for the point as a size 3 array like object.
         """
 
-        self.location: np.ndarray = np.asarray(location).reshape(3).astype(np.float64)
+        self.position: np.ndarray = np.asarray(location).reshape(3).astype(np.float64)
         """
         The location of the point as a length 3 double array.
         """
 
-    def rotate(self, rotation: Union[Rotation, ARRAY_LIKE]):
+    def rotate(self, rotation: Union[Rotation, ARRAY_LIKE]) -> Self:
         """
         This rotates the point into a new frame in place.
 
@@ -61,12 +61,14 @@ class Point:
         """
 
         if isinstance(rotation, Rotation):
-            self.location = np.matmul(rotation.matrix, self.location)
+            self.position = np.matmul(rotation.matrix, self.position)
 
         else:
-            self.location = np.matmul(Rotation(rotation).matrix, self.location)
+            self.position = np.matmul(Rotation(rotation).matrix, self.position)
+            
+        return self
 
-    def translate(self, translation: ARRAY_LIKE):
+    def translate(self, translation: ARRAY_LIKE) -> Self:
         """
         This translates the location of the point.
 
@@ -77,9 +79,11 @@ class Point:
         if np.size(translation) == 3:
             trans_array = np.asarray(translation).astype(np.float64)
 
-            self.location += trans_array.reshape(3)
+            self.position += trans_array.reshape(3)
 
         else:
             raise ValueError("You have entered an improperly sized translation.\n"
                              "Only length 3 translations are allowed.\n"
                              "You entered {0}".format(np.size(translation)))
+            
+        return self

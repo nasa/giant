@@ -23,11 +23,9 @@ non-default image format (by overriding the :meth:`.load_image` method).  As an 
 :ref:`getting started <getting-started>` page.
 """
 
-from datetime import datetime
-
 from pathlib import Path
 
-from typing import Union, Optional
+from typing import Union, Optional, Any, Self, cast
 
 import os
 
@@ -37,7 +35,7 @@ import numpy as np
 import cv2
 import astropy.io.fits as pf
 
-from giant._typing import ARRAY_LIKE_2D, ARRAY_LIKE, PATH, Real
+from giant._typing import ARRAY_LIKE_2D, ARRAY_LIKE, PATH, DatetimeLike
 from giant.rotations import Rotation
 
 
@@ -94,14 +92,14 @@ class OpNavImage(np.ndarray):
     """
 
     def __new__(cls, data: Union[PATH, ARRAY_LIKE_2D],
-                observation_date: Union[datetime, None] = None,
+                observation_date: Union[DatetimeLike, None] = None,
                 rotation_inertial_to_camera: Union[Rotation, ARRAY_LIKE, None] = None,
-                temperature: Optional[Real] = None, position: Union[ARRAY_LIKE, None] = None,
+                temperature: Optional[float] = None, position: Union[ARRAY_LIKE, None] = None,
                 velocity: Union[ARRAY_LIKE, None] = None, exposure_type: Union[ExposureType, str, None] = None,
-                saturation: Optional[Real] = None, file: Union[PATH, None] = None,
-                parse_data: bool = False, exposure: Optional[Real] = None,
-                dark_pixels: Union[ARRAY_LIKE, None] = None, instrument: str = None, spacecraft: str = None,
-                target: Union[str, None] = None, pointing_post_fit: bool = False):
+                saturation: Optional[float] = None, file: Union[PATH, None] = None,
+                parse_data: bool = False, exposure: Optional[float] = None,
+                dark_pixels: Optional[ARRAY_LIKE] = None, instrument: Optional[str] = None, spacecraft: Optional[str] = None,
+                target: Optional[str] = None, pointing_post_fit: bool = False) -> Self:
         """
         :param data: The image data to be formed into an OpNavImage either as a path to an image file or the
                      illumination data directly
@@ -141,7 +139,7 @@ class OpNavImage(np.ndarray):
 
         # initialize all the fields
         image_data._observation_date = None
-        image_data._rotation_inertial_to_camera = None
+        image_data._rotation_inertial_to_camera = Rotation()
         image_data._position = np.zeros(3, dtype=np.float64)
         image_data._velocity = np.zeros(3, dtype=np.float64)
         image_data._exposure_type = None
@@ -189,32 +187,35 @@ class OpNavImage(np.ndarray):
 
         return image_data
 
-    def __reduce__(self):
+    def __reduce__(self) -> tuple[type[np.ndarray], tuple[np.ndarray], dict[str, Any]]:
 
         return self.__class__, (self.view(np.ndarray),), self.__dict__
 
-    def __setstate__(self, state: dict, *args, **kwargs):
+    def __setstate__(self, state: dict, *args, **kwargs) -> None:
 
         # super().__setstate__(state, *args, **kwargs)
 
         self.__dict__.update(state)
 
-    def __array_finalize__(self, obj: Optional['OpNavImage']):
+    def __array_finalize__(self, obj: Optional[np.ndarray]) -> None:
 
         if obj is None:
             return
 
         self.file = getattr(obj, 'file', None)
-        self.observation_date = getattr(obj, 'observation_date', None)
+        try:
+            self.observation_date = getattr(obj, 'observation_date', None)
+        except AssertionError:
+            self.observation_date = None
         self.instrument = getattr(obj, 'instrument', None)
         self.spacecraft = getattr(obj, 'spacecraft', None)
-        self.rotation_inertial_to_camera = getattr(obj, 'rotation_inertial_to_camera', None)
+        self.rotation_inertial_to_camera = getattr(obj, 'rotation_inertial_to_camera', Rotation())
         self.position = getattr(obj, 'position', np.zeros(3, dtype=np.float64))
         self.velocity = getattr(obj, 'velocity', np.zeros(3, dtype=np.float64))
         self.dark_pixels = getattr(obj, 'dark_pixels', None)
         self.exposure = getattr(obj, 'exposure', None)
         self.exposure_type = getattr(obj, 'exposure_type', None)
-        self.saturation = getattr(obj, 'saturation', np.finfo(np.float64).max)
+        self.saturation = getattr(obj, 'saturation', float(np.finfo(np.float64).max))
         self.temperature = getattr(obj, 'temperature', 0)
         self.target = getattr(obj, 'target', None)
         self.pointing_post_fit = getattr(obj, 'pointing_post_fit', False)
@@ -225,7 +226,10 @@ class OpNavImage(np.ndarray):
         odict = {}
         for key, value in self.__dict__.items():
             if not key.startswith("_"):
-                odict[key] = value
+                try:
+                    odict[key] = value
+                except AssertionError:
+                    odict[key] = None
 
         return (self.__module__ + "." + self.__class__.__name__ + "(" + data +
                 ', '.join(['{}={!r}'.format(k, v) for k, v in odict.items()]) + ")")
@@ -235,13 +239,16 @@ class OpNavImage(np.ndarray):
         odict = {}
         for key, value in self.__dict__.items():
             if not key.startswith("_"):
-                odict[key] = value
+                try:
+                    odict[key] = value
+                except AssertionError:
+                    odict[key] = None
 
         return (self.__module__ + "." + self.__class__.__name__ + "(" + data +
                 ', '.join(['{}={!s}'.format(k, v) for k, v in odict.items()]) + ")")
 
     @property
-    def observation_date(self) -> Union[datetime, None]:
+    def observation_date(self) -> DatetimeLike:
         """
         The observation_date specifies when the image was captured (normally set to the middle of the exposure period).
 
@@ -250,21 +257,18 @@ class OpNavImage(np.ndarray):
 
         Typically this attribute is a python datetime object, however, you can make it a different object if you want
         as long as the different object implements ``isoformat``, ``__add__``, and ``__sub__`` methods.  You can also
-        set this attribute to None but this will break some functionality in GIANT so it is not recommended.  If you
-        really want to set this to something else you will need to set the ``_observation_date`` attribute directly, but
-        again this is likely to break other functionality in GIANT so it is not recommended.
+        set this attribute to ``None`` but this will break some functionality in GIANT so it is not recommended.  
         """
 
+        assert self._observation_date is not None, "observation_date cannot be None at this point"
         return self._observation_date
 
     @observation_date.setter
-    def observation_date(self, val: Optional[datetime]):
+    def observation_date(self, val: Optional[DatetimeLike]):
 
         if val is None:
             self._observation_date = val
-        elif isinstance(val, datetime):
-            self._observation_date = val
-        elif hasattr(val, "isoformat") and hasattr(val, "__sub__") and hasattr(val, "__add__"):
+        elif isinstance(val, DatetimeLike):
             self._observation_date = val
         else:
             raise ValueError("We can't use the value you set for observation_date.  Please consider using a datetime "
@@ -272,7 +276,7 @@ class OpNavImage(np.ndarray):
                              "_observation_date attribute")
 
     @property
-    def rotation_inertial_to_camera(self) -> Union[Rotation, None]:
+    def rotation_inertial_to_camera(self) -> Rotation:
         """
         The rotation_inertial_to_camera attribute encodes the rotation to transform from the inertial frame to the
         camera frame at the time of the image.
@@ -282,22 +286,15 @@ class OpNavImage(np.ndarray):
         relative navigation to predict where points in the image project to in inertial space.
 
         This attribute should be set to a :class:`.Rotation` object, or something that the Rotation object can
-        interpret. When you set this value, it will be converted to an :class:`.Rotation` object. You can also set this
-        attribute to None but this will break a significant portion of the functionality in GIANT so it is not
-        recommended. If you really want to set this to something else you will need to set the
-        ``_rotation_inertial_to_camera`` attribute directly, but again this is likely to break other functionality in
-        GIANT so it is not recommended.
+        interpret. When you set this value, it will be converted to an :class:`.Rotation` object. 
         """
 
-        return self._rotation_to_camera
+        return self._rotation_inertial_to_camera
 
     @rotation_inertial_to_camera.setter
-    def rotation_inertial_to_camera(self, val):
+    def rotation_inertial_to_camera(self, val: Rotation | ARRAY_LIKE):
 
-        if val is None:
-            self._rotation_to_camera = val
-        else:
-            self._rotation_to_camera = Rotation(val)
+        self._rotation_inertial_to_camera = Rotation(val)
 
     @property
     def velocity(self) -> np.ndarray:
@@ -315,7 +312,7 @@ class OpNavImage(np.ndarray):
         return self._velocity
 
     @velocity.setter
-    def velocity(self, val):
+    def velocity(self, val: ARRAY_LIKE | None):
 
         if val is not None:
             self._velocity = np.array(val, dtype=np.float64).ravel()
@@ -339,7 +336,7 @@ class OpNavImage(np.ndarray):
         return self._position
 
     @position.setter
-    def position(self, val):
+    def position(self, val: ARRAY_LIKE | None):
 
         if val is not None:
             self._position = np.array(val, dtype=np.float64).ravel()
@@ -355,17 +352,18 @@ class OpNavImage(np.ndarray):
         ``long`` exposure images are used for star based navigation like attitude estimation.
         ``dual`` exposure images are used for both star based and relative navigation.
 
-        this property should be set to an :class:`.ExposureType` value or a string.  It can also be set to None but this
-        can break some other functionality of GIANT so it is not recommended.
+        this property should be set to an :class:`.ExposureType` value or a string.  
+        
+        If it is set to `None` then the exposure type will be defaulted to ``dual``
         """
 
         return self._exposure_type
 
     @exposure_type.setter
-    def exposure_type(self, val):
+    def exposure_type(self, val: ExposureType | str | None):
 
         if val is None:
-            self._exposure_type = val
+            self._exposure_type = ExposureType.DUAL
         else:
             if isinstance(val, str):
                 val = val.lower()
@@ -373,22 +371,23 @@ class OpNavImage(np.ndarray):
             self._exposure_type = ExposureType(val)
 
     @property
-    def temperature(self) -> Real:
+    def temperature(self) -> float:
         """
         The temperature of the camera at the time the image was captured
 
         This property is used by the camera model to apply temperature dependent focal length changes.  It should be
-        a ``Real`` and convertible to a float by using the ``float`` function.  You can set this value to None but it
-        will break things in the camera model so that is not recommended.
+        a real number and convertible to a float by using the ``float`` function.  
+        
+        If you set this to None it will default to a temperature of 0
         """
 
         return self._temperature
 
     @temperature.setter
-    def temperature(self, val):
+    def temperature(self, val: float | None):
 
         if val is None:
-            self._temperature = val
+            self._temperature = 0.0
         else:
             try:
                 self._temperature = float(val)
@@ -397,24 +396,26 @@ class OpNavImage(np.ndarray):
                                  'convertible to a float'.format(val))
 
     @property
-    def saturation(self) -> Real:
+    def saturation(self) -> float:
         """
         The saturation value of the camera.
 
         This attribute is used when determining if a pixel is saturated or not in image processing.  It may be set to a
         very high number to effectively ignore the check.
+        
+        If set to None, this defaults to the maximum double value
         """
 
         return self._saturation
 
     @saturation.setter
-    def saturation(self, val):
+    def saturation(self, val: float | None):
 
         if val is None:
-            self._saturation = val
+            self._saturation = float(np.finfo(np.float64).max)
         else:
             try:
-                0 < val
+                _ = 0 < val
                 self._saturation = val
             except TypeError:
                 raise TypeError("The saturation must be a number that supports comparisons with numbers")
@@ -430,15 +431,13 @@ class OpNavImage(np.ndarray):
         raise NotImplementedError('This method needs to be implemented by the user.')
 
     @staticmethod
-    def load_image(image_path):
+    def load_image(image_path: PATH) -> np.ndarray:
         """
         This method reads in a number of standard image formats using OpenCV and pyfits and converts it to grayscale
         if it is in color.
 
         :param image_path: The path to the image file to be read.
-        :type image_path: str
         :return: The illumination data from the image file
-        :rtype: np.ndarray
         """
         cv_ext = ['.bmp', '.dib', '.jpeg', '.jpg', '.jpe', '.jp2',
                   '.png', '.webp', '.pbm', '.pgm', '.ppm', '.sr', '.ras',
@@ -448,10 +447,10 @@ class OpNavImage(np.ndarray):
             _, ext = os.path.splitext(image_path)
 
             if ext.lower() in '.fits':
+                # pylance doesn't recognize the return type here
+                with pf.open(image_path) as image_file: # type: ignore
 
-                with pf.open(image_path) as image_file:
-
-                    image = image_file[0].data
+                    image = cast(np.ndarray, cast(pf.PrimaryHDU, image_file[0]).data)
 
                     if len(image.shape) > 2:
 
@@ -467,7 +466,7 @@ class OpNavImage(np.ndarray):
 
             elif ext.lower() in cv_ext:
 
-                image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+                image = cv2.imread(str(image_path), cv2.IMREAD_GRAYSCALE)
 
                 return image
 

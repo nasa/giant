@@ -43,8 +43,9 @@ from copy import deepcopy
 from typing import Optional, Callable, List, Tuple, Dict, Any, Iterator, Union, Iterable
 
 import numpy as np
+from numpy.typing import NDArray
 
-from scipy.spatial import cKDTree
+from scipy.spatial import KDTree
 
 import pandas as pd
 
@@ -53,14 +54,17 @@ import cv2
 from giant.stellar_opnav.stellar_class import StellarOpNav
 from giant.point_spread_functions.gaussians import IterativeGeneralizedGaussianWBackground
 
-from giant.catalogues.utilities import unit_to_radec, RAD2DEG, radec_to_unit, radec_distance, DEG2RAD
+from giant.catalogs.utilities import RAD2DEG, DEG2RAD
+from giant.utilities.spherical_coordinates import unit_to_radec, radec_to_unit, radec_distance
 from giant.utilities.spice_interface import datetime_to_et
 from giant.ray_tracer.rays import Rays
 from giant.ray_tracer.scene import Scene
+from giant.stellar_opnav.stellar_class import StellarOpNavOptions
 
 from giant.image import OpNavImage
 
-from giant._typing import Real, SCALAR_OR_ARRAY, PATH, ARRAY_LIKE_2D
+from giant._typing import F_SCALAR_OR_ARRAY, PATH 
+from giant.utilities.boolean_filter_list import boolean_filter_list
 
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -98,7 +102,7 @@ def unit_to_radec_jacobian(unit: np.ndarray) -> np.ndarray:
     return out
 
 
-_IMAGE_INFORMATION_SIGNATURE = Callable[[OpNavImage], Tuple[float, float, float, SCALAR_OR_ARRAY]]
+_IMAGE_INFORMATION_SIGNATURE = Callable[[OpNavImage], Tuple[float, float, float, F_SCALAR_OR_ARRAY]]
 """
 This specifies the call signature that the image information function is expected to have.
 """
@@ -128,11 +132,11 @@ class Detector:
     package documentation.
     """
 
-    def __init__(self, sopnav: StellarOpNav, scene: Optional[Scene] = None, dn_offset: Real = 0,
+    def __init__(self, sopnav: StellarOpNav, scene: Optional[Scene] = None, dn_offset: float = 0,
                  image_information_function: Optional[_IMAGE_INFORMATION_SIGNATURE] = None,
                  magnitude_function: Optional[_MAGNITUDE_FUNCTION_SIGNATURE] = None,
-                 update_attitude_kwargs: Optional[Dict[str, Dict[str, Any]]] = None,
-                 find_ufos_kwargs: Optional[Dict[str, Dict[str, Any]]] = None,
+                 update_attitude_settings: Optional[StellarOpNavOptions] = None,
+                 find_ufos_settings: Optional[StellarOpNavOptions] = None,
                  unmatched_star_threshold: int = 3,
                  hot_pixel_threshold: int = 5,
                  create_hashed_index: bool = True):
@@ -147,16 +151,10 @@ class Detector:
         :param magnitude_function: A function that computes the apparent magnitude for detections based off of the input
                                    5x5 summed DN for the detections and the image the detection came from.  If ``None``
                                    then the magnitude will not be computed and will be stored as 0 for all detections.
-        :param update_attitude_kwargs: A dictionary of str -> dictionary where the keys are "star_id_kwargs",
-                                       "image_processing_kwargs", or "attitude_estimator_kwargs" and the values are
-                                       dictionaries specifying the key word argument -> value pairs for the appropriate
-                                       class.  This is used to update the settings before attempting to solve for the
-                                       attitude in each image. (:meth:`update_attitude`)
-        :param find_ufos_kwargs: A dictionary of str -> dictionary where the keys are "star_id_kwargs",
-                                 "image_processing_kwargs", or "attitude_estimator_kwargs" and the values are
-                                 dictionaries specifying the key word argument -> value pairs for the
-                                 appropriate class.  This is used to update the settings before attempting to
-                                 identify ufos in the image (:meth:`find_ufos`)
+        :param update_attitude_settings: an instance of :class:`.StellarOpNavOptions` used to configure the 
+                                         :class:`.StellarOpNav` instance for solving for attitude from star fields
+        :param find_ufos_settings: An instance of :class:`.StellarOpNavOptions` used to configure the 
+                                   :class:`.StellarOpNav` instance for identifying unmatched points (UFOs) in the images
         :param hot_pixel_threshold: The minimum number of images a (x_raw, y_raw) pair must appear in for the detections
                                     to be labeled a possible hot pixel
         :param unmatched_star_threshold: The minimum number of images a (ra, dec) pair must appear in for the detections
@@ -179,7 +177,7 @@ class Detector:
         whether the UFOs are part of the target or not.
         """
 
-        self.dn_offset: Real = dn_offset
+        self.dn_offset: float = dn_offset
         """
         The dn offset of the detector (typically a fixed value that pixels are always guaranteed to be above).
         
@@ -213,7 +211,7 @@ class Detector:
         attributes.  Note that this function should expect to process all of the observations at once.
         """
 
-        self.update_attitude_kwargs: Optional[Dict[str, Dict[str, Any]]] = update_attitude_kwargs
+        self.update_attitude_settings: Optional[StellarOpNavOptions] = update_attitude_settings
         """
         A dictionary of str -> dictionary where the keys are "star_id_kwargs", "image_processing_kwargs", or 
         "attitude_estimator_kwargs" and the values are dictionaries specifying the key word argument -> value pairs for 
@@ -223,7 +221,7 @@ class Detector:
         (:meth:`update_attitude`)
         """
 
-        self.find_ufos_kwargs: Optional[Dict[str, Dict[str, Any]]] = find_ufos_kwargs
+        self.find_ufos_settings: Optional[StellarOpNavOptions] = find_ufos_settings
         """
         A dictionary of str -> dictionary where the keys are "star_id_kwargs", "image_processing_kwargs", or 
         "attitude_estimator_kwargs" and the values are dictionaries specifying the key word argument -> value pairs for 
@@ -425,7 +423,7 @@ class Detector:
         Until :meth:`package_results` is called this will be filled with ``None``.
         """
 
-        self.star_max_dn: List[Optional[List[Real]]] = [None] * len(self.sopnav.camera.images)
+        self.star_max_dn: List[Optional[List[float]]] = [None] * len(self.sopnav.camera.images)
         """
         This list is used to store the maximum DN value for each matched star.
 
@@ -540,16 +538,17 @@ class Detector:
 
         This is done through the usual process.  First the settings for the :attr:`.StellarOpNav.star_id``, `
         :attr:`.StellarOpNav.attitude_estimator`, and :attr:`.StellarOpNav.image_processing` attributes are updated
-        according to the settings saved in :attr:`update_attitude_kwargs`. Then the stars are identified using
+        according to the settings saved in :attr:`update_attitude_settings`. Then the stars are identified using
         :meth:`.StellarOpNav.id_stars`.  Finally, the attitude is estimated using
         :meth:`.StellarOpNav.estimate_attitude`.  All of the results are stored into the :attr:`sopnav` attribute as
         usual.
         """
 
         _LOGGER.info('Updating settings for star identification')
-        self.sopnav.update_star_id(self.update_attitude_kwargs.get('star_id_kwargs'))
-        self.sopnav.update_image_processing(self.update_attitude_kwargs.get('image_processing_kwargs'))
-        self.sopnav.update_attitude_estimator(self.update_attitude_kwargs.get('attitude_estimator_kwargs'))
+        if self.update_attitude_settings is not None:
+            self.sopnav.update_attitude_estimator(self.update_attitude_settings.attitude_estimator_options)
+            self.sopnav.update_point_of_interest_finder(self.update_attitude_settings.point_of_interest_finder_options)
+            self.sopnav.update_star_id(self.update_attitude_settings.star_id_options)
 
         # Identify stars
         _LOGGER.info('Identifying Stars...')
@@ -567,7 +566,7 @@ class Detector:
         the  camera.
 
         This is done by updating the :attr:`.StellarOpNav.star_id` and :attr:`.StellarOpNav.image_processing` attributes
-        using the settings saved in :attr:`find_ufos_kwargs`.  Then :meth:`.StellarOpNav.id_stars` is called to identify
+        using the settings saved in :attr:`find_ufos_settings`.  Then :meth:`.StellarOpNav.id_stars` is called to identify
         the UFOs.  The results are stored in the ``unmatched_*`` attributes of the :attr:`sopnav` attribute.
 
         To get a summary of UFOs/stars with more information about them call :meth:`package_results` after calling this
@@ -575,8 +574,9 @@ class Detector:
         """
 
         _LOGGER.info('Updating settings for ufo identification')
-        self.sopnav.update_star_id(self.find_ufos_kwargs.get('star_id_kwargs'))
-        self.sopnav.update_image_processing(self.find_ufos_kwargs.get('image_processing_kwargs'))
+        if self.find_ufos_settings is not None:
+            self.sopnav.update_star_id(self.find_ufos_settings.star_id_options)
+            self.sopnav.update_point_of_interest_finder(self.find_ufos_settings.point_of_interest_finder_options)
 
         # only process images that we need to
         self.sopnav.process_stars = self._needs_processed
@@ -701,7 +701,7 @@ class Detector:
                               at the time of the detection as a float
         s_inert2cam           The scalar component of the quaternion that rotates from the inertial frame to the camera
                               frame at the time of the detection as a float
-        star_id               A string given the catalogue ID of the star this detection was matched to (if it was
+        star_id               A string given the catalog ID of the star this detection was matched to (if it was
                               matched to a star).
         ===================== ==========================================================================================
         """
@@ -754,18 +754,20 @@ class Detector:
             # get the coordinates of the bright spots in the image (where bright is true)
             bright_coords: np.ndarray = np.transpose(bright.nonzero()[::-1]).astype(np.float64)
 
-            # build the catalogue of bright spots
+            # build the catalog of bright spots
             # noinspection PyArgumentList
-            bright_tree = cKDTree(bright_coords)
+            bright_tree = KDTree(bright_coords)
+            ufo_points = self.sopnav.unmatched_extracted_image_points[ind]
+            if ufo_points is None:
+                continue
 
             if self.scene is not None:
                 # determine which detections are actually due to the surface of any extended targets in the scene
                 # compute the rays to trace through the scene, one for each unmatched point
                 starts = np.zeros(3, dtype=np.float64)
+                
 
-                directions = self.sopnav.camera.model.pixels_to_unit(
-                    self.sopnav.unmatched_extracted_image_points[ind], temperature=image.temperature
-                )
+                directions = self.sopnav.camera.model.pixels_to_unit(ufo_points, temperature=image.temperature)
 
                 rays = Rays(starts, directions)
 
@@ -784,46 +786,66 @@ class Detector:
                 self.occulting[ind] = inter[~test]['check']
 
                 # throw out the points that are due to the illuminated targets
-                self.sopnav.unmatched_extracted_image_points[ind] = \
-                    self.sopnav.unmatched_extracted_image_points[ind][:, ~test]
-                self.sopnav.unmatched_psfs[ind] = self.sopnav.unmatched_psfs[ind][~test]
-                self.sopnav.unmatched_snrs[ind] = self.sopnav.unmatched_snrs[ind][~test]
-                self.sopnav.unmatched_stats[ind] = self.sopnav.unmatched_stats[ind][~test]
+                self.sopnav.unmatched_extracted_image_points[ind] = ufo_points[:, ~test]
+                ufo_points = ufo_points[:, ~test]
+                self.sopnav.unmatched_psfs[ind] = boolean_filter_list(self.sopnav.unmatched_psfs[ind], ~test) # type: ignore
+                self.sopnav.unmatched_snrs[ind] = self.sopnav.unmatched_snrs[ind][~test] # type: ignore
+                self.sopnav.unmatched_stats[ind] = self.sopnav.unmatched_stats[ind][~test] # type: ignore
             else:
-                self.occulting[ind] = np.zeros(self.sopnav.unmatched_extracted_image_points[ind].shape[1],
-                                               dtype=bool)
+                self.occulting[ind] = np.zeros(ufo_points.shape[1], dtype=bool)
 
             # determine the distance from each remaining point to the nearest saturated pixel in the image
-            self.saturation_distance[ind], _ = bright_tree.query(self.sopnav.unmatched_extracted_image_points[ind].T)
+            self.saturation_distance[ind], _ = bright_tree.query(ufo_points.T)
 
             # get the inertial unit vector from the camera through the detection
             inertial_vecs = image.rotation_inertial_to_camera.matrix.T @ self.sopnav.camera.model.pixels_to_unit(
-                self.sopnav.unmatched_extracted_image_points[ind], temperature=image.temperature
+                ufo_points, temperature=image.temperature
             )
 
             # compute the right ascension and declination of the unit vectors in degrees
-            self.bearing[ind] = np.array(unit_to_radec(inertial_vecs)) * RAD2DEG
+            current_bearing = np.array(unit_to_radec(inertial_vecs)) * RAD2DEG
+            self.bearing[ind] = current_bearing
+            
+            ufo_psfs = self.sopnav.unmatched_psfs[ind]
+            assert ufo_psfs is not None
+            ufo_snrs = self.sopnav.unmatched_snrs[ind]
+            assert ufo_snrs is not None
+            ufo_stats = self.sopnav.unmatched_stats[ind]
+            assert ufo_stats is not None
 
             # prepare some storage lists
-            self.summed_dn[ind] = []
-            self.summed_dn_count[ind] = []
-            self.max_dn[ind] = []
-            self.fit_chi2_value[ind] = []
-            self.integrated_psf_uncertainty[ind] = []
-            self.summed_dn_uncertainty[ind] = []
-            self.saturated[ind] = []
-            self.ra_sigma[ind], self.declination_sigma[ind] = [], []
-            self.x_raw_sigma[ind], self.y_raw_sigma[ind] = [], []
-            self.trail_length[ind] = np.zeros(len(self.sopnav.unmatched_psfs[ind]), dtype=np.float64)
-            self.trail_principal_angle[ind] = np.zeros(len(self.sopnav.unmatched_psfs[ind]), dtype=np.float64)
+            current_summed_dn = []
+            self.summed_dn[ind] = current_summed_dn
+            current_summed_dn_count = []
+            self.summed_dn_count[ind] = current_summed_dn_count
+            current_max_dn = []
+            self.max_dn[ind] = current_max_dn
+            current_fit_chi2_value = [] 
+            self.fit_chi2_value[ind] = current_fit_chi2_value
+            current_integrated_psf_uncertainty = []
+            self.integrated_psf_uncertainty[ind] = current_integrated_psf_uncertainty
+            current_summed_dn_uncertainty = []
+            self.summed_dn_uncertainty[ind] = current_summed_dn_uncertainty
+            current_saturated = []
+            self.saturated[ind] = current_saturated
+            current_ra_sigma = []
+            current_declination_sigma = []
+            self.ra_sigma[ind], self.declination_sigma[ind] = current_ra_sigma, current_declination_sigma
+            current_x_raw_sigma = []
+            current_y_raw_sigma = []
+            self.x_raw_sigma[ind], self.y_raw_sigma[ind] = current_x_raw_sigma, current_y_raw_sigma
+            current_trail_length = np.zeros(len(ufo_psfs), dtype=np.float64)
+            self.trail_length[ind] = current_trail_length
+            current_trail_principal_angle = np.zeros(len(ufo_psfs), dtype=np.float64)
+            self.trail_principal_angle[ind] = current_trail_principal_angle
 
             # compute the integrated psf DN for each detection
-            self.integrated_psf[ind] = [psf.volume() for psf in self.sopnav.unmatched_psfs[ind]]
+            self.integrated_psf[ind] = [psf.volume() for psf in ufo_psfs]
 
             # compute the jacobian matrix of the unit vector in the camera frame with respect to a change in the
             # pixel location
             jacobian_pixels_to_unit = self.sopnav.camera.model.compute_unit_vector_jacobian(
-                self.sopnav.unmatched_extracted_image_points[ind], temperature=image.temperature
+                ufo_points, temperature=image.temperature
             )
 
             # compute the jacobian matrix of the right ascension and declination with respect to a change in the
@@ -833,14 +855,14 @@ class Detector:
             # compute photometry for each detection
             # loop through the unmatched points and their psfs
             iterator: Iterator[Tuple[np.ndarray, IterativeGeneralizedGaussianWBackground]] = zip(
-                self.sopnav.unmatched_extracted_image_points[ind].T,
-                self.sopnav.unmatched_psfs[ind]
-            )
+                ufo_points,
+                ufo_psfs
+            ) # type: ignore
             for lind, (poi, psf) in enumerate(iterator):
 
                 # get the indices into the image around the detection, checking that we're not too close to an edge
-                rows = np.round(poi[1] + self._delta_row).astype(int)
-                cols = np.round(poi[0] + self._delta_col).astype(int)
+                rows: np.ndarray = np.round(poi[1] + self._delta_row).astype(int)
+                cols: np.ndarray = np.round(poi[0] + self._delta_col).astype(int)
 
                 check = ((rows >= 0) & (cols >= 0) &
                          (rows < self.sopnav.camera.model.n_rows) & (cols < self.sopnav.camera.model.n_cols))
@@ -850,16 +872,16 @@ class Detector:
 
                 # check to see if the pixels are saturated so we can set the flag
                 dns = image[rows, cols].astype(np.float64)
-                self.saturated[ind].append(dns.max() >= 0.98 * image.saturation)
+                current_saturated.append(dns.max() >= 0.98 * image.saturation)
 
                 # subtract off the estimated background from the DN values
                 bg = psf.evaluate_bg(cols, rows)
                 dns -= bg
 
                 # sum the dn, determine the number of pixels included in the sum, and get the max dn in the sub-image
-                self.summed_dn[ind].append(dns.sum())
-                self.summed_dn_count[ind].append(check.sum())
-                self.max_dn[ind].append(dns.max())
+                current_summed_dn.append(dns.sum())
+                current_summed_dn_count.append(check.sum())
+                current_max_dn.append(dns.max())
 
                 # compute the average stray light to be the background minus the detector dn_offset at the center
                 # of the detection
@@ -881,10 +903,10 @@ class Detector:
                 noise = np.sqrt(noise2.sum()) * electrons_to_dn
 
                 # compute and store the signal to noise ratio for the detection
-                self.sopnav.unmatched_snrs[ind][lind] = self.summed_dn[ind][lind] / noise
+                ufo_snrs[lind] = current_summed_dn[ind][lind] / noise
 
                 # compute and store the noise level for the summed DN term in units of DN
-                self.summed_dn_uncertainty[ind].append(np.sqrt(noise ** 2))
+                current_summed_dn_uncertainty.append(np.sqrt(noise ** 2))
 
                 # compute the average noise per each pixel squared in units of DN
                 pix_noise_avg2 = np.mean(noise2) * electrons_to_dn ** 2
@@ -894,8 +916,8 @@ class Detector:
                 psf_cov = psf.covariance / psf.residual_std**2 * pix_noise_avg2
 
                 # store the 1 sigma uncertainty in the estimated subpixel center
-                self.x_raw_sigma[ind].append(np.sqrt(psf_cov[0, 0]))
-                self.y_raw_sigma[ind].append(np.sqrt(psf_cov[1, 1]))
+                current_x_raw_sigma.append(np.sqrt(psf_cov[0, 0]))
+                current_y_raw_sigma.append(np.sqrt(psf_cov[1, 1]))
 
                 # compute the jacobian of the integrated point spread function with respect to a change in the
                 # estimated point spread function.  Do this with finite differencing
@@ -918,34 +940,34 @@ class Detector:
                 integ_cov = jacobian_integ_wrt_psf @ psf_cov @ jacobian_integ_wrt_psf.T
 
                 # compute and store the uncertainty on the integrated point spread function in units of DN
-                self.integrated_psf_uncertainty[ind].append(np.sqrt(integ_cov))
+                current_integrated_psf_uncertainty.append(np.sqrt(integ_cov))
 
                 # finalize the chi^2 value for the point spread function fit quality by dividing by the DN uncertainty
                 # in each pixel ignoring shot noise
-                self.fit_chi2_value[ind].append(psf.residual_rss/np.sqrt(extra_noise2))
+                current_fit_chi2_value.append(psf.residual_rss/np.sqrt(extra_noise2))
 
                 # compute the trail length and pa if extended psf
                 # check if the semi-major axis is 3 times bigger than the semi-minor axis.
                 # If so this is probably a streaked detection
                 if psf.sigma_x / psf.sigma_y > 3:
                     # the trail length is two times the semi-major axis (roughly)
-                    self.trail_length[ind][lind] = 2 * psf.sigma_x
+                    current_trail_length[lind] = 2 * psf.sigma_x
 
                     # determine the direction of the trail in ra/dec space
                     # determine the direction of increasing right ascension in the image
                     ra_dir: np.ndarray = self.sopnav.camera.model.project_onto_image(
                         image.rotation_inertial_to_camera.matrix @
-                        radec_to_unit(*((self.bearing[ind].T[lind] + [0.02, 0]) / RAD2DEG)),
+                        radec_to_unit(*((current_bearing[lind] + [0.02, 0]) / RAD2DEG)),
                         temperature=image.temperature
-                    ) - self.sopnav.unmatched_extracted_image_points[ind][:, lind]
+                    ) - ufo_points[:, lind]
 
                     ra_dir /= np.linalg.norm(ra_dir)
                     # determine the direction of increasing declination in the image
                     dec_dir: np.ndarray = self.sopnav.camera.model.project_onto_image(
                         image.rotation_inertial_to_camera.matrix @
-                        radec_to_unit(*((self.bearing[ind].T[lind] + [0, 0.02]) / RAD2DEG)),
+                        radec_to_unit(*((current_bearing[lind] + [0, 0.02]) / RAD2DEG)),
                         temperature=image.temperature
-                    ) - self.sopnav.unmatched_extracted_image_points[ind][:, lind]
+                    ) - ufo_points[:, lind]
 
                     dec_dir /= np.linalg.norm(dec_dir)
 
@@ -959,7 +981,7 @@ class Detector:
                         pa_theta += 180
 
                     # store the trail orientation
-                    self.trail_principal_angle[ind][lind] = pa_theta
+                    current_trail_principal_angle[lind] = pa_theta
 
                 # transform the covariance of the estimated subpixel center into the unit vector covariance
                 cov_unit = (image.rotation_inertial_to_camera.matrix.T @
@@ -972,203 +994,221 @@ class Detector:
                 cov_rad = jacobian_unit_to_bearing[lind] @ cov_unit @ jacobian_unit_to_bearing[lind].T
 
                 # extract the sigma values for the right ascension and declination from the covariance matrix
-                self.ra_sigma[ind].append(np.sqrt(cov_rad[0, 0]))
-                self.declination_sigma[ind].append(np.sqrt(cov_rad[1, 1]))
+                current_ra_sigma.append(np.sqrt(cov_rad[0, 0]))
+                current_declination_sigma.append(np.sqrt(cov_rad[1, 1]))
 
             # compute the rough magnitude of the detection using the summed DN if we were provided a magnitude function
             if self.magnitude_function is not None:
-                self.magnitude[ind] = self.magnitude_function(self.summed_dn[ind], image)
+                self.magnitude[ind] = self.magnitude_function(current_summed_dn, image)
             else:
-                self.magnitude[ind] = np.zeros(len(self.summed_dn[ind]), dtype=np.float64)
+                self.magnitude[ind] = np.zeros(len(current_summed_dn), dtype=np.float64)
 
             # now do all this again for the stars...
-            if self.scene is not None:
-                # determine which detections are actually due to the surface of any extended targets in the scene
-                # compute the rays to trace through the scene, one for each unmatched point
-                starts = np.zeros(3, dtype=np.float64)
+            star_points = self.sopnav.matched_catalog_image_points[ind]
+            if star_points is not None:
+                star_psfs = self.sopnav.matched_psfs[ind]
+                star_snrs = self.sopnav.matched_snrs[ind]
+                star_stats = self.sopnav.matched_stats[ind]
+                star_records = self.sopnav.matched_catalog_star_records[ind]
+                assert star_psfs is not None and star_snrs is not None and star_stats is not None and star_records is not None
+                if self.scene is not None:
+                    # determine which detections are actually due to the surface of any extended targets in the scene
+                    # compute the rays to trace through the scene, one for each unmatched point
+                    starts = np.zeros(3, dtype=np.float64)
 
-                directions = self.sopnav.camera.model.pixels_to_unit(
-                    self.sopnav.matched_extracted_image_points[ind], temperature=image.temperature
+                    directions = self.sopnav.camera.model.pixels_to_unit(
+                        ufo_points, temperature=image.temperature
+                    )
+
+                    rays = Rays(starts, directions)
+
+                    # do a single bounce ray trace from the camera to the body and then to the sun
+                    illums_inp, inter = self.scene.get_illumination_inputs(rays, return_intersects=True)
+
+                    # identify things that are in line with the illuminated portion of the extended targets and throw them
+                    # out
+                    # anything that has visible set to true means that the object is on the illuminated portion of the
+                    # target (at least, where we think the illuminated portion of the targets are)
+                    test = illums_inp['visible']
+
+                    # Now check to see where we intersected the body, but didn't make it to the sun.  These are points on
+                    # the dark side of the targets (occulting).  We are going to throw away the points on the bright side so
+                    # we can use ~test here to store only the ones we'll keep
+                    self.star_occulting[ind] = inter[~test]['check']
+
+                    # throw out the points that are due to teh illuminated targets
+                    star_points = star_points[:, ~test]
+                    self.sopnav.matched_extracted_image_points[ind] = star_points
+                    star_psfs = boolean_filter_list(star_psfs, ~test)
+                    self.sopnav.matched_psfs[ind] = star_psfs
+                    star_snrs = star_snrs[~test]
+                    self.sopnav.matched_snrs[ind] = star_snrs
+                    star_stats = star_stats[~test]
+                    self.sopnav.matched_stats[ind] = star_stats
+                    star_records = star_records.loc[~test]
+                    self.sopnav.matched_catalog_star_records[ind] = star_records
+                else:
+                    self.star_occulting[ind] = np.zeros(star_points.shape[1], dtype=bool)
+
+                # determine the distance from each remaining point to the nearest saturated pixel in the image
+                self.star_saturation_distance[ind], _ = bright_tree.query(star_points.T)
+
+                # self.sopnav.matched_rss[ind][:, 0] /= noise
+
+                # get the inertial unit vector from the self.sopnav.camera through the detection
+                inertial_vecs = image.rotation_inertial_to_camera.matrix.T @ self.sopnav.camera.model.pixels_to_unit(
+                    star_points, temperature=image.temperature
                 )
 
-                rays = Rays(starts, directions)
+                # compute the right ascension and declination of the unit vectors in degrees
+                self.star_bearing[ind] = np.array(unit_to_radec(inertial_vecs)) * RAD2DEG
 
-                # do a single bounce ray trace from the camera to the body and then to the sun
-                illums_inp, inter = self.scene.get_illumination_inputs(rays, return_intersects=True)
+                # prepare some storage lists
+                current_star_summed_dn = []
+                self.star_summed_dn[ind] = current_star_summed_dn
+                current_star_summed_dn_count = []
+                self.star_summed_dn_count[ind] = current_star_summed_dn_count
+                current_star_max_dn = []
+                self.star_max_dn[ind] = current_star_max_dn
+                current_star_fit_chi2_value = []
+                self.star_fit_chi2_value[ind] = current_star_fit_chi2_value
+                current_star_integrated_psf_uncertainty = []
+                self.star_integrated_psf_uncertainty[ind] = current_star_integrated_psf_uncertainty
+                current_star_summed_dn_uncertainty = []
+                self.star_summed_dn_uncertainty[ind] = current_star_summed_dn_uncertainty
+                current_star_saturated = []
+                self.star_saturated[ind] = current_star_saturated
+                current_star_x_raw_sigma, current_star_y_raw_sigma = [], []
+                self.star_x_raw_sigma[ind], self.star_y_raw_sigma[ind] = current_star_x_raw_sigma, current_star_y_raw_sigma
+                current_star_ra_sigma, current_star_declination_sigma = [], []
+                self.star_ra_sigma[ind], self.star_declination_sigma[ind] = current_star_ra_sigma, current_star_declination_sigma
 
-                # identify things that are in line with the illuminated portion of the extended targets and throw them
-                # out
-                # anything that has visible set to true means that the object is on the illuminated portion of the
-                # target (at least, where we think the illuminated portion of the targets are)
-                test = illums_inp['visible']
+                # compute the integrated psf DN for each detection
+                self.star_integrated_psf[ind] = [psf.volume() for psf in star_psfs]
 
-                # Now check to see where we intersected the body, but didn't make it to the sun.  These are points on
-                # the dark side of the targets (occulting).  We are going to throw away the points on the bright side so
-                # we can use ~test here to store only the ones we'll keep
-                self.star_occulting[ind] = inter[~test]['check']
+                # compute the jacobian matrix of the unit vector in the camera frame with respect to a change in the
+                # pixel location
+                jacobian_pixels_to_unit = self.sopnav.camera.model.compute_unit_vector_jacobian(
+                    star_points, temperature=image.temperature
+                )
 
-                # throw out the points that are due to teh illuminated targets
-                self.sopnav.matched_extracted_image_points[ind] = \
-                    self.sopnav.matched_extracted_image_points[ind][:, ~test]
-                self.sopnav.matched_psfs[ind] = self.sopnav.matched_psfs[ind][~test]
-                self.sopnav.matched_snrs[ind] = self.sopnav.matched_snrs[ind][~test]
-                self.sopnav.matched_stats[ind] = self.sopnav.matched_stats[ind][~test]
-                self.sopnav.matched_catalogue_star_records[ind] = \
-                    self.sopnav.matched_catalogue_star_records[ind].loc[~test]
-            else:
-                self.star_occulting[ind] = np.zeros(self.sopnav.matched_extracted_image_points[ind].shape[1],
-                                                    dtype=bool)
+                # compute the jacobian matrix of the right ascension and declination with respect to a change in the
+                # unit vector
+                jacobian_unit_to_bearing = unit_to_radec_jacobian(inertial_vecs)
 
-            # determine the distance from each remaining point to the nearest saturated pixel in the image
-            self.star_saturation_distance[ind], _ = bright_tree.query(self.sopnav.matched_extracted_image_points[ind].T)
+                # compute photometry for each detection
+                # loop through the matched points and their psfs
+                iterator: Iterator[Tuple[np.ndarray, IterativeGeneralizedGaussianWBackground]] = zip(
+                    star_points,
+                    star_psfs
+                ) # type: ignore
+                for lind, (poi, psf) in enumerate(iterator):
 
-            # self.sopnav.matched_rss[ind][:, 0] /= noise
+                    # get the indices into the image around the detection, checking that we're not too close to an edge
+                    rows = np.round(poi[1] + self._delta_row).astype(int)
+                    cols = np.round(poi[0] + self._delta_col).astype(int)
 
-            # get the inertial unit vector from the self.sopnav.camera through the detection
-            inertial_vecs = image.rotation_inertial_to_camera.matrix.T @ self.sopnav.camera.model.pixels_to_unit(
-                self.sopnav.matched_extracted_image_points[ind], temperature=image.temperature
-            )
+                    check = ((rows >= 0) & (cols >= 0) &
+                            (rows < self.sopnav.camera.model.n_rows) & (cols < self.sopnav.camera.model.n_cols))
 
-            # compute the right ascension and declination of the unit vectors in degrees
-            self.star_bearing[ind] = np.array(unit_to_radec(inertial_vecs)) * RAD2DEG
+                    rows = rows[check]
+                    cols = cols[check]
 
-            # prepare some storage lists
-            self.star_summed_dn[ind] = []
-            self.star_summed_dn_count[ind] = []
-            self.star_max_dn[ind] = []
-            self.star_fit_chi2_value[ind] = []
-            self.star_integrated_psf_uncertainty[ind] = []
-            self.star_summed_dn_uncertainty[ind] = []
-            self.star_saturated[ind] = []
-            self.star_x_raw_sigma[ind], self.star_y_raw_sigma[ind] = [], []
-            self.star_ra_sigma[ind], self.star_declination_sigma[ind] = [], []
+                    # check to see if the pixels are saturated so we can set the flag
+                    dns = image[rows, cols].astype(np.float64)
+                    current_star_saturated[ind].append(dns.max() >= 0.98 * image.saturation)
 
-            # compute the integrated psf DN for each detection
-            self.star_integrated_psf[ind] = [psf.volume() for psf in self.sopnav.matched_psfs[ind]]
+                    # subtract off the estimated background from the DN values
+                    bg = psf.evaluate_bg(cols, rows)
+                    dns -= bg
 
-            # compute the jacobian matrix of the unit vector in the camera frame with respect to a change in the
-            # pixel location
-            jacobian_pixels_to_unit = self.sopnav.camera.model.compute_unit_vector_jacobian(
-                self.sopnav.matched_extracted_image_points[ind], temperature=image.temperature
-            )
+                    # sum the dn, determine the number of pixels included in the sum, and get the max dn in the sub-window
+                    current_star_summed_dn.append(dns.sum())
+                    current_star_summed_dn_count.append(check.sum())
+                    current_star_max_dn.append(dns.max())
 
-            # compute the jacobian matrix of the right ascension and declination with respect to a change in the
-            # unit vector
-            jacobian_unit_to_bearing = unit_to_radec_jacobian(inertial_vecs)
+                    # compute the average stray light to be the background minus the detector dn_offset at the center
+                    # of the detection
+                    avg_stray_light = psf.evaluate_bg(*psf.centroid) - self.dn_offset
 
-            # compute photometry for each detection
-            # loop through the matched points and their psfs
-            iterator: Iterator[Tuple[np.ndarray, IterativeGeneralizedGaussianWBackground]] = zip(
-                self.sopnav.matched_extracted_image_points[ind].T,
-                self.sopnav.matched_psfs[ind]
-            )
-            for lind, (poi, psf) in enumerate(iterator):
+                    # compute the noise level for the summed DN
+                    # compute the square of the shot noise in electrons
+                    sigma_shot2 = (dns / electrons_to_dn)
 
-                # get the indices into the image around the detection, checking that we're not too close to an edge
-                rows = np.round(poi[1] + self._delta_row).astype(int)
-                cols = np.round(poi[0] + self._delta_col).astype(int)
+                    # compute the sum of the squares of the quantization noise, the read noise,
+                    # the noise due to the stray light, and the dark current in electrons
+                    extra_noise2 = (quantization_noise ** 2 + read_noise ** 2 + avg_stray_light / electrons_to_dn +
+                                    dark_current)
 
-                check = ((rows >= 0) & (cols >= 0) &
-                         (rows < self.sopnav.camera.model.n_rows) & (cols < self.sopnav.camera.model.n_cols))
+                    # compute the sum of the squares of the noise terms in electrons
+                    noise2 = sigma_shot2 + extra_noise2
 
-                rows = rows[check]
-                cols = cols[check]
+                    # get the total noise in the sub-window in units of DN
+                    noise = np.sqrt(noise2.sum()) * electrons_to_dn
 
-                # check to see if the pixels are saturated so we can set the flag
-                dns = image[rows, cols].astype(np.float64)
-                self.star_saturated[ind].append(dns.max() >= 0.98 * image.saturation)
+                    # compute and store the signal to noise ratio for the detection
+                    star_snrs[lind] = current_star_summed_dn[lind] / noise
 
-                # subtract off the estimated background from the DN values
-                bg = psf.evaluate_bg(cols, rows)
-                dns -= bg
+                    # compute and store the noise level for the summed DN term in units of DN
+                    current_star_summed_dn_uncertainty.append(np.sqrt(noise ** 2))
 
-                # sum the dn, determine the number of pixels included in the sum, and get the max dn in the sub-window
-                self.star_summed_dn[ind].append(dns.sum())
-                self.star_summed_dn_count[ind].append(check.sum())
-                self.star_max_dn[ind].append(dns.max())
+                    # compute the average noise per each pixel squared in units of DN
+                    pix_noise_avg2 = np.mean(noise2) * electrons_to_dn ** 2
 
-                # compute the average stray light to be the background minus the detector dn_offset at the center
-                # of the detection
-                avg_stray_light = psf.evaluate_bg(*psf.centroid) - self.dn_offset
+                    # make the weighted covariance matrix for the estimated point spread function by multiplying by the
+                    # average noise per pixel squared
+                    psf_cov = psf.covariance / psf.residual_std**2 * pix_noise_avg2
 
-                # compute the noise level for the summed DN
-                # compute the square of the shot noise in electrons
-                sigma_shot2 = (dns / electrons_to_dn)
+                    # store the 1 sigma uncertainty in the estimated subpixel center
+                    current_star_x_raw_sigma.append(np.sqrt(psf_cov[0, 0]))
+                    current_star_y_raw_sigma.append(np.sqrt(psf_cov[1, 1]))
 
-                # compute the sum of the squares of the quantization noise, the read noise,
-                # the noise due to the stray light, and the dark current in electrons
-                extra_noise2 = (quantization_noise ** 2 + read_noise ** 2 + avg_stray_light / electrons_to_dn +
-                                dark_current)
+                    # compute the jacobian of the integrated point spread function with respect to a change in the
+                    # estimated point spread function.  Do this with finite differencing
+                    jacobian_integ_wrt_psf = np.zeros((1, psf_cov.shape[0]), dtype=np.float64)
+                    for perturbation_axis in range(psf_cov.shape[0]):
+                        pert_vec = np.zeros(psf_cov.shape[0])
+                        psf_pert = deepcopy(psf)
+                        pert_vec[perturbation_axis] = 1e-6
+                        psf_pert.update_state(pert_vec)
+                        positive_integ = psf_pert.volume()
+                        pert_vec = np.zeros(psf_cov.shape[0])
+                        psf_pert = deepcopy(psf)
+                        pert_vec[perturbation_axis] = -1e-6
+                        psf_pert.update_state(pert_vec)
+                        negative_integ = psf_pert.volume()
 
-                # compute the sum of the squares of the noise terms in electrons
-                noise2 = sigma_shot2 + extra_noise2
+                        jacobian_integ_wrt_psf[0, perturbation_axis] = (positive_integ - negative_integ)/(2*1e-6)
 
-                # get the total noise in the sub-window in units of DN
-                noise = np.sqrt(noise2.sum()) * electrons_to_dn
+                    # compute the variance on the integrated point spread function value in dn
+                    integ_cov = jacobian_integ_wrt_psf @ psf_cov @ jacobian_integ_wrt_psf.T
 
-                # compute and store the signal to noise ratio for the detection
-                self.sopnav.matched_snrs[ind][lind] = self.star_summed_dn[ind][lind] / noise
+                    # compute and store the uncertainty on the integrated point spread function in units of DN
+                    current_star_integrated_psf_uncertainty.append(np.sqrt(integ_cov))
 
-                # compute and store the noise level for the summed DN term in units of DN
-                self.star_summed_dn_uncertainty[ind].append(np.sqrt(noise ** 2))
+                    # finalize the chi^2 value for the point spread function fit quality by dividing by the DN uncertainty
+                    # in each pixel ignoring shot noise
+                    current_star_fit_chi2_value.append(psf.residual_rss/np.sqrt(extra_noise2))
 
-                # compute the average noise per each pixel squared in units of DN
-                pix_noise_avg2 = np.mean(noise2) * electrons_to_dn ** 2
+                    # transform the covariance of the estimated subpixel center into the unit vector covariance
+                    cov_unit = (image.rotation_inertial_to_camera.matrix.T @
+                                jacobian_pixels_to_unit[lind] @
+                                psf_cov[:2, :2] @
+                                jacobian_pixels_to_unit[lind].T @
+                                image.rotation_inertial_to_camera.matrix)
 
-                # make the weighted covariance matrix for the estimated point spread function by multiplying by the
-                # average noise per pixel squared
-                psf_cov = psf.covariance / psf.residual_std**2 * pix_noise_avg2
+                    # transform the covariance into the bearing covariance
+                    cov_rad = jacobian_unit_to_bearing[lind] @ cov_unit @ jacobian_unit_to_bearing[lind].T
 
-                # store the 1 sigma uncertainty in the estimated subpixel center
-                self.star_x_raw_sigma[ind].append(np.sqrt(psf_cov[0, 0]))
-                self.star_y_raw_sigma[ind].append(np.sqrt(psf_cov[1, 1]))
+                    # extract the sigma values
+                    current_star_ra_sigma.append(np.sqrt(cov_rad[0, 0]))
+                    current_star_declination_sigma.append(np.sqrt(cov_rad[1, 1]))
 
-                # compute the jacobian of the integrated point spread function with respect to a change in the
-                # estimated point spread function.  Do this with finite differencing
-                jacobian_integ_wrt_psf = np.zeros((1, psf_cov.shape[0]), dtype=np.float64)
-                for perturbation_axis in range(psf_cov.shape[0]):
-                    pert_vec = np.zeros(psf_cov.shape[0])
-                    psf_pert = deepcopy(psf)
-                    pert_vec[perturbation_axis] = 1e-6
-                    psf_pert.update_state(pert_vec)
-                    positive_integ = psf_pert.volume()
-                    pert_vec = np.zeros(psf_cov.shape[0])
-                    psf_pert = deepcopy(psf)
-                    pert_vec[perturbation_axis] = -1e-6
-                    psf_pert.update_state(pert_vec)
-                    negative_integ = psf_pert.volume()
-
-                    jacobian_integ_wrt_psf[0, perturbation_axis] = (positive_integ - negative_integ)/(2*1e-6)
-
-                # compute the variance on the integrated point spread function value in dn
-                integ_cov = jacobian_integ_wrt_psf @ psf_cov @ jacobian_integ_wrt_psf.T
-
-                # compute and store the uncertainty on the integrated point spread function in units of DN
-                self.star_integrated_psf_uncertainty[ind].append(np.sqrt(integ_cov))
-
-                # finalize the chi^2 value for the point spread function fit quality by dividing by the DN uncertainty
-                # in each pixel ignoring shot noise
-                self.star_fit_chi2_value[ind].append(psf.residual_rss/np.sqrt(extra_noise2))
-
-                # transform the covariance of the estimated subpixel center into the unit vector covariance
-                cov_unit = (image.rotation_inertial_to_camera.matrix.T @
-                            jacobian_pixels_to_unit[lind] @
-                            psf_cov[:2, :2] @
-                            jacobian_pixels_to_unit[lind].T @
-                            image.rotation_inertial_to_camera.matrix)
-
-                # transform the covariance into the bearing covariance
-                cov_rad = jacobian_unit_to_bearing[lind] @ cov_unit @ jacobian_unit_to_bearing[lind].T
-
-                # extract the sigma values
-                self.star_ra_sigma[ind].append(np.sqrt(cov_rad[0, 0]))
-                self.star_declination_sigma[ind].append(np.sqrt(cov_rad[1, 1]))
-
-            # compute the rough magnitude of the detection using the summed DN if we were provided a magnitude function
-            if self.magnitude_function is not None:
-                self.star_observed_magnitude[ind] = self.magnitude_function(self.star_summed_dn[ind], image)
-            else:
-                self.star_observed_magnitude[ind] = np.zeros(len(self.star_summed_dn[ind]), dtype=np.float64)
+                # compute the rough magnitude of the detection using the summed DN if we were provided a magnitude function
+                if self.magnitude_function is not None:
+                    self.star_observed_magnitude[ind] = self.magnitude_function(current_star_summed_dn, image)
+                else:
+                    self.star_observed_magnitude[ind] = np.zeros(len(current_star_summed_dn), dtype=np.float64)
 
             _LOGGER.info(
                 'image {} of {} analyzed in {:.3f} seconds'.format(processed_images,
@@ -1189,6 +1229,7 @@ class Detector:
                 continue
 
             # extract the filename from the image data
+            assert isinstance(image.file, PATH)
             filename = os.path.splitext(os.path.basename(image.file))[0]
 
             # get the image utc time
@@ -1198,34 +1239,7 @@ class Detector:
             date_et = datetime_to_et(image.observation_date)
 
             # get the rotation quaternion from inertial to the camera
-            rotation_quat = image.rotation_inertial_to_camera.q
-
-            # make a list of all the different things we need to loop through to make it easier
-            # noinspection SpellCheckingInspection
-            zlist = [self.sopnav.unmatched_extracted_image_points[ind].T,  # poi
-                     self.sopnav.unmatched_stats[ind],  # stats
-                     self.max_dn[ind],  # mdn
-                     self.summed_dn[ind],  # sdn
-                     self.summed_dn_count[ind],  # nsum
-                     self.bearing[ind].T,  # rd
-                     self.sopnav.unmatched_psfs[ind],  # psf
-                     list(zip(self.x_raw_sigma[ind], self.y_raw_sigma[ind])),  # sigs
-                     self.fit_chi2_value[ind],  # rss
-                     self.sopnav.unmatched_snrs[ind],  # snr
-                     self.ra_sigma[ind],  # rsig
-                     self.declination_sigma[ind],  # dsig
-                     self.occulting[ind],  # occ
-                     self.saturation_distance[ind],  # dist
-                     self.magnitude[ind],  # mg
-                     self.integrated_psf[ind],  # ipsf
-                     self.trail_length[ind],  # tl
-                     self.trail_principal_angle[ind],  # tp
-                     self.integrated_psf_uncertainty[ind],  # ipsfsig
-                     self.summed_dn_uncertainty[ind],  # sdnsig
-                     self.saturated[ind]]  # sat
-
-            if not isinstance(self.sopnav.camera.psf, IterativeGeneralizedGaussianWBackground):
-                raise ValueError('Must be IterativeGeneralizedGaussianWBackground to use package results currently')
+            rotation_quat = image.rotation_inertial_to_camera.quaternion
 
             if self.create_hashed_index:
                 max_length = int(np.log10(max(self.sopnav.camera.model.n_rows, self.sopnav.camera.model.n_cols)))
@@ -1234,118 +1248,144 @@ class Detector:
 
             else:
                 hash_format = ''
+            
+            if self.sopnav.unmatched_extracted_image_points[ind] is not None:
 
-            # zip together the stuff we need to loop through and loop through it
-            # noinspection SpellCheckingInspection
-            for (poi, stats, mdn, sdn, nsum, rd, psf, sigs, rss, snr,
-                 rsig, dsig, occ, dist, mg, ipsf, tl, tp, ipsfsig, sdnsig, sat) in zip(*zlist):
+                # make a list of all the different things we need to loop through to make it easier
+                zlist = [self.sopnav.unmatched_extracted_image_points[ind].T,  # poi # type: ignore
+                        self.sopnav.unmatched_stats[ind],  # stats
+                        self.max_dn[ind],  # mdn
+                        self.summed_dn[ind],  # sdn
+                        self.summed_dn_count[ind],  # nsum
+                        self.bearing[ind].T,  # rd # type: ignore
+                        self.sopnav.unmatched_psfs[ind],  # psf
+                        list(zip(self.x_raw_sigma[ind], self.y_raw_sigma[ind])),  # sigs # type: ignore
+                        self.fit_chi2_value[ind],  # rss
+                        self.sopnav.unmatched_snrs[ind],  # snr
+                        self.ra_sigma[ind],  # rsig
+                        self.declination_sigma[ind],  # dsig
+                        self.occulting[ind],  # occ
+                        self.saturation_distance[ind],  # dist
+                        self.magnitude[ind],  # mg
+                        self.integrated_psf[ind],  # ipsf
+                        self.trail_length[ind],  # tl
+                        self.trail_principal_angle[ind],  # tp
+                        self.integrated_psf_uncertainty[ind],  # ipsfsig
+                        self.summed_dn_uncertainty[ind],  # sdnsig
+                        self.saturated[ind]]  # sat
 
-                qcode = np.clip(np.round((np.clip(stats[cv2.CC_STAT_AREA], 1, 5) +
-                                          self.sopnav.camera.psf.compare(psf)*5 +
-                                          np.clip(snr, 3, 15)/3)/3), 1, 5)
+                if not isinstance(self.sopnav.camera.psf, IterativeGeneralizedGaussianWBackground):
+                    raise ValueError('Must be IterativeGeneralizedGaussianWBackground to use package results currently')
 
-                if np.isnan(qcode):
-                    qcode = 0
+                # zip together the stuff we need to loop through and loop through it
+                # noinspection SpellCheckingInspection
+                for (poi, stats, mdn, sdn, nsum, rd, psf, sigs, rss, snr,
+                    rsig, dsig, occ, dist, mg, ipsf, tl, tp, ipsfsig, sdnsig, sat) in zip(*zlist):
 
-                # append a tuple with the requisite information
-                if self.create_hashed_index:
-                    data.append((filename, date_utc, date_et,  # image_file, mid_exposure_utc, mid_exposure_et
-                                 poi[0], poi[1],  # x_raw, y_raw
-                                 sigs[0], sigs[1],  # x_raw_sigma, y_raw_sigma
-                                 rd[0], rd[1],  # ra, dec
-                                 rsig, dsig,  # ra_sigma, dec_sigma
-                                 stats[cv2.CC_STAT_AREA], mdn,  # area, peak_dn
-                                 sdn, sdnsig, nsum,  # summed_dn, summed_dn_sigma, n_pix_summed
-                                 ipsf, ipsfsig,  # integrated_psf, integrated_psf_sigma
-                                 mg, snr,  # magnitude, snr
-                                 str(psf), rss,  # psf, psf_fit_quality
-                                 occ, dist, sat,  # occulting, saturation_distance, is_saturated
-                                 tl, tp,  # trail_length, trail_principal_angle
-                                 qcode,  # quality_code
-                                 rotation_quat[0], rotation_quat[1], rotation_quat[2], rotation_quat[3],  # rotation
-                                 None,  # star_id (None because these are unmatched))
-                                 hash_format.format(filename, *poi)))  # hash id
-                else:
-                    data.append((filename, date_utc, date_et,  # image_file, mid_exposure_utc, mid_exposure_et
-                                 poi[0], poi[1],  # x_raw, y_raw
-                                 sigs[0], sigs[1],  # x_raw_sigma, y_raw_sigma
-                                 rd[0], rd[1],  # ra, dec
-                                 rsig, dsig,  # ra_sigma, dec_sigma
-                                 stats[cv2.CC_STAT_AREA], mdn,  # area, peak_dn
-                                 sdn, sdnsig, nsum,  # summed_dn, summed_dn_sigma, n_pix_summed
-                                 ipsf, ipsfsig,  # integrated_psf, integrated_psf_sigma
-                                 mg, snr,  # magnitude, snr
-                                 str(psf), rss,  # psf, psf_fit_quality
-                                 occ, dist, sat,  # occulting, saturation_distance, is_saturated
-                                 tl, tp,  # trail_length, trail_principal_angle
-                                 qcode,  # quality_code
-                                 rotation_quat[0], rotation_quat[1], rotation_quat[2], rotation_quat[3],  # rotation
-                                 None))  # star_id (None because these are unmatched))
+                    qcode = np.clip(np.round((np.clip(stats[cv2.CC_STAT_AREA], 1, 5) +
+                                            self.sopnav.camera.psf.compare(psf)*5 +
+                                            np.clip(snr, 3, 15)/3)/3), 1, 5)
 
-            # make a list of all the different things we need to loop through to make it easier
-            cat_id = zip(self.sopnav.matched_catalogue_star_records[ind].source,
-                         self.sopnav.matched_catalogue_star_records[ind].zone,
-                         self.sopnav.matched_catalogue_star_records[ind].rnz,
-                         self.sopnav.matched_catalogue_star_records[ind].index)
+                    if np.isnan(qcode):
+                        qcode = 0
 
-            # noinspection SpellCheckingInspection
-            zlist = [self.sopnav.matched_extracted_image_points[ind].T,  # poi
-                     self.sopnav.matched_stats[ind],  # stats
-                     self.star_max_dn[ind],  # mdn
-                     self.star_summed_dn[ind],  # sdn
-                     self.star_summed_dn_count[ind],  # nsum
-                     self.star_bearing[ind].T,  # rd
-                     self.sopnav.matched_psfs[ind],  # psf
-                     list(zip(self.star_x_raw_sigma[ind], self.star_y_raw_sigma[ind])),  # sigs
-                     self.star_fit_chi2_value[ind],  # rss
-                     self.sopnav.matched_snrs[ind],  # snr
-                     [' '.join([str(x) for x in y]) for y in cat_id],  # label, this is the star id value
-                     self.star_ra_sigma[ind],  # rsig
-                     self.star_declination_sigma[ind],  # dsig
-                     self.star_occulting[ind],  # occ
-                     self.star_saturation_distance[ind],  # dist
-                     self.star_observed_magnitude[ind],  # mg
-                     self.star_integrated_psf[ind],  # ipsf
-                     self.star_integrated_psf_uncertainty[ind],  # ipsfsig
-                     self.star_summed_dn_uncertainty[ind],  # sdnsig
-                     self.star_saturated[ind]]  # sat
+                    # append a tuple with the requisite information
+                    if self.create_hashed_index:
+                        data.append((filename, date_utc, date_et,  # image_file, mid_exposure_utc, mid_exposure_et
+                                    poi[0], poi[1],  # x_raw, y_raw
+                                    sigs[0], sigs[1],  # x_raw_sigma, y_raw_sigma
+                                    rd[0], rd[1],  # ra, dec
+                                    rsig, dsig,  # ra_sigma, dec_sigma
+                                    stats[cv2.CC_STAT_AREA], mdn,  # area, peak_dn
+                                    sdn, sdnsig, nsum,  # summed_dn, summed_dn_sigma, n_pix_summed
+                                    ipsf, ipsfsig,  # integrated_psf, integrated_psf_sigma
+                                    mg, snr,  # magnitude, snr
+                                    str(psf), rss,  # psf, psf_fit_quality
+                                    occ, dist, sat,  # occulting, saturation_distance, is_saturated
+                                    tl, tp,  # trail_length, trail_principal_angle
+                                    qcode,  # quality_code
+                                    rotation_quat[0], rotation_quat[1], rotation_quat[2], rotation_quat[3],  # rotation
+                                    None,  # star_id (None because these are unmatched))
+                                    hash_format.format(filename, *poi)))  # hash id
+                    else:
+                        data.append((filename, date_utc, date_et,  # image_file, mid_exposure_utc, mid_exposure_et
+                                    poi[0], poi[1],  # x_raw, y_raw
+                                    sigs[0], sigs[1],  # x_raw_sigma, y_raw_sigma
+                                    rd[0], rd[1],  # ra, dec
+                                    rsig, dsig,  # ra_sigma, dec_sigma
+                                    stats[cv2.CC_STAT_AREA], mdn,  # area, peak_dn
+                                    sdn, sdnsig, nsum,  # summed_dn, summed_dn_sigma, n_pix_summed
+                                    ipsf, ipsfsig,  # integrated_psf, integrated_psf_sigma
+                                    mg, snr,  # magnitude, snr
+                                    str(psf), rss,  # psf, psf_fit_quality
+                                    occ, dist, sat,  # occulting, saturation_distance, is_saturated
+                                    tl, tp,  # trail_length, trail_principal_angle
+                                    qcode,  # quality_code
+                                    rotation_quat[0], rotation_quat[1], rotation_quat[2], rotation_quat[3],  # rotation
+                                    None))  # star_id (None because these are unmatched))
 
-            # zip together the stuff we need to loop through and loop through it
-            # noinspection SpellCheckingInspection
-            for (poi, stats, mdn, sdn, nsum, rd, psf, sigs, rss, snr,
-                 label, rsig, dsig, occ, dist, mg, ipsf, ipsfsig, sdnsig, sat) in zip(*zlist):
+            if self.sopnav.matched_catalog_star_records[ind] is not None:
+                # make a list of all the different things we need to loop through to make it easier
+                cat_id = self.sopnav.matched_catalog_star_records[ind].index, # type: ignore
 
-                if self.create_hashed_index:
-                    data.append((filename, date_utc, date_et,  # image_file, mid_exposure_utc, mid_exposure_et
-                                 poi[0], poi[1],  # x_raw, y_raw
-                                 sigs[0], sigs[1],  # x_raw_sigma, y_raw_sigma
-                                 rd[0], rd[1],  # ra, dec
-                                 rsig, dsig,  # ra_sigma, dec_sigma
-                                 stats[cv2.CC_STAT_AREA], mdn,  # area peak_dn
-                                 sdn, sdnsig, nsum,  # summed_dn, summed_dn_sigma, n_pix_summed
-                                 ipsf, ipsfsig,  # integrated_psf, integrated_psf_sigma
-                                 mg, snr,  # magnitude, snr
-                                 str(psf), rss,  # psf, psf_fit_quality
-                                 occ, dist, sat,  # occulting, saturation_distance, is_saturated
-                                 0, 0, 0,  # trail_length, trail_principal_angle, quality_code
-                                 rotation_quat[0], rotation_quat[1], rotation_quat[2], rotation_quat[3],  # rotation
-                                 label,  # star_id
-                                 hash_format.format(filename, *poi)))  # hash id
-                else:
-                    data.append((filename, date_utc, date_et,  # image_file, mid_exposure_utc, mid_exposure_et
-                                 poi[0], poi[1],  # x_raw, y_raw
-                                 sigs[0], sigs[1],  # x_raw_sigma, y_raw_sigma
-                                 rd[0], rd[1],  # ra, dec
-                                 rsig, dsig,  # ra_sigma, dec_sigma
-                                 stats[cv2.CC_STAT_AREA], mdn,  # area peak_dn
-                                 sdn, sdnsig, nsum,  # summed_dn, summed_dn_sigma, n_pix_summed
-                                 ipsf, ipsfsig,  # integrated_psf, integrated_psf_sigma
-                                 mg, snr,  # magnitude, snr
-                                 str(psf), rss,  # psf, psf_fit_quality
-                                 occ, dist, sat,  # occulting, saturation_distance, is_saturated
-                                 0, 0, 0,  # trail_length, trail_principal_angle, quality_code
-                                 rotation_quat[0], rotation_quat[1], rotation_quat[2], rotation_quat[3],  # rotation
-                                 label))  # star_id
+                # noinspection SpellCheckingInspection
+                zlist = [self.sopnav.matched_extracted_image_points[ind].T,  # poi # type: ignore
+                        self.sopnav.matched_stats[ind],  # stats
+                        self.star_max_dn[ind],  # mdn
+                        self.star_summed_dn[ind],  # sdn
+                        self.star_summed_dn_count[ind],  # nsum
+                        self.star_bearing[ind].T,  # rd # type: ignore
+                        self.sopnav.matched_psfs[ind],  # psf
+                        list(zip(self.star_x_raw_sigma[ind], self.star_y_raw_sigma[ind])),  # sigs # type: ignore
+                        self.star_fit_chi2_value[ind],  # rss
+                        self.sopnav.matched_snrs[ind],  # snr
+                        [' '.join([str(x) for x in y]) for y in cat_id],  # label, this is the star id value
+                        self.star_ra_sigma[ind],  # rsig
+                        self.star_declination_sigma[ind],  # dsig
+                        self.star_occulting[ind],  # occ
+                        self.star_saturation_distance[ind],  # dist
+                        self.star_observed_magnitude[ind],  # mg
+                        self.star_integrated_psf[ind],  # ipsf
+                        self.star_integrated_psf_uncertainty[ind],  # ipsfsig
+                        self.star_summed_dn_uncertainty[ind],  # sdnsig
+                        self.star_saturated[ind]]  # sat
+
+                # zip together the stuff we need to loop through and loop through it
+                # noinspection SpellCheckingInspection
+                for (poi, stats, mdn, sdn, nsum, rd, psf, sigs, rss, snr,
+                    label, rsig, dsig, occ, dist, mg, ipsf, ipsfsig, sdnsig, sat) in zip(*zlist):
+
+                    if self.create_hashed_index:
+                        data.append((filename, date_utc, date_et,  # image_file, mid_exposure_utc, mid_exposure_et
+                                    poi[0], poi[1],  # x_raw, y_raw
+                                    sigs[0], sigs[1],  # x_raw_sigma, y_raw_sigma
+                                    rd[0], rd[1],  # ra, dec
+                                    rsig, dsig,  # ra_sigma, dec_sigma
+                                    stats[cv2.CC_STAT_AREA], mdn,  # area peak_dn
+                                    sdn, sdnsig, nsum,  # summed_dn, summed_dn_sigma, n_pix_summed
+                                    ipsf, ipsfsig,  # integrated_psf, integrated_psf_sigma
+                                    mg, snr,  # magnitude, snr
+                                    str(psf), rss,  # psf, psf_fit_quality
+                                    occ, dist, sat,  # occulting, saturation_distance, is_saturated
+                                    0, 0, 0,  # trail_length, trail_principal_angle, quality_code
+                                    rotation_quat[0], rotation_quat[1], rotation_quat[2], rotation_quat[3],  # rotation
+                                    label,  # star_id
+                                    hash_format.format(filename, *poi)))  # hash id
+                    else:
+                        data.append((filename, date_utc, date_et,  # image_file, mid_exposure_utc, mid_exposure_et
+                                    poi[0], poi[1],  # x_raw, y_raw
+                                    sigs[0], sigs[1],  # x_raw_sigma, y_raw_sigma
+                                    rd[0], rd[1],  # ra, dec
+                                    rsig, dsig,  # ra_sigma, dec_sigma
+                                    stats[cv2.CC_STAT_AREA], mdn,  # area peak_dn
+                                    sdn, sdnsig, nsum,  # summed_dn, summed_dn_sigma, n_pix_summed
+                                    ipsf, ipsfsig,  # integrated_psf, integrated_psf_sigma
+                                    mg, snr,  # magnitude, snr
+                                    str(psf), rss,  # psf, psf_fit_quality
+                                    occ, dist, sat,  # occulting, saturation_distance, is_saturated
+                                    0, 0, 0,  # trail_length, trail_principal_angle, quality_code
+                                    rotation_quat[0], rotation_quat[1], rotation_quat[2], rotation_quat[3],  # rotation
+                                    label))  # star_id
 
         # combine everything into a structured array
         if self.create_hashed_index:
@@ -1460,16 +1500,15 @@ class Detector:
         model = self.sopnav.camera.model
 
         # compute the IFOV of the detector in radians
-        ifov = np.arccos(np.product(model.pixels_to_unit([[(model.n_cols-1)/2, (model.n_cols-1)/2+1],
-                                                          [model.n_rows/2, model.n_rows/2]]), axis=-1).sum())
+        ifov = model.instantaneous_field_of_view()
 
         # make a list of kd trees to use to compare across images
         kd_trees = []
 
         for _, group in image_groups:
-            pixel_locations: np.ndarray = group.loc[:, ["x_raw", "y_raw"]].values
+            pixel_locations: np.ndarray = group.loc[:, ["x_raw", "y_raw"]].to_numpy()
             # noinspection PyArgumentList
-            kd_trees.append(cKDTree(pixel_locations))
+            kd_trees.append(KDTree(pixel_locations))
 
         # loop through the group again
         for first_ind, (first_file, first_group) in enumerate(image_groups):
@@ -1494,10 +1533,10 @@ class Detector:
 
                 # compute the number of shared inertial directions between the images.  Need to compute the distance in
                 # ra/dec space so we can't use trees and need to brute force it unfortunately
-                direction_counts += (radec_distance(first_group.ra.values.reshape(-1, 1)*DEG2RAD,
-                                                    first_group.dec.values.reshape(-1, 1)*DEG2RAD,
-                                                    second_group.ra.values.reshape(1, -1)*DEG2RAD,
-                                                    second_group.dec.values.reshape(1, -1)*DEG2RAD) <
+                direction_counts += (radec_distance(first_group.ra.to_numpy().reshape(-1, 1)*DEG2RAD,
+                                                    first_group.dec.to_numpy().reshape(-1, 1)*DEG2RAD,
+                                                    second_group.ra.to_numpy().reshape(1, -1)*DEG2RAD,
+                                                    second_group.dec.to_numpy().reshape(1, -1)*DEG2RAD) <
                                      2*ifov).sum(axis=-1)
 
             # make a boolean for this image/detections that were considered
@@ -1519,6 +1558,7 @@ class Detector:
 
         # sometimes we might get duplicate detections from the same image.
         # This function gets rid of them
+        assert self.detection_data_frame is not None
         remove = self.detection_data_frame.occulting.copy()
         remove[:] = False
 
@@ -1526,7 +1566,7 @@ class Detector:
 
             # make a kd tree for points in this image
             # noinspection PyArgumentList
-            kd = cKDTree(grp.loc[:, "x_raw":"y_raw"].values)
+            kd = KDTree(grp.loc[:, "x_raw":"y_raw"].to_numpy())
 
             # find all pairs separated by less than 2 pixels
             # noinspection PyUnresolvedReferences
@@ -1554,12 +1594,13 @@ class Detector:
         :param split: A flag specifying whether to split the output into a file for each image processed instead of 1
                       big file
         """
+        assert self.detection_data_frame is not None
         # if we are splitting into multiple files
         if split:
             # split according to image
             for image_file, grp in self.detection_data_frame.groupby('image_file'):
                 # get the name of the file to save the results to
-                out_file = out.format(image_file.strip('.fits').strip('.FITS'))
+                out_file = out.format(image_file.strip('.fits').strip('.FITS')) # type: ignore
 
                 # save the results to the file
                 grp.to_csv(out_file, index=False)
@@ -1616,7 +1657,7 @@ class Detector:
 
         self.sopnav.clear_results()
 
-    def add_images(self, data: Union[Iterable[Union[PATH, ARRAY_LIKE_2D]], PATH, ARRAY_LIKE_2D],
+    def add_images(self, data: Union[Iterable[Union[PATH, NDArray]], PATH, NDArray],
                    parse_data: bool = True, preprocessor: bool = True):
         """
         This is essentially an alias to the :meth:`.StellarOpNav.add_images` method, but it also expands various lists
@@ -1671,9 +1712,9 @@ class Detector:
         self.sopnav.add_images(data, parse_data=parse_data, preprocessor=preprocessor)
 
         if not isinstance(data, (list, tuple)):
-            data = [data]
+            data = [data] # pyright: ignore[reportAssignmentType]
 
-        for _ in data:
+        for _ in data: # type: ignore
             self.invalid_images.append(False)
             self.summed_dn.append(None)
             self.magnitude.append(None)
@@ -1709,150 +1750,3 @@ class Detector:
             self.star_saturation_distance.append(None)
             self._needs_processed.append(True)
 
-
-# noinspection SpellCheckingInspection
-"""
-if __name__ == "__main__":
-    import warnings
-
-    # disable annoying attitude warnings
-    warnings.filterwarnings('ignore', message='Non-unit length')
-    warnings.filterwarnings('ignore', category=FutureWarning)
-
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s:%(name)s:%(funcName)s:%(message)s',
-                        filename='/missions/orex/logs/ufo/ufo.log')
-
-    # set the version of UFO
-    version = 1.1
-
-    # disable annoying attitude warnings
-    warnings.filterwarnings('ignore', message='Non-unit length')
-    warnings.filterwarnings('ignore', message='peak too close')
-    warnings.filterwarnings('ignore', message="solution didn't converge")
-    warnings.filterwarnings('ignore', message="solution is diverging")
-    warnings.filterwarnings('ignore', message="overflow")
-    warnings.filterwarnings('ignore', message="Invalid jacobian")
-    warnings.filterwarnings('ignore', category=FutureWarning)
-
-    # build the cli
-    parser = ArgumentParser(description='Find unidentified particles in OSIRIS-REx OpNav images')
-
-    parser.add_argument('-c', '--camera', help='The camera file containing all of the images', default='./camera.dill',
-                        type=str)
-    parser.add_argument('-m', '--meta_kernel', help='The meta kernel file to load into spice',
-                        default='./meta_kernel.tm', type=str)
-    parser.add_argument('-n', '--no_split', help="Don't split the output files by day", action='store_true')
-    parser.add_argument('--shape', help='The shape model to use for rejecting points on the body',
-                        default='/missions/orex/opnav/common/shape_models/ola_v19_aligned/kdtree.pickle')
-    parser.add_argument('--output', default='./csv_files/{}.csv', help='override the file to save to')
-
-    # get the user specified arguments
-    args = parser.parse_args()
-
-    csv_file = args.output
-
-    camera_file = args.camera
-
-    # furnish the spice files
-    spice.furnsh('/missions/orex/spice/attitude_mk.tm')
-    spice.furnsh(args.meta_kernel)
-    spice.furnsh('/missions/orex/spice/spk_mk.tm')
-
-    # Load in camera
-    with open(camera_file, 'rb') as dillfile:
-        camera = dill.load(dillfile)
-
-    # make sure we have the most up to date states for the images
-    camera.update_states()
-
-    # change the camera model to use the "official" camera model
-    if camera.cam_name == 'NavCam 1':
-        camera.model.fx = 3473.26
-        camera.model.fy = -3473.321
-        camera.model.px = 1268.083
-        camera.model.py = 949.747
-        camera.model.a1 = 2.2933e-5
-        camera.model.k1 = -5.3766e-1
-        camera.model.k2 = 3.7526e-1
-        camera.model.k3 = -1.8368e-1
-        camera.model.p1 = -2.3432e-4
-        camera.model.p2 = 9.0875e-4
-        offset = 169.64
-        a_d = 714916
-        delta_temp = 1.1029
-    elif camera.cam_name == 'NavCam 2':
-        camera.model.fx = 3462.530
-        camera.model.fy = -3462.532
-        camera.model.px = 1309.530
-        camera.model.py = 968.487
-        camera.model.a1 = 1.9876e-5
-        camera.model.k1 = -5.3831e-1
-        camera.model.k2 = 3.8214e-1
-        camera.model.k3 = -2.0281e-1
-        camera.model.p1 = 6.2239e-4
-        camera.model.p2 = -1.2388e-4
-        offset = 170.63
-        a_d = 226648
-        delta_temp = -0.04422
-    else:
-        print("warning, couldn't update to kinetx model...")
-        offset = 155
-        a_d = 0
-        delta_temp = 0
-
-    # only process long exposure images
-    camera.only_long_on()
-
-    # buld the opnav scene
-    # determine the location of the shape info file
-    path = os.path.dirname(os.path.realpath(args.shape))
-    info_file = os.path.join(path, 'shape_info.txt')
-    # load the pck for the shape file if it was found
-    if os.path.exists(info_file):
-        with open(info_file, 'r') as ifile:
-            pck = None
-            for line in ifile:
-                if 'Pole:' in line:
-                    pck = line.split(':')[1].strip()
-                    print('loading pck {}'.format(pck))
-                    spice.furnsh(pck)
-                    args.pck = pck
-                    break
-
-            if pck is None:
-                print('warning: no pole information found for shape model')
-
-    # load the shape file
-    bennukd.load(args.shape)
-
-    # generate the scene
-    opnav_scene = scene.Scene(target_objs=[bennuautoobj], light_obj=sunautoobj)
-
-    # build the sopnav object
-    ip_kwargs = {"denoise_flag": True, 'return_stats': True, 'save_psf': True,
-                 'centroiding': IterativeGeneralizedGaussianWBackground,
-                 'reject_saturation': False,
-                 'image_flattening_noise_approximation': 'LOCAL'}
-
-    sid_kwargs = {'use_mp': True}
-
-    sopnav = StellarOpNav(camera, image_processing_kwargs=ip_kwargs, star_id_kwargs=sid_kwargs)
-
-    # build the ufo object
-    ufo = UFO(sopnav, opnav_scene, offset, a_d, delta_temp, version)
-
-    # estimate the attitude
-    ufo.update_attitude()
-
-    # find the ufos
-    ufo.find_ufos()
-
-    # prepare the results for writing
-    ufo.package_results()
-
-    # write out the results
-    ufo.save_results(args.output, split=(not args.no_split))
-
-    # clear out spice and finish
-    spice.kclear()
-"""
