@@ -1,6 +1,3 @@
-
-
-
 """
 This module provides a function for calculating outliers in a 1 dimensional data set using Median Absolute Deviation.
 

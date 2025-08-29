@@ -1,3 +1,7 @@
+"""
+This module contains helper functions for transforming from/to spherical coordinates.
+"""
+
 from typing import Sequence
 
 import numpy as np

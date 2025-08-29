@@ -1,6 +1,3 @@
-
-
-
 """
 This package provides a few different utility routines for interfacing with external data and general data analysis.
 

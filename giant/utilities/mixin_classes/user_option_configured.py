@@ -1,7 +1,4 @@
 """
-User Option Configured Mixin Module
-===================================
-
 This module provides the :class:`UserOptionConfigured` mixin class that enables classes to be
 configured using :class:`.UserOptions`-derived classes while maintaining the ability to reset
 to the original configuration state.

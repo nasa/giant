@@ -1,3 +1,7 @@
+"""
+This module provides a mixin whch adds a default equality comparison where each attribute is checked for equality.
+"""
+
 import numpy as np
 
 from typing import Self, Any

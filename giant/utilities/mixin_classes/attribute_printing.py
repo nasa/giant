@@ -1,4 +1,6 @@
-
+"""
+This module provides a class implementing default __str__ and __repr__ functionality.
+"""
 class AttributePrinting: 
     
     """

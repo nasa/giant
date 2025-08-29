@@ -1,3 +1,7 @@
+"""
+This module provides a utility function to print the lower left triangle of a matrix.
+"""
+
 from typing import Sequence
 
 from numpy.typing import NDArray

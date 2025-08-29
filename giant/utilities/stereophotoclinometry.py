@@ -1,6 +1,3 @@
-
-
-
 r"""
 This module provides a number of classes for interfacing with files used in the Stereophotoclinometry (SPC) software
 suite for performing shape modelling and surface feature navigation.
@@ -17,11 +14,9 @@ import struct  # we need the struct stuff to handle the conversion to binary
 import warnings
 from datetime import datetime
 import sys
-from typing import Optional, Union, Literal, Any
+from typing import Optional, Union, Literal
 
 from enum import Enum, auto
-
-from dateutil import parser
 
 from giant.ray_tracer.shapes import Triangle64, Triangle32
 from giant.utilities.mixin_classes import AttributeEqualityComparison, AttributePrinting

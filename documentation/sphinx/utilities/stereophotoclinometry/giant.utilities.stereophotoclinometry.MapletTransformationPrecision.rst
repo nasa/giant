@@ -1,10 +1,11 @@
-﻿Regress.read
-============
+MapletTransformationPrecision
+=============================
 
 .. currentmodule:: giant.utilities.stereophotoclinometry
 
 :mod:`giant.utilities.stereophotoclinometry`\:
 
-.. automethod:: Regress.read
+.. autoclass:: MapletTransformationPrecision
 
+   
 |

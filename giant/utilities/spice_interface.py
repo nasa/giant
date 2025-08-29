@@ -1,6 +1,3 @@
-
-
-
 """
 This module provides utility functions and classes for quickly creating callable objects to NAIF spice functions as well
 as a function to convert a datetime object to spice ephemeris time without using spice itself.

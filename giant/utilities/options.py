@@ -1,15 +1,18 @@
-import warnings
+"""
+This module provides a class for options management.
+"""
 
-from dataclasses import dataclass, fields
 
-from typing import Optional, Callable, Union, Tuple, Dict, TypeVar, Any
+from dataclasses import dataclass
 
-from abc import ABCMeta, abstractmethod
+from typing import Optional, Callable, Union, Dict, TypeVar
+
+from abc import ABCMeta
 
 @dataclass
 class UserOptions(metaclass=ABCMeta):
     """
-    This is an abstract class used to create a dataclass of user options. 
+    This is a class used to create a dataclass of user options. 
     
     These options are used to set defaults for parameters set inside the associated
     class for the options. 

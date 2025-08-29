@@ -1,5 +1,5 @@
-giant.utilities.outlier_identifier
-==================================
+giant.utilities.outlier\_identifier
+===================================
 
 .. automodule:: giant.utilities.outlier_identifier
     :no-members:

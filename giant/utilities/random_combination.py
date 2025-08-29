@@ -1,6 +1,3 @@
-
-
-
 """
 Provides an iterator for generating unique random combinations from a population where order doesn't matter.
 

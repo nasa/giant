@@ -26,13 +26,13 @@ Once the download is complete, cd into the new giant directory
 GIANT is designed to work with python 3.11+ so it is likely that we will need to create a new environment in mamba for
 our work.  To create an environment from the terminal (or mamba prompt for windows) simply type
 
-    conda create -n giant python=3 opencv matplotlib scipy pandas numpy cython pyqt astropy lxml sphinx spiceypy c-compiler openmp astroquery dill psutil
+    mamba env create -f environment.yml
 
 
-which will create a virtual environment with python and all of the usual python tools (setuptools, pip,
+which will create a virtual environment with python called giant and all of the usual python tools (setuptools, pip,
 etc).  Once the virtual environment has been created you can run
 
-    conda activate giant_env
+    conda activate giant
 
 to activate the environment.  Activating the environment basically adjusts your paths/aliases so that "python", "pip",
 etc now point to the virtual environment executables.  

@@ -1,3 +1,7 @@
+"""
+This module provides a helper function to filter a list using a sequence of boolean values
+"""
+
 from typing import TypeVar, Sequence
 from numpy.typing import NDArray
 import numpy as np

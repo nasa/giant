@@ -1,6 +1,3 @@
-
-
-
 """
 This module provides the star identification routines for GIANT through the :class:`StarID` class.
 
