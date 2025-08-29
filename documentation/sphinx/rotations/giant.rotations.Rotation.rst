@@ -1,23 +1,19 @@
-Rotation
-========
+giant.rotations.rotation
+========================
 
-.. currentmodule:: giant.rotations
-
-:mod:`giant.rotations`\:
-
-.. autoclass:: Rotation
+.. automodule:: giant.rotations.rotation
     :no-members:
-    :members: quaternion, q, q_vector, q_scalar, matrix, vector
 
-.. rubric:: Summary of Methods
+.. currentmodule:: giant.rotations.rotation
+
+.. rubric:: Classes
 
 .. autosummary::
     :nosignatures:
-    :toctree:
+    :toctree: rotation
 
-    ~Rotation.inv
-    ~Rotation.interp_attitude
-    ~Rotation.rotate
-    ~Rotation.copy
+    Rotation
+
 
 |
+

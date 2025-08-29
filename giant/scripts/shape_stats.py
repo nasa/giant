@@ -1,6 +1,3 @@
-
-
-
 """
 Compute statistics on a shape contained in a giant kdtree saved to a pickle file.
 
@@ -25,6 +22,7 @@ from argparse import ArgumentParser
 
 
 from giant.ray_tracer.kdtree import KDTree
+from giant.ray_tracer.shapes import Triangle32, Triangle64
 from giant.ray_tracer.utilities import compute_stats
 from giant.utilities.tee import Tee
 
@@ -69,7 +67,8 @@ def describe_shape(tree: KDTree, mass: float, name: Optional[str] = None, pole: 
     :param pole: The optional pole file for the object
     """
 
-    com, volume, surface_area, inertia, com_inertia, moments, rotation_matrix = compute_stats(tree.shapes, mass)
+    assert isinstance(tree.surface, (Triangle64, Triangle32)), "can only compute stats for Tree on Triangles."
+    com, volume, surface_area, inertia, com_inertia, moments, rotation_matrix = compute_stats(tree.surface, mass)
 
     if name is not None:
         print(name)

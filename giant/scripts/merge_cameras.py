@@ -1,6 +1,3 @@
-
-
-
 """
 Merge camera files together into a single file.
 

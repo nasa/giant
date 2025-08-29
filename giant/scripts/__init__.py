@@ -1,6 +1,3 @@
-
-
-
 """
 This subpackage provides a number of command line scripts to do various tasks in GIANT.
 

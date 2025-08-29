@@ -1,8 +1,5 @@
-
-
-
 """
-Build a GIANT star catalog file from the Gaia star catalog.
+Build a star catalog file from the Gaia star catalog.
 
 This can be run if for some reason the default catalog file delivered with GIANT doesn't meet your needs (i.e. if it
 doesn't contain high enough magnitude stars, it doesn't blend enough stars, or similar).  This script does take a while

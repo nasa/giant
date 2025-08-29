@@ -1,6 +1,3 @@
-
-
-
 """
 Update the paths for features in a feature catalog
 
@@ -52,7 +49,7 @@ def main():
     # make the feature directory
     fc_file = Path(args.feature_catalog).resolve()
     with fc_file.open('rb') as ifile:
-        fc: FeatureCatalog = pickle.load(fc_file)
+        fc: FeatureCatalog = pickle.load(ifile)
         
     # get the new path
     new_feature_dir = Path(args.new_path).resolve()

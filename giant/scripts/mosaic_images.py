@@ -1,6 +1,3 @@
-
-
-
 """
 Create a mosaic image from GIANT cameras.
 
@@ -26,6 +23,8 @@ from scipy.stats import pearsonr
 
 from giant._typing import PATH
 from giant.ray_tracer.scene import SceneObject, Scene
+from giant.ray_tracer.shapes import Shape
+from giant.camera import Camera
 
 # added a warning to the documentation
 import dill  # nosec
@@ -74,7 +73,7 @@ class _MosaicMaker:
     """
 
     def __init__(self, target_image: np.ndarray, mosaic_camera_files: Sequence[PATH],
-                 target_object: Optional[SceneObject] = None, light_source: Optional[SceneObject] = None,
+                 target_object: SceneObject, light_source: SceneObject,
                  target_scale: int = 5, crop_mosaics: bool = True, mosaic_scale: float = 1.0,
                  sub_grid_check: int = 5, allow_rotation: bool = True):
 
@@ -197,7 +196,7 @@ class _MosaicMaker:
 
         with open(cam_file, 'rb') as ifile:
             # added a warning to the documentation
-            cam = dill.load(ifile)  # nosec
+            cam: Camera = dill.load(ifile)  # nosec
 
         cropped_images = []
 
@@ -206,15 +205,16 @@ class _MosaicMaker:
                 scene = Scene([self.target_object], self.light_source)
                 scene.update(image)
 
-                if hasattr(self.target_object, 'circum_sphere'):
-                    limbs = self.target_object.circum_sphere.find_limbs(self.target_object.position.ravel() /
-                                                                        np.linalg.norm(self.target_object.position),
-                                                                        _SCAN_DIRS, self.target_object.position.ravel())
+                if (cs := getattr(self.target_object, 'circum_sphere')) is not None:
+                    limbs = cs.find_limbs(self.target_object.position.ravel() /
+                                          np.linalg.norm(self.target_object.position),
+                                          _SCAN_DIRS, self.target_object.position.ravel())
 
                     image_locs = cam.model.project_onto_image(limbs + self.target_object.position.reshape(3, 1),
                                                               temperature=image.temperature)
 
                 else:
+                    assert isinstance(self.target_object.shape, Shape)
                     image_locs = cam.model.project_onto_image(self.target_object.shape.bounding_box.vertices,
                                                               temperature=image.temperature)
 
@@ -272,7 +272,7 @@ class _MosaicMaker:
 
     def prepare_mosaic_bins(self):
 
-        assert self.prepare_mosaic_images is not None, "the mosaic images must be prepared at this point"
+        assert self.prepared_mosaic_images is not None, "the mosaic images must be prepared at this point"
         prepared_imgs = self.prepared_mosaic_images
         self.prepared_mosaic_images = None
         
@@ -324,14 +324,16 @@ class _MosaicMaker:
             matches = pool.map(self.match_bin, range(len(self.target_image_bins)))
 
         nbin = 0
+        assert self.prepared_mosaic_images is not None
         for r in range(self.number_target_image_bins[0]):
             for c in range(self.number_target_image_bins[1]):
                 match, scale, rotation = matches[nbin]
-                matched_mosaic = self.prepared_mosaic_images[match]*scale
-                if rotation is not None:
-                    matched_mosaic = cv2.rotate(matched_mosaic, rotation)
-                out_mosaic[r*self.mosaic_image_size:(r+1)*self.mosaic_image_size,
-                           c*self.mosaic_image_size:(c+1)*self.mosaic_image_size] = matched_mosaic
+                if match is not None:
+                    matched_mosaic = self.prepared_mosaic_images[match]*scale
+                    if rotation is not None:
+                        matched_mosaic = cv2.rotate(matched_mosaic, rotation)
+                    out_mosaic[r*self.mosaic_image_size:(r+1)*self.mosaic_image_size,
+                            c*self.mosaic_image_size:(c+1)*self.mosaic_image_size] = matched_mosaic
 
                 nbin += 1
 
@@ -365,8 +367,7 @@ class _MosaicMaker:
                 target_object = dill.load(ifile)  # nosec
                 light_object = dill.load(ifile)  # nosec
         else:
-            target_object = None
-            light_object = None
+            raise ValueError('the target must be specified')
 
         inst = cls(target_image, args.cameras, target_object=target_object, light_source=light_object,
                    target_scale=args.scale, crop_mosaics=args.crop_mosaics, mosaic_scale=args.mosaic_scale,

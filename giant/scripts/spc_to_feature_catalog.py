@@ -1,6 +1,3 @@
-
-
-
 """
 This script provides a utility for converting a SPC set of Maplets into a GIANT feature catalog for use with GIANT
 Surface Feature Navigation (SFN).
@@ -66,10 +63,10 @@ def build_feature(inp: Tuple[int, Tuple[PATH, int, Literal[32, 64], PATH, bool]]
 
     maplet = Maplet(file_name=file)
 
-    print(file + ' -- loaded', flush=True)
+    print(f'{file} -- loaded', flush=True)
 
     # make the output path
-    shape_path = output / (maplet.name + '.pickle')
+    shape_path = pathlib.Path(output) / (maplet.name + '.pickle')
 
     if update:
         if os.path.exists(shape_path):
@@ -96,13 +93,13 @@ def build_feature(inp: Tuple[int, Tuple[PATH, int, Literal[32, 64], PATH, bool]]
 
     tris = maplet.get_triangles(triangle_precision=precision)
 
-    print(file + ' -- tessellated', flush=True)
+    print(f'{file} -- tessellated', flush=True)
 
     kd = KDTree(tris, max_depth=11)
 
     kd.build(print_progress=False, force=False)
 
-    print(file + ' -- built', flush=True)
+    print(f'{file} -- built', flush=True)
 
     # Write KD tree as .pickle:
     map_info = {'order': kd.order,
@@ -165,7 +162,7 @@ def main():
     with Pool(cpu_count()//2) as pool:
         res = pool.map(build_feature, enumerate(zip(map_files,
                                                     repeat(n_maps), repeat(precision), repeat(output_dir),
-                                                    repeat(args.update))))
+                                                    repeat(args.update)))) # pyright: ignore[reportArgumentType]
 
     sfs = [r[0] for r in res]
     map_info = [r[1] for r in res]
