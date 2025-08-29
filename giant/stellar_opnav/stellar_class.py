@@ -1,6 +1,3 @@
-
-
-
 """
 This module provides a subclass of the :class:`.OpNav` class for performing stellar OpNav.
 

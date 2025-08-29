@@ -1,9 +1,9 @@
 OutlierCallback
 ===============
 
-.. currentmodule:: giant.stellar_opnav.visualizer
+.. currentmodule:: giant.stellar_opnav.visualizers.show_outliers
 
-:mod:`giant.stellar_opnav.visualizer`\:
+:mod:`giant.stellar_opnav.visualizers.show_outliers`\:
 
 .. autoclass:: OutlierCallback
     :no-members:

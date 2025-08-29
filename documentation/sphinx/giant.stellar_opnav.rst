@@ -15,17 +15,23 @@ giant.stellar\_opnav
     stellar_class
     star_identification
     estimators
-    visualizer
+    visualizers
 
 .. rubric:: Classes
 
 .. autosummary::
     :nosignatures:
 
+    ~stellar_class.StellarOpNavOptions
     ~stellar_class.StellarOpNav
+    ~star_identification.StarIDOptions
     ~star_identification.StarID
-    ~estimators.DavenportQMethod
-    ~visualizer.OutlierCallback
+    ~estimators.attitude_estimator.AttitudeEstimatorOptions
+    ~estimators.attitude_estimator.AttitudeEstimator
+    ~estimators.esoq2.ESOQ2Options
+    ~estimators.esoq2.ESOQ2
+    ~estimators.davenport_q_method.DavenportQMethod
+    ~visualizers.show_outliers.OutlierCallback
 
 
 .. rubric:: Functions
@@ -33,7 +39,10 @@ giant.stellar\_opnav
 .. autosummary::
     :nosignatures:
 
-    ~visualizer.show_id_results
-    ~visualizer.show_outlier
+    ~visualizers.residual_histograms.residual_histograms
+    ~visualizers.residuals_vs_magnitude.residuals_vs_magnitude
+    ~visualizers.residuals_vs_temperature.residuals_vs_temperature
+    ~visualizers.show_id_results.show_id_results
+    ~visualizers.show_outliers.show_outliers
 
 |

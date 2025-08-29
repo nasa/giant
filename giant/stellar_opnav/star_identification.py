@@ -752,8 +752,8 @@ class StarID(UserOptionConfigured[StarIDOptions], StarIDOptions, AttributePrinti
         if keep_inliers is not None:
 
             # get the stars that weren't matched
-            unmatched_inds = list({*np.arange(self.queried_catalog_image_points.shape[1])} -
-                                  {*(inds[keep_stars, 0][keep_inliers])})
+            unmatched_inds: list[int] = list(map(int, {*np.arange(self.queried_catalog_image_points.shape[1])} -
+                                                      {*(inds[keep_stars, 0][keep_inliers])}))
 
             self.unmatched_catalog_image_points = self.queried_catalog_image_points[:, unmatched_inds].copy()
             self.unmatched_catalog_star_records = self.queried_catalog_star_records.iloc[unmatched_inds].copy()

@@ -1,6 +1,3 @@
-
-
-
 """
 This package provides the required routines and objects to identify stars in an image and to estimate attitude based on
 those identified stars.

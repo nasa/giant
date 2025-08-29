@@ -1,5 +1,5 @@
-StarID.query\_catalogue
-=======================
+StarID.query\_catalog
+=====================
 
 .. currentmodule:: giant.stellar_opnav.star_identification
 

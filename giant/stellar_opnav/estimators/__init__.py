@@ -1,6 +1,3 @@
-
-
-
 r"""
 This module provides the ability to find the rotation that best aligns 1 set of unit vectors with another set of unit
 vectors.

@@ -1,5 +1,5 @@
-giant.stellar_opnav.stellar_class
-=================================
+giant.stellar\_opnav.stellar\_class
+===================================
 
 .. automodule:: giant.stellar_opnav.stellar_class
     :no-members:
@@ -14,6 +14,7 @@ giant.stellar_opnav.stellar_class
     :nosignatures:
     :toctree: stellar_class
 
+    StellarOpNavOptions
     StellarOpNav
 
 |
