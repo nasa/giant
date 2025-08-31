@@ -17,9 +17,6 @@
     RelativeOpNav
     
 
-
-
-
 .. rubric:: Constants
 
 .. autosummary::
@@ -27,8 +24,6 @@
     :toctree: relnav_class
 
     RESULTS_DTYPE
-    
-
 
 
 |

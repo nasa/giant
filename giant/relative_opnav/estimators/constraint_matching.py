@@ -1,6 +1,70 @@
 """
-Under Construction
-_____________
+This module implements opportunistic feature matching between images or between an image and a template
+
+Description of the Technique
+----------------------------
+
+Constraint matching, or opportunistic feature matching, refers to identifying the same "feature" in 
+two different images, or between an image and a rendered template.
+
+Between Images
+^^^^^^^^^^^^^^
+
+When doing constraint matching between 2 images, the observations are not tied to known points on the 
+surface of the target.  This is thereore a less accurate technique (at least from an overal orbit 
+determination perspective) than traditional terrain relative navigation, as the information we extract 
+only pertains to the change in the location and orientation of the camera from one image to the next 
+(and in general is just an estimate of the direction of motion due to scale ambiguities).  
+
+That being said, this can still be a powerful measurement type, particularly when fused with other data sets
+that can resolve the scale ambiguity.  Additionally, it can be used even at unmapped bodies, which can
+dramatically reduce the time required to be able to operate at a new target.
+
+Between and Image and a Template
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When doing constraint matching between an image and a template we can actually tie the observations back to
+a known map of the body (whatever map the template was rendered from).  This means that the measurements can
+generally be treated the same as regular TRN/SFN measurements, though, if your template comes from a global 
+shape model, you should expect that the resulting feature locations are less accurate than would be from
+a detailed map intended to make navigation maps.  Another difference from regular TRN/SFN is that you are
+unlikely to observe the same exact "feature" multiple times in different images, rather, each observation 
+will be slightly different.  This removes some information from the orbit determination process as each observation
+is unique and mostly unrelated to any other observations (whereas in traditional TRN/SFN, we can do things like 
+estimate both the spacecraft state and the feature locations since we receive multiple observations of the same
+feature from different images).
+
+The primary benefit to constraint matching in this case is again that you can begin doing a form of TRN much earlier 
+in operations, before there has been time to make a detailed set of maps for navigation purposes.
+
+Tuning
+------
+
+There are several tuning parameters that can impact the performance of constraint matching, as outlined in the 
+:class:`ConstraintMatchingOptions` class. In general though, the most critical tuning parameters are the choice 
+of the :attr:`~ConstraintMatchingOptions.feature_matcher` and the 
+:attr:`~ConstraintMatchingOptions.max_time_difference`, with the `feature_matcher` being the more important of
+the two.  In general, GIANT ships with several "hand tuned" feature matchers available, including SIFT and Orb.
+These can perform well between a template and an image, or between two images where the illumincation conditions
+are relatively similar (with SIFT generally outperforming Orb), but they will struggle with large changes in 
+illumination conditions.  Optionally, you can install the open source implementation of RoMa (as described in
+:mod:`.roma_matcher`) which is a machine learning based technique for matching images.  This model, even without
+additional fine tuning, has show excellent performance even in challenging illumincation condition changes and
+also outperforms the hand-tuned features in cases where they are well suited
+
+Use
+---
+
+The class provided in this module is usually not used by the user directly, instead it is usually interfaced with
+through the :class:`.RelativeOpNav` class using the identifier :attr:`~.RelativeOpNav.constraint_matching`.  For more
+details on using the :class:`.RelativeOpNav` interface, please refer to the :mod:`.relnav_class` documentation.  For
+more details on using the technique class directly, as well as a description of the ``details`` dictionaries produced
+by this technique, refer to the following class documentation.
+
+.. warning::
+    While this technique is functional, it has undergone less development and testing than other GIANT techniques
+    and there could therefore be some undiscovered bugs.  Additionally, the documentation needs a little more 
+    massaging.  PRs are welcome...
 """
 import datetime
 import warnings
@@ -99,6 +163,14 @@ class ConstraintMatchingOptions(UserOptions):
 
 class ConstraintMatching(UserOptionConfigured[ConstraintMatchingOptions], ConstraintMatchingOptions, RelNavEstimator):
     """
+    This class implements constraint matching in GIANT.
+    
+    See the module documentation or the attribute and method documentation for more details.
+    
+    .. warning::
+        While this technique is functional, it has undergone less development and testing than other GIANT techniques
+        and there could therefore be some undiscovered bugs.  Additionally, the documentation needs a little more 
+        massaging.  PRs are welcome...
     """
 
     observable_type  = [RelNavObservablesType.CONSTRAINT]
@@ -114,6 +186,9 @@ class ConstraintMatching(UserOptionConfigured[ConstraintMatchingOptions], Constr
     def __init__(self, scene: Scene, camera: Camera, 
                  options: Optional[ConstraintMatchingOptions] = None):
         """
+        :param scene: The scene describing the a priori locations of the targets and the light source.
+        :param camera: The :class:`.Camera` object containing the camera model and images to be analyzed
+        :param options: A dataclass specifying the options to set for this instance.
         """
 
         super().__init__(ConstraintMatchingOptions, scene, camera, options=options)
@@ -254,6 +329,13 @@ class ConstraintMatching(UserOptionConfigured[ConstraintMatchingOptions], Constr
         return keys
 
     def match_image_to_template(self, image, include_targets):
+        """
+        Matches keypoints between an image and a rendered template.
+        
+        :param image: The image to locate the targets in
+        :param include_targets: A list specifying whether to process the corresponding target in
+                                :attr:`.Scene.target_objs` or ``None``.  If ``None`` then all targets are processed.
+        """
 
         for target_ind, target in self.target_generator(include_targets):
 
@@ -329,6 +411,16 @@ class ConstraintMatching(UserOptionConfigured[ConstraintMatchingOptions], Constr
         return
 
     def match_keypoints_across_images(self, image: OpNavImage, include_targets: list[bool] | None = None):
+        """
+        Matches keypoints across different images.
+        
+        .. warning::
+            This currently doesn't really work if you have multiple targets in an image/scene
+        
+        :param image: The image to locate the targets in
+        :param include_targets: A list specifying whether to process the corresponding target in
+                                :attr:`.Scene.target_objs` or ``None``.  If ``None`` then all targets are processed.
+        """
 
         for target_ind, _ in self.target_generator(include_targets):
 
@@ -372,6 +464,14 @@ class ConstraintMatching(UserOptionConfigured[ConstraintMatchingOptions], Constr
                     self.observed_bearings[target_ind] = np.array((image_keypts, image2_keypts))
 
     def compute_constraint_position(self, image: OpNavImage, include_targets: list[bool] | None = None):
+        """
+        Trace from the camera to the target to estimate roughly the location that corresponds to each
+        constraint on the target model.
+        
+        :param image: The image to locate the targets in
+        :param include_targets: A list specifying whether to process the corresponding target in
+                                :attr:`.Scene.target_objs` or ``None``.  If ``None`` then all targets are processed.
+        """
 
         for target_ind, target in self.target_generator(include_targets):
 
@@ -398,6 +498,18 @@ class ConstraintMatching(UserOptionConfigured[ConstraintMatchingOptions], Constr
         return
 
     def estimate(self, image: OpNavImage, include_targets: Optional[List[bool]] = None):
+        """
+        Do the estimation according to the current settings
+        
+        .. warning::
+            Before calling this method be sure that the scene has been updated to correspond to the correct
+            image time.  This method does not update the scene automatically, even if the :attr:`scene` attribute is an
+            :class:`.Scene` instance.
+
+        :param image: The image to locate the targets in
+        :param include_targets: A list specifying whether to process the corresponding target in
+                                :attr:`.Scene.target_objs` or ``None``.  If ``None`` then all targets are processed.
+        """
 
         if self.match_against_template is False and self.match_across_images is False:
             raise ValueError('At least one of the match_against_template or match_across_images flags must be True.')

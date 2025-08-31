@@ -14,11 +14,7 @@ moment\_algorithm
     :nosignatures:
     :toctree: moment_algorithm
 
+    MomentAlgorithmOptions
     MomentAlgorithm
-    
-
-
-
-
 
 |

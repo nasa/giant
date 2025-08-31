@@ -1,6 +1,3 @@
-
-
-
 r"""
 This module provides the capability to locate the relative position of a regular target body (well modelled by a
 triaxial ellipsoid) by matching the observed ellipse of the limb in an image with the ellipsoid model of the target.

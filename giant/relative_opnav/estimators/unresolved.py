@@ -1,6 +1,3 @@
-
-
-
 """
 This module provides a class which implements an unresolved center finding RelNav technique along with a new meta class
 that adds concrete center-of-brightness to center-of-figure correction methods.
@@ -151,6 +148,10 @@ class PhaseCorrector(RelNavEstimator, PhaseCorrectorOptions, ABC):
         """
 
         super().__init__(scene, camera)
+        
+        if options is not None:
+            
+            options.apply_options(self)
 
     def simple_phase_correction(self, target_ind: int, target: SceneObject, line_of_sight_sun_image: np.ndarray,
                                 temperature: float) -> np.ndarray:

@@ -1,6 +1,3 @@
-
-
-
 """
 This module provides a class which implements a moment based (center of illumination) center finding RelNav technique.
 

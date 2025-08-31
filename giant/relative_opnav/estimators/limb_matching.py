@@ -1,6 +1,3 @@
-
-
-
 r"""
 This module provides the capability to locate the relative position of any target body by matching the observed limb in
 an image with the shape model of the target.

@@ -1,6 +1,3 @@
-
-
-
 r"""
 This module provides the capability to locate the center-of-figure of a target in an image using 2D cross-correlation.
 
@@ -187,9 +184,6 @@ class XCorrCenterFinding(TemplateRenderer, XCorrCenterFindingOptions):
         """
         :param scene: The scene describing the a priori locations of the targets and the light source.
         :param camera: The :class:`.Camera` object containing the camera model and images to be analyzed
-        :param image_processing: An instance of :class:`.ImageProcessing`.  This is used for denoising the image and for
-                                 generating the correlation surface using :meth:`.denoise_image` and :meth:`correlate`
-                                 methods respectively
         :param options: A dataclass specifying the options to set for this instance.
 
         """

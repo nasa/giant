@@ -14,11 +14,7 @@ cross\_correlation
     :nosignatures:
     :toctree: cross_correlation
 
+    XCorrCenterFindingOptions
     XCorrCenterFinding
-    
-
-
-
-
 
 |

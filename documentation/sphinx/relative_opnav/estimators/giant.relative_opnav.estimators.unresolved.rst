@@ -15,7 +15,9 @@ unresolved
     :toctree: unresolved
 
     PhaseCorrectionType
+    PhaseCorrectorOptions
     PhaseCorrector
+    UnresolvedCenterFindingOptions
     UnresolvedCenterFinding
     
 

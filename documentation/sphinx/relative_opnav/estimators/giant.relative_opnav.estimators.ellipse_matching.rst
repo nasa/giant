@@ -14,13 +14,8 @@ ellipse\_matching
     :nosignatures:
     :toctree: ellipse_matching
 
+    EllipseMatchingOptions
     EllipseMatching
-    LimbExtractionMethods
-    LimbScanner
-    
-
-
-
 
 
 |

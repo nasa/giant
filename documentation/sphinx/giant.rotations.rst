@@ -21,7 +21,6 @@ giant.rotations
 
 .. autosummary::
     :nosignatures:
-    :toctree: rotations
 
     ~rotation.Rotation
 
@@ -29,7 +28,6 @@ giant.rotations
 
 .. autosummary::
     :nosignatures:
-    :toctree: rotations
 
     ~core.conversions.quaternion_to_rotvec
     ~core.conversions.quaternion_to_rotmat

@@ -119,7 +119,7 @@ from giant.relative_opnav.estimators.ellipse_matching import EllipseMatching, El
 from giant.relative_opnav.estimators.moment_algorithm import MomentAlgorithm, MomentAlgorithmOptions
 from giant.relative_opnav.estimators.unresolved import UnresolvedCenterFinding, UnresolvedCenterFindingOptions
 from giant.relative_opnav.estimators.cross_correlation import XCorrCenterFinding, XCorrCenterFindingOptions
-from giant.relative_opnav.estimators.constraint_matching import ConstraintMatching
+from giant.relative_opnav.estimators.constraint_matching import ConstraintMatching, ConstraintMatchingOptions
 from giant.relative_opnav.estimators.sfn import FeatureCatalog
 from giant.relative_opnav.estimators.sfn import SurfaceFeatureNavigation, SurfaceFeatureNavigationOptions
 
@@ -269,7 +269,7 @@ class RelativeOpNav(OpNav):
                  moment_algorithm: Optional[MomentAlgorithm] = None,
                  moment_algorithm_options: Optional[MomentAlgorithmOptions] = MomentAlgorithmOptions(),
                  constraint_matching: Optional[ConstraintMatching] = None,
-                 constraint_matching_kwargs: Optional[dict] = None,
+                 constraint_matching_options: Optional[ConstraintMatchingOptions] = None,
                  sfn: Optional[SurfaceFeatureNavigation] = None,
                  sfn_options: Optional[SurfaceFeatureNavigationOptions] = SurfaceFeatureNavigationOptions(),
                  **kwargs):
@@ -560,7 +560,7 @@ class RelativeOpNav(OpNav):
         # constraint matching
         if constraint_matching is None:
 
-            constraint_matching = ConstraintMatching(self.scene, self._camera, constraint_matching_kwargs)
+            constraint_matching = ConstraintMatching(self.scene, self._camera, options=constraint_matching_options)
 
         self._constraint_matching = constraint_matching
 
@@ -1171,7 +1171,7 @@ class RelativeOpNav(OpNav):
         if not worker.generates_templates:
             raise ValueError("The worker doesn't generate templates which are required to package templates")
 
-        self.saved_templates[image_ind][target_ind] = deepcopy(worker.templates[target_ind])
+        self.saved_templates[image_ind][target_ind] = deepcopy(worker.templates[target_ind]) # pyright: ignore[reportCallIssue, reportArgumentType]
 
     def _package_details(self, worker: RelNavEstimator, image_ind: int, target_ind: int):
         """

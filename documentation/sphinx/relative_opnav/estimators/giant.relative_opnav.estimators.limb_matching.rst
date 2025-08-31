@@ -14,11 +14,8 @@ limb\_matching
     :nosignatures:
     :toctree: limb_matching
 
+    LimbMatchingOptions
     LimbMatching
     
-
-
-
-
 
 |

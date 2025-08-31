@@ -1,6 +1,3 @@
-
-
-
 """
 This module defines the abstract base class (abc) for defining Relative OpNav techniques that will work with the
 :class:`.RelativeOpNav` class.
