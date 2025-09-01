@@ -34,5 +34,8 @@
     ~GeneralizedGaussian.generate_kernel
     ~GeneralizedGaussian.normalize_amplitude
     ~GeneralizedGaussian.update_state
+    ~GeneralizedGaussian.volume
+    ~GeneralizedGaussian.shift_centroid
+    ~GeneralizedGaussian.compare
 
 |

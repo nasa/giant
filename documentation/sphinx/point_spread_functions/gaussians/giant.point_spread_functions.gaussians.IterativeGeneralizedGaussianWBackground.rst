@@ -46,6 +46,8 @@
     ~IterativeGeneralizedGaussianWBackground.apply_1d
     ~IterativeGeneralizedGaussianWBackground.apply_1d_sized
     ~IterativeGeneralizedGaussianWBackground.compute_jacobian
+    ~IterativeGeneralizedGaussianWBackground.converge
+    ~IterativeGeneralizedGaussianWBackground.fit_lstsq
     ~IterativeGeneralizedGaussianWBackground.determine_size
     ~IterativeGeneralizedGaussianWBackground.evaluate
     ~IterativeGeneralizedGaussianWBackground.generate_kernel
@@ -54,9 +56,10 @@
     ~IterativeGeneralizedGaussianWBackground.apply_update_bg
     ~IterativeGeneralizedGaussianWBackground.compute_jacobian_all
     ~IterativeGeneralizedGaussianWBackground.compute_jacobian_bg
-    ~IterativeGeneralizedGaussianWBackground.converge
     ~IterativeGeneralizedGaussianWBackground.evaluate_bg
     ~IterativeGeneralizedGaussianWBackground.fit_bg
-    ~IterativeGeneralizedGaussianWBackground.fit_lstsq
+    ~IterativeGeneralizedGaussianWBackground.volume
+    ~IterativeGeneralizedGaussianWBackground.shift_centroid
+    ~IterativeGeneralizedGaussianWBackground.compare
 
 |

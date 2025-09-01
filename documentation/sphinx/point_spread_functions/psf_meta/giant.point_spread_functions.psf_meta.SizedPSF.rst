@@ -19,5 +19,6 @@ In addition to the methods and attributes from :class:`.PointSpreadFunction`, :c
    
     ~SizedPSF.determine_size
     ~SizedPSF.generate_kernel
+    ~SizedPSF.compare
 
 |

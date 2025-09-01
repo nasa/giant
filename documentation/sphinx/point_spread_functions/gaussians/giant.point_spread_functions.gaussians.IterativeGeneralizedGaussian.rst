@@ -53,5 +53,8 @@
     ~IterativeGeneralizedGaussian.update_state
     ~IterativeGeneralizedGaussian.converge
     ~IterativeGeneralizedGaussian.fit_lstsq
+    ~IterativeGeneralizedGaussian.volume
+    ~IterativeGeneralizedGaussian.shift_centroid
+    ~IterativeGeneralizedGaussian.compare
 
 |
