@@ -1,5 +1,5 @@
 giant.rotations.frames
-====================
+======================
 
 .. automodule:: giant.rotations.frames
     :no-members:

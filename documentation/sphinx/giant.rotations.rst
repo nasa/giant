@@ -50,8 +50,8 @@ giant.rotations
     ~core.quaternion_math.quaternion_multiplication
     ~core.quaternion_math.nlerp
     ~core.quaternion_math.slerp
-    ~core.frames.two_vector_frame
-    ~core.frames.dynamic_two_vector_frame
+    ~frames.two_vector_frame
+    ~frames.dynamic_two_vector_frame
 
 |
 

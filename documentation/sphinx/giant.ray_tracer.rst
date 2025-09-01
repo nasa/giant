@@ -1,5 +1,5 @@
-﻿ray\_tracer
-===========
+﻿giant.ray\_tracer
+=================
 
 .. automodule:: giant.ray_tracer
     :no-members:

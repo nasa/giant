@@ -17,6 +17,8 @@ GaskellIllumination
    :nosignatures:
    :toctree:
 
+   ~GaskellIllumination.compute_photoclinometry_jacobian
+   ~GaskellIllumination.compute_photoclinometry_jacobian_numeric
    
 
 

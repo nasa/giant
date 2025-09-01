@@ -1,4 +1,4 @@
-rotmat\_to\_rotvec
+rotmat_to_rotvec
 =================
 
 .. currentmodule:: giant.rotations.core.conversions

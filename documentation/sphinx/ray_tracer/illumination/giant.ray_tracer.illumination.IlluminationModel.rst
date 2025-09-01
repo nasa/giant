@@ -16,6 +16,9 @@ IlluminationModel
    :nosignatures:
    :toctree:
 
+   ~IlluminationModel.__call__
+   ~IlluminationModel.compute_photoclinometry_jacobian
+   ~IlluminationModel.compute_photoclinometry_jacobian_numeric
    
 
 

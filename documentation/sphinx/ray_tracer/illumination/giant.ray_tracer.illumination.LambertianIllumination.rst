@@ -17,6 +17,8 @@ LambertianIllumination
    :nosignatures:
    :toctree:
 
+   ~LambertianIllumination.compute_photoclinometry_jacobian
+   ~LambertianIllumination.compute_photoclinometry_jacobian_numeric
    
 
 

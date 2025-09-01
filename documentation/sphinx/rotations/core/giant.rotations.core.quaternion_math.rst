@@ -1,10 +1,10 @@
 giant.rotations.core.quaternion\_math
 =====================================
 
-.. automodule:: giant.rotations.core.conversions.quaternion_math
+.. automodule:: giant.rotations.core.quaternion_math
     :no-members:
 
-.. currentmodule:: giant.rotations.core.conversions.quaternion_math
+.. currentmodule:: giant.rotations.core.quaternion_math
 
 
 .. rubric:: Functions
