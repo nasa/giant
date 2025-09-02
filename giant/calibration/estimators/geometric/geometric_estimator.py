@@ -1,7 +1,7 @@
 
 from dataclasses import dataclass
 
-from typing import Optional, Protocol, runtime_checkable
+from typing import Optional, Protocol, runtime_checkable, Generic, TypeVar
 
 from giant.camera_models import CameraModel
 from giant._typing import DOUBLE_ARRAY
@@ -9,6 +9,11 @@ from giant._typing import DOUBLE_ARRAY
 from giant.utilities.options import UserOptions
 from giant.utilities.mixin_classes import AttributeEqualityComparison, AttributePrinting, UserOptionConfigured   
 
+
+ModelT = TypeVar("ModelT", bound=CameraModel)
+"""
+Type variable bound to CameraModel for type safety
+"""
 
 @dataclass
 class GeometricEstimatorOptions(UserOptions):
@@ -34,7 +39,7 @@ class GeometricEstimatorOptions(UserOptions):
 
 
 @runtime_checkable
-class GeometricEstimator(Protocol):
+class GeometricEstimator(Protocol, Generic[ModelT]):
     """
     This protocol class serves as the template for implementing a class for doing geometric camera model estimation in
     GIANT.
@@ -73,11 +78,11 @@ class GeometricEstimator(Protocol):
     determined from :meth:`.CameraModel.get_state_labels`.
     """
     
-    def __init__(self, model: CameraModel, options: GeometricEstimatorOptions | None) -> None:
+    def __init__(self, model: ModelT, options: GeometricEstimatorOptions | None) -> None:
         ...
 
     @property
-    def model(self) -> CameraModel:
+    def model(self) -> ModelT:
         """
         The camera model that is being estimated.
 
@@ -88,7 +93,7 @@ class GeometricEstimator(Protocol):
         ...
 
     @model.setter
-    def model(self, val: CameraModel):  # model must be writeable
+    def model(self, val: ModelT):  # model must be writeable
         ...
 
     @property
@@ -251,7 +256,7 @@ class GeometricEstimator(Protocol):
         ...
 
 
-class GeometricEstimatorBC(UserOptionConfigured[GeometricEstimatorOptions], GeometricEstimatorOptions, AttributeEqualityComparison, AttributePrinting, GeometricEstimator):
+class GeometricEstimatorBC(UserOptionConfigured[GeometricEstimatorOptions], GeometricEstimatorOptions, AttributeEqualityComparison, AttributePrinting, GeometricEstimator[ModelT]):
     """
     This base class is used to make it easy to make a GeometricEstimator class using other beneficial mixin classes from GIANT.
     

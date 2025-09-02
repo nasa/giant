@@ -22,6 +22,7 @@ API Reference
     catalogs
     calibration
     coverage
+    photometry
     ray_tracer
     ufo
     utilities

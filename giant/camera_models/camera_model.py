@@ -1,6 +1,3 @@
-
-
-
 r"""
 This module provides an abstract base class (abc) for implementing GIANT camera models.
 
@@ -100,7 +97,7 @@ from enum import Enum
 
 from itertools import repeat
 
-from typing import Tuple, Union, Optional, List, Sequence, Iterable
+from typing import Tuple, Union, Optional, List, Sequence, Iterable, Self
 
 import numpy as np
 from numpy.typing import NDArray
@@ -659,7 +656,7 @@ class CameraModel(metaclass=ABCMeta):
 
             return interp.griddata(points, image.ravel(), new_subs, fill_value=np.nan, method='linear').reshape(shape)
 
-    def copy(self) -> 'CameraModel':
+    def copy(self) -> Self:
         """
         Returns a deep copy of this object, breaking all references with ``self``.
         
@@ -700,7 +697,7 @@ class CameraModel(metaclass=ABCMeta):
         return elem
 
     @classmethod
-    def from_elem(cls, elem: etree._Element) -> 'CameraModel':
+    def from_elem(cls, elem: etree._Element) -> Self:
         """
         This class method is used to construct a new instance of `cls` from an :class:`etree._Element` object
 

@@ -1,5 +1,5 @@
 Coverage.compute\_velocities
-===========================
+============================
 
 .. currentmodule:: giant.coverage.coverage_class
 

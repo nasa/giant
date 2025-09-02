@@ -7,7 +7,7 @@ import warnings
 import numpy as np
 from numpy.typing import NDArray
 
-from giant.calibration.estimators.geometric.geometric_estimator import GeometricEstimatorBC, GeometricEstimatorOptions
+from giant.calibration.estimators.geometric.geometric_estimator import GeometricEstimatorBC, GeometricEstimatorOptions, ModelT
 from giant.camera_models import CameraModel
 from giant._typing import DOUBLE_ARRAY, ARRAY_LIKE
 
@@ -43,7 +43,7 @@ class IterativeNonlinearLstSqOptions(GeometricEstimatorOptions):
     """
     
 
-class IterativeNonlinearLSTSQ(GeometricEstimatorBC, IterativeNonlinearLstSqOptions):
+class IterativeNonlinearLSTSQ(GeometricEstimatorBC[ModelT], IterativeNonlinearLstSqOptions):
     r"""
     This concrete estimator implements iterative non-linear least squares for estimating an updated camera model.
 
@@ -116,7 +116,7 @@ class IterativeNonlinearLSTSQ(GeometricEstimatorBC, IterativeNonlinearLstSqOptio
     flags are set correctly.
     """
 
-    def __init__(self, model: CameraModel, options: IterativeNonlinearLstSqOptions | None = None):
+    def __init__(self, model: ModelT, options: IterativeNonlinearLstSqOptions | None = None):
         r"""
         :param model: The camera model instance to be estimated set with an initial guess of the state.
         :param options: the dataclass containing the options to configure the class with
@@ -124,7 +124,7 @@ class IterativeNonlinearLSTSQ(GeometricEstimatorBC, IterativeNonlinearLstSqOptio
         
         super().__init__(IterativeNonlinearLstSqOptions, options=options)
 
-        self._model: CameraModel = model 
+        self._model: ModelT = model 
         """
         The instance attribute to store the camera model being estimated.
         """
@@ -171,7 +171,7 @@ class IterativeNonlinearLSTSQ(GeometricEstimatorBC, IterativeNonlinearLstSqOptio
         """
 
     @property
-    def model(self) -> CameraModel:
+    def model(self) -> ModelT:
         """
         The camera model that is being estimated.
 
@@ -180,7 +180,7 @@ class IterativeNonlinearLSTSQ(GeometricEstimatorBC, IterativeNonlinearLstSqOptio
         return self._model
 
     @model.setter
-    def model(self, val: CameraModel):
+    def model(self, val: ModelT):
         if not isinstance(val, CameraModel):
             warnings.warn("You are setting a camera model that is not a subclass of CameraModel.  We'll assume duck "
                           "typing for now, but be sure that you have implemented all required interfaces or you'll end "
@@ -525,9 +525,9 @@ class IterativeNonlinearLSTSQ(GeometricEstimatorBC, IterativeNonlinearLstSqOptio
                 lhs = jacobian.T@weight_matrix@jacobian
                 rhs = jacobian.T@weight_matrix@residuals_vec
 
-            update_vec = np.linalg.solve(lhs, rhs)
+            update_vec = np.linalg.solve(lhs, rhs).astype(np.float64)
 
-            model_copy = self.model.copy()
+            model_copy: ModelT = self.model.copy()
 
             model_copy.apply_update(update_vec)
 
