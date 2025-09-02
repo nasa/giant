@@ -72,7 +72,7 @@ class ORBOptions:
     occupy 2 bits with possible values 0, 1, 2 or 3).
     """
     
-    score_type: cv2.ORB_ScoreType = cv2.ORB_HARRIS_SCORE
+    score_type: int = cv2.ORB_HARRIS_SCORE
     """
     The default ORB_HARRIS_SCORE means that Harris algorithm is used to rank features (the score is written to 
     KeyPoint::score and is used to retain best n_features features); FAST_SCORE is alternative value of the parameter that 

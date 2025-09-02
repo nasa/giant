@@ -120,7 +120,7 @@ class PAESubpixelEdgeDetector(UserOptionConfigured[PAESubpixelEdgeDetectorOption
 
         return c_coef
 
-    def refine_edges(self, image: NDArray, edges: DOUBLE_ARRAY) -> DOUBLE_ARRAY:
+    def refine_edges(self, image: NDArray, edges: NDArray[np.int64]) -> DOUBLE_ARRAY:
         """
         This method refines pixel level edges to subpixel level using the PAE method.
 
@@ -155,9 +155,11 @@ class PAESubpixelEdgeDetector(UserOptionConfigured[PAESubpixelEdgeDetectorOption
             
         image = image.astype(np.float64)
         
+        edges = edges.T
+        
         # split into horizontal and vertical edges 
-        horizontal_edges = edges[self.horizontal_mask[edges[:, 1], edges[:, 0]]] # type: ignore
-        vertical_edges = edges[self.vertical_mask[edges[:, 1], edges[:, 0]]] # type: ignore
+        horizontal_edges = edges[self.horizontal_mask[edges[:, 1], edges[:, 0]]].T # type: ignore
+        vertical_edges = edges[self.vertical_mask[edges[:, 1], edges[:, 0]]].T # type: ignore
         
         horiz_pos_edges, horiz_neg_edges = self._split_pos_neg_edges(self.horizontal_gradient, self.vertical_gradient,
                                                                      horizontal_edges)
@@ -336,6 +338,5 @@ class PAESubpixelEdgeDetector(UserOptionConfigured[PAESubpixelEdgeDetectorOption
         self._pixel_edge_detector.gradient_magnitude = self.gradient_magnitude
         
         # get the pixel level edges and refine them
-        return self.refine_edges(image, self._pixel_edge_detector.identify_edges(image).astype(np.float64))
-    
+        return self.refine_edges(image, self._pixel_edge_detector.identify_edges(image))
 

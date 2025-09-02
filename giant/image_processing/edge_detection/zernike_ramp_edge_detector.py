@@ -80,7 +80,7 @@ class ZernikeRampEdgeDetector(UserOptionConfigured[ZernikeRampEdgeDetectorOption
         # create a local pixel level edge instance to do the initial detection
         self._pixel_edge_detector = PixelEdgeDetector()
         
-    def refine_edges(self, image: NDArray, edges: DOUBLE_ARRAY) -> DOUBLE_ARRAY:
+    def refine_edges(self, image: NDArray, edges: NDArray[np.int64]) -> DOUBLE_ARRAY:
         """
         This method refines edge locations using the Zernike Ramp method described in
         https://arc.aiaa.org/doi/full/10.2514/1.A33692?mobileUi=0.
@@ -182,6 +182,6 @@ class ZernikeRampEdgeDetector(UserOptionConfigured[ZernikeRampEdgeDetectorOption
         self._pixel_edge_detector.gradient_magnitude = self.gradient_magnitude
         
         # get the pixel level edges and refine them
-        return self.refine_edges(image, self._pixel_edge_detector.identify_edges(image).astype(np.float64))
+        return self.refine_edges(image, self._pixel_edge_detector.identify_edges(image))
     
 

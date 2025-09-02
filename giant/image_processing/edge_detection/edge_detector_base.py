@@ -43,27 +43,27 @@ class EdgeDetector(Generic[EdgeType],
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         
-        self.horizontal_mask: NDArray[np.bool] | None
+        self.horizontal_mask: NDArray[np.bool] | None = None
         """
         The detected edges in the horizontal direction as a 2d boolean array (`True` where there is an edge) 
         """
         
-        self.vertical_mask: NDArray[np.bool] | None
+        self.vertical_mask: NDArray[np.bool] | None = None
         """
         The detected edges in the vertical direction as a 2d boolean array (`True` where there is an edge) 
         """
         
-        self.horizontal_gradient: DOUBLE_ARRAY | None
+        self.horizontal_gradient: DOUBLE_ARRAY | None = None
         """
         The gradient in the horizontal direction
         """
         
-        self.vertical_gradient: DOUBLE_ARRAY | None
+        self.vertical_gradient: DOUBLE_ARRAY | None = None
         """
         The gradient in the vertical direction
         """
         
-        self.gradient_magnitude: DOUBLE_ARRAY | None
+        self.gradient_magnitude: DOUBLE_ARRAY | None = None
         """
         The magnitude of the gradient vector
         """
@@ -161,7 +161,7 @@ class EdgeDetector(Generic[EdgeType],
         self.gradient_magnitude = gradient_magnitude
         
     @abstractmethod
-    def refine_edges(self, image: NDArray, edges: EdgeType) -> EdgeType:
+    def refine_edges(self, image: NDArray, edges: NDArray[np.int64]) -> EdgeType:
         """
         This method should take prior edge locations and refine them to be more accurate (or just return the input).
         

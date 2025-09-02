@@ -176,14 +176,14 @@ def otsu(image: NDArray, n: int) -> tuple[list[float], NDArray[np.uint8]]:
 
             kk = np.round(kk * (unique_iu8.size - 1)).astype(int)
 
-            labeled_image = np.zeros(image.shape, dtype=np.uint8)
+            labeled_image = np.zeros(image.shape, dtype=np.uint8)+n-1
 
-            labeled_image[iu8 > unique_iu8[kk[n - 2]]] = n - 1
+            labeled_image[iu8 <= unique_iu8[kk[0]]] = 0
             for i in range(n - 2):
                 labeled_image[(iu8 > unique_iu8[kk[i]]) & (iu8 <= unique_iu8[kk[i + 1]])] = i + 1
 
             # put back into the original image values
-            thresholds = unique_iu8[kk[:n - 2]].astype(np.float64)
+            thresholds = unique_iu8[kk[:n - 1]].astype(np.float64)
             thresholds /= multi_conv
             thresholds += delta_conv
 

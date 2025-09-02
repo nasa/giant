@@ -236,7 +236,10 @@ class ImageFlattener(UserOptionConfigured[ImageFlattenerOptions],
 
         for local_slice in slices:
             region = flat_image[local_slice[0], local_slice[1]].ravel()
-            selections = np.random.choice(np.arange(int(region.size)), int(region.size//2), replace=False)
+            if region.size > 20:
+                selections = np.random.choice(np.arange(int(region.size)), int(region.size//2), replace=False)
+            else:
+                selections = np.arange(int(region.size))
 
             selected_region: np.ndarray = region[selections]
 
