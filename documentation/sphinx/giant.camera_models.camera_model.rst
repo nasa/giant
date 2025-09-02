@@ -29,4 +29,6 @@ giant.camera_models.camera_model
    :glob:
 
    camera_model/*
+   camera_model/classes/*
+   camera_model/functions/*
 
