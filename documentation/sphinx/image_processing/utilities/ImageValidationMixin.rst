@@ -1,13 +1,6 @@
 ImageValidationMixin
 ====================
 
-.. currentmodule:: giant.image_processing.utilities
+.. currentmodule:: giant.image_processing.utilities.image_validation_mixin
 
 .. autoclass:: ImageValidationMixin
-
-.. rubric:: Methods
-
-.. autosummary::
-    :nosignatures:
-
-    ~ImageValidationMixin._validate_and_convert_image

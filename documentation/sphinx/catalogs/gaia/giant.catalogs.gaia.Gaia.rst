@@ -28,5 +28,7 @@ Gaia
    :toctree: gaia
 
    ~Gaia.query_catalog
+   ~Gaia.convert_to_giant_catalog
+   ~Gaia.get_stars_directions_and_pixels
 
 |

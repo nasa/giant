@@ -26,12 +26,5 @@ giant.utilties.mixin_classes
     AttributePrinting
     UserOptionConfigured
 
-.. rubric:: Constants
-
-.. autosummary::
-    :nosignatures:
-    :toctree: stereophotoclinometry
-
-    DATE_FMT
 
 |

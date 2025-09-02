@@ -43,10 +43,6 @@
     ~limb_matching.LimbMatchingOptions
     ~limb_matching.LimbMatching
     ~_limb_pairer.LimbExtractionMethods
-    ~_limb_pairer.LimbEdgeDetection
-    ~_limb_pairer.LimbEdgeDetectionOptions
-    ~_limb_pairer.LimbScanner
-    ~_limb_pairer.LimbScannerOptions
     ~_limb_pairer.LimbPairer
     ~_limb_pairer.LimbPairerOptions
     ~constraint_matching.ConstraintMatchingOptions

@@ -815,7 +815,7 @@ class StellarOpNav(UserOptionConfigured[StellarOpNavOptions], OpNav, StellarOpNa
         :attr:`unmatched_catalog_image_points`, and the
         :attr:`unmatched_extracted_image_points` arrays. 
         
-        Each object should be a :class:`.PointSpreadFunction`.  
+        Each object should be a :class:`~.psf_meta.PointSpreadFunction`.  
         See the documentation for the :mod:`.point_spread_functions` package for details.
 
         This list should always be the same length as the :attr:`.Camera.images` list and each element of this list

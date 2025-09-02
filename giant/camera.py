@@ -1,6 +1,3 @@
-
-
-
 """
 This module defines the Camera object for GIANT, which collects information about a camera and images captured by that
 camera in a single place and provides some methods for filtering, sorting, and handling the images.
@@ -118,7 +115,7 @@ class Camera:
         :param frame: The name of the frame for this camera.  Not Required
         :param parse_data: A flag specifying whether to parse the metadata for each image when it is being loaded.
         :param psf: A callable object that applies a PSF to a 2D image, and provides a
-                    :meth`~.PointSpreadFunction.apply_1d` method to apply the PSF to 1D scan lines.  Typically this is a
+                    :meth`~.meta_psf.PointSpreadFunction.apply_1d` method to apply the PSF to 1D scan lines.  Typically this is a
                     :class:`.PointSpreadFunction` subclass.
         :param attitude_function: A function that returns the attitude of the camera frame with respect to the inertial
                                   frame for an input datetime object.  This is generally a call to a spice routine

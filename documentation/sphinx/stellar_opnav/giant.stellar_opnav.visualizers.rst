@@ -16,8 +16,8 @@ giant.stellar\_opnav.visualizers
     :toctree: visualizers
 
     show_id_results
-    plot_residuals_vs_magnitude
-    plot_residuals_vs_temperature
+    residuals_vs_magnitude
+    residuals_vs_temperature
     residual_histograms
     show_outliers
 
@@ -37,8 +37,8 @@ giant.stellar\_opnav.visualizers
 
     show_id_results
     residual_histograms
-    plot_residuals_vs_magnitude
-    plot_residuals_vs_temperature
+    residuals_vs_magnitude
+    residuals_vs_temperature
     show_outlier
 
 |

@@ -7,11 +7,8 @@ Catalog
 
 .. autoclass:: Catalog
     :no-members:
+    :members: include_proper_motion
     
-    .. attribute:: include_proper_motion
-
-        Apply proper motion to queried star locations to get the location at the requested time
-
 
 .. rubric:: Summary of Methods
 

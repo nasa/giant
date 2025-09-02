@@ -35,7 +35,7 @@ As with the ``dawn_giant`` module, we want to begin our calibration script with 
 
     # tools for visualizing the results of our calibration
     from giant.calibration.visualizer import plot_distortion_map
-    from giant.stellar_opnav.visualizer import show_id_results, residual_histograms, plot_residuals_vs_magnitude
+    from giant.stellar_opnav.visualizer import show_id_results, residual_histograms, residuals_vs_magnitude
 
     # the star catalog we will use for our "truth" star locations (defaults to Gaia)
     from giant.catalogs.gaia import Gaia
@@ -443,7 +443,7 @@ figures to proceed to the next visualization
     # the overall post-fit residuals
     residual_histograms(calib)
     # the overall post-fit residuals vs magnitude
-    plot_residuals_vs_magnitude(calib)
+    residuals_vs_magnitude(calib)
     # the distortion map for the solved for camera model
     plot_distortion_map(calib.model)
 
@@ -485,7 +485,7 @@ For convenience, the full FC2 calibration script is presented here
 
     # tools for visualizing the results of our calibration
     from giant.calibration.visualizer import plot_distortion_map
-    from giant.stellar_opnav.visualizer import show_id_results, residual_histograms, plot_residuals_vs_magnitude
+    from giant.stellar_opnav.visualizer import show_id_results, residual_histograms, residuals_vs_magnitude
 
     # the star catalog we will use for our "truth" star locations (defaults to Gaia)
     from giant.catalogs.gaia import Gaia
@@ -682,7 +682,7 @@ For convenience, the full FC2 calibration script is presented here
         # the overall post-fit residuals
         residual_histograms(calib)
         # the overall post-fit residuals vs magnitude
-        plot_residuals_vs_magnitude(calib)
+        residuals_vs_magnitude(calib)
         # the distortion map for the solved for camera model
         plot_distortion_map(calib.model)
 

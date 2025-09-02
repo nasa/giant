@@ -12,11 +12,6 @@ utilities
     :nosignatures:
     :toctree: .
 
-    ImageValidationMixin
-
-.. toctree::
-    :hidden:
-
-    ImageValidationMixin
+    ~image_validation_mixin.ImageValidationMixin
 
 |

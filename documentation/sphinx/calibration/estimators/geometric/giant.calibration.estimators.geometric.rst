@@ -1,5 +1,5 @@
 giant.calibration.estimators.geometric
-=====================================
+======================================
 
 .. automodule:: giant.calibration.estimators.geometric
     :no-members:

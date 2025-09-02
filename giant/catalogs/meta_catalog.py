@@ -1,6 +1,3 @@
-
-
-
 """
 This module defines the abstract base class (abc) for defining GIANT star catalogs that will work for Stellar OpNav
 and camera calibration as well as the column definitions for the dataframe used to contain stars in GIANT.
@@ -22,7 +19,7 @@ To implement a full function GIANT catalog, you must implement the following ins
 ============================================= ==========================================================================
 Instance Attribute                            Description
 ============================================= ==========================================================================
-:attr:`~.Catalog.include_proper_motion`     A boolean flag specifying whether to apply proper motion to the queried
+:attr:`~.Catalog.include_proper_motion`       boolean flag specifying whether to apply proper motion to the queried
                                               locations to translate them to the specified time before returning.
                                               Technically this isn't actually required, but it is strongly recommended.
 ============================================= ==========================================================================

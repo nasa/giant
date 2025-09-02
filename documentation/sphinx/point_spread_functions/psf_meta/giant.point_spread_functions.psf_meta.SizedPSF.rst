@@ -3,7 +3,7 @@
 
 .. currentmodule:: giant.point_spread_functions.psf_meta
 
-In addition to the methods and attributes from :class:`.PointSpreadFunction`, :class:`SizedPSF` implements the following
+In addition to the methods and attributes from :class:`~.psf_meta.PointSpreadFunction`, :class:`SizedPSF` implements the following
 
 .. autoclass:: SizedPSF
     :show-inheritance:
