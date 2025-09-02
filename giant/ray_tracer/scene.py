@@ -615,7 +615,7 @@ class Scene:
         self._target_objs = []
         self.target_objs = target_objs
 
-        self._obscuring_objs = None
+        self._obscuring_objs = []
         self.obscuring_objs = obscuring_objs
 
         self._light_obj = None
@@ -666,7 +666,7 @@ class Scene:
                 raise ValueError(f"We don't know how to set the order for an object of type {obj.shape.__class__.__name__}")
 
     @property
-    def obscuring_objs(self) -> Optional[List[SceneObject]]:
+    def obscuring_objs(self) -> List[SceneObject]:
         """
         A list of objects to be kept up to date with the scene but which are not actually used in the scene
         """

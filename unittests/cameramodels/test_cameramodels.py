@@ -1521,7 +1521,7 @@ class TestPinholeModel(TestCase):
         element = etree.Element(self.Class.__name__)
 
         model = self.Class(focal_length=20, field_of_view=5, use_a_priori=True,
-                           misalignment=[1, 2, 3], kx=2, ky=200, px=50, py=300,
+                           misalignment=np.array([1, 2, 3]), kx=2, ky=200, px=50, py=300,
                            a1=37, a2=1, a3=-1230,
                            estimation_parameters=['a1', 'multiple misalignments'], n_rows=20, n_cols=30)
 

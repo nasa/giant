@@ -287,9 +287,15 @@ class PinholeModel(CameraModel):
 
         if misalignment is not None:
             if isinstance(misalignment, Sequence):
-                self.misalignment = [np.asanyarray(m).reshape((3,)) for m in misalignment]
+                if len(misalignment) == 3 and all(isinstance(m, (int, float)) for m in misalignment):
+                    self.misalignment = np.asanyarray(misalignment).reshape((3,))
+                else:
+                    self.misalignment = [np.asanyarray(m).reshape((3,)) for m in misalignment]
             else:
-                self.misalignment = misalignment.reshape((3,))
+                if misalignment.size == 3:
+                    self.misalignment = misalignment.reshape((3,))
+                else:
+                    self.misalignment = misalignment.reshape((-1, 3))
 
         # set a flag for where to use multiple misalignments or not (set by estimation_parameters property)
         self.estimate_multiple_misalignments = False

@@ -1,4 +1,5 @@
 from unittest import TestCase
+from typing import cast
 
 from giant.camera import Camera
 from giant.camera_models import PinholeModel
@@ -9,8 +10,6 @@ from giant.relative_opnav.relnav_class import RelativeOpNav
 from giant.ray_tracer.illumination import McEwenIllumination
 from giant.ray_tracer.scene import Scene, SceneObject
 
-from giant.ray_tracer.rays import Rays
-
 import giant.ray_tracer.shapes as g_shapes
 
 from giant.point_spread_functions.gaussians import Gaussian
@@ -19,14 +18,7 @@ import numpy as np
 
 from datetime import datetime
 
-try:
-    import spiceypy as spice
-
-    HASSPICE = True
-
-except ImportError:
-    spice = None
-    HASSPICE = False
+import spiceypy as spice
 
 from giant import rotations as at
 
@@ -77,7 +69,7 @@ class TestRelNav(TestCase):
             elif time == datetime(2017, 2, 2, 0, 0, 0):
                 return at.Rotation(np.array([0, 0, 0]))
             else:
-                return np.array([0, 0, 0])
+                return at.Rotation()
 
         self.target_frame_fun = target_frame_fun
 
@@ -98,7 +90,7 @@ class TestRelNav(TestCase):
             elif time == datetime(2017, 2, 2, 0, 0, 0):
                 return at.Rotation(np.array([0, 0, -100.00001]))
             else:
-                return np.array([0, 0, 0])
+                return at.Rotation()
 
         self.light_frame_fun = light_frame_fun
 
@@ -142,22 +134,9 @@ class TestRelNav(TestCase):
         # Define scene
         self.opnav_scene = Scene(target_objs=[self.target_obj], light_obj=self.sun_obj)
 
-        # Define Rays object
-        start = np.hstack(4 * [np.array([[0], [0], [-100]])])
-        direction = np.hstack(4 * [np.array([[0], [0], [10000]])])
-        self.opnav_scene.rays = Rays(start, direction)
-
         # Define Relnav object
         self.relnav = RelativeOpNav(self.camera, self.opnav_scene, xcorr_kwargs={"grid_size": 3, "denoise_image": True},
                                     brdf=McEwenIllumination(), auto_corrections=None)
-
-        # # Define ImageProcessing object
-        # self.image_processing = gimp.ImageProcessing()
-
-        # # Definite XCorrCenterFinding object
-        # self.xcorr = XCorrCenterFinding(scene=self.opnav_scene, camera=self.camera,
-        #                                 image_processing=self.image_processing,
-        #                                 brdf=McEwenIllumination, rays=self.rays)
 
     def test_scene_property(self):
 
@@ -171,7 +150,7 @@ class TestRelNav(TestCase):
         self.assertIsInstance(relnav.scene.target_objs[0], SceneObject)
 
         self.assertIsInstance(relnav.scene.obscuring_objs, list)
-        self.assertEqual(len(relnav.scene.obscuring_objs), 0)
+        self.assertEqual(len(cast(list, relnav.scene.obscuring_objs)), 0)
 
     def test_scene_setter(self):
 
@@ -182,7 +161,7 @@ class TestRelNav(TestCase):
         self.assertEqual(len(relnav.scene.target_objs), 1)
         self.assertIsInstance(relnav.scene.target_objs[0], SceneObject)
         self.assertIsInstance(relnav.scene.light_obj, SceneObject)
-        self.assertEqual(len(relnav.scene.obscuring_objs), 0)
+        self.assertEqual(len(cast(list, relnav.scene.obscuring_objs)), 0)
         self.assertIsInstance(self.relnav.scene, Scene)
 
         # Set scene to have multiple target objects in Scene object

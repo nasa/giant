@@ -233,119 +233,119 @@ class TestTriangle(TestCase):
 
         self.assertAlmostEqual(albedo, 0)
 
-        albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 1], 0)
+        albedo = cast(float, self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 1], 0))
 
         self.assertAlmostEqual(albedo, 1)
 
-        albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 2], 0)
+        albedo = cast(float, self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 2], 0))
 
         self.assertAlmostEqual(albedo, 2)
 
-        albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, :2].mean(axis=-1), 0)
+        albedo = cast(float, self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, :2].mean(axis=-1), 0))
 
         self.assertAlmostEqual(albedo, 0.5)
 
-        albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, ::2].mean(axis=-1), 0)
+        albedo = cast(float, self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, ::2].mean(axis=-1), 0))
 
         self.assertAlmostEqual(albedo, 1)
 
-        albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 1:].mean(axis=-1), 0)
+        albedo = cast(float, self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 1:].mean(axis=-1), 0))
 
         self.assertAlmostEqual(albedo, 1.5)
 
-        albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0].mean(axis=-1), 0)
+        albedo = cast(float, self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0].mean(axis=-1), 0))
 
         self.assertAlmostEqual(albedo, 1)
 
     def test_multi_get_albedo(self):
 
         # first triangle
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, 0], 0)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, 0], 0))
 
         self.assertAlmostEqual(albedo, 0)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, 1], 0)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, 1], 0))
 
         self.assertAlmostEqual(albedo, 1)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, 2], 0)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, 2], 0))
 
         self.assertAlmostEqual(albedo, 2)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, :2].mean(axis=-1), 0)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, :2].mean(axis=-1), 0))
 
         self.assertAlmostEqual(albedo, 0.5)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, ::2].mean(axis=-1), 0)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, ::2].mean(axis=-1), 0))
 
         self.assertAlmostEqual(albedo, 1)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, 1:].mean(axis=-1), 0)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, 1:].mean(axis=-1), 0))
 
         self.assertAlmostEqual(albedo, 1.5)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0].mean(axis=-1), 0)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0].mean(axis=-1), 0))
 
         self.assertAlmostEqual(albedo, 1)
 
         # second triangle
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, 0], 1)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, 0], 1))
 
         self.assertAlmostEqual(albedo, 1)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, 1], 1)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, 1], 1))
 
         self.assertAlmostEqual(albedo, 2)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, 2], 1)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, 2], 1))
 
         self.assertAlmostEqual(albedo, 1.5)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, :2].mean(axis=-1), 1)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, :2].mean(axis=-1), 1))
 
         self.assertAlmostEqual(albedo, 1.5)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, ::2].mean(axis=-1), 1)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, ::2].mean(axis=-1), 1))
 
         self.assertAlmostEqual(albedo, 1.25)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, 1:].mean(axis=-1), 1)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, 1:].mean(axis=-1), 1))
 
         self.assertAlmostEqual(albedo, 1.75)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1].mean(axis=-1), 1)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1].mean(axis=-1), 1))
 
         self.assertAlmostEqual(albedo, 1.5)
 
         # multi triangles
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, 0].T, [0, 1])
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, 0].T, [0, 1]))
 
         np.testing.assert_array_almost_equal(albedo, [0, 1])
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, 1].T, [0, 1])
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, 1].T, [0, 1]))
 
         np.testing.assert_array_almost_equal(albedo, [1, 2])
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, 2].T, [0, 1])
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, 2].T, [0, 1]))
 
         np.testing.assert_array_almost_equal(albedo, [2, 1.5])
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, :2].mean(axis=-1).T,
-                                                 [0, 1])
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, :2].mean(axis=-1).T,
+                                                 [0, 1]))
 
         np.testing.assert_array_almost_equal(albedo, [0.5, 1.5])
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, ::2].mean(axis=-1).T,
-                                                 [0, 1])
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, ::2].mean(axis=-1).T,
+                                                 [0, 1]))
 
         np.testing.assert_array_almost_equal(albedo, [1, 1.25])
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, 1:].mean(axis=-1).T,
-                                                 [0, 1])
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, 1:].mean(axis=-1).T,
+                                                 [0, 1]))
 
         np.testing.assert_array_almost_equal(albedo, [1.5, 1.75])
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2].mean(axis=-1).T, [0, 1])
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2].mean(axis=-1).T, [0, 1]))
 
         np.testing.assert_array_almost_equal(albedo, [1, 1.5])
 
@@ -854,123 +854,123 @@ class TestTriangle32(TestCase):
 
     def test_single_get_albedo(self):
 
-        albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 0], 0)
+        albedo = cast(float, self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 0], 0))
 
         self.assertAlmostEqual(albedo, 0)
 
-        albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 1], 0)
+        albedo = cast(float, self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 1], 0))
 
         self.assertAlmostEqual(albedo, 1)
 
-        albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 2], 0)
+        albedo = cast(float, self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 2], 0))
 
         self.assertAlmostEqual(albedo, 2)
 
-        albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, :2].mean(axis=-1), 0)
+        albedo = cast(float, self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, :2].mean(axis=-1), 0))
 
         self.assertAlmostEqual(albedo, 0.5)
 
-        albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, ::2].mean(axis=-1), 0)
+        albedo = cast(float, self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, ::2].mean(axis=-1), 0))
 
         self.assertEqual(albedo, 1)
 
-        albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 1:].mean(axis=-1), 0)
+        albedo = cast(float, self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 1:].mean(axis=-1), 0))
 
         self.assertEqual(albedo, 1.5)
 
-        albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0].mean(axis=-1), 0)
+        albedo = cast(float, self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0].mean(axis=-1), 0))
 
         self.assertEqual(albedo, 1)
 
     def test_multi_get_albedo(self):
 
         # first triangle
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, 0], 0)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, 0], 0))
 
         self.assertAlmostEqual(albedo, 0)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, 1], 0)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, 1], 0))
 
         self.assertAlmostEqual(albedo, 1)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, 2], 0)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, 2], 0))
 
         self.assertAlmostEqual(albedo, 2)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, :2].mean(axis=-1), 0)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, :2].mean(axis=-1), 0))
 
         self.assertAlmostEqual(albedo, 0.5)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, ::2].mean(axis=-1), 0)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, ::2].mean(axis=-1), 0))
 
         self.assertAlmostEqual(albedo, 1)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, 1:].mean(axis=-1), 0)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0, :, 1:].mean(axis=-1), 0))
 
         self.assertAlmostEqual(albedo, 1.5)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0].mean(axis=-1), 0)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[0].mean(axis=-1), 0))
 
         self.assertAlmostEqual(albedo, 1)
 
         # second triangle
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, 0], 1)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, 0], 1))
 
         self.assertAlmostEqual(albedo, 1)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, 1], 1)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, 1], 1))
 
         self.assertAlmostEqual(albedo, 2)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, 2], 1)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, 2], 1))
 
         self.assertAlmostEqual(albedo, 1.5)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, :2].mean(axis=-1), 1)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, :2].mean(axis=-1), 1))
 
         self.assertAlmostEqual(albedo, 1.5)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, ::2].mean(axis=-1), 1)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, ::2].mean(axis=-1), 1))
 
         self.assertAlmostEqual(albedo, 1.25)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, 1:].mean(axis=-1), 1)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1, :, 1:].mean(axis=-1), 1))
 
         self.assertAlmostEqual(albedo, 1.75)
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1].mean(axis=-1), 1)
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[1].mean(axis=-1), 1))
 
         self.assertAlmostEqual(albedo, 1.5)
 
         # multi triangles
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, 0].T, [0, 1])
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, 0].T, [0, 1]))
 
         np.testing.assert_array_almost_equal(albedo, [0, 1])
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, 1].T, [0, 1])
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, 1].T, [0, 1]))
 
         np.testing.assert_array_almost_equal(albedo, [1, 2])
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, 2].T, [0, 1])
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, 2].T, [0, 1]))
 
         np.testing.assert_array_almost_equal(albedo, [2, 1.5])
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, :2].mean(axis=-1).T,
-                                                 [0, 1])
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, :2].mean(axis=-1).T,
+                                                 [0, 1]))
 
         np.testing.assert_array_almost_equal(albedo, [0.5, 1.5])
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, ::2].mean(axis=-1).T,
-                                                 [0, 1])
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, ::2].mean(axis=-1).T,
+                                                 [0, 1]))
 
         np.testing.assert_array_almost_equal(albedo, [1, 1.25])
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, 1:].mean(axis=-1).T,
-                                                 [0, 1])
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2, :, 1:].mean(axis=-1).T,
+                                                 [0, 1]))
 
         np.testing.assert_array_almost_equal(albedo, [1.5, 1.75])
 
-        albedo = self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2].mean(axis=-1).T, [0, 1])
+        albedo = cast(float, self.multi_triangles.get_albedo(self.multi_triangles.stacked_vertices[:2].mean(axis=-1).T, [0, 1]))
 
         np.testing.assert_array_almost_equal(albedo, [1, 1.5])
 
@@ -1259,8 +1259,8 @@ class TestTriangle32(TestCase):
 
 class TestAxisAlignedBoundingBox(TestCase):
     def setUp(self):
-        self.min_sides = [-1, -2, -3]
-        self.max_sides = [3, 2, 1]
+        self.min_sides = np.array([-1, -2, -3])
+        self.max_sides = np.array([3, 2, 1])
 
         self.aabb = g_shapes.AxisAlignedBoundingBox(self.min_sides, self.max_sides)
 
@@ -1450,7 +1450,7 @@ class TestAxisAlignedBoundingBox(TestCase):
             multi_ray = g_rays.Rays(np.asarray([[0, 0, 10], [10, 10, 10]]).T,
                                     np.asarray([[0, 0, -1], [-1, -1, -1]]).T)
 
-            results = self.aabb.trace(multi_ray)
+            results = cast(np.ndarray, self.aabb.trace(multi_ray))
 
             self.assertTrue(results.all())
 
@@ -1537,7 +1537,7 @@ class TestAxisAlignedBoundingBox(TestCase):
             multi_ray = g_rays.Rays(np.asarray([[0, 0, 10], [10, 10, 10]]).T,
                                     np.asarray([[0, 0, -1], [-1, -1, -1]]).T)
 
-            results = box_copy.trace(multi_ray)
+            results = cast(np.ndarray, box_copy.trace(multi_ray))
 
             self.assertTrue(results.all())
 
@@ -2138,7 +2138,7 @@ class TestEllipsoid(TestCase):
             np.testing.assert_array_almost_equal(results["normal"], [[1 / np.sqrt(3)] * 3, [np.nan] * 3])
             np.testing.assert_array_equal(results["albedo"], [1, 1])
 
-        sphere.translate([5, 0, 0])
+        sphere.translate(np.array([5, 0, 0]))
 
         with self.subTest(case='sphere', center='translated', numrays=2):
             rays = g_rays.Rays([[100] * 2, [0] * 2, [0] * 2], [[-1] * 2, [0] * 2, [0] * 2])
@@ -2445,19 +2445,19 @@ class TestEllipsoid(TestCase):
                                     orientation=self.orientation.matrix)
 
         with self.subTest(case='sphere', center='origin', num_locs=2):
-            loc = [0, 0, 5]
+            loc = np.array([0, 0, 5])
 
             normal = sphere.compute_normals(loc)
 
             np.testing.assert_array_almost_equal(normal, [0, 0, 1])
 
-            loc = [0, 5, 0]
+            loc = np.array([0, 5, 0])
 
             normal = sphere.compute_normals(loc)
 
             np.testing.assert_array_almost_equal(normal, [0, 1, 0])
 
-            loc = [5, 0, 0]
+            loc = np.array([5, 0, 0])
 
             normal = sphere.compute_normals(loc)
 
@@ -2468,19 +2468,19 @@ class TestEllipsoid(TestCase):
                                     orientation=self.orientation.matrix)
 
         with self.subTest(case='sphere', center='off set', num_locs=2):
-            loc = [0, 0, 5]
+            loc = np.array([0, 0, 5])
 
             normal = sphere.compute_normals(loc)
 
             np.testing.assert_array_almost_equal(normal, [0, 0, 1])
 
-            loc = [0, 5, 0]
+            loc = np.array([0, 5, 0])
 
             normal = sphere.compute_normals(loc)
 
             np.testing.assert_array_almost_equal(normal, [0, 1, 0])
 
-            loc = [5, 0, 0]
+            loc = np.array([5, 0, 0])
 
             normal = sphere.compute_normals(loc)
 
@@ -2824,6 +2824,9 @@ class TestEllipsoid(TestCase):
             jac_ana = sphere.compute_limb_jacobian(scan_center_dir, scan_dirs, slimbs, position)
 
             jac_num = num_deriv(sphere, scan_center_dir, scan_dirs, position, state=state, delta=1e-4)
+            
+            assert jac_ana is not None
+            assert jac_num is not None
 
             # negative numeric since the pert is actually to camera position, no center like it should
             np.testing.assert_allclose(jac_ana, -jac_num, atol=1e-9, rtol=1e-5)
@@ -2834,6 +2837,9 @@ class TestEllipsoid(TestCase):
             jac_ana = ellipse.compute_limb_jacobian(scan_center_dir, scan_dirs, elimbs, position)
 
             jac_num = num_deriv(ellipse, scan_center_dir, scan_dirs, position, state=state, delta=1e-4)
+            
+            assert jac_ana is not None
+            assert jac_num is not None
 
             # negative numeric since the pert is actually to camera position, no center like it should
             np.testing.assert_allclose(jac_ana, -jac_num, atol=1e-8, rtol=1e-4)
