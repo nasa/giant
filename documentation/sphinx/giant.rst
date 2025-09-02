@@ -21,6 +21,7 @@ API Reference
     relative_opnav
     catalogs
     calibration
+    coverage
     ray_tracer
     ufo
     utilities
