@@ -101,5 +101,5 @@ class UserOptions(metaclass=ABCMeta):
         """
         
         self.override_options()
-        self._options = {key: self.__dict__[key] for key in list(self.__annotations__)}
-        return self._options
+        
+        return self.__dict__

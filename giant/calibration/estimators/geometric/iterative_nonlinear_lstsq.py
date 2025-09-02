@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from typing import Optional, cast
+from typing import Optional, cast, Sequence
 
 import warnings
 
@@ -276,9 +276,9 @@ class IterativeNonlinearLSTSQ(GeometricEstimatorBC, IterativeNonlinearLstSqOptio
         return self._base_frame_directions
 
     @camera_frame_directions.setter
-    def camera_frame_directions(self, val: Optional[list[DOUBLE_ARRAY | list[list]]]):
+    def camera_frame_directions(self, val: Optional[Sequence[DOUBLE_ARRAY | list[list]]]):
 
-        self._base_frame_directions = val
+        self._base_frame_directions = list(val) if val is not None else None
 
     @property
     def temperatures(self) -> list[float]:

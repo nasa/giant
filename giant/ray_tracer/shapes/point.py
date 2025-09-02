@@ -48,6 +48,11 @@ class Point:
         """
         The location of the point as a length 3 double array.
         """
+        
+        self.id = id(self)
+        """
+        The unique ID of the point object.
+        """
 
     def rotate(self, rotation: Union[Rotation, ARRAY_LIKE]) -> Self:
         """

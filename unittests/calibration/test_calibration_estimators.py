@@ -1,5 +1,7 @@
 from unittest import TestCase
 
+from typing import cast
+
 from giant.image import OpNavImage
 from giant.point_spread_functions.gaussians import Gaussian
 from giant.calibration import estimators as est
@@ -53,7 +55,7 @@ class TestCalibrationEstimator(TestCase):
                             estimation_parameters=['multiple misalignment'])
 
     @staticmethod
-    def camera_frame_fun():
+    def camera_frame_fun(date):
         return at.Rotation(np.array([0, 0, 0]))
 
     def load_camera(self):
@@ -75,12 +77,13 @@ class TestCalibrationEstimator(TestCase):
         # image 2: contains 4 (x,y) measurement pairs
 
         calest = est.LMAEstimator(model=PinholeModel(kx=500, ky=500, px=49, py=49, focal_length=10, n_rows=5000,
-                                                     n_cols=5000), measurements=np.hstack(
-            [np.arange(0, 6).reshape((2, 3)), np.arange(0, 8).reshape((2, 4))]),
-                                  camera_frame_directions=[np.arange(0, 9).reshape((3, 3)),
-                                                           np.arange(0, 12).reshape((3, 4))],
-                                  measurement_covariance=np.random.rand(14 * 14).reshape((14, 14)),
-                                  temperatures=[20, 20])
+                                                     n_cols=5000))
+        
+        calest.measurements = np.hstack([np.arange(0, 6).reshape((2, 3)), np.arange(0, 8).reshape((2, 4))])
+        calest.camera_frame_directions = [np.arange(0, 9).reshape((3, 3)).astype(np.float64), 
+                                          np.arange(0, 12).reshape((3, 4)).astype(np.float64)]
+        calest.measurement_covariance = np.random.rand(14 * 14).reshape((14, 14))
+        calest.temperatures = [20, 20]
 
         return calest
 
@@ -93,7 +96,7 @@ class TestCalibrationEstimator(TestCase):
         dd_1 = np.vstack([np.array([0, 0, 4985.]), np.array([1, 2, 4999.]), np.array([-10, 10, 4998.])]).transpose()
         dd_2 = np.vstack([np.array([0, 0, 5005.]), np.array([1, 3, 4997.]), np.array([30, -5, 4999.]),
                           np.array([100, -120.5, 4998])]).transpose()
-        dd = [dd_1, dd_2]
+        dd = [dd_1.astype(np.float64), dd_2.astype(np.float64)]
 
         # Measurements
         meas_truth = np.zeros((2, 7))
@@ -110,8 +113,11 @@ class TestCalibrationEstimator(TestCase):
         cmodel = PinholeModel(kx=600, ky=400, px=49, py=49, focal_length=10, n_rows=50, n_cols=50)
 
         # # Define a calibration estimation object
-        calest = est.LMAEstimator(model=cmodel, measurements=meas_truth, camera_frame_directions=dd,
-                                  temperatures=[20, 10])  # calibration estimate based on new cmodel
+        calest = est.LMAEstimator(model=cmodel)  # calibration estimate based on new cmodel
+        
+        calest.measurements = meas_truth
+        calest.camera_frame_directions = dd
+        calest.temperatures = [20, 10]
 
         prefit_residuals = calest.compute_residuals()
 
@@ -119,7 +125,8 @@ class TestCalibrationEstimator(TestCase):
         calest.estimate()
 
         # Compare prefit and postfit residuals for calibration object
-
-        self.assertLessEqual(np.linalg.norm(calest.postfit_residuals), np.linalg.norm(prefit_residuals))
+        self.assertIsNotNone(calest.postfit_residuals)
+        self.assertLessEqual(float(np.linalg.norm(cast(np.ndarray, calest.postfit_residuals))), 
+                             float(np.linalg.norm(prefit_residuals)))
 
         self.assertTrue(calest.successful)

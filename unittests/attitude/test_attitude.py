@@ -9,7 +9,7 @@ class TestAttitude(TestCase):
 
     def check_attitude(self, attitude, quaternion, mupdate, vupdate):
 
-        np.testing.assert_array_almost_equal(quaternion, attitude.q)
+        np.testing.assert_array_almost_equal(quaternion, attitude.quaternion)
         np.testing.assert_array_almost_equal(quaternion[:3], attitude.q_vector)
         self.assertAlmostEqual(quaternion[-1], attitude.q_scalar)
         self.assertIs(attitude._mupdate, mupdate)
@@ -229,7 +229,7 @@ class TestQuaternionInverse(TestCase):
 
         qinv = at.quaternion_inverse(at.Rotation([1, 2, 3, 4]))
 
-        np.testing.assert_array_almost_equal(qinv.q.flatten(), np.array([-1, -2, -3, 4])/np.sqrt(30))
+        np.testing.assert_array_almost_equal(qinv.quaternion.flatten(), np.array([-1, -2, -3, 4])/np.sqrt(30))
 
         qinv = at.quaternion_inverse([[1, 2], [2, 3], [3, 4], [4, 5]])
 
@@ -266,7 +266,7 @@ class TestQuaternionMultiplication(TestCase):
 
         qm = at.quaternion_multiplication(quat_1, quat_2)
 
-        np.testing.assert_array_equal(np.abs(qm.q), [0, 1, 0, 0])
+        np.testing.assert_array_equal(np.abs(qm.quaternion), [0, 1, 0, 0])
 
         quat_1 = [np.sqrt(2)/2, 0, 0, np.sqrt(2)/2]  # x=x, y=z, z=-y
         quat_2 = [0, np.sqrt(2)/2, 0, np.sqrt(2)/2]  # x=-z, y=y, z=x
@@ -815,32 +815,32 @@ class TestNLERP(TestCase):
 
             qt = at.nlerp(q0, q1, 0)
 
-            np.testing.assert_allclose(qt.q, q0.q)
+            np.testing.assert_allclose(qt.quaternion, q0.quaternion)
 
             qt = at.nlerp(q0, q1, 1)
 
-            np.testing.assert_allclose(qt.q, q1.q)
+            np.testing.assert_allclose(qt.quaternion, q1.quaternion)
 
             qt = at.nlerp(q0, q1, 0.5)
 
-            qtrue = (q0.q.flatten()+q1.q.flatten())/2  # type: np.ndarray
+            qtrue = (q0.quaternion.flatten()+q1.quaternion.flatten())/2  # type: np.ndarray
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.quaternion.flatten(), qtrue)
 
             qt = at.nlerp(q0, q1, 0.25)
 
-            qtrue = (q0.q.flatten()*(1-0.25)+q1.q.flatten()*0.25)  # type: np.ndarray
+            qtrue = (q0.quaternion.flatten()*(1-0.25)+q1.quaternion.flatten()*0.25)  # type: np.ndarray
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.quaternion.flatten(), qtrue)
 
             qt = at.nlerp(q0, q1, 0.79)
 
-            qtrue = q0.q.flatten()*(1-0.79)+q1.q.flatten()*0.79  # type: np.ndarray
+            qtrue = q0.quaternion.flatten()*(1-0.79)+q1.quaternion.flatten()*0.79  # type: np.ndarray
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.quaternion.flatten(), qtrue)
 
             q0 = np.array([0.23, 0.45, 0.67, 0.2])
             q0 /= np.linalg.norm(q0)
@@ -851,32 +851,32 @@ class TestNLERP(TestCase):
 
             qt = at.nlerp(q0, q1, 0)
 
-            np.testing.assert_allclose(qt.q, q0.q)
+            np.testing.assert_allclose(qt.quaternion, q0.quaternion)
 
             qt = at.nlerp(q0, q1, 1)
 
-            np.testing.assert_allclose(qt.q, q1.q)
+            np.testing.assert_allclose(qt.quaternion, q1.quaternion)
 
             qt = at.nlerp(q0, q1, 0.5)
 
-            qtrue = (q0.q.flatten()+q1.q.flatten())/2  # type: np.ndarray
+            qtrue = (q0.quaternion.flatten()+q1.quaternion.flatten())/2  # type: np.ndarray
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.quaternion.flatten(), qtrue)
 
             qt = at.nlerp(q0, q1, 0.25)
 
-            qtrue = q0.q.flatten()*(1-0.25)+q1.q.flatten()*0.25  # type: np.ndarray
+            qtrue = q0.quaternion.flatten()*(1-0.25)+q1.quaternion.flatten()*0.25  # type: np.ndarray
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.quaternion.flatten(), qtrue)
 
             qt = at.nlerp(q0, q1, 0.79)
 
-            qtrue = (1-0.79)*q0.q.flatten() + 0.79*q1.q.flatten()  # type: np.ndarray
+            qtrue = (1-0.79)*q0.quaternion.flatten() + 0.79*q1.quaternion.flatten()  # type: np.ndarray
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.quaternion.flatten(), qtrue)
             
             
 class TestSLERP(TestCase):
@@ -956,32 +956,32 @@ class TestSLERP(TestCase):
 
             qt = at.slerp(q0, q1, 0)
 
-            np.testing.assert_allclose(qt.q, q0.q)
+            np.testing.assert_allclose(qt.quaternion, q0.quaternion)
 
             qt = at.slerp(q0, q1, 1)
 
-            np.testing.assert_allclose(qt.q, q1.q)
+            np.testing.assert_allclose(qt.quaternion, q1.quaternion)
 
             qt = at.slerp(q0, q1, 0.5)
 
-            qtrue = (q0.q.flatten()+q1.q.flatten())/2  # type: np.ndarray
+            qtrue = (q0.quaternion.flatten()+q1.quaternion.flatten())/2  # type: np.ndarray
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.quaternion.flatten(), qtrue)
 
             qt = at.slerp(q0, q1, 0.25)
 
-            qtrue = (q0.q.flatten()+qtrue)/2
+            qtrue = (q0.quaternion.flatten()+qtrue)/2
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.quaternion.flatten(), qtrue)
 
             qt = at.slerp(q0, q1, 0.79)
 
             # comes from ODTBX matlab function
             qtrue = [0.424985851398278, 0.424985851398278, 0.424985851398278, 0.676875969682661]
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.quaternion.flatten(), qtrue)
             
             q0 = np.array([0.23, 0.45, 0.67, 0.2])
             q0 /= np.linalg.norm(q0)
@@ -992,29 +992,29 @@ class TestSLERP(TestCase):
             
             qt = at.slerp(q0, q1, 0)
             
-            np.testing.assert_allclose(qt.q, q0.q)
+            np.testing.assert_allclose(qt.quaternion, q0.quaternion)
             
             qt = at.slerp(q0, q1, 1)
 
-            np.testing.assert_allclose(qt.q, q1.q)
+            np.testing.assert_allclose(qt.quaternion, q1.quaternion)
 
             qt = at.slerp(q0, q1, 0.5)
             
-            qtrue = (q0.q.flatten()+q1.q.flatten())/2  # type: np.ndarray
+            qtrue = (q0.quaternion.flatten()+q1.quaternion.flatten())/2  # type: np.ndarray
             qtrue /= np.linalg.norm(qtrue)
             
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.quaternion.flatten(), qtrue)
 
             qt = at.slerp(q0, q1, 0.25)
             
-            qtrue = (q0.q.flatten()+qtrue)/2
+            qtrue = (q0.quaternion.flatten()+qtrue)/2
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.quaternion.flatten(), qtrue)
 
             qt = at.slerp(q0, q1, 0.79)
 
             # comes from ODTBX matlab function
             qtrue = [-0.256224563175732, 0.331694624881600, 0.813762532744541, 0.402639031082742]
             
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.quaternion.flatten(), qtrue)

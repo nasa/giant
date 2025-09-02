@@ -109,7 +109,7 @@ class LMAEstimator(IterativeNonlinearLSTSQ, LMAEstimatorOptions):
                 rhs: np.ndarray = jacobian.T @ weight_matrix @ residuals_vec
 
             # get the update vector using LMA
-            update_vec = np.linalg.solve(lhs + lma_coefficient*np.diag(np.diag(lhs)), rhs)
+            update_vec = np.linalg.solve(lhs + lma_coefficient*np.diag(np.diag(lhs)), rhs).astype(np.float64)
 
             model_copy = self.model.copy()
 

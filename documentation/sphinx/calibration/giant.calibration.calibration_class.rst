@@ -7,7 +7,6 @@
 .. currentmodule:: giant.calibration.calibration_class
 
 
-
 .. rubric:: Classes
 
 

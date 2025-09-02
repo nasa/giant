@@ -1311,7 +1311,7 @@ class TestPinholeModel(TestCase):
             self.assertEqual(getattr(model, key), update_vec[model.element_dict[key][0]])
 
         for ind, vec in enumerate(update_vec[8:].reshape(-1, 3)):
-            np.testing.assert_array_almost_equal(at.Rotation(vec).q, at.Rotation(model.misalignment[ind]).q)
+            np.testing.assert_array_almost_equal(at.Rotation(vec).quaternion, at.Rotation(model.misalignment[ind]).quaternion)
 
     def test_pixels_to_gnomic(self):
 
@@ -2985,7 +2985,7 @@ class TestOwenModel(TestPinholeModel):
             self.assertEqual(getattr(model, key), update_vec[model.element_dict[key][0]])
 
         for ind, vec in enumerate(update_vec[16:].reshape(-1, 3)):
-            np.testing.assert_array_almost_equal(at.Rotation(vec).q, at.Rotation(model.misalignment[ind]).q)
+            np.testing.assert_array_almost_equal(at.Rotation(vec).quaternion, at.Rotation(model.misalignment[ind]).quaternion)
 
     def test_pixels_to_gnomic(self):
 
@@ -4522,7 +4522,7 @@ class TestBrownModel(TestPinholeModel):
             self.assertEqual(getattr(model, key), update_vec[model.element_dict[key][0]])
 
         for ind, vec in enumerate(update_vec[13:].reshape(-1, 3)):
-            np.testing.assert_array_almost_equal(at.Rotation(vec).q, at.Rotation(model.misalignment[ind]).q)
+            np.testing.assert_array_almost_equal(at.Rotation(vec).quaternion, at.Rotation(model.misalignment[ind]).quaternion)
 
     def test_pixels_to_gnomic(self):
 
@@ -6499,7 +6499,7 @@ class TestOpenCVModel(TestPinholeModel):
             self.assertEqual(getattr(model, key), update_vec[model.element_dict[key][0]])
 
         for ind, vec in enumerate(update_vec[20:].reshape(-1, 3)):
-            np.testing.assert_array_almost_equal(at.Rotation(vec).q, at.Rotation(model.misalignment[ind]).q)
+            np.testing.assert_array_almost_equal(at.Rotation(vec).quaternion, at.Rotation(model.misalignment[ind]).quaternion)
 
     def test_pixels_to_gnomic(self):
 

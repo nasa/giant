@@ -374,7 +374,7 @@ class CameraModel(metaclass=ABCMeta):
         return np.zeros(2)
  
     @abstractmethod
-    def compute_jacobian(self, unit_vectors_in_camera_frame: Sequence[DOUBLE_ARRAY], temperature: F_SCALAR_OR_ARRAY | Sequence[float] = 0) \
+    def compute_jacobian(self, unit_vectors_in_camera_frame: Sequence[DOUBLE_ARRAY | list[list]], temperature: F_SCALAR_OR_ARRAY | Sequence[float] = 0) \
             -> np.ndarray:
         r"""
         This method computes the Jacobian matrix :math:`\partial\mathbf{x}_P/\partial\mathbf{c}` where

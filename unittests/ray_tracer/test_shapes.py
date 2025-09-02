@@ -1,3 +1,5 @@
+from typing import cast
+
 from unittest import TestCase
 import giant.ray_tracer.shapes as g_shapes
 from giant.ray_tracer.shapes.axis_aligned_bounding_box import min_max_to_bounding_box
@@ -227,7 +229,7 @@ class TestTriangle(TestCase):
 
     def test_single_get_albedo(self):
 
-        albedo = self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 0], 0)
+        albedo = cast(float, self.single_triangle.get_albedo(self.single_triangle.stacked_vertices[0, :, 0], 0))
 
         self.assertAlmostEqual(albedo, 0)
 
@@ -1313,7 +1315,7 @@ class TestAxisAlignedBoundingBox(TestCase):
                                                                           self.verts),
                                              err_msg="Rotation rotation vertices")
 
-        np.testing.assert_array_almost_equal(box_copy._rotation.q, self.rotation.inv().q)
+        np.testing.assert_array_almost_equal(box_copy._rotation.quaternion, self.rotation.inv().quaternion)
 
         box_copy = copy.deepcopy(self.aabb)
 
@@ -1323,7 +1325,7 @@ class TestAxisAlignedBoundingBox(TestCase):
                                                                           self.verts),
                                              err_msg="Matrix rotation vertices")
 
-        np.testing.assert_array_almost_equal(box_copy._rotation.q, self.rotation.inv().q)
+        np.testing.assert_array_almost_equal(box_copy._rotation.quaternion, self.rotation.inv().quaternion)
 
     def test_translate(self):
         box_copy = copy.deepcopy(self.aabb)
@@ -1365,7 +1367,7 @@ class TestAxisAlignedBoundingBox(TestCase):
         np.testing.assert_array_almost_equal(box_copy.vertices, np.matmul(self.rotation.matrix,
                                                                           transverts))
 
-        np.testing.assert_array_almost_equal(box_copy._rotation.q, self.rotation.inv().q)
+        np.testing.assert_array_almost_equal(box_copy._rotation.quaternion, self.rotation.inv().quaternion)
 
         box_copy = copy.deepcopy(self.aabb)
 
@@ -1375,7 +1377,7 @@ class TestAxisAlignedBoundingBox(TestCase):
 
         np.testing.assert_array_almost_equal(box_copy.vertices, rotverts)
 
-        np.testing.assert_array_almost_equal(box_copy._rotation.q, self.rotation.inv().q)
+        np.testing.assert_array_almost_equal(box_copy._rotation.quaternion, self.rotation.inv().quaternion)
 
         box_copy.translate([5, 4, 3])
 

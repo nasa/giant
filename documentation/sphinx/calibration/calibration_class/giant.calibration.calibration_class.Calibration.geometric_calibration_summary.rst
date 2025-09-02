@@ -1,4 +1,4 @@
-﻿Calibration.geometric\_calibration\_summary
+Calibration.geometric\_calibration\_summary
 ===========================================
 
 .. currentmodule:: giant.calibration.calibration_class

@@ -174,7 +174,8 @@ class PinholeModel(CameraModel):
 
     def __init__(self, intrinsic_matrix: NONEARRAY = None, focal_length: float = 1.,
                  field_of_view: NONENUM = None, use_a_priori: bool = False,
-                 misalignment: NONEARRAY = None, estimation_parameters: str | Sequence[str] = 'basic',
+                 misalignment: DOUBLE_ARRAY | Sequence[DOUBLE_ARRAY | Sequence[float]] | None = None, 
+                 estimation_parameters: str | Sequence[str] = 'basic',
                  kx: NONENUM = None, ky: NONENUM = None, px: NONENUM = None, py: NONENUM = None, n_rows: int = 1,
                  n_cols: int = 1, temperature_coefficients: NONEARRAY = None, a1: NONENUM = None, a2: NONENUM = None,
                  a3: NONENUM = None):
@@ -285,7 +286,10 @@ class PinholeModel(CameraModel):
         """
 
         if misalignment is not None:
-            self.misalignment = misalignment
+            if isinstance(misalignment, Sequence):
+                self.misalignment = [np.asanyarray(m).reshape((3,)) for m in misalignment]
+            else:
+                self.misalignment = misalignment.reshape((3,))
 
         # set a flag for where to use multiple misalignments or not (set by estimation_parameters property)
         self.estimate_multiple_misalignments = False
@@ -1433,7 +1437,7 @@ class PinholeModel(CameraModel):
 
         return jacobian_row
 
-    def compute_jacobian(self, unit_vectors_in_camera_frame: Sequence[DOUBLE_ARRAY],
+    def compute_jacobian(self, unit_vectors_in_camera_frame: Sequence[DOUBLE_ARRAY | list[list]],
                          temperature: F_SCALAR_OR_ARRAY | Sequence[float] = 0) -> np.ndarray:
         r"""
         Calculates the Jacobian matrix for each observation in `unit_vectors_in_camera_frame` for each parameter to be estimated
@@ -1531,7 +1535,7 @@ class PinholeModel(CameraModel):
         # reform the Jacobian matrix into a ndarray
         return np.concatenate(jac_list, axis=1)
 
-    def _remove_unused_misalignment(self, jacobian: np.ndarray, vecs: Iterable[DOUBLE_ARRAY]) -> np.ndarray:
+    def _remove_unused_misalignment(self, jacobian: np.ndarray, vecs: Iterable[DOUBLE_ARRAY | list[list]]) -> np.ndarray:
         """
         This method is used to remove unused misalignment columns from the Jacobian matrix when arbitrary images
         are not included in the calibration

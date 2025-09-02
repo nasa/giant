@@ -320,7 +320,7 @@ class SplitCamera(CameraModel):
         """
         return self._apply_split_logic(directions_in_camera_frame, self._model1.project_directions, self._model2.project_directions, image)
     
-    def compute_jacobian(self, unit_vectors_in_camera_frame: Sequence[DOUBLE_ARRAY], 
+    def compute_jacobian(self, unit_vectors_in_camera_frame: Sequence[DOUBLE_ARRAY | list[list]], 
                          temperature: F_SCALAR_OR_ARRAY | Sequence[float] = 0) -> np.ndarray:
         r"""
         This method computes the Jacobian matrix :math:`\partial\mathbf{x}_P/\partial\mathbf{c}` where

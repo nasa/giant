@@ -201,13 +201,13 @@ class TemplateRenderer(UserOptionConfigured[TemplateRendererOptions], RelNavEsti
         else:
             # Compute the rays for the template
             if self.template_overflow_bounds >= 0:
-                min_inds = np.round(min_inds).astype(int)
-                max_inds = np.round(max_inds).astype(int)
+                min_inds = np.floor(min_inds).astype(int)
+                max_inds = np.ceil(max_inds).astype(int)
                 return compute_rays(self.camera.model, (min_inds[1], max_inds[1]), (min_inds[0], max_inds[0]),
                                     grid_size=self.grid_size, temperature=temperature), (min_inds, max_inds)
             else:
-                local_max = np.round(local_max).astype(int)
-                local_min = np.round(local_min).astype(int)
+                local_min = np.floor(local_min).astype(int)
+                local_max = np.ceil(local_max).astype(int)
                 return compute_rays(self.camera.model, (local_min[1], local_max[1]), (local_min[0], local_max[0]),
                                     grid_size=self.grid_size, temperature=temperature), (local_min, local_max)
                 
