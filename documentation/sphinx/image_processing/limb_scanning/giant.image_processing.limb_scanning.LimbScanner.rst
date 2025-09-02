@@ -11,3 +11,11 @@ LimbScanner
     :nosignatures:
 
     ~LimbScanner.__call__
+    ~LimbScanner.predict_limbs
+    ~LimbScanner.extract_limbs
+
+.. toctree::
+    :hidden:
+
+    LimbScanner.predict_limbs
+    LimbScanner.extract_limbs

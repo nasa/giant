@@ -1,6 +1,3 @@
-
-
-
 r"""
 This module provides a subclass of :class:`.CameraModel` that implements the distortion modeled Owen (or JPL) camera
 model.
@@ -104,10 +101,11 @@ from typing import Union, Tuple, Sequence
 import warnings
 
 import numpy as np
+from numpy.typing import NDArray
 
-from giant._typing import ARRAY_LIKE, NONEARRAY, NONENUM, F_ARRAY_LIKE
+from giant._typing import ARRAY_LIKE, NONEARRAY, NONENUM
 from giant.rotations import rotvec_to_rotmat, Rotation
-from giant.camera_models.pinhole_model import PinholeModel
+from giant.camera_models.pinhole_model import PinholeModel, MISALIGNMENT_TYPE
 
 
 class OwenModel(PinholeModel):
@@ -172,7 +170,7 @@ class OwenModel(PinholeModel):
     """
 
     def __init__(self, intrinsic_matrix: NONEARRAY = None, focal_length: float = 1., field_of_view: NONENUM = None,
-                 use_a_priori: bool = False, distortion_coefficients: NONEARRAY = None, misalignment: NONEARRAY = None,
+                 use_a_priori: bool = False, distortion_coefficients: NONEARRAY = None, misalignment: MISALIGNMENT_TYPE = None,
                  estimation_parameters: Union[str, Sequence] = 'basic',
                  kx: NONENUM = None, ky: NONENUM = None, kxy: NONENUM = None, kyx: NONENUM = None, px: NONENUM = None,
                  py: NONENUM = None, radial2: NONENUM = None, radial4: NONENUM = None, tangential_x: NONENUM = None,
@@ -796,7 +794,7 @@ class OwenModel(PinholeModel):
             return np.zeros((2, 2))
 
     @staticmethod
-    def _compute_dpixel_dintrinsic(gnomic_location_distorted: F_ARRAY_LIKE) -> np.ndarray:
+    def _compute_dpixel_dintrinsic(gnomic_location_distorted: Sequence[float] | NDArray) -> np.ndarray:
         r"""
         computes the partial derivative of the pixel location with respect to a change in one of the intrinsic matrix
         parameters given the gnomic location of the point we are computing the derivative for.
@@ -1006,7 +1004,7 @@ class OwenModel(PinholeModel):
 
         return jacobian_row
 
-    def apply_update(self, update_vec: F_ARRAY_LIKE):
+    def apply_update(self, update_vec: Sequence[float] | NDArray) -> None:
         r"""
         This method takes in a delta update to camera parameters (:math:`\Delta\mathbf{c}`) and applies the update
         to the current instance in place.

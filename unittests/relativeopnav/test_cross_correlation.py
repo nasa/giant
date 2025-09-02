@@ -221,7 +221,8 @@ class TestRelNav(TestCase):
     def test_estimate(self):
 
         self.xcorr.rays = None
-        self.xcorr.estimate(self.images[0])
+        with self.assertWarnsRegex(UserWarning, "Correlation peak too low.*"):
+            self.xcorr.estimate(self.images[0])
 
         self.assertIsNotNone(self.xcorr.details)
         details = cast(list[dict[str, Any]], self.xcorr.details)

@@ -10,5 +10,8 @@ KeypointMatcher
 .. autosummary::
     :nosignatures:
 
-    ~KeypointMatcher.detect_and_compute
-    ~KeypointMatcher.match
+    ~KeypointMatcher.detect_keypoints
+    ~KeypointMatcher.match_descriptors
+    ~KeypointMatcher.match_images
+    ~KeypointMatcher.filter_lowes
+

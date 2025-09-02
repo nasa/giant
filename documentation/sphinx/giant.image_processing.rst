@@ -13,6 +13,7 @@ giant.image_processing
     :toctree: image_processing
 
     correlators
+    denoising
     edge_detection
     feature_matchers
     image_flattener
@@ -23,5 +24,6 @@ giant.image_processing
     otsu
     peak_finders
     point_source_finder
+    utilities
 
 |

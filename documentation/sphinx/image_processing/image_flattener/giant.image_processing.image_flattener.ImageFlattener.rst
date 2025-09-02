@@ -11,4 +11,8 @@ ImageFlattener
     :nosignatures:
 
     ~ImageFlattener.__call__
-    ~ImageFlattener.flatten_image_and_get_noise_level
+
+.. toctree::
+    :hidden:
+
+    ImageFlattener.__call__

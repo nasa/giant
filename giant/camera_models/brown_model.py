@@ -1,6 +1,3 @@
-
-
-
 r"""
 This module provides a subclass of :class:`.CameraModel` that implements the Brown camera model, which adds basic
 distortion corrections to the Pinhole model.
@@ -101,10 +98,11 @@ or to determine the unit vector through a pixel
 from typing import Sequence, Union, Tuple
 
 import numpy as np
+from numpy.typing import NDArray
 
-from giant.camera_models.pinhole_model import PinholeModel
+from giant.camera_models.pinhole_model import PinholeModel, MISALIGNMENT_TYPE
 from giant.rotations import rotvec_to_rotmat, Rotation
-from giant._typing import NONENUM, NONEARRAY, ARRAY_LIKE, F_ARRAY_LIKE
+from giant._typing import NONENUM, NONEARRAY, ARRAY_LIKE
 
 
 class BrownModel(PinholeModel):
@@ -175,7 +173,7 @@ class BrownModel(PinholeModel):
                  radial2: NONENUM = None, radial4: NONENUM = None, radial6: NONENUM = None,
                  tiptilt_y: NONENUM = None, tiptilt_x: NONENUM = None,
                  temperature_coefficients: NONEARRAY = None, a1: NONENUM = None, a2: NONENUM = None, a3: NONENUM = None,
-                 misalignment: NONEARRAY = None,
+                 misalignment: MISALIGNMENT_TYPE = None,
                  estimation_parameters: Union[str, Sequence] = 'basic', n_rows: int = 1, n_cols: int = 1):
         """
         :param intrinsic_matrix: the intrinsic matrix for the camera as a numpy shape (2, 3) array.  Note that this is
@@ -956,7 +954,7 @@ class BrownModel(PinholeModel):
         return self._compute_ddistortion_dgnomic(gnomic, radius2, radius4, radius6) + np.eye(2)
 
     @staticmethod
-    def _compute_dpixel_dintrinsic(gnomic_location_distorted: F_ARRAY_LIKE) -> np.ndarray:
+    def _compute_dpixel_dintrinsic(gnomic_location_distorted: Sequence[float] | NDArray) -> np.ndarray:
         r"""
         computes the partial derivative of the pixel location with respect to a change in one of the intrinsic matrix
         parameters given the gnomic location of the point we are computing the derivative for.

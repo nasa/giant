@@ -9,6 +9,7 @@ PointOfInterestFinder
 
 .. autosummary::
     :nosignatures:
+    :toctree: .
 
     ~PointOfInterestFinder.find_poi_in_roi
     ~PointOfInterestFinder.refine_locations

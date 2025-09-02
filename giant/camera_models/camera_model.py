@@ -107,7 +107,7 @@ from scipy import interpolate as interp
 # loading unverified files
 import lxml.etree as etree  # nosec
 
-from giant._typing import ARRAY_LIKE, SCALAR_OR_ARRAY, NONEARRAY, NONENUM, PATH, F_SCALAR_OR_ARRAY, DOUBLE_ARRAY, F_ARRAY_LIKE
+from giant._typing import ARRAY_LIKE, SCALAR_OR_ARRAY, NONEARRAY, NONENUM, PATH, F_SCALAR_OR_ARRAY, DOUBLE_ARRAY 
 from giant.image import OpNavImage
 
 
@@ -435,7 +435,7 @@ class CameraModel(metaclass=ABCMeta):
         return np.zeros((1, 2, 3))
 
     @abstractmethod
-    def apply_update(self, update_vec: F_ARRAY_LIKE):
+    def apply_update(self, update_vec: Sequence[float] | NDArray):
         r"""
         This method takes in a delta update to camera parameters (:math:`\Delta\mathbf{c}`) and applies the update
         to the current instance in place.
@@ -453,7 +453,7 @@ class CameraModel(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def pixels_to_unit(self, pixels: F_ARRAY_LIKE, temperature: float = 0, image: int = 0) -> np.ndarray:
+    def pixels_to_unit(self, pixels: Sequence[float] | NDArray, temperature: float = 0, image: int = 0) -> np.ndarray:
         """
         This method converts pixel image locations to unit vectors expressed in the camera frame.
         
@@ -472,7 +472,7 @@ class CameraModel(metaclass=ABCMeta):
         return np.zeros(3)
 
     @abstractmethod
-    def undistort_pixels(self, pixels: F_ARRAY_LIKE, temperature: float = 0) -> np.ndarray:
+    def undistort_pixels(self, pixels: Sequence[float] | NDArray, temperature: float = 0) -> np.ndarray:
         """
         This method computes undistorted pixel locations (gnomic/pinhole locations) for given distorted
         pixel locations according to the current model.
@@ -512,7 +512,7 @@ class CameraModel(metaclass=ABCMeta):
             setattr(self, attribute, getattr(model, attribute))
 
     @abstractmethod
-    def distort_pixels(self, pixels: F_ARRAY_LIKE, temperature: float = 0) -> DOUBLE_ARRAY:
+    def distort_pixels(self, pixels: Sequence[float] | NDArray, temperature: float = 0) -> DOUBLE_ARRAY:
         """
         A method that takes gnomic pixel locations in units of pixels and applies the appropriate distortion to them.
 
@@ -856,7 +856,7 @@ class CameraModel(metaclass=ABCMeta):
         return np.abs(gsd_short+gsd_long)
 
     @abstractmethod
-    def check_in_fov(self, vectors: F_ARRAY_LIKE, image: int = 0, temperature: float = 0) -> NDArray[np.bool]:
+    def check_in_fov(self, vectors: Sequence[float] | NDArray, image: int = 0, temperature: float = 0) -> NDArray[np.bool]:
         """
         Determines if any points in the array are within the field of view of the camera.
 

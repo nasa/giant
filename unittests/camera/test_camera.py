@@ -4,6 +4,8 @@ from giant.camera import Camera
 from giant.camera_models import PinholeModel, BrownModel
 from giant.image import OpNavImage
 from giant.utilities.spice_interface import et_callable_to_datetime_callable, create_callable_orientation
+from giant.rotations import Rotation
+from giant.point_spread_functions.gaussians import Gaussian
 
 import numpy as np
 
@@ -13,14 +15,10 @@ class MyTestCamera(Camera):
     def preprocessor(self, image):
         return image
 
-class TestCallable:
-    def __call__(self):
-        return
-
 
 class TestAttitudeFunction:
-    def __call__(self):
-        return
+    def __call__(self, date):
+        return Rotation()
 
 np.random.seed(10)
 
@@ -38,7 +36,7 @@ class TestCamera(TestCase):
         cmodel = self.load_cmodel()
 
         return MyTestCamera(images=images, model=cmodel, spacecraft_name="AwesomeSpacecraft",
-                frame="AwesomeFrame", parse_data=False, psf=TestCallable(), name='AwesomeCam',
+                frame="AwesomeFrame", parse_data=False, psf=Gaussian(), name='AwesomeCam',
                 attitude_function=TestAttitudeFunction(),
                 start_date=datetime(2019, 5, 4, 0, 0, 0, 0),end_date=datetime(2019, 5, 5, 0, 0, 0, 0),
                 default_image_class=OpNavImage, metadata_only=False)
@@ -55,7 +53,7 @@ class TestCamera(TestCase):
         self.assertEqual(cam.frame, "AwesomeFrame")
         self.assertEqual(cam.start_date, datetime(2019, 5, 4, 0, 0, 0, 0))
         self.assertEqual(cam.end_date, datetime(2019, 5, 5, 0, 0, 0, 0))
-        self.assertIsInstance(cam.psf, TestCallable)
+        self.assertIsInstance(cam.psf, Gaussian)
 
     # DONE
     def test_iter(self):
@@ -119,7 +117,7 @@ class TestCamera(TestCase):
     def test_psf_setter(self):
 
         cam = self.load_camera()
-        self.assertIsInstance(cam.psf, TestCallable)
+        self.assertIsInstance(cam.psf, Gaussian)
 
     # DONE
     def test_attitude_function_property(self):
@@ -418,12 +416,11 @@ class TestCamera(TestCase):
         self.assertIsInstance(image, OpNavImage)
 
         # List should produce a warning
-        datum = [np.arange(0, 100).reshape(10, 10)]
-        image = cam.image_check(datum)
-        self.assertWarns(Warning)
+        with self.assertWarnsRegex(UserWarning, "The data you gave us is not the appropriate type.*"):
+            datum = [np.arange(0, 100).reshape(10, 10)]
+            image = cam.image_check(datum) # pyright: ignore[reportArgumentType]
 
-        # Int should produce a warning
-        datum = 1
-        image = cam.image_check(datum)
-        self.assertWarns(Warning)
+            # Int should produce a warning
+            datum = 1
+            image = cam.image_check(datum) # pyright: ignore[reportArgumentType]
 

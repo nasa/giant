@@ -11,3 +11,9 @@ LimbEdgeDetection
     :nosignatures:
 
     ~LimbEdgeDetection.__call__
+    ~LimbEdgeDetection.identify_subpixel_limbs
+
+.. toctree::
+    :hidden:
+
+    LimbEdgeDetection.identify_subpixel_limbs

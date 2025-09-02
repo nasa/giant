@@ -17,4 +17,11 @@ point\_source\_finder
     POIFinderOut
     FindPPOIInROIOut
 
+.. toctree::
+    :hidden:
+
+    PointOfInterestFinderOptions
+    POIFinderOut
+    FindPPOIInROIOut
+
 |

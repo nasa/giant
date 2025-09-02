@@ -104,6 +104,7 @@ from typing import Sequence, Union
 
 import numpy as np
 
+from giant.camera_models.pinhole_model import MISALIGNMENT_TYPE
 from giant.camera_models.brown_model import BrownModel
 from giant.rotations import Rotation
 from giant._typing import NONENUM, NONEARRAY, ARRAY_LIKE
@@ -199,7 +200,7 @@ class OpenCVModel(BrownModel):
                  thinprism_1: NONENUM = None, thinprism_2: NONENUM = None,
                  thinprism_3: NONENUM = None, thinprism_4: NONENUM = None,
                  temperature_coefficients: NONEARRAY = None, a1: NONENUM = None, a2: NONENUM = None, a3: NONENUM = None,
-                 misalignment: NONEARRAY = None,
+                 misalignment: MISALIGNMENT_TYPE = None,
                  estimation_parameters: Union[str, Sequence] = 'basic', n_rows: int = 1, n_cols: int = 1):
         """
         :param intrinsic_matrix: the intrinsic matrix for the camera as a numpy shape (2, 3) array.  Note that this is

@@ -124,6 +124,11 @@ from giant.rotations import rotvec_to_rotmat, skew, Rotation
 from giant._typing import ARRAY_LIKE, NONEARRAY, SCALAR_OR_ARRAY, NONENUM, DOUBLE_ARRAY, F_SCALAR_OR_ARRAY, F_ARRAY_LIKE
 
 
+MISALIGNMENT_TYPE = DOUBLE_ARRAY | Sequence[DOUBLE_ARRAY | Sequence[float]] | Sequence[float] | None
+""""
+A type alias for the misalignment input to the PinholeModel class
+"""
+
 class PinholeModel(CameraModel):
     r"""
     This class provides an implementation of the pinhole camera model for projecting 3d points onto images.
@@ -174,7 +179,7 @@ class PinholeModel(CameraModel):
 
     def __init__(self, intrinsic_matrix: NONEARRAY = None, focal_length: float = 1.,
                  field_of_view: NONENUM = None, use_a_priori: bool = False,
-                 misalignment: DOUBLE_ARRAY | Sequence[DOUBLE_ARRAY | Sequence[float]] | None = None, 
+                 misalignment: MISALIGNMENT_TYPE = None, 
                  estimation_parameters: str | Sequence[str] = 'basic',
                  kx: NONENUM = None, ky: NONENUM = None, px: NONENUM = None, py: NONENUM = None, n_rows: int = 1,
                  n_cols: int = 1, temperature_coefficients: NONEARRAY = None, a1: NONENUM = None, a2: NONENUM = None,
@@ -1225,7 +1230,7 @@ class PinholeModel(CameraModel):
 
         return self.get_temperature_scale(temperature) * self.intrinsic_matrix[:, :2]
 
-    def _compute_dgnomic_dcamera_point(self, unit_vector_camera: F_ARRAY_LIKE) -> np.ndarray:
+    def _compute_dgnomic_dcamera_point(self, unit_vector_camera: Sequence[float] | NDArray) -> np.ndarray:
         r"""
         Computes the partial derivative of the gnomic location with respect to a change in the 3D camera frame location
         after the misalignment correction is applied.
@@ -1919,7 +1924,7 @@ class PinholeModel(CameraModel):
         # convert to unit vector and return
         return los_vectors / np.linalg.norm(los_vectors, axis=0, keepdims=True)
 
-    def distort_pixels(self, pixels: F_ARRAY_LIKE, temperature: float = 0) -> DOUBLE_ARRAY:
+    def distort_pixels(self, pixels: Sequence[float] | NDArray, temperature: float = 0) -> DOUBLE_ARRAY:
         """
         A method that takes gnomic pixel locations in units of pixels and applies the appropriate distortion to them.
 
@@ -2015,7 +2020,7 @@ class PinholeModel(CameraModel):
         else:
             return Rotation(self.misalignment)
             
-    def check_in_fov(self, vectors: F_ARRAY_LIKE, image: int = 0, temperature: float = 0) -> NDArray[np.bool]:
+    def check_in_fov(self, vectors: Sequence[Sequence[float] | float] | NDArray, image: int = 0, temperature: float = 0) -> NDArray[np.bool]:
         """
         Determines if any points in the array are within the field of view of the camera.
 
