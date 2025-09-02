@@ -1881,7 +1881,7 @@ class TestOwenModel(TestPinholeModel):
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, kxy=1.5, kyx=-1.5, px=1500, py=1500.5,
                            radial2=1e-3, radial4=-2.2e-5, tangential_y=1e-3, tangential_x=1e-6,
-                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[0, np.pi, 0])
+                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[0, np.pi, 0], field_of_view=100)
 
         with self.subTest(misalignment=[0, np.pi, 0]):
 
@@ -1901,7 +1901,7 @@ class TestOwenModel(TestPinholeModel):
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, kxy=1.5, kyx=-1.5, px=1500, py=1500.5,
                            radial2=1e-3, radial4=-2.2e-5, tangential_y=1e-3, tangential_x=1e-6,
-                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[1, 0.2, 0.3])
+                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[1, 0.2, 0.3], field_of_view=100)
 
         with self.subTest(misalignment=[1, 0.2, 0.3]):
 
@@ -1924,7 +1924,8 @@ class TestOwenModel(TestPinholeModel):
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, kxy=1.5, kyx=-1.5, px=1500, py=1500.5,
                            radial2=1e-3, radial4=-2.2e-5, tangential_y=1e-3, tangential_x=1e-6,
-                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[[1, 0.2, 0.3], [0, 0, np.pi]])
+                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[[1, 0.2, 0.3], [0, 0, np.pi]],
+                           field_of_view=100)
 
         model.estimate_multiple_misalignments = True
 
@@ -2187,7 +2188,11 @@ class TestOwenModel(TestPinholeModel):
             with self.subTest(input=input):
                 jac_ana = []
                 for dist_gnom in input.T:
-                    jac_ana.append(model._compute_dgnomic_ddist_gnomic(dist_gnom))
+                    if np.linalg.norm(dist_gnom) <= 1e-8:
+                        with self.assertWarnsRegex(UserWarning, "small radius, derivative unstable.*"):
+                            jac_ana.append(model._compute_dgnomic_ddist_gnomic(dist_gnom))
+                    else:
+                        jac_ana.append(model._compute_dgnomic_ddist_gnomic(dist_gnom))
 
                 jac_ana = np.array(jac_ana)
 
@@ -5218,7 +5223,7 @@ class TestOpenCVModel(TestPinholeModel):
         model = self.Class(fx=4050.5, fy=3050.25, alpha=1.5, px=1500, py=1500.5,
                            k1=0.5, k2=-0.3, k3=0.15, p1=1e-7, p2=1e-6,
                            k4=1, k5=-5, k6=11, s1=1e-6, s2=1e2, s3=-3e-3, s4=5e-1,
-                           misalignment=[0, 0, np.pi])
+                           misalignment=[0, 0, np.pi], field_of_view=100)
 
         with self.subTest(misalignment=[0, 0, np.pi]):
 
@@ -5238,7 +5243,7 @@ class TestOpenCVModel(TestPinholeModel):
         model = self.Class(fx=4050.5, fy=3050.25, alpha=1.5, px=1500, py=1500.5,
                            k1=0.5, k2=-0.3, k3=0.15, p1=1e-7, p2=1e-6,
                            k4=1, k5=-5, k6=11, s1=1e-6, s2=1e2, s3=-3e-3, s4=5e-1,
-                           misalignment=[np.pi, 0, 0])
+                           misalignment=[np.pi, 0, 0], field_of_view=100)
 
         with self.subTest(misalignment=[np.pi, 0, 0]):
 
@@ -5259,7 +5264,7 @@ class TestOpenCVModel(TestPinholeModel):
         model = self.Class(fx=4050.5, fy=3050.25, alpha=1.5, px=1500, py=1500.5,
                            k1=0.5, k2=-0.3, k3=0.15, p1=1e-7, p2=1e-6,
                            k4=1, k5=-5, k6=11, s1=1e-6, s2=1e2, s3=-3e-3, s4=5e-1,
-                           misalignment=[0, np.pi, 0])
+                           misalignment=[0, np.pi, 0], field_of_view=100)
 
         with self.subTest(misalignment=[0, np.pi, 0]):
 
@@ -5280,7 +5285,7 @@ class TestOpenCVModel(TestPinholeModel):
         model = self.Class(fx=4050.5, fy=3050.25, alpha=1.5, px=1500, py=1500.5,
                            k1=0.5, k2=-0.3, k3=0.15, p1=1e-7, p2=1e-6,
                            k4=1, k5=-5, k6=11, s1=1e-6, s2=1e2, s3=-3e-3, s4=5e-1,
-                           misalignment=[1, 0.2, 0.3])
+                           misalignment=[1, 0.2, 0.3], field_of_view=100)
 
         with self.subTest(misalignment=[1, 0.2, 0.3]):
 
@@ -5304,7 +5309,7 @@ class TestOpenCVModel(TestPinholeModel):
         model = self.Class(fx=4050.5, fy=3050.25, alpha=1.5, px=1500, py=1500.5,
                            k1=0.5, k2=-0.3, k3=0.15, p1=1e-7, p2=1e-6,
                            k4=1, k5=-5, k6=11, s1=1e-6, s2=1e2, s3=-3e-3, s4=5e-1,
-                           misalignment=[[1, 0.2, 0.3], [0, 0, np.pi]])
+                           misalignment=[[1, 0.2, 0.3], [0, 0, np.pi]], field_of_view=100)
 
         model.estimate_multiple_misalignments = True
 
@@ -5364,7 +5369,7 @@ class TestOpenCVModel(TestPinholeModel):
         model = self.Class(fx=4050.5, fy=3050.25, alpha=1.5, px=1500, py=1500.5,
                            k1=0.5, k2=-0.3, k3=0.15, p1=1e-7, p2=1e-6,
                            k4=1, k5=-5, k6=11, s1=1e-6, s2=1e2, s3=-3e-3, s4=5e-1,
-                           misalignment=[[1, 0.2, 0.3], [0, 0, np.pi]])
+                           misalignment=[[1, 0.2, 0.3], [0, 0, np.pi]], field_of_view=100)
 
         model.estimate_multiple_misalignments = True
 

@@ -19,6 +19,8 @@ import copy
 
 from datetime import datetime
 
+import warnings
+
 
 class MyTestCamera(Camera):
     def preprocessor(self, image):
@@ -137,7 +139,9 @@ class TestCalibration(TestCase):
         cal_copy = copy.deepcopy(cal)
 
         # Check non-weighted estimation
-        cal.estimate_geometric_calibration()
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            cal.estimate_geometric_calibration()
 
         self.assertFalse(cal.geometric_estimator.weighted_estimation)
         copy_model = cast(PinholeModel, cal_copy.model)
