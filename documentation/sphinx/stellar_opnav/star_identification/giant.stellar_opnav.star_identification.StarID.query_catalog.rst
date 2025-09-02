@@ -5,4 +5,4 @@ StarID.query\_catalog
 
 :mod:`giant.stellar_opnav.star_identification`\:
 
-.. automethod:: StarID.query_catalogue
+.. automethod:: StarID.query_catalog

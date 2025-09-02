@@ -5,8 +5,8 @@ camera.  This model is important both to GIANT, and to others, because it allows
 onto points in the image itself.
 
 In GIANT, camera modelling is done by processing images of star fields.  The observed stars in these images are matched
-with a catalogue of stars that provide their location in the inertial frame.  Through these matches, we can develop a
-camera model that minimizes the residuals between the projection of the catalogue defined star locations onto the image
+with a catalog of stars that provide their location in the inertial frame.  Through these matches, we can develop a
+camera model that minimizes the residuals between the projection of the catalog defined star locations onto the image
 with the extracted star locations in the image (from image processing).
 
 Lets set up a script to do this for the Dawn Framing Camera 2 (FC2).  In the ``dawn_giant/scripts`` directory, create
@@ -37,8 +37,8 @@ As with the ``dawn_giant`` module, we want to begin our calibration script with 
     from giant.calibration.visualizer import plot_distortion_map
     from giant.stellar_opnav.visualizer import show_id_results, residual_histograms, plot_residuals_vs_magnitude
 
-    # the star catalogue we will use for our "truth" star locations
-    from giant.catalogues.giant_catalogue import GIANTCatalogue
+    # the star catalog we will use for our "truth" star locations (defaults to Gaia)
+    from giant.catalogs.gaia import Gaia
 
     # the Framing Camera object we defined before
     from dawn_giant import DawnFCCamera, fc2_attitude
@@ -267,14 +267,12 @@ what we will interact with to perform the calibration.  To initialize the object
 
     # we can build our calibration object now, which we'll use to identify the stars and then estimate an update to the
     # camera model
-    # for the star id key word arguments, set the catalogue to be the GIANT catalogue
-    calib = Calibration(camera, star_id_kwargs={'catalogue': GIANTCatalogue()})
+    calib = Calibration(camera)
 
-We give the calibration object the camera object that we just initialized, as well as a key word argument called
-``star_identification_kwargs`` which specifies that we want to use the default GIANT catalogue to get our star
-locations.  There are other things you can specify for the :class:`.Calibration` class constructor but they are outside
-of the scope for this tutorial and you will need to consult the :class:`.Calibration` documentation for more information
-on them.
+We give the calibration object the camera object that we just initialized.  By default, calibration uses the
+:class:`.Gaia` catalog for star locations.  There are other things you can specify for the :class:`.Calibration` class
+constructor but they are outside of the scope for this tutorial and you will need to consult the :class:`.Calibration`
+documentation for more information on them.
 
 Identifying Stars in an Image
 -----------------------------
@@ -489,8 +487,8 @@ For convenience, the full FC2 calibration script is presented here
     from giant.calibration.visualizer import plot_distortion_map
     from giant.stellar_opnav.visualizer import show_id_results, residual_histograms, plot_residuals_vs_magnitude
 
-    # the star catalogue we will use for our "truth" star locations
-    from giant.catalogues.giant_catalogue import GIANTCatalogue
+    # the star catalog we will use for our "truth" star locations (defaults to Gaia)
+    from giant.catalogs.gaia import Gaia
 
     # the Framing Camera object we defined before
     from dawn_giant import DawnFCCamera, fc2_attitude
@@ -589,8 +587,7 @@ For convenience, the full FC2 calibration script is presented here
 
         # we can build our calibration object now, which we'll use to identify the stars and then estimate an update to the
         # camera model
-        # for the star id key word arguments, set the catalogue to be the GIANT catalogue
-        calib = Calibration(camera, star_id_kwargs={'catalogue': GIANTCatalogue()})
+        calib = Calibration(camera)
 
         # set the initial parameters for our first star identification
         # typically, we are conservative with the first star identification because we only need about 5 correctly

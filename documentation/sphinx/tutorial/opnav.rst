@@ -32,13 +32,13 @@ As with the previous two scripts, we need to start off with importing the module
     from giant.camera_models import load
 
     # The class we will use to perform the stellar opnav
-    from giant.stellar_opnav.stellar_class import StellarOpNav
+    from giant.stellar_opnav.stellar_class import StellarOpNav, StellarOpNavOptions
 
     # tool for visualizing the results of our star identification
     from giant.stellar_opnav.visualizer import show_id_results
 
-    # the star catalogue we will use for our "truth" star locations
-    from giant.catalogues.giant_catalogue import GIANTCatalogue
+    # the star catalog we will use for our "truth" star locations (defaults to Gaia)
+    from giant.catalogs.gaia import Gaia
 
     # the class we will use to perform the relative navigation
     from giant.relative_opnav.relnav_class import RelativeOpNav
@@ -117,7 +117,7 @@ of the :attr:`.StellarOpNav.camera` attribute.
     # do the stellar opnav to correct the attitude
     # build the stellar opnav object, which is very similar to the calibration object but without the ability to do
     # calibration.
-    sopnav = StellarOpNav(camera, star_id_kwargs={'catalogue': GIANTCatalogue()})
+    sopnav = StellarOpNav(camera)
 
     # ensure only the long exposure images are on
     sopnav.camera.only_long_on()
@@ -319,8 +319,8 @@ For your convenience, the complete ``opnav.py`` script is presented here.
     # tool for visualizing the results of our star identification
     from giant.stellar_opnav.visualizer import show_id_results
 
-    # the star catalogue we will use for our "truth" star locations
-    from giant.catalogues.giant_catalogue import GIANTCatalogue
+    # the star catalog we will use for our "truth" star locations (defaults to Gaia)
+    from giant.catalogs.gaia import Gaia
 
     # the class we will use to perform the relative navigation
     from giant.relative_opnav.relnav_class import RelativeOpNav
@@ -371,7 +371,7 @@ For your convenience, the complete ``opnav.py`` script is presented here.
         # do the stellar opnav to correct the attitude
         # build the stellar opnav object, which is very similar to the calibration object but without the ability to do
         # calibration.
-        sopnav = StellarOpNav(camera, star_id_kwargs={'catalogue': GIANTCatalogue()})
+        sopnav = StellarOpNav(camera)
 
         # ensure only the long exposure images are on
         sopnav.camera.only_long_on()

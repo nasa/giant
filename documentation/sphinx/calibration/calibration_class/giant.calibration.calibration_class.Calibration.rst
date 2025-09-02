@@ -9,14 +9,14 @@
     :members: process_stars, model, camera, image_processing, star_id, attitude_estimator, calibration_estimator,
               static_alignment_estimator, temperature_dependent_alignment_estimator, static_alignment,
               temperature_dependent_alignment, alignment_base_frame_func,
-              queried_catalogue_star_records, queried_catalogue_image_points, queried_catalogue_unit_vectors,
+              queried_catalog_star_records, queried_catalog_image_points, queried_catalog_unit_vectors,
               queried_weights_inertial, queried_weights_picture,
               ip_extracted_image_points, ip_image_illums, ip_stats, ip_snrs, ip_psfs,
-              unmatched_catalogue_star_records, unmatched_catalogue_image_points, unmatched_catalogue_unit_vectors,
+              unmatched_catalog_star_records, unmatched_catalog_image_points, unmatched_catalog_unit_vectors,
               unmatched_extracted_image_points, unmatched_image_illums, unmatched_stats, unmatched_snrs, unmatched_psfs,
               unmatched_weights_inertial, unmatched_weights_picture,
-              matched_catalogue_star_records, matched_catalogue_image_points, matched_catalogue_unit_vectors_inertial,
-              matched_catalogue_unit_vectors_camera, matched_extracted_image_points, matched_image_illums,
+              matched_catalog_star_records, matched_catalog_image_points, matched_catalog_unit_vectors_inertial,
+              matched_catalog_unit_vectors_camera, matched_extracted_image_points, matched_image_illums,
               matched_stats, matched_snrs, matched_psfs, matched_weights_inertial, matched_weights_picture
 
     .. attribute:: use_weights

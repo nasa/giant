@@ -1,29 +1,11 @@
-﻿catalogues
-==========
+﻿catalogues (deprecated)
+=======================
 
-.. automodule:: giant.catalogues
-    :no-members:
+The catalogues package has been renamed to catalogs in GIANT v2.
 
-.. currentmodule:: giant.catalogues
+Please see: :mod:`giant.catalogs`.
 
+.. toctree::
+   :maxdepth: 1
 
-.. rubric:: Modules
-
-.. autosummary::
-    :nosignatures:
-    :toctree: catalogues
-    :recursive:
-
-    giant_catalogue
-    meta_catalogue
-    tycho
-    ucac
-    utilities
-    
-
-
-
-
-
-
-|
+   giant.catalogs

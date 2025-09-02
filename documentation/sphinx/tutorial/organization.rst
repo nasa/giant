@@ -32,14 +32,14 @@ interface classes behave very similarly to each other and simply add new functio
 
         "stellar_opnav" [href="../giant.stellar_opnav.html", target="_top"];
         "calibration" [href="../giant.calibration.html", target="_top"];
-        "catalogues" [href="../giant.catalogues.html", target="_top"];
+        "catalogs" [href="../giant.catalogs.html", target="_top"];
         "relative_opnav" [href="../giant.relative_opnav.html", target="_top"];
         "ray_tracer" [href="../giant.ray_tracer.html", target="_top"];
         "utilities" [href="../giant.utilities.html", target="_top"];
 
 
         "giant" -> {"image", "camera", "camera_models", "opnav_class", "rotations", "image_processing", "utilities",
-                    "stellar_opnav", "calibration", "catalogues", "relative_opnav", "ray_tracer"};
+                    "stellar_opnav", "calibration", "catalogs", "relative_opnav", "ray_tracer"};
 
     }
 
@@ -63,7 +63,7 @@ tools and a nice user interface (:class:`.StellarOpNav`) to estimate the attitud
 stars in the image.
 Then there is the :mod:`.calibration` package which adds the ability to do geometric camera calibration based off of
 images of stars to the :mod:`.stellar_opnav` package (:class:`.Calibration`).
-Next is the :mod:`.catalogues` package which provides interfaces to star catalogues for the :mod:`.stellar_opnav` and
+Next is the :mod:`.catalogs` package which provides interfaces to star catalogs for the :mod:`.stellar_opnav` and
 :mod:`.calibration` packages.
 The :mod:`.relative_opnav` package follows which provides the ability to perform a number of center finding and surface
 feature OpNav techniques.

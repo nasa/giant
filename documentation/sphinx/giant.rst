@@ -19,7 +19,7 @@ API Reference
     opnav_class
     stellar_opnav
     relative_opnav
-    catalogues
+    catalogs
     calibration
     ray_tracer
     ufo

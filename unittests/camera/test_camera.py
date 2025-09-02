@@ -136,7 +136,8 @@ class TestCamera(TestCase):
         self.assertIsInstance(cam.attitude_function, TestAttitudeFunction)
 
         cam.attitude_function = None
-        self.assertIsNone(cam.attitude_function)
+        with self.assertRaises(AssertionError):
+            cam.attitude_function
 
     # DONE
     def test_model_property(self):

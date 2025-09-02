@@ -36,7 +36,7 @@ class GaussianDenoisingOptions(UserOptions):
     If both sigma_x and this are 0 then computed from the size.
     """
     
-    border_type: cv2.BorderTypes = cv2.BORDER_DEFAULT
+    border_type: int = cv2.BORDER_DEFAULT
     """
     The pixel extrapolation method.
     

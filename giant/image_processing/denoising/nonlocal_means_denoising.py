@@ -37,7 +37,7 @@ class NlMeansDenoisingOptions(UserOptions):
     Higher numbers makes the denoising slower.
     """
     
-    norm_type: cv2.NormTypes = cv2.NORM_L2 
+    norm_type: int = cv2.NORM_L2 
     """
     The type of norm used for the weight calculation.
     

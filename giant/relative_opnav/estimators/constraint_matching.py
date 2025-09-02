@@ -161,7 +161,7 @@ class ConstraintMatchingOptions(UserOptions):
     """
 
 
-class ConstraintMatching(UserOptionConfigured[ConstraintMatchingOptions], ConstraintMatchingOptions, RelNavEstimator):
+class ConstraintMatching(UserOptionConfigured[ConstraintMatchingOptions], RelNavEstimator, ConstraintMatchingOptions):
     """
     This class implements constraint matching in GIANT.
     

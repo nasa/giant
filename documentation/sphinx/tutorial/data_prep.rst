@@ -164,15 +164,15 @@ Directory ``shape_model`` contains the shape model file, and function ``ingest_s
 GIANT version of the shape model for us and stores it in this directory. Finally, directory ``scripts`` is where we will
 write our scripts to use GIANT to actually process images.
 
-Finally, we need to build the GIANT star catalogue (alternatively, you can contact Andrew, andrew.j.liounis@nasa.gov, if
-you would like a pre-built star catalogue.  To do this run the command line script included with GIANT
-:mod:`.build_catalogue` with the following settings
+Finally, we need to build the GIANT star catalog (alternatively, you can contact Andrew, andrew.j.liounis@nasa.gov, if
+you would like a pre-built star catalog). To do this run the command line script included with GIANT
+:mod:`.build_catalog` with the following settings
 
 .. code::
 
-    build_catalogue -m 12 -n 0
+    build_catalog -m 12 -n 0
 
-This will likely take a while to run because it requires first downloading the UCAC4 catalogue, which is about 9 GB in
-size.  If you already have the UCAC4 catalogue downloaded to your machine (with the original directory structure) you
+This will likely take a while to run because it requires first downloading the UCAC4 catalog, which is about 9 GB in
+size.  If you already have the UCAC4 catalog downloaded to your machine (with the original directory structure) you
 can skip the download step by adding the ``-u`` option with the path to the root of the UCAC4 directory structure.
 

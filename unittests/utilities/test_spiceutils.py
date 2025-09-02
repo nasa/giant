@@ -11,7 +11,7 @@ Test Cases
 __________
 """
 
-from unittest import TestCase, skipUnless
+from unittest import TestCase
 
 import datetime
 
@@ -21,48 +21,10 @@ import giant.utilities.spice_interface as spint
 
 import os
 
-try:
-    import spiceypy as spice
-    HASSPICE = True
-
-except ImportError:
-    spice = None
-    HASSPICE = False
+import spiceypy as spice
 
 
 LOCALDIR = os.path.dirname(os.path.realpath(__file__))
-
-
-class TestLeapseconds(TestCase):
-    """
-    Test to ensure that the correct number of leap_seconds are returned by the leap_seconds function
-    """
-
-    def test_leapseconds(self):
-
-        date = datetime.datetime(2017, 2, 1, 0, 0, 0)
-
-        ls = spint.leap_seconds(date)
-
-        self.assertEqual(ls, 5)
-
-        date = datetime.datetime(1950, 2, 1, 0, 0, 0)
-
-        ls = spint.leap_seconds(date)
-
-        self.assertEqual(ls, -23)
-
-        date = datetime.datetime(2000, 1, 1, 0, 0, 0)
-
-        ls = spint.leap_seconds(date)
-
-        self.assertEqual(ls, 0)
-
-        date = datetime.datetime(2006, 1, 1, 0, 0, 0)
-
-        ls = spint.leap_seconds(date)
-
-        self.assertEqual(ls, 1)
 
 
 class TestDatetime2Et(TestCase):
@@ -72,113 +34,41 @@ class TestDatetime2Et(TestCase):
 
     def test_datetime2et(self):
 
-        if HASSPICE:
-            spice.furnsh(os.path.join(LOCALDIR, '..', 'test_data', 'naif0012.tls'))
+        spice.furnsh(os.path.join(LOCALDIR, '..', 'test_data', 'naif0012.tls'))
 
-            with self.subTest(sputil_hasspice=True):  # this is something of a silly test
-                date = datetime.datetime(2017, 2, 1, 0, 0, 0)
+        date = datetime.datetime(2017, 2, 1, 0, 0, 0)
 
-                et = spint.datetime_to_et(date)
+        et = spint.datetime_to_et(date)
 
-                et_spice = spice.str2et(date.isoformat())
+        et_spice = spice.str2et(date.isoformat())
 
-                self.assertEqual(et, et_spice)
+        self.assertEqual(et, et_spice)
 
-                date = datetime.datetime(1950, 2, 1, 0, 0, 0)
+        date = datetime.datetime(1950, 2, 1, 0, 0, 0)
 
-                et = spint.datetime_to_et(date)
+        et = spint.datetime_to_et(date)
 
-                et_spice = spice.str2et(date.isoformat())
+        et_spice = spice.str2et(date.isoformat())
 
-                self.assertEqual(et, et_spice)
+        self.assertEqual(et, et_spice)
 
-                date = datetime.datetime(2000, 1, 1, 0, 0, 0)
+        date = datetime.datetime(2000, 1, 1, 0, 0, 0)
 
-                et = spint.datetime_to_et(date)
+        et = spint.datetime_to_et(date)
 
-                et_spice = spice.str2et(date.isoformat())
+        et_spice = spice.str2et(date.isoformat())
 
-                self.assertEqual(et, et_spice)
+        self.assertEqual(et, et_spice)
 
-                date = datetime.datetime(2006, 1, 1, 0, 0, 0)
+        date = datetime.datetime(2006, 1, 1, 0, 0, 0)
 
-                et = spint.datetime_to_et(date)
+        et = spint.datetime_to_et(date)
 
-                et_spice = spice.str2et(date.isoformat())
+        et_spice = spice.str2et(date.isoformat())
 
-                self.assertEqual(et, et_spice)
+        self.assertEqual(et, et_spice)
 
-            with self.subTest(sputil_hasspice=False):  # this tests the manual conversion from datetime to et is correct
-                spint.HAS_SPICE = False
-                date = datetime.datetime(2017, 2, 1, 0, 0, 0)
-
-                et = spint.datetime_to_et(date)
-
-                et_spice = spice.str2et(date.isoformat())
-
-                self.assertAlmostEqual(et, et_spice)
-
-                date = datetime.datetime(1950, 2, 1, 0, 0, 0)
-
-                et = spint.datetime_to_et(date)
-
-                et_spice = spice.str2et(date.isoformat())
-
-                self.assertAlmostEqual(et, et_spice)
-
-                date = datetime.datetime(2000, 1, 1, 0, 0, 0)
-
-                et = spint.datetime_to_et(date)
-
-                et_spice = spice.str2et(date.isoformat())
-
-                self.assertAlmostEqual(et, et_spice)
-
-                date = datetime.datetime(2006, 1, 1, 0, 0, 0)
-
-                et = spint.datetime_to_et(date)
-
-                et_spice = spice.str2et(date.isoformat())
-
-                self.assertAlmostEqual(et, et_spice)
-
-                spint.HAS_SPICE = True
-
-            spice.kclear()
-
-        else:  # if we don't have spice then use hard coded checks
-
-            date = datetime.datetime(2017, 2, 1, 0, 0, 0)
-
-            et = spint.datetime_to_et(date)
-
-            et_spice = 539179269.1847936
-
-            self.assertAlmostEqual(et, et_spice)
-
-            date = datetime.datetime(1950, 2, 1, 0, 0, 0)
-
-            et = spint.datetime_to_et(date)
-
-            et_spice = -1575201558.8151963
-
-            self.assertAlmostEqual(et, et_spice)
-
-            date = datetime.datetime(2000, 1, 1, 0, 0, 0)
-
-            et = spint.datetime_to_et(date)
-
-            et_spice = -43135.816087188054
-
-            self.assertAlmostEqual(et, et_spice)
-
-            date = datetime.datetime(2006, 1, 1, 0, 0, 0)
-
-            et = spint.datetime_to_et(date)
-
-            et_spice = 189345665.1839256
-
-            self.assertAlmostEqual(et, et_spice)
+        spice.kclear()
 
 
 class TestCreateCallablePosition(TestCase):
@@ -187,7 +77,6 @@ class TestCreateCallablePosition(TestCase):
     results.
     """
 
-    @skipUnless(HASSPICE, "Cannot perform CreateCallablePosition test if spice is not installed")
     def test_create_callable_position(self):
         spice.furnsh(os.path.join(LOCALDIR, '..', 'test_data', 'de424.bsp'))
         targ = 'Moon'
@@ -214,7 +103,6 @@ class TestCreateCallableState(TestCase):
     results.
     """
 
-    @skipUnless(HASSPICE, "Cannot perform CreateCallableState test if spice is not installed")
     def test_create_callable_state(self):
         spice.furnsh(os.path.join(LOCALDIR, '..', 'test_data', 'de424.bsp'))
         targ = 'Moon'
@@ -241,7 +129,6 @@ class TestCreateCallableOrientation(TestCase):
     results.
     """
 
-    @skipUnless(HASSPICE, "Cannot perform CreateCallableState test if spice is not installed")
     def test_create_callable_state(self):
         spice.furnsh(os.path.join(LOCALDIR, '..', 'test_data', 'pck00010.tpc'))
         targframe = 'J2000'
@@ -268,8 +155,7 @@ class TestEtCallableToDatetimeCallable(TestCase):
 
     def test_et_callable_to_datetime_callable(self):
 
-        if HASSPICE:
-            spice.furnsh(os.path.join(LOCALDIR, '..', 'test_data', 'naif0012.tls'))
+        spice.furnsh(os.path.join(LOCALDIR, '..', 'test_data', 'naif0012.tls'))
 
         def et_fun(ephemtime):
 
@@ -283,5 +169,4 @@ class TestEtCallableToDatetimeCallable(TestCase):
 
         self.assertAlmostEqual(et, dt_fun(date))
 
-        if HASSPICE:
-            spice.kclear()
+        spice.kclear()

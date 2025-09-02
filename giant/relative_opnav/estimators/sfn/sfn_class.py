@@ -380,7 +380,7 @@ class SurfaceFeatureNavigationOptions(TemplateRendererOptions):
             self.second_search_region = self.search_region
 
 
-class SurfaceFeatureNavigation(UserOptionConfigured[SurfaceFeatureNavigationOptions], SurfaceFeatureNavigationOptions, RelNavEstimator):
+class SurfaceFeatureNavigation(UserOptionConfigured[SurfaceFeatureNavigationOptions], RelNavEstimator, SurfaceFeatureNavigationOptions):
     """
     This class implements surface feature navigation using normalized cross correlation template matching for GIANT.
 
