@@ -369,7 +369,7 @@ class LimbMatching(LimbPairer, RelNavEstimator, LimbMatchingOptions):
         """
         # since matplotlib can cause problems sometimes only import it if a gif was requested
         import matplotlib.pyplot as plt
-        from matplotlib.animation import ImageMagickWriter
+        from matplotlib.animation import PillowWriter
 
         # create the figure and set the layout to tight
         fig = plt.figure()
@@ -391,7 +391,7 @@ class LimbMatching(LimbPairer, RelNavEstimator, LimbMatchingOptions):
         ax.scatter(*extracted_limbs, color='blue', label='extracted limb points')
 
         # make the gif writer
-        writer = ImageMagickWriter(fps=5)
+        writer = PillowWriter(fps=5)
 
         # determine the output file and prepare the writer
         out_file = self.gif_file.format(image.observation_date.isoformat().replace('-', '').replace(':', ''),

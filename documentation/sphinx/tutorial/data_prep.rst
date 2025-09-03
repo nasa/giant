@@ -165,4 +165,10 @@ Directory ``shape_model`` contains the shape model file, and function ``ingest_s
 GIANT version of the shape model for us and stores it in this directory. Finally, directory ``scripts`` is where we will
 write our scripts to use GIANT to actually process images.
 
+Finally, we can optionally download the Gaia catalog data for local use. This is not necessary, but it will speed up
+the star identification process.  Simply run ``build_catalog -m 12`` from the terminal to download the catalog data for stars
+brighter than magnitude 12.  This can take a while depending on your internet connection and will take up about
+400 MB of space on your machine.  If you want, you can increase the magnitude limit to get more stars (in case you 
+have other missions you plan to use GIANT for), but this will increase the download time and the space required.
+
 Now we are ready to begin the rest of the tutorial!

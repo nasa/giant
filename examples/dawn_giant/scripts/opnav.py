@@ -68,23 +68,6 @@ if __name__ == "__main__":
     camera = DawnFCCamera(images=images, model=camera_model, psf=Gaussian(sigma_x=0.75, sigma_y=0.75, size=5),
                           attitude_function=fc2_attitude)
 
-    # now we need to build our scene for the relative navigation.
-    # begin by loading the shape model
-    with open('../shape_model/kdtree.pickle', 'rb') as tree_file:
-
-        vesta_shape = pickle.load(tree_file)
-
-    # we need to make this into an SceneObject, which essentially allows us to wrap the object with functions that
-    # give the state of the object at any given time
-    vesta_obj = SceneObject(vesta_shape, position_function=vesta_position,
-                            orientation_function=vesta_attitude, name='Vesta')
-
-    # now we need to form the SceneObject for our Sun Object
-    sun_obj = SceneObject(Point([0, 0, 0]), position_function=sun_position, orientation_function=sun_orientation)
-
-    # now we can form our scene
-    opnav_scene = Scene(target_objs=[vesta_obj], light_obj=sun_obj)
-
     # do the stellar opnav to correct the attitude
     # build the stellar opnav object, which is very similar to the calibration object but without the ability to do
     # calibration.
@@ -106,8 +89,6 @@ if __name__ == "__main__":
 
     # now id the stars and estimate the attitude
     sopnav.id_stars()
-    show_id_results(sopnav)
-    plt.show()
     sopnav.estimate_attitude()
 
     # ensure we got a good id
@@ -118,6 +99,26 @@ if __name__ == "__main__":
     # update the attitude for the short exposure images
     sopnav.camera.only_short_on()
     sopnav.camera.update_short_attitude(method='propagate')
+    
+    # close the cartalog in case we opened it
+    sopnav_options.star_id_options.catalog.close()
+    
+    # now we need to build our scene for the relative navigation.
+    # begin by loading the shape model
+    with open('../shape_model/kdtree.pickle', 'rb') as tree_file:
+
+        vesta_shape = pickle.load(tree_file)
+
+    # we need to make this into an SceneObject, which essentially allows us to wrap the object with functions that
+    # give the state of the object at any given time
+    vesta_obj = SceneObject(vesta_shape, position_function=vesta_position,
+                            orientation_function=vesta_attitude, name='Vesta')
+
+    # now we need to form the SceneObject for our Sun Object
+    sun_obj = SceneObject(Point([0, 0, 0]), position_function=sun_position, orientation_function=sun_orientation)
+
+    # now we can form our scene
+    opnav_scene = Scene(target_objs=[vesta_obj], light_obj=sun_obj)
 
     # define the RelativeOpNav instance
     # define the settings for the portions of Relnav
@@ -128,9 +129,6 @@ if __name__ == "__main__":
                            save_templates=True)
     relnav.auto_estimate()
     
-    # close the cartalog in case we opened it
-    sopnav_options.star_id_options.catalog.close()
-
     # show the results
     limb_summary_gif(relnav)
     template_summary_gif(relnav)

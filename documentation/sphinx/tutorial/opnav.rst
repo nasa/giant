@@ -35,13 +35,16 @@ As with the previous two scripts, we need to start off with importing the module
     from giant.stellar_opnav.stellar_class import StellarOpNav, StellarOpNavOptions
 
     # tool for visualizing the results of our star identification
-    from giant.stellar_opnav.visualizer import show_id_results
+    from giant.stellar_opnav.visualizers import show_id_results
 
-    # the star catalog we will use for our "truth" star locations (defaults to Gaia)
-    from giant.catalogs.gaia import Gaia
+    # the star catalog we will use for our "truth" star locations
+    from giant.catalogs.gaia import Gaia, DEFAULT_CAT_FILE
 
     # the class we will use to perform the relative navigation
     from giant.relative_opnav.relnav_class import RelativeOpNav
+
+    # options for the relative navigation
+    from giant.relative_opnav import XCorrCenterFindingOptions
 
     # the point spread function for the camera
     from giant.point_spread_functions.gaussians import Gaussian
@@ -52,11 +55,8 @@ As with the previous two scripts, we need to start off with importing the module
     # The shape object we will use for the sun
     from giant.ray_tracer.shapes import Point
 
-    # the illumination function we will use to predict the image of our model
-    from giant.ray_tracer.illumination import McEwenIllumination
-
     # some utilities from giant for visualizing the relative opnav results
-    from giant.relative_opnav.visualizer import limb_summary_gif, template_summary_gif, show_center_finding_residuals
+    from giant.relative_opnav.visualizers import limb_summary_gif, template_summary_gif, show_center_finding_residuals
 
     # A module to provide access to the NAIF Spice routines
     import spiceypy as spice
@@ -77,9 +77,8 @@ campaign.  For now, we'll just use a rough guess for the PSF.
 
     if __name__ == "__main__":
         # filter some annoying warnings
-        warnings.filterwarnings('ignore', category=UserWarning)
-        warnings.filterwarnings('ignore', category=DeprecationWarning)
-
+        warnings.filterwarnings("ignore", category=RuntimeWarning, message="overflow encountered")
+        
         # furnish the meta kernel so we have all of the a priori state information
         spice.furnsh('./meta_kernel.tm')
 
@@ -100,9 +99,9 @@ the camera initializer so that GIANT knows about it.
 
 .. code::
 
-        # create the camera instance and load the images
-        camera = DawnFCCamera(images=images, model=camera_model, psf=Gaussian(sigma_x=0.75, sigma_y=0.75, size=5),
-                              attitude_function=fc2_attitude)
+    # create the camera instance and load the images
+    camera = DawnFCCamera(images=images, model=camera_model, psf=Gaussian(sigma_x=0.75, sigma_y=0.75, size=5),
+                          attitude_function=fc2_attitude)
 
 Estimating the Rotation Using Star Images
 -----------------------------------------
@@ -117,7 +116,10 @@ of the :attr:`.StellarOpNav.camera` attribute.
     # do the stellar opnav to correct the attitude
     # build the stellar opnav object, which is very similar to the calibration object but without the ability to do
     # calibration.
-    sopnav = StellarOpNav(camera)
+    sopnav_options = StellarOpNavOptions()
+    # sopnav_options.star_id_options.catalog = Gaia(catalog_file=DEFAULT_CAT_FILE)  # if you built the local catalog, then uncomment this line and comment the next one
+    sopnav_options.star_id_options.catalog = Gaia()
+    sopnav = StellarOpNav(camera, options=sopnav_options)
 
     # ensure only the long exposure images are on
     sopnav.camera.only_long_on()
@@ -125,7 +127,7 @@ of the :attr:`.StellarOpNav.camera` attribute.
     # set the parameters to get a successful star identification
     # we only need to estimate the attitude here so we can be fairly conservative
     sopnav.star_id.max_magnitude = 8.0
-    sopnav.image_processing.poi_threshold = 20
+    sopnav.point_of_interest_finder.threshold = 20
     sopnav.star_id.tolerance = 40
     sopnav.star_id.ransac_tolerance = 1
     sopnav.star_id.max_combos = 1000
@@ -158,7 +160,11 @@ propagates the solved for attitudes in the long-exposure images to the following
     # now, we need to turn on the short exposure images, and use the updated attitude from the long exposure images to
     # update the attitude for the short exposure images
     sopnav.camera.only_short_on()
-    sopnav.camera.update_short_attitude()
+    sopnav.camera.update_short_attitude(method='propagate')
+
+    # close the cartalog in case we opened it
+    sopnav_options.star_id_options.catalog.close()
+
 
 Defining the OpNav Scene
 ------------------------
@@ -229,32 +235,26 @@ RelNav class (these can also be set as attributes after initialization as with t
 
 The Vesta approach OpNavs only include images where Vesta is resolved (> 5 pixels in apparent diameter) thus we will
 only be using cross-correlation and only need to worry about settings for the :class:`.XCorrCenterFinding` class.
-In particular, we only really care about the ``grid_size`` and ``denoise_image`` settings.  The ``grid_size`` setting
+In particular, we only really care about the ``grid_size`` and ``search_region`` settings.  The ``grid_size`` setting
 specifies the number of rays we want to use to estimate the brightness in each pixel.  GIANT always assumes a square
 grid and this number specifies the length of the sides.  Therefore, if you specify a grid-size of 9, then you will use a
 9x9 grid of rays for each pixel (which quickly adds up to a lot of rays).  Because the body gets pretty large for our
 last day of OpNavs we are going to process, we'll only use a ``grid_size`` of 3 pixels, which creates a 3x3 grid of rays
-for each pixel.  The ``denoise_image`` flag specifies whether we want to attempt to decrease the noise in the image
-using a Gaussian Smoothing technique.  Whether you set this flag to true or not depends on how noisey the images are.
-In general though, it is good to set this to ``True``.  We can also use the ``search_region`` setting to restrict how
-many pixels around the predicted location we should look for the correlation peak.  This can be useful for images where
-the target is smaller in the field of view to ensure that we don't get any false positives due to noise.
+for each pixel.  The ``search_region`` setting restricts how many pixels around the predicted location we should look for
+the correlation peak.  This can be useful for images where the target is smaller in the field of view to ensure that we
+don't get any false positives due to noise.
 
-The ``brdf`` keyword argument to the :class:`RelativeOpNav` class specifies the function that will convert viewing
-geometry (observation vector, illumination vector, surface normal, surface albedo) into a brightness value.  GIANT has
-a number of BRDFs available in the :mod:`.illumination` sub-module and in this case we'll use the familiar
-:class:`.McEwenIllumination` BRDF.
+The ``save_templates`` keyword argument to the :class:`RelativeOpNav` class specifies that we want to save off the intermediate
+templates used in cross correlation for later analysis.  
 
 .. code::
 
     # define the RelativeOpNav instance
     # define the settings for the portions of Relnav
-    xcorr_kwargs = {"grid_size": 3, "denoise_image": True,
-                    'search_region': 50}
+    xcorr_options = XCorrCenterFindingOptions(grid_size=3, search_region=50)
 
     relnav = RelativeOpNav(camera, opnav_scene,
-                           xcorr_kwargs=xcorr_kwargs,
-                           brdf=McEwenIllumination(),
+                           cross_correlation_options=xcorr_options,
                            save_templates=True)
 
 With the RelNav instance defined, we can now extract the observables, which take the form of observed pixel locations of
@@ -285,10 +285,6 @@ target, and :func:`.show_center_finding_residuals` shows the observed-computed c
     show_center_finding_residuals(relnav)
     plt.show()
 
-.. note::
-    If you receive an error about ``TypeError: 'NoneType' object is not callable`` then you likely
-    need to update matplotlib by doing ``pip install --upgrade matplotlib``
-
 You can finish now, or you can try playing around with images from other OpNav days.
 
 The Complete OpNav Script
@@ -314,16 +310,19 @@ For your convenience, the complete ``opnav.py`` script is presented here.
     from giant.camera_models import load
 
     # The class we will use to perform the stellar opnav
-    from giant.stellar_opnav.stellar_class import StellarOpNav
+    from giant.stellar_opnav.stellar_class import StellarOpNav, StellarOpNavOptions
 
     # tool for visualizing the results of our star identification
-    from giant.stellar_opnav.visualizer import show_id_results
+    from giant.stellar_opnav.visualizers import show_id_results
 
-    # the star catalog we will use for our "truth" star locations (defaults to Gaia)
-    from giant.catalogs.gaia import Gaia
+    # the star catalog we will use for our "truth" star locations
+    from giant.catalogs.gaia import Gaia, DEFAULT_CAT_FILE
 
     # the class we will use to perform the relative navigation
     from giant.relative_opnav.relnav_class import RelativeOpNav
+
+    # options for the relative navigation
+    from giant.relative_opnav import XCorrCenterFindingOptions
 
     # the point spread function for the camera
     from giant.point_spread_functions.gaussians import Gaussian
@@ -334,11 +333,8 @@ For your convenience, the complete ``opnav.py`` script is presented here.
     # The shape object we will use for the sun
     from giant.ray_tracer.shapes import Point
 
-    # the illumination function we will use to predict the image of our model
-    from giant.ray_tracer.illumination import McEwenIllumination
-
     # some utilities from giant for visualizing the relative opnav results
-    from giant.relative_opnav.visualizer import limb_summary_gif, template_summary_gif, show_center_finding_residuals
+    from giant.relative_opnav.visualizers import limb_summary_gif, template_summary_gif, show_center_finding_residuals
 
     # A module to provide access to the NAIF Spice routines
     import spiceypy as spice
@@ -349,9 +345,8 @@ For your convenience, the complete ``opnav.py`` script is presented here.
 
     if __name__ == "__main__":
         # filter some annoying warnings
-        warnings.filterwarnings('ignore', category=UserWarning)
-        warnings.filterwarnings('ignore', category=DeprecationWarning)
-
+        warnings.filterwarnings("ignore", category=RuntimeWarning, message="overflow encountered")
+        
         # furnish the meta kernel so we have all of the a priori state information
         spice.furnsh('./meta_kernel.tm')
 
@@ -371,7 +366,10 @@ For your convenience, the complete ``opnav.py`` script is presented here.
         # do the stellar opnav to correct the attitude
         # build the stellar opnav object, which is very similar to the calibration object but without the ability to do
         # calibration.
-        sopnav = StellarOpNav(camera)
+        sopnav_options = StellarOpNavOptions()
+        # sopnav_options.star_id_options.catalog = Gaia(catalog_file=DEFAULT_CAT_FILE)  # if you built the local catalog, then uncomment this line and comment the next one
+        sopnav_options.star_id_options.catalog = Gaia()
+        sopnav = StellarOpNav(camera, options=sopnav_options)
 
         # ensure only the long exposure images are on
         sopnav.camera.only_long_on()
@@ -379,7 +377,7 @@ For your convenience, the complete ``opnav.py`` script is presented here.
         # set the parameters to get a successful star identification
         # we only need to estimate the attitude here so we can be fairly conservative
         sopnav.star_id.max_magnitude = 8.0
-        sopnav.image_processing.poi_threshold = 20
+        sopnav.point_of_interest_finder.threshold = 20
         sopnav.star_id.tolerance = 40
         sopnav.star_id.ransac_tolerance = 1
         sopnav.star_id.max_combos = 1000
@@ -395,8 +393,11 @@ For your convenience, the complete ``opnav.py`` script is presented here.
         # now, we need to turn on the short exposure images, and use the updated attitude from the long exposure images to
         # update the attitude for the short exposure images
         sopnav.camera.only_short_on()
-        sopnav.camera.update_short_attitude()
-
+        sopnav.camera.update_short_attitude(method='propagate')
+        
+        # close the cartalog in case we opened it
+        sopnav_options.star_id_options.catalog.close()
+        
         # now we need to build our scene for the relative navigation.
         # begin by loading the shape model
         with open('../shape_model/kdtree.pickle', 'rb') as tree_file:
@@ -416,17 +417,13 @@ For your convenience, the complete ``opnav.py`` script is presented here.
 
         # define the RelativeOpNav instance
         # define the settings for the portions of Relnav
-        xcorr_kwargs = {"grid_size": 3, "denoise_image": True,
-                        'search_region': 50}
+        xcorr_options = XCorrCenterFindingOptions(grid_size=3, search_region=50)
 
         relnav = RelativeOpNav(camera, opnav_scene,
-                               xcorr_kwargs=xcorr_kwargs,
-                               brdf=McEwenIllumination(),
-                               limb_matching_kwargs={'recenter': False},
+                               cross_correlation_options=xcorr_options,
                                save_templates=True)
-
         relnav.auto_estimate()
-
+        
         # show the results
         limb_summary_gif(relnav)
         template_summary_gif(relnav)
