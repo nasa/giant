@@ -11,10 +11,10 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 try:
-    from matplotlib.animation import ImageMagickWriter
+    from matplotlib.animation import PillowWriter
 except UnicodeDecodeError:
-    print('unable to import ImageMagickWriter')
-    ImageMagickWriter = None
+    print('unable to import PillowWriter')
+    PillowWriter = None
 
 import numpy as np
 
@@ -211,8 +211,8 @@ def limb_summary_gif(relnav: RelativeOpNav, fps: int = 2, outfile: str = './opna
     ax = fig.add_subplot(111)
 
     # initialize the writer
-    assert ImageMagickWriter is not None
-    writer = ImageMagickWriter(fps=fps)
+    assert PillowWriter is not None
+    writer = PillowWriter(fps=fps)
     writer.setup(fig=fig, outfile=outfile, dpi=dpi)
 
     # loop through each image and save the frame
@@ -252,8 +252,8 @@ def template_summary_gif(relnav: RelativeOpNav, fps: int = 2, outfile: str = './
     ax2 = fig.add_subplot(122)
 
     # initialize the writer
-    assert ImageMagickWriter is not None
-    writer = ImageMagickWriter(fps=fps)
+    assert PillowWriter is not None
+    writer = PillowWriter(fps=fps)
     writer.setup(fig=fig, outfile=outfile, dpi=dpi)
 
     # loop through each image and save the frame

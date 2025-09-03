@@ -182,7 +182,7 @@ class LimbMatchingOptions(LimbPairerOptions):
     For most targets this flag is strongly encouraged.
     """
 
-    create_gif: bool = True
+    create_gif: bool = False
     """
     A flag specifying whether to create a gif of the iteration process for review.
     """
