@@ -37,11 +37,6 @@ etc).  Once the virtual environment has been created you can run
 to activate the environment.  Activating the environment basically adjusts your paths/aliases so that "python", "pip",
 etc now point to the virtual environment executables.  
 
-If you are on Linux or OSX you can also include "imagemagick" at the end of the mamba create command to install imagemagick, or install after 
-activating the environment with 
-
-    conda install imagemagick.
-
 With our GIANT environment activated we are good to install GIANT.  GIANT is installed like any normal python
 package.  Simply navigate to the root directory of GIANT and type (note that we use the link option here because
 GIANT is still under development and this allows you to update with a simple git pull.

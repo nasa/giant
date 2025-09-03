@@ -26,8 +26,6 @@ With conda installed, we can now set up an environment in which to install giant
           ``/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include``
           or ``/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include`` after installing xcode or xcode command
           line tools to ensure system headers are available
-    - Windows
-        - If you want to use some of the optional utilities which produce GIFs, you will need to manually install imagemagick from https://imagemagick.org/script/download.php
 #. Download the GIANT source code from git
     - :code:`git clone git@github.com:nasa/giant.git`
 #. Create a new environment to install GIANT to and install the dependencies
