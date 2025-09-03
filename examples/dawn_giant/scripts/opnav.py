@@ -49,6 +49,9 @@ import pickle
 
 
 if __name__ == "__main__":
+    # filter some annoying warnings
+    warnings.filterwarnings("ignore", category=RuntimeWarning, message="overflow encountered")
+    
     # furnish the meta kernel so we have all of the a priori state information
     spice.furnsh('./meta_kernel.tm')
 
@@ -56,7 +59,7 @@ if __name__ == "__main__":
     # use sorted to ensure they are in time sequential order
     images = sorted(glob.glob('../opnav/2011123_OPNAV_001/*.FIT') +
                     glob.glob('../opnav/2011165_OPNAV_007/*.FIT') +
-                    glob.glob('../opnav/2011198_OPNAV_017/*.FIT'))[:-20]
+                    glob.glob('../opnav/2011198_OPNAV_017/*.FIT'))
 
     # load the camera model we are using
     camera_model = load('dawn_camera_models.xml', 'FC2')
