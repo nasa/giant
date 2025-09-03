@@ -326,7 +326,7 @@ class StarID(UserOptionConfigured[StarIDOptions], StarIDOptions, AttributePrinti
         self._temp_combinations = None
         self._temp_att_est = ESOQ2()
         self._temp_att_est.weighted_estimation = False
-        self._temp_att_est.n_iter = 0
+        self._temp_att_est.n_iter = 10
 
         self.model: CameraModel = model 
         """

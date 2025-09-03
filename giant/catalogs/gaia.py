@@ -1,6 +1,3 @@
-
-
-
 r"""
 This module defines the interface to the GAIA star catalog.
 
@@ -171,13 +168,28 @@ class Gaia(Catalog):
         """
         The open HDFStore if we are using a local copy of the catalog
         """
-
+        
         if self.catalog_file is not None:
-            self._catalog_store = pd.HDFStore(self.catalog_file, 'r')
+            try:
+                self._catalog_store = pd.HDFStore(self.catalog_file, 'r')
+            except FileNotFoundError:
+                print(f"Catalog file not found: {self.catalog_file}.  Will use the TAP+ online service instead.")
+
+    def close(self):
+        """
+        This closes the HDFStore if we are using a local copy of the catalog if it was open.
+        
+        If you were using the TAP+ online service then this does nothing and is still safe to call.
+        """
+        try:
+            if self._catalog_store is not None:
+                self._catalog_store.close()
+        except Exception as e:
+            pass
+        self._catalog_store = None
 
     def __del__(self):
-        if self._catalog_store is not None:
-            self._catalog_store.close()
+        self.close()
 
     def query_catalog(self, ids: Optional[Iterable[str | int] | Set[str | int]] = None, min_ra: float = 0., max_ra: float = 360.,
                         min_dec: float = -90., max_dec: float = 90., min_mag: float = -4., max_mag: float = 14.,

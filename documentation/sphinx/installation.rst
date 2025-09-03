@@ -29,7 +29,7 @@ With conda installed, we can now set up an environment in which to install giant
     - Windows
         - If you want to use some of the optional utilities which produce GIFs, you will need to manually install imagemagick from https://imagemagick.org/script/download.php
 #. Download the GIANT source code from git
-    - :code:`git clone git@aetd-git.gsfc.nasa.gov:giant/giant.git`
+    - :code:`git clone git@github.com:nasa/giant.git`
 #. Create a new environment to install GIANT to and install the dependencies
     - :code:`cd giant`
     - :code:`mamba env create -f environment.yml` 
@@ -68,7 +68,7 @@ With the anaconda environment set up and activated it is now easy to install gia
       though that is a problem
 #. Check the installation (optional)
     - :code:`cd unittests`
-    - :code:`python -Wignore -m unittest discover`
+    - :code:`python  -m unittest discover`
     - This should complete with no errors (skips/warnings are OK).
 
 GIANT should now be installed and ready for use.

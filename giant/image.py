@@ -166,19 +166,19 @@ class OpNavImage(np.ndarray):
         if spacecraft is not None:
             image_data.spacecraft = spacecraft
         if rotation_inertial_to_camera is not None:
-            image_data.rotation_inertial_to_camera = rotation_inertial_to_camera
+            image_data.rotation_inertial_to_camera = rotation_inertial_to_camera if isinstance(rotation_inertial_to_camera, Rotation) else Rotation(rotation_inertial_to_camera)
         if position is not None:
-            image_data.position = position
+            image_data.position = np.asanyarray(position)
         if velocity is not None:
-            image_data.velocity = velocity
+            image_data.velocity = np.asanyarray(velocity)
         if exposure is not None:
             image_data.exposure = exposure
         if exposure_type is not None:
-            image_data.exposure_type = exposure_type
+            image_data.exposure_type = exposure_type if isinstance(exposure_type, ExposureType) else ExposureType(exposure_type.lower())
         if saturation is not None:
             image_data.saturation = saturation
         if dark_pixels is not None:
-            image_data.dark_pixels = dark_pixels
+            image_data.dark_pixels = np.asanyarray(dark_pixels)
         if temperature is not None:
             image_data.temperature = temperature
         if target is not None:
@@ -201,18 +201,18 @@ class OpNavImage(np.ndarray):
         if obj is None:
             return
 
-        self.file = getattr(obj, 'file', None)
+        self.file: Optional[PATH] = getattr(obj, 'file', None)
         try:
             self.observation_date = getattr(obj, 'observation_date', None)
         except AssertionError:
             self.observation_date = None
-        self.instrument = getattr(obj, 'instrument', None)
-        self.spacecraft = getattr(obj, 'spacecraft', None)
+        self.instrument: Optional[str] = getattr(obj, 'instrument', None)
+        self.spacecraft: Optional[str] = getattr(obj, 'spacecraft', None)
         self.rotation_inertial_to_camera = getattr(obj, 'rotation_inertial_to_camera', Rotation())
         self.position = getattr(obj, 'position', np.zeros(3, dtype=np.float64))
         self.velocity = getattr(obj, 'velocity', np.zeros(3, dtype=np.float64))
-        self.dark_pixels = getattr(obj, 'dark_pixels', None)
-        self.exposure = getattr(obj, 'exposure', None)
+        self.dark_pixels: Optional[np.ndarray] = getattr(obj, 'dark_pixels', None)
+        self.exposure: Optional[float] = getattr(obj, 'exposure', None)
         self.exposure_type = getattr(obj, 'exposure_type', None)
         self.saturation = getattr(obj, 'saturation', float(np.finfo(np.float64).max))
         self.temperature = getattr(obj, 'temperature', 0)
@@ -466,6 +466,8 @@ class OpNavImage(np.ndarray):
             elif ext.lower() in cv_ext:
 
                 image = cv2.imread(str(image_path), cv2.IMREAD_GRAYSCALE)
+                
+                assert image is not None
 
                 return image
 

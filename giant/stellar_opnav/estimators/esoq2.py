@@ -11,9 +11,10 @@ class ESOQ2Options(AttitudeEstimatorOptions):
     """
     Options for the ESOQ2 attitude estimator.
     
-    :param n_iter: Number of iterations for lambda computation (default=5, use 0 for lam=1)
+    :param n_iter: Number of iterations for lambda computation (default=10, use 0 for lam=1)
     """
-    n_iter: int = 5
+    
+    n_iter: int = 10
     """
     Number of iterations for lambda computation in ESOQ2 algorithm.
     """ 
@@ -96,7 +97,7 @@ class ESOQ2(AttitudeEstimator, ESOQ2Options):
             assert weights is not None, "Weights miust not be None if doing weighted estimation"
             target_frame_directions = weights.squeeze() * target_frame_directions
 
-        bmat = self.attitude_profile_matrix(target_frame_directions, base_frame_directions)
+        bmat = self.attitude_profile_matrix(base_frame_directions, target_frame_directions)
         self._attitude_prof_mat  = bmat.copy()
         
         # Optimal 180 deg rotation

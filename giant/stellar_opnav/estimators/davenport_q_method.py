@@ -81,7 +81,7 @@ class DavenportQMethod(AttitudeEstimator):
             assert weights is not None, "Weights miust not be None if doing weighted estimation"
             target_frame_directions = weights.squeeze() * target_frame_directions
 
-        att_prof_mat = self.attitude_profile_matrix(target_frame_directions, base_frame_directions)
+        att_prof_mat = self.attitude_profile_matrix(base_frame_directions, target_frame_directions)
         self._attitude_prof_mat = att_prof_mat
 
         # for the S matrix

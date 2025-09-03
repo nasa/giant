@@ -11,7 +11,6 @@ about what it is doing here.
     import requests
     from bs4 import BeautifulSoup
     import re
-    import ftplib
 
     from pathlib import Path
 
@@ -60,11 +59,7 @@ about what it is doing here.
 
 
     def download_spice():
-        ftp = ftplib.FTP('naif.jpl.nasa.gov')
-
-        ftp.login()
-
-        ftp.cwd('pub/naif/DAWN/kernels/')
+        base_url = "http://naif.jpl.nasa.gov/pub/naif/DAWN/kernels/"
 
         files = ['lsk/naif0012.tls',
                  'pck/pck00008.tpc',
@@ -132,9 +127,14 @@ about what it is doing here.
             local = Path('kernels').joinpath(file)
 
             local.parent.mkdir(exist_ok=True, parents=True)
-
-            with local.open('wb') as ofile:
-                ftp.retrbinary('RETR {}'.format(file), ofile.write)
+            
+            url = base_url + file
+            
+            r = requests.get(url, stream=True)
+            if r.status_code == 200:
+                with local.open('wb') as f:
+                    for chunk in r:
+                        f.write(chunk)
 
             print('{} done in {:.3f}'.format(file, time.time()-start), flush=True)
 
@@ -142,6 +142,7 @@ about what it is doing here.
     if __name__ == '__main__':
         download_spice()
         download_images()
+
 
 Directories ``cal1`` and ``cal2`` provide images that we will use to perform geometric camera calibration of the
 camera we are going to use.  Directory ``opnav`` contains the OpNav images we will use GIANT to process once we have
@@ -156,7 +157,7 @@ of our directory.
 
     mkdir shape_model
     cd shape_model
-    ingest_shape ../kernels/dsk/old_versions/vesta_gaskell_512_110825.bds "Vesta SPC" -p ../kernels/pck/dawn_vesta_02.tpc -m 18 -e # convert the shape into the GIANT format
+    ingest_shape ../kernels/dsk/old_versions/vesta_gaskell_512_110825.bds "Vesta SPC" -p ../kernels/pck/dawn_vesta_02.tpc -m 18 -s32 # convert the shape into the GIANT format
     cd ..
     mkdir scripts
 
@@ -164,15 +165,4 @@ Directory ``shape_model`` contains the shape model file, and function ``ingest_s
 GIANT version of the shape model for us and stores it in this directory. Finally, directory ``scripts`` is where we will
 write our scripts to use GIANT to actually process images.
 
-Finally, we need to build the GIANT star catalog (alternatively, you can contact Andrew, andrew.j.liounis@nasa.gov, if
-you would like a pre-built star catalog). To do this run the command line script included with GIANT
-:mod:`.build_catalog` with the following settings
-
-.. code::
-
-    build_catalog -m 12 -n 0
-
-This will likely take a while to run because it requires first downloading the UCAC4 catalog, which is about 9 GB in
-size.  If you already have the UCAC4 catalog downloaded to your machine (with the original directory structure) you
-can skip the download step by adding the ``-u`` option with the path to the root of the UCAC4 directory structure.
-
+Now we are ready to begin the rest of the tutorial!

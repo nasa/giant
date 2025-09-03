@@ -292,16 +292,16 @@ def main():
         in_type = args.type.lower()
 
     if in_type == 'obj':
-        tris = read_obj(args.shape, conv=args.conv, single_triangle_precision=args.single_tringle_precision)
+        tris = read_obj(args.shape, conv=args.conv, single_triangle_precision=args.single_triangle_precision)
     elif in_type == "tab":
-        tris = read_tab(args.shape, conv=args.conv, single_triangle_precision=args.single_tringle_precision)
+        tris = read_tab(args.shape, conv=args.conv, single_triangle_precision=args.single_triangle_precision)
     elif in_type == 'icq':
         sobj = ShapeModel(args.shape)
 
-        tris = sobj.get_triangles(triangle_precision= '32' if args.single_tringle_precision else '64')
+        tris = sobj.get_triangles(triangle_precision= '32' if args.single_triangle_precision else '64')
 
     elif in_type == "dsk":
-        tris = process_dsk(args.shape, conv=args.conv, single_triangle_precision=args.single_tringle_precision)
+        tris = process_dsk(args.shape, conv=args.conv, single_triangle_precision=args.single_triangle_precision)
 
     else:
         raise ValueError("Don't know how to handle type {}".format(in_type))

@@ -87,7 +87,7 @@ class StellarOpNavOptions(UserOptions):
     Options to use to initialize the point of interest finder instance.
     """
     
-    star_id_options: StarIDOptions | None = field(default_factory=StarIDOptions)
+    star_id_options: StarIDOptions = field(default_factory=StarIDOptions)
     """
     Options to use to initialize the star_id instance
     """
@@ -1279,10 +1279,10 @@ class StellarOpNav(UserOptionConfigured[StellarOpNavOptions], OpNav, StellarOpNa
                 if self.use_weights:
                     self._matched_weights_inertial[ind] = self._star_id.matched_weights_inertial
                     self._matched_weights_picture[ind] = self._star_id.matched_weights_picture
-                self._matched_extracted_stats[ind] = self._extracted_stats[full_filter] # type: ignore
-                self._matched_extracted_snrs[ind] = self._extracted_snrs[full_filter] # type: ignore
-                self._unmatched_extracted_stats[ind] = self._extracted_stats[~full_filter] # type: ignore
-                self._unmatched_extracted_snrs[ind] = self._extracted_snrs[~full_filter] # type: ignore
+                self._matched_extracted_stats[ind] = self._extracted_stats[ind][full_filter] # type: ignore
+                self._matched_extracted_snrs[ind] = self._extracted_snrs[ind][full_filter]  # type: ignore
+                self._unmatched_extracted_stats[ind] = self._extracted_stats[ind][~full_filter]  # type: ignore
+                self._unmatched_extracted_snrs[ind] = self._extracted_snrs[ind][~full_filter]  # type: ignore
 
             print('image {} of {} done in {:.4g} seconds'.format(image_count_index, number_of_images,
                                                                  time.time() - start), flush=True)
@@ -1601,7 +1601,7 @@ class StellarOpNav(UserOptionConfigured[StellarOpNavOptions], OpNav, StellarOpNa
             self._matched_image_illums[image_num] = self._matched_image_illums[image_num][indices_desired] # type: ignore
             self._matched_extracted_snrs[image_num] = self._matched_extracted_snrs[image_num][indices_desired] # type: ignore
             self._matched_extracted_stats[image_num] = self._matched_extracted_stats[image_num][indices_desired] # type: ignore
-            self._matched_psfs[image_num] = [self._matched_psfs[image_num][desired] for desired in indices_desired] # type: ignore
+            self._matched_psfs[image_num] = [self._matched_psfs[image_num][desired] for desired in star_indices] # type: ignore
 
             if self._matched_weights_inertial[image_num] is not None:
                 self._matched_weights_inertial[image_num] = self._matched_weights_inertial[image_num][indices_desired] # type: ignore

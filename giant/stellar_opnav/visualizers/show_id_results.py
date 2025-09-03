@@ -87,7 +87,7 @@ def show_id_results(sopnav: StellarOpNav, pdf_name: Optional[PATH] = None,
 
             big_resids.append(resids)
 
-            ax.quiver(matched_extracted_points, *resids, angles='xy', scale_units='xy',
+            ax.quiver(*matched_extracted_points, *resids, angles='xy', scale_units='xy',
                       color='black', width=0.0005, headwidth=20, headlength=20)
             
         # Plot Unmatched Pairs
