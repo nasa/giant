@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>giant.photometry.planning &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="giant.photometry.planning.DiscretizedTrajectory" href="planning/giant.photometry.planning.DiscretizedTrajectory.html" />
+    <link rel="prev" title="HGPhaseMagnitudeModel.magnitude_function" href="magnitude/giant.photometry.magnitude.HGPhaseMagnitudeModel.magnitude_function.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.photometry.html">giant.photometry</a><ul>
+      <li>Previous: <a href="magnitude/giant.photometry.magnitude.HGPhaseMagnitudeModel.magnitude_function.html" title="previous chapter">HGPhaseMagnitudeModel.magnitude_function</a></li>
+      <li>Next: <a href="planning/giant.photometry.planning.DiscretizedTrajectory.html" title="next chapter">giant.photometry.planning.DiscretizedTrajectory</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="magnitude/giant.photometry.magnitude.HGPhaseMagnitudeModel.magnitude_function.html" title="Previous document">HGPhaseMagnitudeModel.magnitude_function</a>
+        </li>
+        <li>
+          <a href="planning/giant.photometry.planning.DiscretizedTrajectory.html" title="Next document">giant.photometry.planning.DiscretizedTrajectory</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.photometry.planning">
+<span id="giant-photometry-planning"></span><h1>giant.photometry.planning<a class="headerlink" href="#module-giant.photometry.planning" title="Link to this heading">¶</a></h1>
+<p>This module provides a class for doing observation planning of a target given details about a camera, as well as a
+helper class for specifying discretized trajectories.</p>
+<section id="description">
+<h2>Description<a class="headerlink" href="#description" title="Link to this heading">¶</a></h2>
+<p>By observation planning, we refer to 3 interrelated processes with respect to determining when an object will be visible
+in a monocular camera.</p>
+<ol class="arabic simple">
+<li><p>Determining first acquisition (the distance/time at which a specified snr can be reached for a given phase angle or
+trajectory and exposure length)</p></li>
+<li><p>Determining exposure length (the exposure length required to achieve a specified snr for a given distance/phase angle
+or trajectory)</p></li>
+<li><p>Determining SNR (the SNR value expected to be achieved for a given exposure length and distance/phase angle or
+trajectory)</p></li>
+</ol>
+<p>These 3 capabilities are crucial for planning the capture of OpNav images.  They do however require more information
+about the electronics of the camera as well as the properties of the target being observed beyond what is required for
+typical OpNav scenarios.</p>
+</section>
+<section id="use">
+<h2>Use<a class="headerlink" href="#use" title="Link to this heading">¶</a></h2>
+<p>To do observation planning in GIANT, create an instance of the <a class="reference internal" href="planning/giant.photometry.planning.ObservationPlanner.html#giant.photometry.planning.ObservationPlanner" title="giant.photometry.planning.ObservationPlanner"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObservationPlanner</span></code></a> with the appropriate data.
+Once initialized, you can use methods <a class="reference internal" href="planning/giant.photometry.planning.ObservationPlanner.predict_acquisition.html#giant.photometry.planning.ObservationPlanner.predict_acquisition" title="giant.photometry.planning.ObservationPlanner.predict_acquisition"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict_acquisition()</span></code></a>, <a class="reference internal" href="planning/giant.photometry.planning.ObservationPlanner.predict_exposure.html#giant.photometry.planning.ObservationPlanner.predict_exposure" title="giant.photometry.planning.ObservationPlanner.predict_exposure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict_exposure()</span></code></a>, and <a class="reference internal" href="planning/giant.photometry.planning.ObservationPlanner.predict_snr.html#giant.photometry.planning.ObservationPlanner.predict_snr" title="giant.photometry.planning.ObservationPlanner.predict_snr"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict_snr()</span></code></a>
+to cover most of your needs.  For all 3 methods, you can either specify the geometry of the observations, or you
+can specify a discretized trajectory to do the calculations over, using the <code class="xref py py-class docutils literal notranslate"><span class="pre">DiscretizedPhotometryTrajectory</span></code> class.</p>
+</section>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="planning/giant.photometry.planning.DiscretizedTrajectory.html#giant.photometry.planning.DiscretizedTrajectory" title="giant.photometry.planning.DiscretizedTrajectory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DiscretizedTrajectory</span></code></a></p></td>
+<td><p>This class is used to setup a span in which to query the photometry model over.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="planning/giant.photometry.planning.ObservationPlanner.html#giant.photometry.planning.ObservationPlanner" title="giant.photometry.planning.ObservationPlanner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ObservationPlanner</span></code></a></p></td>
+<td><p>This class implements observation planning functionality for GIANT.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="magnitude/giant.photometry.magnitude.HGPhaseMagnitudeModel.magnitude_function.html" title="Previous document">HGPhaseMagnitudeModel.magnitude_function</a>
+        </li>
+        <li>
+          <a href="planning/giant.photometry.planning.DiscretizedTrajectory.html" title="Next document">giant.photometry.planning.DiscretizedTrajectory</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

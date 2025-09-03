@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 """
@@ -17,7 +16,7 @@ something that is currently under development.
 
 from abc import ABCMeta
 
-from typing import Optional
+from typing import Optional, Self
 
 import numpy as np
 import cv2
@@ -26,7 +25,7 @@ from .psf_meta import (KernelBasedApply1DPSF, KernelBasedCallPSF,
                        InitialGuessIterativeNonlinearLSTSQPSF, SizedPSF,
                        InitialGuessIterativeNonlinearLSTSQPSFwBackground)
 
-from .._typing import ARRAY_LIKE, Real, NONEARRAY
+from .._typing import ARRAY_LIKE, NONEARRAY, DOUBLE_ARRAY
 
 
 class _GaussianSkeleton(KernelBasedApply1DPSF, SizedPSF, metaclass=ABCMeta):
@@ -36,11 +35,11 @@ class _GaussianSkeleton(KernelBasedApply1DPSF, SizedPSF, metaclass=ABCMeta):
     This should not be used by the user as it is not functional as is.
     """
 
-    def __init__(self, size: Optional[int] = None, amplitude: Optional[Real] = None,
-                 centroid_x: Optional[Real] = 0, centroid_y: Optional[Real] = 0,
-                 sigma_x: Optional[Real] = 1, sigma_y: Optional[Real] = 0, **kwargs):
+    def __init__(self, size: Optional[int] = None, amplitude: Optional[float] = None,
+                 centroid_x: Optional[float] = 0, centroid_y: Optional[float] = 0,
+                 sigma_x: Optional[float] = 1, sigma_y: Optional[float] = 0, **kwargs):
 
-        self.sigma_x = 1.0  # type: float
+        self.sigma_x: float = 1.0 
         """
         The Gaussian RMS width in the x direction in pixels.
         """
@@ -56,7 +55,7 @@ class _GaussianSkeleton(KernelBasedApply1DPSF, SizedPSF, metaclass=ABCMeta):
         if not ((sigma_y is None) or (sigma_y == 0)):
             self.sigma_y = float(sigma_y)
 
-        self.amplitude = 0.0  # type: float
+        self.amplitude: float = 0.0 
         """
         The amplitude of the Gaussian.
 
@@ -71,7 +70,7 @@ class _GaussianSkeleton(KernelBasedApply1DPSF, SizedPSF, metaclass=ABCMeta):
         else:
             self.amplitude = float(amplitude)
 
-        self.centroid_x = 0.0  # type: float
+        self.centroid_x: float = 0.0 
         """
         The x location of the peak of the Gaussian kernel
 
@@ -83,7 +82,7 @@ class _GaussianSkeleton(KernelBasedApply1DPSF, SizedPSF, metaclass=ABCMeta):
         if centroid_x is not None:
             self.centroid_x = float(centroid_x)
 
-        self.centroid_y = 0.0  # type: float
+        self.centroid_y: float = 0.0 
         """
         The y location of the peak of the Gaussian kernel
 
@@ -95,9 +94,9 @@ class _GaussianSkeleton(KernelBasedApply1DPSF, SizedPSF, metaclass=ABCMeta):
         if centroid_y is not None:
             self.centroid_y = float(centroid_y)
 
-        self._residuals = None  # type: NONEARRAY
+        self._residuals: DOUBLE_ARRAY | None = None 
 
-        self._covariance = None  # type: NONEARRAY
+        self._covariance: DOUBLE_ARRAY | None = None 
 
         super().__init__(size=size, **kwargs)
 
@@ -122,14 +121,17 @@ class _GaussianSkeleton(KernelBasedApply1DPSF, SizedPSF, metaclass=ABCMeta):
 
 
     @property
-    def residuals(self) -> np.ndarray:
+    def residuals(self) -> DOUBLE_ARRAY:
         """
         A 1D array containing residuals of the fit of this Gaussian Model to data.
 
         These are only populated when initialized by :meth:`fit` and when the class attribute :attr:`save_residuals`
         is set to true.
+        
+        If this instance is not the result of a fit (:meth:`fit`) or if :attr:`save_residuals` is ``False`` then accessing
+        will raise an assertion error
         """
-
+        assert self._residuals is not None, "you have not done a fit so the residuals have not been computed yet."
         return self._residuals
 
     @property
@@ -142,62 +144,65 @@ class _GaussianSkeleton(KernelBasedApply1DPSF, SizedPSF, metaclass=ABCMeta):
         """
 
         return np.array([self.centroid_x, self.centroid_y])
+    
+    def shift_centroid(self, shift: ARRAY_LIKE) -> None:
+        """
+        Shift the centroid.
+        
+        :param shift: the shift to apply as a len array like x, y 
+        """
+        shift = np.asanyarray(shift).ravel()
+        assert shift.shape == (2,), "the applied shift must be a length 2 array"
+        self.centroid_x += shift[0]
+        self.centroid_y += shift[1]
 
     @property
-    def residual_mean(self) -> Optional[float]:
+    def residual_mean(self) -> float:
         """
         The mean of the post-fit residuals after fitting this PSF model to data.
 
         If this instance is not the result of a fit (:meth:`fit`) or if :attr:`save_residuals` is ``False`` then this
-        will return None
+        will raise an assertion error
         """
 
-        if self.residuals is not None:
-            return float(np.mean(self.residuals))
-        else:
-            return None
+        return float(np.mean(self.residuals))
 
     @property
-    def residual_std(self) -> Optional[float]:
+    def residual_std(self) -> float:
         """
         The standard deviation of the post-fit residuals after fitting this PSF model to data.
-
+        
         If this instance is not the result of a fit (:meth:`fit`) or if :attr:`save_residuals` is ``False`` then this
-        will return None
+        will raise an assertion error
         """
-
-        if self.residuals is not None:
-            return float(np.std(self.residuals))
-        else:
-            return None
+        
+        return float(np.std(self.residuals))
 
     @property
-    def residual_rss(self) -> Optional[float]:
+    def residual_rss(self) -> float:
         """
         The sum of squares of the post-fit residuals after fitting this PSF model to data.
 
         If this instance is not the result of a fit (:meth:`fit`) or if :attr:`save_residuals` is ``False`` then this
-        will return None
+        will raise an assertion error
         """
-
-        if self.residuals is not None:
-            return float(np.square(self.residuals).sum())
-        else:
-            return None
+        
+        return float(np.square(self.residuals).sum())
 
     @property
-    def covariance(self) -> Optional[np.ndarray]:
+    def covariance(self) -> DOUBLE_ARRAY:
         r"""
         The formal covariance of the PSF parameters after fitting this PSF model to data.
 
-        If this instance is not the result of a fit (:meth:`fit`) of if :attr:`save_residuals` is ``False`` then this
-        will return None.
+        If this instance is not the result of a fit (:meth:`fit`) or if :attr:`save_residuals` is ``False`` then this
+        will raise an assertion error
         """
-
+        
+        assert self._covariance is not None, "you have not performed a fit with this instance"
         return self._covariance
 
     def apply_1d(self, image_1d: np.ndarray, direction: Optional[np.ndarray] = None,
-                 step: Real = 1) -> np.ndarray:
+                 step: float = 1) -> np.ndarray:
         """
         Applies the defined PSF using the stored parameters to the 1D image scans provided.
 
@@ -213,10 +218,12 @@ class _GaussianSkeleton(KernelBasedApply1DPSF, SizedPSF, metaclass=ABCMeta):
         :param step: The step size of the lines being blurred.
         :return: an array containing the input after blurring with the defined PSF
         """
+        
+        assert self.sigma_x is not None and self.sigma_y is not None, ""
         size = max(int(4 * max(self.sigma_x, self.sigma_y) + 0.5), 3)
 
         # resize so that half the size is evenly divisible by step
-        size = step * (((size / 2) // step) + 1) * 2
+        size = int(np.ceil(step * (((size / 2) // step) + 1) * 2))
 
         return self.apply_1d_sized(image_1d, size, direction, step)
 
@@ -229,7 +236,7 @@ class _GaussianSkeleton(KernelBasedApply1DPSF, SizedPSF, metaclass=ABCMeta):
         .. math::
             A = \frac{1}{2\pi\sigma_x\sigma_y}
         """
-
+        assert self.sigma_x is not None and self.sigma_y is not None, "sigma_x and sigma_y must be specified to normalize the amplitude"
         self.amplitude = 1 / (2 * np.pi * self.sigma_x * self.sigma_y)
 
     def volume(self) -> float:
@@ -242,6 +249,7 @@ class _GaussianSkeleton(KernelBasedApply1DPSF, SizedPSF, metaclass=ABCMeta):
             V = 2\pi A\sigma_x\sigma_y}
         """
 
+        assert self.sigma_x is not None and self.sigma_y is not None, "sigma_x and sigma_y must be specified to compute the volume"
         return self.amplitude*2*np.pi*self.sigma_x*self.sigma_y
 
     def determine_size(self) -> None:
@@ -257,6 +265,7 @@ class _GaussianSkeleton(KernelBasedApply1DPSF, SizedPSF, metaclass=ABCMeta):
         95.45%  of the curve.
         """
 
+        assert self.sigma_x is not None and self.sigma_y is not None, "sigma_x and sigma_y must be specified to determine the 2 sigma size"
         if not np.isnan([self.sigma_x, self.sigma_y]).any():
             self.size = max(int(4 * max(self.sigma_x, self.sigma_y) + 0.5), 3)
 
@@ -290,8 +299,8 @@ class Gaussian(_GaussianSkeleton):
     """
 
 
-    def __init__(self, sigma_x: Optional[Real] = 1, sigma_y: Optional[Real] = 0, size: Optional[int] = None,
-                 amplitude: Optional[Real] = None, centroid_x: Optional[Real] = 0, centroid_y: Optional[Real] = 0,
+    def __init__(self, sigma_x: Optional[float] = 1, sigma_y: Optional[float] = 0, size: Optional[int] = None,
+                 amplitude: Optional[float] = None, centroid_x: Optional[float] = 0, centroid_y: Optional[float] = 0,
                  **kwargs):
         """
         :param sigma_x: The Gaussian RMS width in the x direction in pixels
@@ -382,7 +391,7 @@ class Gaussian(_GaussianSkeleton):
                 jacobian = out.compute_jacobian(x, y, computed)
 
                 # assume a single uncertainty for all measurements
-                out._covariance = np.linalg.pinv(jacobian.T @ jacobian) * out.residual_std ** 2
+                out._covariance = np.asanyarray(np.linalg.pinv(jacobian.T @ jacobian) * out.residual_std ** 2, dtype=np.float64)
 
         except np.linalg.linalg.LinAlgError:
             out = cls(np.nan, sigma_y=np.nan, amplitude=np.nan, centroid_x=np.nan, centroid_y=np.nan)
@@ -433,7 +442,7 @@ class Gaussian(_GaussianSkeleton):
         """
 
         if update is None:
-            self.size = np.nan
+            self.size = -1
             self.sigma_x = np.nan
             self.sigma_y = np.nan
             self.amplitude = np.nan
@@ -447,16 +456,16 @@ class Gaussian(_GaussianSkeleton):
             self.amplitude += update[4]
 
     @property
-    def covariance(self) -> Optional[np.ndarray]:
+    def covariance(self) -> DOUBLE_ARRAY:
         r"""
         The formal covariance of the PSF parameters after fitting this PSF model to data.
 
-        If this instance is not the result of a fit (:meth:`fit`) of if :attr:`save_residuals` is ``False`` then this
-        will return None.
+        If this instance is not the result of a fit (:meth:`fit`) or if :attr:`save_residuals` is ``False`` then this
+        will raise an assertion error
 
         The order of the state vector (and thus the covariance matrix) is :math:`[x_0, y_0, \sigma_x, \sigma_y, A]`.
         """
-
+        assert self._covariance is not None, "you have not performed a fit with this instance"
         return self._covariance
 
     def evaluate(self, x: ARRAY_LIKE, y: ARRAY_LIKE) -> np.ndarray:
@@ -559,9 +568,9 @@ class IterativeGaussianWBackground(Gaussian, InitialGuessIterativeNonlinearLSTSQ
     This class can be used anywhere GIANT expects a point spread function
     """
 
-    def __init__(self, sigma_x: Optional[Real] = 1, sigma_y: Optional[Real] = 0, size: Optional[int] = None,
-                 amplitude: Optional[Real] = None, centroid_x: Optional[Real] = 0, centroid_y: Optional[Real] = 0,
-                 bg_b_coef: Optional[Real] = None, bg_c_coef: Optional[Real] = None, bg_d_coef: Optional[Real] = None,
+    def __init__(self, sigma_x: Optional[float] = 1, sigma_y: Optional[float] = 0, size: Optional[int] = None,
+                 amplitude: Optional[float] = None, centroid_x: Optional[float] = 0, centroid_y: Optional[float] = 0,
+                 bg_b_coef: Optional[float] = None, bg_c_coef: Optional[float] = None, bg_d_coef: Optional[float] = None,
                  **kwargs):
         """
         :param sigma_x: The Gaussian RMS width in the x direction in pixels
@@ -712,9 +721,9 @@ class GeneralizedGaussian(KernelBasedCallPSF, _GaussianSkeleton):
     This class can be used anywhere GIANT expects a point spread function.
     """
 
-    def __init__(self, a_coef: Optional[Real] = None, b_coef: Optional[Real] = None, c_coef: Optional[Real] = None,
-                 sigma_x: Optional[Real] = None, sigma_y: Optional[Real] = None, theta: Optional[Real] = None,
-                 amplitude: Optional[Real] = None, centroid_x: Optional[Real] = 0, centroid_y: Optional[Real] = 0,
+    def __init__(self, a_coef: Optional[float] = None, b_coef: Optional[float] = None, c_coef: Optional[float] = None,
+                 sigma_x: Optional[float] = None, sigma_y: Optional[float] = None, theta: Optional[float] = None,
+                 amplitude: Optional[float] = None, centroid_x: Optional[float] = 0, centroid_y: Optional[float] = 0,
                  size: Optional[int] = None, **kwargs):
         """
         :param a_coef: The a coefficient of the Gaussian polynomial
@@ -747,46 +756,46 @@ class GeneralizedGaussian(KernelBasedCallPSF, _GaussianSkeleton):
             if general_any_check and rotated_any_check:
                 raise ValueError('One of (a_coef, b_coef, c_coef) or (sigma_x, sigma_y, theta) must be not None')
 
-        self.a_coef = 1.0  # type: float
+        self.a_coef: float = 1.0 
         """
         The :math:`(x-x_0)^2` coefficient from the exponential component of the generalized 2D Gaussian.
         """
 
-        self.b_coef = 0.0  # type: float
+        self.b_coef: float = 0.0 
         """
         The :math:`(x-x_0)(y-y_0)` coefficient from the exponential component of the generalized 2D Gaussian.
         """
 
-        self.c_coef = 1.0  # type: float
+        self.c_coef: float = 1.0 
         """
         The :math:`(y-y_0)^2` coefficient from the exponential component of the generalized 2D Gaussian.
         """
 
-        self.sigma_x = 1.0  # type: float
+        self.sigma_x: float = 1.0 
         """
         The RMS width in the semi-major axis direction.  
         """
 
-        self.sigma_y = 1.0  # type: float
+        self.sigma_y: float = 1.0 
         """
         The RMS width in the semi-minor axis direction.  
         """
 
-        self.theta = 0.0  # type: float
+        self.theta: float = 0.0 
         """
         The angle between the semi-major axis and the x axis
         """
 
         if general_check:
-            self.a_coef = a_coef
-            self.b_coef = b_coef
-            self.c_coef = c_coef
+            self.a_coef = a_coef # type: ignore
+            self.b_coef = b_coef # type: ignore
+            self.c_coef = c_coef # type: ignore
 
             self._convert_to_pa()
         elif rotated_check:
-            self.sigma_x = float(sigma_x)
-            self.sigma_y = float(sigma_y)
-            self.theta = float(theta)
+            self.sigma_x = float(sigma_x) # type: ignore
+            self.sigma_y = float(sigma_y) # type: ignore
+            self.theta = float(theta) # type: ignore
             self._convert_to_general()
 
         super().__init__(sigma_x=self.sigma_x, sigma_y=self.sigma_y, size=size, centroid_x=centroid_x,
@@ -892,7 +901,7 @@ class GeneralizedGaussian(KernelBasedCallPSF, _GaussianSkeleton):
                 jacobian = out.compute_jacobian(x, y, computed)
 
                 # assume a single uncertainty for all measurements
-                out._covariance = np.linalg.pinv(jacobian.T @ jacobian) * out.residual_std ** 2
+                out._covariance = np.asanyarray(np.linalg.pinv(jacobian.T @ jacobian) * out.residual_std ** 2, dtype=np.float64)
 
         except (np.linalg.linalg.LinAlgError, ZeroDivisionError):  # if the LHS was singular
             out = cls(a_coef=np.nan, b_coef=np.nan, c_coef=np.nan, amplitude=np.nan,
@@ -957,7 +966,7 @@ class GeneralizedGaussian(KernelBasedCallPSF, _GaussianSkeleton):
         """
 
         if update is None:
-            self.size = np.nan
+            self.size = -1
             self.sigma_x = np.nan
             self.sigma_y = np.nan
             self.theta = np.nan
@@ -976,16 +985,17 @@ class GeneralizedGaussian(KernelBasedCallPSF, _GaussianSkeleton):
             self.amplitude += update[5]
 
     @property
-    def covariance(self) -> Optional[np.ndarray]:
+    def covariance(self) -> DOUBLE_ARRAY:
         r"""
         The formal covariance of the PSF parameters after fitting this PSF model to data.
 
-        If this instance is not the result of a fit (:meth:`fit`) of if :attr:`save_residuals` is ``False`` then this
-        will return None.
+        If this instance is not the result of a fit (:meth:`fit`) or if :attr:`save_residuals` is ``False`` then this
+        will raise an assertion error
 
         The order of the state vector (and thus the covariance matrix) is :math:`[x_0, y_0, a, b, c, A]`.
         """
 
+        assert self._covariance is not None, "you have not performed a fit with this instance"
         return self._covariance
 
     def evaluate(self, x: ARRAY_LIKE, y: ARRAY_LIKE) -> np.ndarray:
@@ -1037,7 +1047,7 @@ class IterativeGeneralizedGaussian(GeneralizedGaussian, InitialGuessIterativeNon
     """
 
     @classmethod
-    def fit(cls, x: ARRAY_LIKE, y: ARRAY_LIKE, z: ARRAY_LIKE) -> __qualname__:
+    def fit(cls, x: ARRAY_LIKE, y: ARRAY_LIKE, z: ARRAY_LIKE) -> Self:
         r"""
         This fits a 2d gaussian function to a surface using iterative non-linear least squares estimation.
 
@@ -1063,7 +1073,7 @@ class IterativeGeneralizedGaussian(GeneralizedGaussian, InitialGuessIterativeNon
         """
 
         # do the fit using the default setup from InitialGuessIterativeNonlinearLSTSQPSF
-        out = cls.fit_lstsq(x, y, z)  # type: IterativeGeneralizedGaussian
+        out = cls.fit_lstsq(x, y, z) 
 
         # check if something isn't right
         if (out.a_coef < 0) or (out.b_coef < 0):
@@ -1095,9 +1105,9 @@ class IterativeGeneralizedGaussianWBackground(GeneralizedGaussian, InitialGuessI
     This class can be used anywhere GIANT expects a point spread function
     """
 
-    def __init__(self, a_coef: Optional[Real] = None, b_coef: Optional[Real] = None, c_coef: Optional[Real] = None,
-                 sigma_x: Optional[Real] = None, sigma_y: Optional[Real] = None, theta: Optional[Real] = None,
-                 amplitude: Optional[Real] = None, centroid_x: Optional[Real] = 0, centroid_y: Optional[Real] = 0,
+    def __init__(self, a_coef: Optional[float] = None, b_coef: Optional[float] = None, c_coef: Optional[float] = None,
+                 sigma_x: Optional[float] = None, sigma_y: Optional[float] = None, theta: Optional[float] = None,
+                 amplitude: Optional[float] = None, centroid_x: Optional[float] = 0, centroid_y: Optional[float] = 0,
                  size: Optional[int] = None, bg_b_coef: Optional[float] = None, bg_c_coef: Optional[float] = None,
                  bg_d_coef: Optional[float] = None):
         """
@@ -1126,7 +1136,7 @@ class IterativeGeneralizedGaussianWBackground(GeneralizedGaussian, InitialGuessI
                          bg_b_coef=bg_b_coef, bg_c_coef=bg_c_coef, bg_d_coef=bg_d_coef)
 
     @classmethod
-    def fit(cls, x: ARRAY_LIKE, y: ARRAY_LIKE, z: ARRAY_LIKE) -> 'IterativeGaussianWBackground':
+    def fit(cls, x: ARRAY_LIKE, y: ARRAY_LIKE, z: ARRAY_LIKE) -> Self:
         r"""
         This fits a 2d gaussian function to a surface using iterative non-linear least squares estimation.
 

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Coverage.determine_footprints &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="Coverage.compute_dop" href="giant.coverage.coverage_class.Coverage.compute_dop.html" />
+    <link rel="prev" title="Coverage.check_fov" href="giant.coverage.coverage_class.Coverage.check_fov.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.coverage.html">giant.coverage</a><ul>
+  <li><a href="../giant.coverage.coverage_class.html">giant.coverage.coverage_class</a><ul>
+  <li><a href="giant.coverage.coverage_class.Coverage.html">giant.coverage.coverage_class.Coverage</a><ul>
+      <li>Previous: <a href="giant.coverage.coverage_class.Coverage.check_fov.html" title="previous chapter">Coverage.check_fov</a></li>
+      <li>Next: <a href="giant.coverage.coverage_class.Coverage.compute_dop.html" title="next chapter">Coverage.compute_dop</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.coverage.coverage_class.Coverage.check_fov.html" title="Previous document">Coverage.check_fov</a>
+        </li>
+        <li>
+          <a href="giant.coverage.coverage_class.Coverage.compute_dop.html" title="Next document">Coverage.compute_dop</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="coverage-determine-footprints">
+<h1>Coverage.determine_footprints<a class="headerlink" href="#coverage-determine-footprints" title="Link to this heading">¶</a></h1>
+<p><a class="reference internal" href="../giant.coverage.coverage_class.html#module-giant.coverage.coverage_class" title="giant.coverage.coverage_class"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.coverage.coverage_class</span></code></a>:</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.coverage.coverage_class.Coverage.determine_footprints">
+<span class="sig-prename descclassname"><span class="pre">Coverage.</span></span><span class="sig-name descname"><span class="pre">determine_footprints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/coverage/coverage_class.html#Coverage.determine_footprints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.coverage.coverage_class.Coverage.determine_footprints" title="Link to this definition">¶</a></dt>
+<dd><p>This function determines a rectangular boundary footprint of the camera’s field-of-view
+projected onto the target surface. If a corner of the FOV misses the target,
+that boundary point will surround the target, but if a corner of the FOV intersects the
+target, that boundary point will lie on the target’s surface at the intersection point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of 4 boundary points at each imaging time defining a rectangle that represents the
+area on the target’s surface that is visible to the camera in its current configuration.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>List</em>[<em>ndarray</em>[tuple[<em>Any</em>, …], <em>dtype</em>[<em>float64</em>]]] | <em>List</em>[<em>List</em>[<em>ndarray</em>[tuple[<em>Any</em>, …], <em>dtype</em>[<em>float64</em>]]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.coverage.coverage_class.Coverage.check_fov.html" title="Previous document">Coverage.check_fov</a>
+        </li>
+        <li>
+          <a href="giant.coverage.coverage_class.Coverage.compute_dop.html" title="Next document">Coverage.compute_dop</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

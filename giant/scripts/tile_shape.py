@@ -1,9 +1,5 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
-
-
 """
-Tile a shape model into SurfaceFeatures in a FeatureCatalogue.
+Tile a shape model into SurfaceFeatures in a FeatureCatalog.
 
 This script tiles an existing shape model in a GIANT format (:mod:`.shapes`, :mod:`.kdtree`, :mod:`.surface_feature`,
 etc) into a :class:`.FeatureCatalgoue` of :class:`.SurfaceFeatures`.  The features are sampled uniformly from the
@@ -41,10 +37,10 @@ from itertools import product
 import numpy as np
 
 from giant.ray_tracer.rays import Rays
-from giant.ray_tracer.shapes import Triangle64, Triangle32
+from giant.ray_tracer.shapes import Triangle64, Triangle32, Shape
 from giant.ray_tracer.kdtree import KDTree
-from giant.relative_opnav.estimators.sfn import SurfaceFeature, FeatureCatalogue
-from giant.catalogues.utilities import unit_to_radec
+from giant.relative_opnav.estimators.sfn import SurfaceFeature, FeatureCatalog
+from giant.utilities.spherical_coordinates import unit_to_radec
 from giant.rotations import rot_z, Rotation
 from giant.utilities.stereophotoclinometry import Landmark, Maplet
 
@@ -64,9 +60,9 @@ def _get_parser():
     parser.add_argument('shape', help='path to the shape file directory')
     parser.add_argument('-f', '--feature_output', help='The directory to save the feature results to',
                         default='./features')
-    parser.add_argument('-c', '--catalogue_output', help='The directory to save the feature results to',
-                        default='./feature_catalogue.pickle')
-    parser.add_argument('-m', '--memory_efficient', help='use memory efficient triangles', action='store_true')
+    parser.add_argument('-c', '--catalog_output', help='The directory to save the feature results to',
+                        default='./feature_catalog.pickle')
+    parser.add_argument('-s32', '--single_precision', help='use single precision for triangles triangles', action='store_true')
     parser.add_argument('-p', '--spc', help='Make spc stuff', action='store_true')
     parser.add_argument('-o', '--objs', help='directory to output objs for each feature to this location '
                                              '(leave none to not make objs)', default=None)
@@ -127,15 +123,16 @@ def determine_centers(gsd, feature_size, body_radius, overlap):
     return feature_locations.T
 
 
-def build_feature(gsd, size, center, shape, me, odir, spc=False):
+def build_feature(gsd: float, size: int, center, shape: Shape, single_precision_triangles: bool, odir, spc: str = "") \
+    -> tuple[SurfaceFeature, np.ndarray, np.ndarray, dict[str, np.ndarray | float]] | tuple[None, None, None, None]:
     """
-    :param gsd:
-    :param size:
-    :param center:
-    :param shape:
-    :param me:
-    :param odir:
-    :param spc:
+    :param gsd: the ground sample distance of the map in m
+    :param size: the number of steps in the map grid on each side
+    :param center: the center location for the map
+    :param shape: The shape to build the map from
+    :param single_precision_triangles: whether to use single or double precision triangles
+    :param odir: the directory to save to 
+    :param spc: the name of the map to produce spc files or empty to not produce spc
     :return:
     :rtype: tuple
     """
@@ -171,7 +168,7 @@ def build_feature(gsd, size, center, shape, me, odir, spc=False):
 
     rays = Rays(np.vstack([grid_x.ravel(), grid_y.ravel(), np.zeros(grid_x.size)]), np.array([0, 0, 1]))
 
-    if isinstance(shape, FeatureCatalogue):
+    if isinstance(shape, FeatureCatalog):
         shape.include_features = None
 
     # rotate the shape into the feature frame
@@ -191,7 +188,7 @@ def build_feature(gsd, size, center, shape, me, odir, spc=False):
     indices = np.arange(grid_x.size).reshape(grid_x.shape)
 
     half_no_tris = indices[:-1, :-1].size
-    facets = np.zeros((2*half_no_tris, 3), dtype=np.long)
+    facets = np.zeros((2*half_no_tris, 3), dtype=np.uint32)
     facets[:half_no_tris, 0] = indices[:-1, :-1].ravel()
     facets[:half_no_tris, 1] = indices[:-1, 1:].ravel()
     facets[:half_no_tris, 2] = indices[1:, :-1].ravel()
@@ -206,7 +203,7 @@ def build_feature(gsd, size, center, shape, me, odir, spc=False):
     feature_center = vertices[vertices.shape[0]//2]
 
     # build the shape
-    if me:
+    if single_precision_triangles:
         feature_shapes = Triangle32(vertices, intersects['albedo'], facets, compute_reference_ellipsoid=False)
     else:
         feature_shapes = Triangle64(vertices, intersects['albedo'], facets, compute_reference_ellipsoid=False)
@@ -323,13 +320,13 @@ def main():
                 lmks.append(spc)
 
             else:
-                spc = False
+                spc = ""
 
             # build the feature
-            feature, verts, tris, info = build_feature(gsd, args.size, center, shape, args.memory_efficient,
+            feature, verts, tris, info = build_feature(gsd, args.size, center, shape, args.single_precision,
                                                        feature_dir, spc=spc)
 
-            if feature is None:
+            if feature is None or verts is None or tris is None:
                 continue
 
             # if we are to save the obj
@@ -338,7 +335,7 @@ def main():
                     for vec in verts:
                         objfile.write(vertex_str.format(*vec))
                     for facet in tris:
-                        objfile.write(facet_str.format(*facet))
+                        objfile.write(facet_str.format(*facet+1))
             features.append(feature)
             feature_info.append(info)
 
@@ -350,11 +347,11 @@ def main():
             for lmk in lmks:
                 ofile.write(lmk + '\n')
             ofile.write('END')
-    catalogue = FeatureCatalogue(features, map_info=feature_info)
+    catalog = FeatureCatalog(features, map_info=feature_info)
 
-    with open(args.catalogue_output, 'wb') as ofile:
+    with open(args.catalog_output, 'wb') as ofile:
         # Added warning to documentation
-        pickle.dump(catalogue, ofile)  # nosec
+        pickle.dump(catalog, ofile)  # nosec
 
 
 if __name__ == '__main__':

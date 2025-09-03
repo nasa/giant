@@ -1,36 +1,36 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>giant.point_spread_functions.psf_meta &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <title>giant.point_spread_functions.psf_meta &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="copyright" title="Copyright" href="../../../copyright.html" />
    
   <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../../../index.html">
-    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -63,7 +63,7 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
@@ -71,8 +71,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -89,8 +89,7 @@
           <div class="body" role="main">
             
   <h1>Source code for giant.point_spread_functions.psf_meta</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
-<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
+<span></span>
 
 
 <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
@@ -157,20 +156,20 @@
 <span class="sd">For examples of how this is done, refer to the pre-defined PSFs in :mod:`.gaussians`.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Self</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">scipy.fftpack.helper</span> <span class="kn">import</span> <span class="n">next_fast_len</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.fftpack</span><span class="w"> </span><span class="kn">import</span> <span class="n">next_fast_len</span>
 
-<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
 
-<span class="kn">from</span> <span class="nn">.._typing</span> <span class="kn">import</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">Real</span><span class="p">,</span> <span class="n">NONEARRAY</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">NONEARRAY</span>
 
 
-<span class="k">def</span> <span class="nf">_fft_convolve_1d</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_fft_convolve_1d</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function performs FFT based convolution on nd arrays of 1d scan lines.</span>
 
 <span class="sd">    :param a: array of 1d scan lines</span>
@@ -195,8 +194,10 @@
     <span class="k">return</span> <span class="n">cc</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">dif</span><span class="p">:</span><span class="n">dif</span> <span class="o">+</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
 
 
-<div class="viewcode-block" id="PointSpreadFunction"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.PointSpreadFunction">[docs]</a><span class="k">class</span> <span class="nc">PointSpreadFunction</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PointSpreadFunction">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.PointSpreadFunction">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PointSpreadFunction</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This abstract base class serves as the template for implementing a point spread function in GIANT.</span>
 
 <span class="sd">    A point spread function models how a camera spreads out a point source of light across multiple pixels in an image.</span>
@@ -214,8 +215,8 @@
 <span class="sd">    .. note:: Because this is an ABC, you cannot create an instance of this class (it will raise a ``TypeError``)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">save_residuals</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># type: bool</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="n">save_residuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span> 
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class attribute specifies whether to save the residuals when fitting the specified PSF to data.</span>
 
 <span class="sd">    Saving the residuals can be important for in depth analysis but can use a lot of space when many fits are being </span>
@@ -223,9 +224,11 @@
 <span class="sd">    initialization.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="PointSpreadFunction.__call__"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.__call__.html#giant.point_spread_functions.PointSpreadFunction.__call__">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PointSpreadFunction.__call__">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.__call__.html#giant.point_spread_functions.PointSpreadFunction.__call__">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Point spread functions are callable on images and should apply the stored PSF to the image and return the</span>
 <span class="sd">        result.</span>
 
@@ -233,10 +236,13 @@
 <span class="sd">        :return: The image after applying the PSF</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
-<div class="viewcode-block" id="PointSpreadFunction.apply_1d"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.apply_1d.html#giant.point_spread_functions.PointSpreadFunction.apply_1d">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">apply_1d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_1d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">step</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PointSpreadFunction.apply_1d">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.apply_1d.html#giant.point_spread_functions.PointSpreadFunction.apply_1d">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply_1d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_1d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Applies the defined PSF using the stored parameters to the 1D image scans provided.</span>
 
 <span class="sd">        ``image_1d`` can be a 2D array but in that case each row will be treated as an independent 1D scan.</span>
@@ -252,9 +258,12 @@
 <span class="sd">        :return: an array containing the input after blurring with the defined PSF</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
-<div class="viewcode-block" id="PointSpreadFunction.generate_kernel"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.generate_kernel.html#giant.point_spread_functions.PointSpreadFunction.generate_kernel">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">generate_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PointSpreadFunction.generate_kernel">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.generate_kernel.html#giant.point_spread_functions.PointSpreadFunction.generate_kernel">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generates a square kernel centered at the centroid of the PSF normalized to have a volume (sum) of 1.</span>
 
 <span class="sd">        Essentially this evaluates :math:`z = f(x, y)` for x in :math:`[x_0-size//2, x_0+size//2]` and y in</span>
@@ -267,9 +276,12 @@
 <span class="sd">        :return: A normalized kernel of the PSF centered at the centroid</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
-<div class="viewcode-block" id="PointSpreadFunction.evaluate"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.evaluate.html#giant.point_spread_functions.PointSpreadFunction.evaluate">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PointSpreadFunction.evaluate">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.evaluate.html#giant.point_spread_functions.PointSpreadFunction.evaluate">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method evaluates the PSF at the given x and y.</span>
 
 <span class="sd">        This method is not intended to be used to apply the PSF for an image (use the callable capability of the class</span>
@@ -281,10 +293,13 @@
 <span class="sd">        :return: A numpy array containing the height of the PSF at the requested locations the same shape as x and y.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
-<div class="viewcode-block" id="PointSpreadFunction.fit"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.fit.html#giant.point_spread_functions.PointSpreadFunction.fit">[docs]</a>    <span class="nd">@classmethod</span>
+
+<div class="viewcode-block" id="PointSpreadFunction.fit">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.fit.html#giant.point_spread_functions.PointSpreadFunction.fit">[docs]</a>
+    <span class="nd">@classmethod</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="vm">__qualname__</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This function fits the defined PSF to the input data and returns an initialize version of the class based on the</span>
 <span class="sd">        fit.</span>
 
@@ -299,10 +314,11 @@
 <span class="sd">        :return: An instance of the PSF that best fits the provided data</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
+
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">centroid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">centroid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This should return the centroid or peak of the initialized PSF as a x, y length 2 numpy array.</span>
 
 <span class="sd">        This property is used to enable the PSF class to be used in identifying the center of</span>
@@ -311,8 +327,8 @@
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">residual_rss</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">residual_rss</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This should return residual sum of squares (RSS) of the post-fit residuals from fitting this PSF to the data.</span>
 
 <span class="sd">        If the PSF is not the result of a fit or the :attr:`save_residuals` is ``False`` this will return ``None``.</span>
@@ -320,8 +336,8 @@
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">residual_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">residual_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This should return the mean of the post-fit residuals from fitting this PSF to the data.</span>
 
 <span class="sd">        If the PSF is not the result of a fit or the :attr:`save_residuals` is ``False`` this will return ``None``.</span>
@@ -329,8 +345,8 @@
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">residual_std</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">residual_std</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This should return the standard deviation of the post-fit residuals from fitting this PSF to the data.</span>
 
 <span class="sd">        If the PSF is not the result of a fit or the :attr:`save_residuals` is ``False`` this will return ``None``.</span>
@@ -338,34 +354,56 @@
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This should return the formal covariance of the PSF parameters (if the PSF was fit and not initialized).</span>
 
 <span class="sd">        If the PSF is not the result of a fit or the :attr:`save_residuals` is ``False`` this will return ``None``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="PointSpreadFunction.volume"><a class="viewcode-back" href="../../../giant.point_spread_functions.html#giant.point_spread_functions.PointSpreadFunction.volume">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PointSpreadFunction.volume">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.volume.html#giant.point_spread_functions.PointSpreadFunction.volume">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This should compute the total volume contained under the PSF.</span>
 
 <span class="sd">        :return: The total volume contained under the PSF</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
-<div class="viewcode-block" id="PointSpreadFunction.compare"><a class="viewcode-back" href="../../../giant.point_spread_functions.html#giant.point_spread_functions.PointSpreadFunction.compare">[docs]</a>    <span class="k">def</span> <span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="vm">__qualname__</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PointSpreadFunction.compare">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.compare.html#giant.point_spread_functions.PointSpreadFunction.compare">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        For real PSFs, this method generates how well the PSF matches another between 0 and 1, with 1 being a perfect</span>
 <span class="sd">        match and 0 being a horrible match.</span>
 
 <span class="sd">        Typically this is evaluated as the clipped pearson product moment coefficient between the kernels of the 2 psfs.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">generate_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">other</span><span class="o">.</span><span class="n">generate_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">ravel</span><span class="p">())[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span></div></div>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">generate_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">other</span><span class="o">.</span><span class="n">generate_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">ravel</span><span class="p">())[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span></div>
+
+    
+<div class="viewcode-block" id="PointSpreadFunction.shift_centroid">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.shift_centroid.html#giant.point_spread_functions.PointSpreadFunction.shift_centroid">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shift_centroid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shift</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shift the centroid.</span>
+<span class="sd">        </span>
+<span class="sd">        :param shift: the shift to apply as a len array like x, y </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">pass</span></div>
+</div>
 
 
-<div class="viewcode-block" id="KernelBasedApply1DPSF"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.html#giant.point_spread_functions.KernelBasedApply1DPSF">[docs]</a><span class="k">class</span> <span class="nc">KernelBasedApply1DPSF</span><span class="p">(</span><span class="n">PointSpreadFunction</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="KernelBasedApply1DPSF">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.html#giant.point_spread_functions.KernelBasedApply1DPSF">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">KernelBasedApply1DPSF</span><span class="p">(</span><span class="n">PointSpreadFunction</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This ABC adds concrete common functionality for applying the initialized PSF to 1D scan lines to</span>
 <span class="sd">    :class:`.PointSpreadFunction`.</span>
 
@@ -376,9 +414,11 @@
 <span class="sd">    be seen in :class:`.Gaussian`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="KernelBasedApply1DPSF.apply_1d_sized"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.apply_1d_sized.html#giant.point_spread_functions.KernelBasedApply1DPSF.apply_1d_sized">[docs]</a>    <span class="k">def</span> <span class="nf">apply_1d_sized</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_1d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                       <span class="n">direction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="KernelBasedApply1DPSF.apply_1d_sized">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.KernelBasedApply1DPSF.apply_1d_sized.html#giant.point_spread_functions.KernelBasedApply1DPSF.apply_1d_sized">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply_1d_sized</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_1d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                       <span class="n">direction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Applies the defined PSF using the stored parameters to the 1D image scans provided with a given kernel size.</span>
 
 <span class="sd">        ``image_1d`` can be a 2D array but in that case each row will be treated as an independent 1D scan.</span>
@@ -428,11 +468,15 @@
         <span class="n">kernels</span> <span class="o">/=</span> <span class="n">kernels</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># apply the kernels</span>
-        <span class="k">return</span> <span class="n">_fft_convolve_1d</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">kernels</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">_fft_convolve_1d</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">kernels</span><span class="p">)</span></div>
+</div>
 
 
-<div class="viewcode-block" id="KernelBasedCallPSF"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.KernelBasedCallPSF.html#giant.point_spread_functions.KernelBasedCallPSF">[docs]</a><span class="k">class</span> <span class="nc">KernelBasedCallPSF</span><span class="p">(</span><span class="n">PointSpreadFunction</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="KernelBasedCallPSF">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.KernelBasedCallPSF.html#giant.point_spread_functions.KernelBasedCallPSF">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">KernelBasedCallPSF</span><span class="p">(</span><span class="n">PointSpreadFunction</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This ABC adds concrete common functionality for applying the initialized PSF to 2D images to</span>
 <span class="sd">    :class:`.PointSpreadFunction`.</span>
 
@@ -442,8 +486,10 @@
 <span class="sd">    optimized call sequence.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="KernelBasedCallPSF.__call__"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.KernelBasedCallPSF.__call__.html#giant.point_spread_functions.KernelBasedCallPSF.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="KernelBasedCallPSF.__call__">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.KernelBasedCallPSF.__call__.html#giant.point_spread_functions.KernelBasedCallPSF.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method generates a kernel and then convolves it with the input image.</span>
 
 <span class="sd">        The kernel is generated by a call the :meth:`generate_kernel`.  The kernel is then applied with border</span>
@@ -457,11 +503,15 @@
         <span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_kernel</span><span class="p">()</span>
 
         <span class="c1"># apply it through filtering</span>
-        <span class="k">return</span> <span class="n">cv2</span><span class="o">.</span><span class="n">filter2D</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">borderType</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">BORDER_REPLICATE</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">cv2</span><span class="o">.</span><span class="n">filter2D</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">borderType</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">BORDER_REPLICATE</span><span class="p">)</span></div>
+</div>
 
 
-<div class="viewcode-block" id="SizedPSF"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.SizedPSF.html#giant.point_spread_functions.SizedPSF">[docs]</a><span class="k">class</span> <span class="nc">SizedPSF</span><span class="p">(</span><span class="n">PointSpreadFunction</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SizedPSF">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.SizedPSF.html#giant.point_spread_functions.SizedPSF">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SizedPSF</span><span class="p">(</span><span class="n">PointSpreadFunction</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This ABC adds common functionality for a PSF where the required size can be determine algorithmically.</span>
 
 <span class="sd">    Specifically, this adds an instance attribute :attr:`size` which stores the size of the PSF,</span>
@@ -470,13 +520,13 @@
 <span class="sd">    based on the :attr:`size`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param size: The size of the kernel to generate.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># type: int</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The size of the kernel to return on a call to :meth:`generate_kernel`.</span>
 <span class="sd">        </span>
 <span class="sd">        Typically this should be an odd number to ensure that the kernel is square and centered.</span>
@@ -489,9 +539,11 @@
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="SizedPSF.determine_size"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.SizedPSF.determine_size.html#giant.point_spread_functions.SizedPSF.determine_size">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">determine_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SizedPSF.determine_size">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.SizedPSF.determine_size.html#giant.point_spread_functions.SizedPSF.determine_size">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">determine_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sets the size required for the kernel algorithmically.</span>
 
 <span class="sd">        Typically this is based on the width of the PSF.</span>
@@ -501,8 +553,11 @@
 
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="SizedPSF.generate_kernel"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.SizedPSF.generate_kernel.html#giant.point_spread_functions.SizedPSF.generate_kernel">[docs]</a>    <span class="k">def</span> <span class="nf">generate_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="SizedPSF.generate_kernel">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.SizedPSF.generate_kernel.html#giant.point_spread_functions.SizedPSF.generate_kernel">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generates a square kernel centered at the centroid of the PSF normalized to have a volume (sum) of 1 for the</span>
 <span class="sd">        size input or specified in the :attr:`size` attribute.</span>
 
@@ -534,22 +589,32 @@
         <span class="k">return</span> <span class="n">kernel</span></div>
 
 
-<div class="viewcode-block" id="SizedPSF.compare"><a class="viewcode-back" href="../../../giant.point_spread_functions.html#giant.point_spread_functions.SizedPSF.compare">[docs]</a>    <span class="k">def</span> <span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="vm">__qualname__</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SizedPSF.compare">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.SizedPSF.compare.html#giant.point_spread_functions.SizedPSF.compare">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">PointSpreadFunction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        For real PSFs, this method generates how well the PSF matches another between 0 and 1, with 1 being a perfect</span>
 <span class="sd">        match and 0 being a horrible match.</span>
 
 <span class="sd">        Typically this is evaluated as the clipped pearson product moment coefficient between the kernels of the 2 psfs.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SizedPSF</span><span class="p">):</span>
+            <span class="k">return</span> <span class="mi">0</span>
 
         <span class="n">size</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">generate_kernel</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
-                                         <span class="n">other</span><span class="o">.</span><span class="n">generate_kernel</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">())[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span></div></div>
+                                         <span class="n">other</span><span class="o">.</span><span class="n">generate_kernel</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">())[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span></div>
+</div>
 
 
-<div class="viewcode-block" id="IterativeNonlinearLSTSQPSF"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQPSF.html#giant.point_spread_functions.IterativeNonlinearLSTSQPSF">[docs]</a><span class="k">class</span> <span class="nc">IterativeNonlinearLSTSQPSF</span><span class="p">(</span><span class="n">PointSpreadFunction</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IterativeNonlinearLSTSQPSF">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQPSF.html#giant.point_spread_functions.IterativeNonlinearLSTSQPSF">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IterativeNonlinearLSTSQPSF</span><span class="p">(</span><span class="n">PointSpreadFunction</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This ABC defines common attributes, properties, and methods for Iterative Non-linear least squares estimation of</span>
 <span class="sd">    a Point Spread function.</span>
 
@@ -570,26 +635,28 @@
 <span class="sd">    updated class parameters</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">max_iter</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c1"># type: int</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span> 
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    An integer defining the maximum number of iterations to attempt in the iterative least squares solution.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">atol</span> <span class="o">=</span> <span class="mf">1e-10</span>  <span class="c1"># type: float</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-10</span> 
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The absolute tolerance cut-off for the iterative least squares. (The iteration will cease when the new estimate is </span>
 <span class="sd">    within this tolerance for every element from the previous estimate)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">rtol</span> <span class="o">=</span> <span class="mf">1e-10</span>  <span class="c1"># type: float</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-10</span> 
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The relative tolerance cut-off for the iterative least squares. (The iteration will cease when the maximum percent </span>
 <span class="sd">    change in the state vector from one iteration to the next is less than this value)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="IterativeNonlinearLSTSQPSF.compute_jacobian"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQPSF.compute_jacobian.html#giant.point_spread_functions.IterativeNonlinearLSTSQPSF.compute_jacobian">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">computed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="IterativeNonlinearLSTSQPSF.compute_jacobian">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQPSF.compute_jacobian.html#giant.point_spread_functions.IterativeNonlinearLSTSQPSF.compute_jacobian">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">computed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method computes the Jacobian of the PSF with respect to a change in the state.</span>
 
 <span class="sd">        Mathematically, it should return the nxm matrix</span>
@@ -612,9 +679,12 @@
 
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="IterativeNonlinearLSTSQPSF.update_state"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQPSF.update_state.html#giant.point_spread_functions.IterativeNonlinearLSTSQPSF.update_state">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">NONEARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IterativeNonlinearLSTSQPSF.update_state">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQPSF.update_state.html#giant.point_spread_functions.IterativeNonlinearLSTSQPSF.update_state">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">NONEARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Updates the current values based on the provided update vector.</span>
 
 <span class="sd">        The provided update vector is in the order according to order of the columns returned from</span>
@@ -628,8 +698,11 @@
 
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="IterativeNonlinearLSTSQPSF.converge"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQPSF.converge.html#giant.point_spread_functions.IterativeNonlinearLSTSQPSF.converge">[docs]</a>    <span class="k">def</span> <span class="nf">converge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NONEARRAY</span><span class="p">,</span> <span class="n">NONEARRAY</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IterativeNonlinearLSTSQPSF.converge">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQPSF.converge.html#giant.point_spread_functions.IterativeNonlinearLSTSQPSF.converge">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">converge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NONEARRAY</span><span class="p">,</span> <span class="n">NONEARRAY</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Performs iterative non-linear least squares on a PSF model until convergence has been reached for a function of</span>
 <span class="sd">        the form :math:`z=f(x, y)`</span>
 
@@ -717,11 +790,15 @@
                 <span class="k">return</span> <span class="n">residuals</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">jacobian</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">jacobian</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div></div>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+</div>
 
 
-<div class="viewcode-block" id="IterativeNonlinearLSTSQwBackground"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground.html#giant.point_spread_functions.IterativeNonlinearLSTSQwBackground">[docs]</a><span class="k">class</span> <span class="nc">IterativeNonlinearLSTSQwBackground</span><span class="p">(</span><span class="n">IterativeNonlinearLSTSQPSF</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IterativeNonlinearLSTSQwBackground">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground.html#giant.point_spread_functions.IterativeNonlinearLSTSQwBackground">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IterativeNonlinearLSTSQwBackground</span><span class="p">(</span><span class="n">IterativeNonlinearLSTSQPSF</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class provides support for estimating the superposition of the PSF and a linear background gradient.</span>
 
 <span class="sd">    This class is typically not used by the user except when implementing a new PSF class that uses iterative nonlinear</span>
@@ -747,31 +824,31 @@
 <span class="sd">    The background terms are stored in instance attributes :attr:`bg_b_coef`, :attr:`bg_c_coef`, and :attr:`bg_d_coef`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bg_b_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bg_c_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">bg_d_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bg_b_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bg_c_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">bg_d_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param bg_b_coef: The x slope of the background gradient</span>
 <span class="sd">        :param bg_c_coef: They y slope of the background gradient</span>
 <span class="sd">        :param bg_d_coef: The constant offset of the background gradient</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bg_b_coef</span> <span class="o">=</span> <span class="mf">0.0</span>   <span class="c1"># type: float</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bg_b_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>  
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The x slope of the background gradient</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">bg_b_coef</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">bg_b_coef</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">bg_b_coef</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">bg_c_coef</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># type: float</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bg_c_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The y slope of the background gradient</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">bg_c_coef</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">bg_c_coef</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">bg_c_coef</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">bg_d_coef</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># type: float</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bg_d_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The constant offset of the background gradient</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -780,9 +857,11 @@
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="IterativeNonlinearLSTSQwBackground.compute_jacobian_bg"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground.compute_jacobian_bg.html#giant.point_spread_functions.IterativeNonlinearLSTSQwBackground.compute_jacobian_bg">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">compute_jacobian_bg</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="IterativeNonlinearLSTSQwBackground.compute_jacobian_bg">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground.compute_jacobian_bg.html#giant.point_spread_functions.IterativeNonlinearLSTSQwBackground.compute_jacobian_bg">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_jacobian_bg</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This computes the Jacobian matrix for the background terms.</span>
 
 <span class="sd">        Mathematically this is</span>
@@ -801,8 +880,11 @@
 
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)])</span></div>
 
-<div class="viewcode-block" id="IterativeNonlinearLSTSQwBackground.apply_update_bg"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground.apply_update_bg.html#giant.point_spread_functions.IterativeNonlinearLSTSQwBackground.apply_update_bg">[docs]</a>    <span class="k">def</span> <span class="nf">apply_update_bg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bg_update</span><span class="p">:</span> <span class="n">NONEARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IterativeNonlinearLSTSQwBackground.apply_update_bg">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground.apply_update_bg.html#giant.point_spread_functions.IterativeNonlinearLSTSQwBackground.apply_update_bg">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply_update_bg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bg_update</span><span class="p">:</span> <span class="n">NONEARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This applies the background update to the background state</span>
 
 <span class="sd">        This typically should be called from the regular :meth:`~IterativeNonlinearLSTSQPSF.update_state` and only fed</span>
@@ -820,8 +902,11 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">bg_c_coef</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">bg_d_coef</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span></div>
 
-<div class="viewcode-block" id="IterativeNonlinearLSTSQwBackground.evaluate_bg"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground.evaluate_bg.html#giant.point_spread_functions.IterativeNonlinearLSTSQwBackground.evaluate_bg">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_bg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IterativeNonlinearLSTSQwBackground.evaluate_bg">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground.evaluate_bg.html#giant.point_spread_functions.IterativeNonlinearLSTSQwBackground.evaluate_bg">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate_bg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This computes the background component at locations ``x`` and ``y``.</span>
 
 <span class="sd">        The background component is defined as</span>
@@ -836,9 +921,12 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bg_b_coef</span><span class="o">*</span><span class="n">x</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">bg_c_coef</span><span class="o">*</span><span class="n">y</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">bg_d_coef</span></div>
 
-<div class="viewcode-block" id="IterativeNonlinearLSTSQwBackground.fit_bg"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground.fit_bg.html#giant.point_spread_functions.IterativeNonlinearLSTSQwBackground.fit_bg">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">fit_bg</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="vm">__qualname__</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IterativeNonlinearLSTSQwBackground.fit_bg">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.IterativeNonlinearLSTSQwBackground.fit_bg.html#giant.point_spread_functions.IterativeNonlinearLSTSQwBackground.fit_bg">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit_bg</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method tries to fit the background using linear least squares without worrying about any PSF included.</span>
 
 <span class="sd">        This is useful if you need to subtract off a rough estimate of the background before attempting to fit the PSF</span>
@@ -868,11 +956,15 @@
         <span class="c1"># store the results</span>
         <span class="n">out</span><span class="o">.</span><span class="n">apply_update_bg</span><span class="p">(</span><span class="n">update</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">out</span></div></div>
+        <span class="k">return</span> <span class="n">out</span></div>
+</div>
 
 
-<div class="viewcode-block" id="InitialGuessIterativeNonlinearLSTSQPSF"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSF.html#giant.point_spread_functions.InitialGuessIterativeNonlinearLSTSQPSF">[docs]</a><span class="k">class</span> <span class="nc">InitialGuessIterativeNonlinearLSTSQPSF</span><span class="p">(</span><span class="n">IterativeNonlinearLSTSQPSF</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="InitialGuessIterativeNonlinearLSTSQPSF">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSF.html#giant.point_spread_functions.InitialGuessIterativeNonlinearLSTSQPSF">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">InitialGuessIterativeNonlinearLSTSQPSF</span><span class="p">(</span><span class="n">IterativeNonlinearLSTSQPSF</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class provides a fit class method which generates the initial guess from a subclass and then converges to a</span>
 <span class="sd">    better solution using iterative Nonlinear LSTSQ.</span>
 
@@ -889,25 +981,27 @@
 <span class="sd">    residuals of the fit if requested.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_covariance</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: NONEARRAY</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_covariance</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The covariance of the fit as a nxn array (for n state elements) or None, depending on if</span>
 <span class="sd">        :attr:`~PointSpreadFunction.save_residuals` is ``True``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_residuals</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: NONEARRAY</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_residuals</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The residuals of the fit as a length m array (for m observations) or None, depending on if</span>
 <span class="sd">        :attr:`~PointSpreadFunction.save_residuals` is ``True``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="InitialGuessIterativeNonlinearLSTSQPSF.fit_lstsq"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSF.fit_lstsq.html#giant.point_spread_functions.InitialGuessIterativeNonlinearLSTSQPSF.fit_lstsq">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">fit_lstsq</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="vm">__qualname__</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="InitialGuessIterativeNonlinearLSTSQPSF.fit_lstsq">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSF.fit_lstsq.html#giant.point_spread_functions.InitialGuessIterativeNonlinearLSTSQPSF.fit_lstsq">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit_lstsq</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This fits a PSF to a surface using iterative non-linear least squares estimation.</span>
 
 <span class="sd">        The estimation in this function is performed iteratively.  First, a non-iterative fit is performed using the</span>
@@ -947,11 +1041,15 @@
         <span class="c1"># converge to the better solution and capture the residuals, maybe</span>
         <span class="n">out</span><span class="o">.</span><span class="n">_residuals</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">_covariance</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">converge</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">out</span></div></div>
+        <span class="k">return</span> <span class="n">out</span></div>
+</div>
 
 
-<div class="viewcode-block" id="InitialGuessIterativeNonlinearLSTSQPSFwBackground"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.html#giant.point_spread_functions.InitialGuessIterativeNonlinearLSTSQPSFwBackground">[docs]</a><span class="k">class</span> <span class="nc">InitialGuessIterativeNonlinearLSTSQPSFwBackground</span><span class="p">(</span><span class="n">IterativeNonlinearLSTSQwBackground</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="InitialGuessIterativeNonlinearLSTSQPSFwBackground">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.html#giant.point_spread_functions.InitialGuessIterativeNonlinearLSTSQPSFwBackground">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">InitialGuessIterativeNonlinearLSTSQPSFwBackground</span><span class="p">(</span><span class="n">IterativeNonlinearLSTSQwBackground</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class provides a fit class method which generates the initial guess from a subclass and then converges to a</span>
 <span class="sd">    better solution using iterative Nonlinear LSTSQ including a background gradient.</span>
 
@@ -968,9 +1066,9 @@
 <span class="sd">    residuals of the fit if requested.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bg_b_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bg_c_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">bg_d_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bg_b_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bg_c_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">bg_d_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param bg_b_coef: The x slope of the background gradient</span>
 <span class="sd">        :param bg_c_coef: They y slope of the background gradient</span>
 <span class="sd">        :param bg_d_coef: The constant offset of the background gradient</span>
@@ -978,21 +1076,23 @@
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">bg_b_coef</span><span class="p">,</span> <span class="n">bg_c_coef</span><span class="p">,</span> <span class="n">bg_d_coef</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_covariance</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: NONEARRAY</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_covariance</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The covariance of the fit as a nxn array (for n state elements) or None, depending on if</span>
 <span class="sd">        :attr:`~PointSpreadFunction.save_residuals` is ``True``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_residuals</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: NONEARRAY</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_residuals</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The residuals of the fit as a length m array (for m observations) or None, depending on if</span>
 <span class="sd">        :attr:`~PointSpreadFunction.save_residuals` is ``True``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq.html#giant.point_spread_functions.InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">fit_lstsq</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="vm">__qualname__</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq.html#giant.point_spread_functions.InitialGuessIterativeNonlinearLSTSQPSFwBackground.fit_lstsq">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit_lstsq</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This fits a PSF to a surface using iterative non-linear least squares estimation.</span>
 
 <span class="sd">        The estimation in this function is performed iteratively.  First, the rough background is estimated and removed.</span>
@@ -1051,8 +1151,11 @@
 
         <span class="k">return</span> <span class="n">out</span></div>
 
-<div class="viewcode-block" id="InitialGuessIterativeNonlinearLSTSQPSFwBackground.compute_jacobian_all"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.compute_jacobian_all.html#giant.point_spread_functions.InitialGuessIterativeNonlinearLSTSQPSFwBackground.compute_jacobian_all">[docs]</a>    <span class="k">def</span> <span class="nf">compute_jacobian_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">computed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="InitialGuessIterativeNonlinearLSTSQPSFwBackground.compute_jacobian_all">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.compute_jacobian_all.html#giant.point_spread_functions.InitialGuessIterativeNonlinearLSTSQPSFwBackground.compute_jacobian_all">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_jacobian_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">computed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method computes the Jacobian of the PSF with respect to a change in the state.</span>
 
 <span class="sd">        Mathematically, it should return the nxm matrix</span>
@@ -1079,8 +1182,11 @@
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">compute_jacobian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">computed_no_bg</span><span class="p">),</span>
                           <span class="bp">self</span><span class="o">.</span><span class="n">compute_jacobian_bg</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)])</span></div>
 
-<div class="viewcode-block" id="InitialGuessIterativeNonlinearLSTSQPSFwBackground.evaluate"><a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.evaluate.html#giant.point_spread_functions.InitialGuessIterativeNonlinearLSTSQPSFwBackground.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="InitialGuessIterativeNonlinearLSTSQPSFwBackground.evaluate">
+<a class="viewcode-back" href="../../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.InitialGuessIterativeNonlinearLSTSQPSFwBackground.evaluate.html#giant.point_spread_functions.InitialGuessIterativeNonlinearLSTSQPSFwBackground.evaluate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method evaluates the PSF at the given x and y.</span>
 
 <span class="sd">        This method is not intended to be used to apply the PSF for an image (use the callable capability of the class</span>
@@ -1096,8 +1202,13 @@
 
         <span class="k">if</span> <span class="n">extras</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">extras</span> <span class="o">=</span> <span class="mi">0</span>
+            
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_bg</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="n">extras</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_bg</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="n">extras</span></div>
+</div>
+
 </pre></div>
 
           </div>
@@ -1113,17 +1224,24 @@
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

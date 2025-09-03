@@ -1,36 +1,36 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>giant.point_spread_functions.gaussians &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <title>giant.point_spread_functions.gaussians &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="copyright" title="Copyright" href="../../../copyright.html" />
    
   <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../../../index.html">
-    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -63,7 +63,7 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
@@ -71,8 +71,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -89,8 +89,7 @@
           <div class="body" role="main">
             
   <h1>Source code for giant.point_spread_functions.gaussians</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
-<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
+<span></span>
 
 
 <span class="sd">&quot;&quot;&quot;</span>
@@ -106,33 +105,33 @@
 <span class="sd">something that is currently under development.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Self</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
 
-<span class="kn">from</span> <span class="nn">.psf_meta</span> <span class="kn">import</span> <span class="p">(</span><span class="n">KernelBasedApply1DPSF</span><span class="p">,</span> <span class="n">KernelBasedCallPSF</span><span class="p">,</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.psf_meta</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">KernelBasedApply1DPSF</span><span class="p">,</span> <span class="n">KernelBasedCallPSF</span><span class="p">,</span>
                        <span class="n">InitialGuessIterativeNonlinearLSTSQPSF</span><span class="p">,</span> <span class="n">SizedPSF</span><span class="p">,</span>
                        <span class="n">InitialGuessIterativeNonlinearLSTSQPSFwBackground</span><span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">.._typing</span> <span class="kn">import</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">Real</span><span class="p">,</span> <span class="n">NONEARRAY</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">NONEARRAY</span><span class="p">,</span> <span class="n">DOUBLE_ARRAY</span>
 
 
-<span class="k">class</span> <span class="nc">_GaussianSkeleton</span><span class="p">(</span><span class="n">KernelBasedApply1DPSF</span><span class="p">,</span> <span class="n">SizedPSF</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_GaussianSkeleton</span><span class="p">(</span><span class="n">KernelBasedApply1DPSF</span><span class="p">,</span> <span class="n">SizedPSF</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This internal class defines common attributes, properties, and methods for Gaussian based PSFs.</span>
 
 <span class="sd">    This should not be used by the user as it is not functional as is.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">centroid_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">centroid_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-                 <span class="n">sigma_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">centroid_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">centroid_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                 <span class="n">sigma_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># type: float</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The Gaussian RMS width in the x direction in pixels.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -140,15 +139,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sigma_x</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span> <span class="o">=</span> <span class="n">sigma_x</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The Gaussian RMS width in the y direction in pixels.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="p">((</span><span class="n">sigma_y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">sigma_y</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sigma_y</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># type: float</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The amplitude of the Gaussian.</span>
 
 <span class="sd">        This specifies how much energy the Gaussian function increases or decreases the signal by.  </span>
@@ -162,8 +161,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_x</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># type: float</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The x location of the peak of the Gaussian kernel</span>
 
 <span class="sd">        When applying the gaussian kernel, the centroid doesn&#39;t matter as it will always be applied as if it was </span>
@@ -174,8 +173,8 @@
         <span class="k">if</span> <span class="n">centroid_x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">centroid_x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">centroid_x</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_y</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># type: float</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_y</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The y location of the peak of the Gaussian kernel</span>
 
 <span class="sd">        When applying the gaussian kernel, the centroid doesn&#39;t matter as it will always be applied as if it was </span>
@@ -186,14 +185,14 @@
         <span class="k">if</span> <span class="n">centroid_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">centroid_y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">centroid_y</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_residuals</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: NONEARRAY</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_residuals</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span> 
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_covariance</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: NONEARRAY</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_covariance</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span> 
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print out the PSF parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -213,19 +212,22 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">residuals</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">residuals</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A 1D array containing residuals of the fit of this Gaussian Model to data.</span>
 
 <span class="sd">        These are only populated when initialized by :meth:`fit` and when the class attribute :attr:`save_residuals`</span>
 <span class="sd">        is set to true.</span>
+<span class="sd">        </span>
+<span class="sd">        If this instance is not the result of a fit (:meth:`fit`) or if :attr:`save_residuals` is ``False`` then accessing</span>
+<span class="sd">        will raise an assertion error</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_residuals</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;you have not done a fit so the residuals have not been computed yet.&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_residuals</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">centroid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">centroid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The location of the peak of the Gaussian PSF as a length 2 numpy array (x, y).</span>
 
 <span class="sd">        This is equivalent to ``np.array([psf.centroid_x, psf.centroid_y])`` where ``psf`` is an initialized instance of</span>
@@ -233,63 +235,66 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_y</span><span class="p">])</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">shift_centroid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shift</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shift the centroid.</span>
+<span class="sd">        </span>
+<span class="sd">        :param shift: the shift to apply as a len array like x, y </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">shift</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">shift</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">2</span><span class="p">,),</span> <span class="s2">&quot;the applied shift must be a length 2 array&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_x</span> <span class="o">+=</span> <span class="n">shift</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_y</span> <span class="o">+=</span> <span class="n">shift</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">residual_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">residual_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The mean of the post-fit residuals after fitting this PSF model to data.</span>
 
 <span class="sd">        If this instance is not the result of a fit (:meth:`fit`) or if :attr:`save_residuals` is ``False`` then this</span>
-<span class="sd">        will return None</span>
+<span class="sd">        will raise an assertion error</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">))</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">residual_std</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">residual_std</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The standard deviation of the post-fit residuals after fitting this PSF model to data.</span>
-
+<span class="sd">        </span>
 <span class="sd">        If this instance is not the result of a fit (:meth:`fit`) or if :attr:`save_residuals` is ``False`` then this</span>
-<span class="sd">        will return None</span>
+<span class="sd">        will raise an assertion error</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">))</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">residual_rss</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">residual_rss</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The sum of squares of the post-fit residuals after fitting this PSF model to data.</span>
 
 <span class="sd">        If this instance is not the result of a fit (:meth:`fit`) or if :attr:`save_residuals` is ``False`` then this</span>
-<span class="sd">        will return None</span>
+<span class="sd">        will raise an assertion error</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The formal covariance of the PSF parameters after fitting this PSF model to data.</span>
 
-<span class="sd">        If this instance is not the result of a fit (:meth:`fit`) of if :attr:`save_residuals` is ``False`` then this</span>
-<span class="sd">        will return None.</span>
+<span class="sd">        If this instance is not the result of a fit (:meth:`fit`) or if :attr:`save_residuals` is ``False`` then this</span>
+<span class="sd">        will raise an assertion error</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
+        
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_covariance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;you have not performed a fit with this instance&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_covariance</span>
 
-    <span class="k">def</span> <span class="nf">apply_1d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_1d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">step</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply_1d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_1d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Applies the defined PSF using the stored parameters to the 1D image scans provided.</span>
 
 <span class="sd">        ``image_1d`` can be a 2D array but in that case each row will be treated as an independent 1D scan.</span>
@@ -304,15 +309,17 @@
 <span class="sd">        :param step: The step size of the lines being blurred.</span>
 <span class="sd">        :return: an array containing the input after blurring with the defined PSF</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
         <span class="n">size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span>
 
         <span class="c1"># resize so that half the size is evenly divisible by step</span>
-        <span class="n">size</span> <span class="o">=</span> <span class="n">step</span> <span class="o">*</span> <span class="p">(((</span><span class="n">size</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">//</span> <span class="n">step</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">step</span> <span class="o">*</span> <span class="p">(((</span><span class="n">size</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">//</span> <span class="n">step</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_1d_sized</span><span class="p">(</span><span class="n">image_1d</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">normalize_amplitude</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">normalize_amplitude</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate and store the amplitude that makes the volume under the gaussian surface equal to 1</span>
 
 <span class="sd">        This is defined as</span>
@@ -320,11 +327,11 @@
 <span class="sd">        .. math::</span>
 <span class="sd">            A = \frac{1}{2\pi\sigma_x\sigma_y}</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;sigma_x and sigma_y must be specified to normalize the amplitude&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the volume under the gaussian function</span>
 
 <span class="sd">        This is defined as</span>
@@ -333,10 +340,11 @@
 <span class="sd">            V = 2\pi A\sigma_x\sigma_y}</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;sigma_x and sigma_y must be specified to compute the volume&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span>
 
-    <span class="k">def</span> <span class="nf">determine_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">determine_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sets the size for the kernel based on the width of the PSF.</span>
 
 <span class="sd">        This is defined as</span>
@@ -348,6 +356,7 @@
 <span class="sd">        95.45%  of the curve.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;sigma_x and sigma_y must be specified to determine the 2 sigma size&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">])</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span>
 
@@ -358,8 +367,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="mi">3</span>
 
 
-<div class="viewcode-block" id="Gaussian"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.Gaussian.html#giant.point_spread_functions.Gaussian">[docs]</a><span class="k">class</span> <span class="nc">Gaussian</span><span class="p">(</span><span class="n">_GaussianSkeleton</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Gaussian">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.Gaussian.html#giant.point_spread_functions.Gaussian">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Gaussian</span><span class="p">(</span><span class="n">_GaussianSkeleton</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for representing and fitting a standard (non-rotated) 2D gaussian point spread function.</span>
 
 <span class="sd">    This class represents a 2D Gaussian function of the form</span>
@@ -381,10 +392,10 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">amplitude</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">centroid_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">centroid_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">amplitude</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">centroid_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">centroid_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param sigma_x: The Gaussian RMS width in the x direction in pixels</span>
 <span class="sd">        :param sigma_y: The Gaussian RMS Width in the y direction in pixels.  If set to 0 or ``None`` this is set to be</span>
 <span class="sd">                        the same as ``sigma_x``</span>
@@ -402,17 +413,22 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="n">amplitude</span><span class="p">,</span> <span class="n">centroid_x</span><span class="o">=</span><span class="n">centroid_x</span><span class="p">,</span> <span class="n">centroid_y</span><span class="o">=</span><span class="n">centroid_y</span><span class="p">,</span>
                          <span class="n">sigma_x</span><span class="o">=</span><span class="n">sigma_x</span><span class="p">,</span> <span class="n">sigma_y</span><span class="o">=</span><span class="n">sigma_y</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Gaussian.__call__"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.Gaussian.__call__.html#giant.point_spread_functions.Gaussian.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Gaussian.__call__">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.Gaussian.__call__.html#giant.point_spread_functions.Gaussian.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Applies the represented Gaussian PSF to a 2D array.</span>
 <span class="sd">        :param image: The array to apply the PSF to</span>
 <span class="sd">        :return: The resulting array after applying the PSF as a numpy array.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">cv2</span><span class="o">.</span><span class="n">GaussianBlur</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span><span class="p">,</span> <span class="n">sigmaY</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Gaussian.fit"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.Gaussian.fit.html#giant.point_spread_functions.Gaussian.fit">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Gaussian&#39;</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Gaussian.fit">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.Gaussian.fit.html#giant.point_spread_functions.Gaussian.fit">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Gaussian&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This fits a 2d gaussian function to a surface using least squares estimation.</span>
 
 <span class="sd">        The fit assumes that z = f(x, y) where f is the gaussian function (and thus z is the &quot;height&quot; of the gaussian</span>
@@ -473,15 +489,18 @@
                 <span class="n">jacobian</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">compute_jacobian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">computed</span><span class="p">)</span>
 
                 <span class="c1"># assume a single uncertainty for all measurements</span>
-                <span class="n">out</span><span class="o">.</span><span class="n">_covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">jacobian</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">jacobian</span><span class="p">)</span> <span class="o">*</span> <span class="n">out</span><span class="o">.</span><span class="n">residual_std</span> <span class="o">**</span> <span class="mi">2</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">_covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">jacobian</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">jacobian</span><span class="p">)</span> <span class="o">*</span> <span class="n">out</span><span class="o">.</span><span class="n">residual_std</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
         <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">sigma_y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">centroid_x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">centroid_y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">out</span></div>
 
-<div class="viewcode-block" id="Gaussian.compute_jacobian"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.Gaussian.compute_jacobian.html#giant.point_spread_functions.Gaussian.compute_jacobian">[docs]</a>    <span class="k">def</span> <span class="nf">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">computed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Gaussian.compute_jacobian">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.Gaussian.compute_jacobian.html#giant.point_spread_functions.Gaussian.compute_jacobian">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">computed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method computes the Jacobian of the PSF with respect to a change in the state.</span>
 
 <span class="sd">        It returns a mx5 matrix defined as</span>
@@ -512,8 +531,11 @@
 
         <span class="k">return</span> <span class="n">jacobian</span></div>
 
-<div class="viewcode-block" id="Gaussian.update_state"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.Gaussian.update_state.html#giant.point_spread_functions.Gaussian.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">NONEARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Gaussian.update_state">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.Gaussian.update_state.html#giant.point_spread_functions.Gaussian.update_state">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">NONEARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Updates the current values based on the provided update vector.</span>
 
 <span class="sd">        The provided update vector is in the order of :math:`[x_0, y_0, \sigma_x, \sigma_y, A]`.</span>
@@ -524,7 +546,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">update</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
@@ -537,21 +559,24 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span> <span class="o">+=</span> <span class="n">update</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">+=</span> <span class="n">update</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span></div>
 
+
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The formal covariance of the PSF parameters after fitting this PSF model to data.</span>
 
-<span class="sd">        If this instance is not the result of a fit (:meth:`fit`) of if :attr:`save_residuals` is ``False`` then this</span>
-<span class="sd">        will return None.</span>
+<span class="sd">        If this instance is not the result of a fit (:meth:`fit`) or if :attr:`save_residuals` is ``False`` then this</span>
+<span class="sd">        will raise an assertion error</span>
 
 <span class="sd">        The order of the state vector (and thus the covariance matrix) is :math:`[x_0, y_0, \sigma_x, \sigma_y, A]`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_covariance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;you have not performed a fit with this instance&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_covariance</span>
 
-<div class="viewcode-block" id="Gaussian.evaluate"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.Gaussian.evaluate.html#giant.point_spread_functions.Gaussian.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Gaussian.evaluate">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.Gaussian.evaluate.html#giant.point_spread_functions.Gaussian.evaluate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method evaluates the PSF at the given x and y.</span>
 
 <span class="sd">        This method is not intended to be used to apply the PSF for an image (use the callable capability of the class</span>
@@ -578,11 +603,15 @@
             <span class="n">extras</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span>
-                                       <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="n">extras</span></div></div>
+                                       <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="n">extras</span></div>
+</div>
 
 
-<div class="viewcode-block" id="IterativeGaussian"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGaussian.html#giant.point_spread_functions.IterativeGaussian">[docs]</a><span class="k">class</span> <span class="nc">IterativeGaussian</span><span class="p">(</span><span class="n">Gaussian</span><span class="p">,</span> <span class="n">InitialGuessIterativeNonlinearLSTSQPSF</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IterativeGaussian">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGaussian.html#giant.point_spread_functions.IterativeGaussian">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IterativeGaussian</span><span class="p">(</span><span class="n">Gaussian</span><span class="p">,</span> <span class="n">InitialGuessIterativeNonlinearLSTSQPSF</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for representing and fitting a standard (non-rotated) 2D Gaussian point spread function using iterative</span>
 <span class="sd">    non-linear least squares.</span>
 
@@ -596,9 +625,11 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 
-<div class="viewcode-block" id="IterativeGaussian.fit"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGaussian.fit.html#giant.point_spread_functions.IterativeGaussian.fit">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;IterativeGaussian&#39;</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="IterativeGaussian.fit">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGaussian.fit.html#giant.point_spread_functions.IterativeGaussian.fit">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;IterativeGaussian&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This fits a 2d gaussian function to a surface using iterative non-linear least squares estimation.</span>
 
 <span class="sd">        The fit assumes that z = f(x, y) where f is the gaussian function (and thus z is the &quot;height&quot; of the gaussian</span>
@@ -629,11 +660,15 @@
             <span class="n">out</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">out</span>
 
-        <span class="k">return</span> <span class="n">out</span></div></div>
+        <span class="k">return</span> <span class="n">out</span></div>
+</div>
 
 
-<div class="viewcode-block" id="IterativeGaussianWBackground"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGaussianWBackground.html#giant.point_spread_functions.IterativeGaussianWBackground">[docs]</a><span class="k">class</span> <span class="nc">IterativeGaussianWBackground</span><span class="p">(</span><span class="n">Gaussian</span><span class="p">,</span> <span class="n">InitialGuessIterativeNonlinearLSTSQPSFwBackground</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IterativeGaussianWBackground">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGaussianWBackground.html#giant.point_spread_functions.IterativeGaussianWBackground">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IterativeGaussianWBackground</span><span class="p">(</span><span class="n">Gaussian</span><span class="p">,</span> <span class="n">InitialGuessIterativeNonlinearLSTSQPSFwBackground</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for representing and fitting the superposition of a standard (non-rotated) 2D Gaussian point spread function</span>
 <span class="sd">    and a linear background gradiant using iterative non-linear least squares.</span>
 
@@ -650,11 +685,11 @@
 <span class="sd">    This class can be used anywhere GIANT expects a point spread function</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">amplitude</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">centroid_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">centroid_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-                 <span class="n">bg_b_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bg_c_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bg_d_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">amplitude</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">centroid_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">centroid_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                 <span class="n">bg_b_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bg_c_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bg_d_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param sigma_x: The Gaussian RMS width in the x direction in pixels</span>
 <span class="sd">        :param sigma_y: The Gaussian RMS Width in the y direction in pixels.  If set to 0 or ``None`` this is set to be</span>
 <span class="sd">                        the same as ``sigma_x``</span>
@@ -675,9 +710,11 @@
                          <span class="n">centroid_y</span><span class="o">=</span><span class="n">centroid_y</span><span class="p">,</span> <span class="n">bg_b_coef</span><span class="o">=</span><span class="n">bg_b_coef</span><span class="p">,</span> <span class="n">bg_c_coef</span><span class="o">=</span><span class="n">bg_c_coef</span><span class="p">,</span> <span class="n">bg_d_coef</span><span class="o">=</span><span class="n">bg_d_coef</span><span class="p">,</span>
                          <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="IterativeGaussianWBackground.fit"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGaussianWBackground.fit.html#giant.point_spread_functions.IterativeGaussianWBackground.fit">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;IterativeGaussianWBackground&#39;</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="IterativeGaussianWBackground.fit">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGaussianWBackground.fit.html#giant.point_spread_functions.IterativeGaussianWBackground.fit">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;IterativeGaussianWBackground&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This fits a 2d gaussian function to a surface using iterative non-linear least squares estimation.</span>
 
 <span class="sd">        The fit assumes that z = f(x, y) where f is the gaussian function (and thus z is the &quot;height&quot; of the gaussian</span>
@@ -712,8 +749,11 @@
 
         <span class="k">return</span> <span class="n">out</span></div>
 
-<div class="viewcode-block" id="IterativeGaussianWBackground.update_state"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGaussianWBackground.update_state.html#giant.point_spread_functions.IterativeGaussianWBackground.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">NONEARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IterativeGaussianWBackground.update_state">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGaussianWBackground.update_state.html#giant.point_spread_functions.IterativeGaussianWBackground.update_state">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">NONEARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Updates the current values based on the provided update vector.</span>
 
 <span class="sd">        The provided update vector is in the order of :math:`[x_0, y_0, \sigma_x, \sigma_y, A, B, C, D]`.</span>
@@ -729,8 +769,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">apply_update_bg</span><span class="p">(</span><span class="n">update</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="IterativeGaussianWBackground.compute_jacobian"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGaussianWBackground.compute_jacobian.html#giant.point_spread_functions.IterativeGaussianWBackground.compute_jacobian">[docs]</a>    <span class="k">def</span> <span class="nf">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">computed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IterativeGaussianWBackground.compute_jacobian">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGaussianWBackground.compute_jacobian.html#giant.point_spread_functions.IterativeGaussianWBackground.compute_jacobian">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">computed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method computes the Jacobian of the PSF with respect to a change in the state.</span>
 
 <span class="sd">        It returns a mx8 matrix defined as</span>
@@ -757,11 +800,15 @@
 <span class="sd">        :return: The Jacobian matrix as a mx8 numpy array</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_jacobian_all</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">computed</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_jacobian_all</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">computed</span><span class="p">)</span></div>
+</div>
 
 
-<div class="viewcode-block" id="GeneralizedGaussian"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.GeneralizedGaussian.html#giant.point_spread_functions.GeneralizedGaussian">[docs]</a><span class="k">class</span> <span class="nc">GeneralizedGaussian</span><span class="p">(</span><span class="n">KernelBasedCallPSF</span><span class="p">,</span> <span class="n">_GaussianSkeleton</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GeneralizedGaussian">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.GeneralizedGaussian.html#giant.point_spread_functions.GeneralizedGaussian">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GeneralizedGaussian</span><span class="p">(</span><span class="n">KernelBasedCallPSF</span><span class="p">,</span> <span class="n">_GaussianSkeleton</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for representing and fitting a generalized (rotated) 2D gaussian point spread function.</span>
 
 <span class="sd">    This class represents a 2D Gaussian function of the form</span>
@@ -803,11 +850,11 @@
 <span class="sd">    This class can be used anywhere GIANT expects a point spread function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">b_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">c_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">sigma_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sigma_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">amplitude</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">centroid_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">centroid_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">b_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">c_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">sigma_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sigma_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">amplitude</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">centroid_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">centroid_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="n">size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param a_coef: The a coefficient of the Gaussian polynomial</span>
 <span class="sd">        :param b_coef: The b coefficient of the Gaussian polynomial</span>
 <span class="sd">        :param c_coef: The c coefficient of the Gaussian polynomial</span>
@@ -838,53 +885,53 @@
             <span class="k">if</span> <span class="n">general_any_check</span> <span class="ow">and</span> <span class="n">rotated_any_check</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;One of (a_coef, b_coef, c_coef) or (sigma_x, sigma_y, theta) must be not None&#39;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">a_coef</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># type: float</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The :math:`(x-x_0)^2` coefficient from the exponential component of the generalized 2D Gaussian.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">b_coef</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># type: float</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The :math:`(x-x_0)(y-y_0)` coefficient from the exponential component of the generalized 2D Gaussian.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">c_coef</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># type: float</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The :math:`(y-y_0)^2` coefficient from the exponential component of the generalized 2D Gaussian.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># type: float</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The RMS width in the semi-major axis direction.  </span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># type: float</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The RMS width in the semi-minor axis direction.  </span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># type: float</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The angle between the semi-major axis and the x axis</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">general_check</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">a_coef</span> <span class="o">=</span> <span class="n">a_coef</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">b_coef</span> <span class="o">=</span> <span class="n">b_coef</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">c_coef</span> <span class="o">=</span> <span class="n">c_coef</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">a_coef</span> <span class="o">=</span> <span class="n">a_coef</span> <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b_coef</span> <span class="o">=</span> <span class="n">b_coef</span> <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">c_coef</span> <span class="o">=</span> <span class="n">c_coef</span> <span class="c1"># type: ignore</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_convert_to_pa</span><span class="p">()</span>
         <span class="k">elif</span> <span class="n">rotated_check</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sigma_x</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sigma_y</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sigma_x</span><span class="p">)</span> <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sigma_y</span><span class="p">)</span> <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="c1"># type: ignore</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_convert_to_general</span><span class="p">()</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">sigma_x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span><span class="p">,</span> <span class="n">sigma_y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">centroid_x</span><span class="o">=</span><span class="n">centroid_x</span><span class="p">,</span>
                          <span class="n">centroid_y</span><span class="o">=</span><span class="n">centroid_y</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="n">amplitude</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_convert_to_general</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_convert_to_general</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the general coefficients from the principal axis definition.</span>
 
 <span class="sd">        .. math::</span>
@@ -899,8 +946,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">c_coef</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
 
-    <span class="k">def</span> <span class="nf">_convert_to_pa</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_convert_to_pa</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the principal axis coefficients from the general definition.</span>
 
 <span class="sd">        .. math::</span>
@@ -921,9 +968,11 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
 
-<div class="viewcode-block" id="GeneralizedGaussian.fit"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.GeneralizedGaussian.fit.html#giant.point_spread_functions.GeneralizedGaussian.fit">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;GeneralizedGaussian&#39;</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="GeneralizedGaussian.fit">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.GeneralizedGaussian.fit.html#giant.point_spread_functions.GeneralizedGaussian.fit">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;GeneralizedGaussian&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This fits a generalized (rotated) 2d gaussian function to a surface using least squares estimation.</span>
 
 <span class="sd">        The fit assumes that z = f(x, y) where f is the gaussian function (and thus z is the &quot;height&quot; of the gaussian</span>
@@ -983,7 +1032,7 @@
                 <span class="n">jacobian</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">compute_jacobian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">computed</span><span class="p">)</span>
 
                 <span class="c1"># assume a single uncertainty for all measurements</span>
-                <span class="n">out</span><span class="o">.</span><span class="n">_covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">jacobian</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">jacobian</span><span class="p">)</span> <span class="o">*</span> <span class="n">out</span><span class="o">.</span><span class="n">residual_std</span> <span class="o">**</span> <span class="mi">2</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">_covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">jacobian</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">jacobian</span><span class="p">)</span> <span class="o">*</span> <span class="n">out</span><span class="o">.</span><span class="n">residual_std</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
         <span class="k">except</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">,</span> <span class="ne">ZeroDivisionError</span><span class="p">):</span>  <span class="c1"># if the LHS was singular</span>
             <span class="n">out</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">a_coef</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">b_coef</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">c_coef</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
@@ -999,8 +1048,11 @@
 
         <span class="k">return</span> <span class="n">out</span></div>
 
-<div class="viewcode-block" id="GeneralizedGaussian.compute_jacobian"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.GeneralizedGaussian.compute_jacobian.html#giant.point_spread_functions.GeneralizedGaussian.compute_jacobian">[docs]</a>    <span class="k">def</span> <span class="nf">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">computed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GeneralizedGaussian.compute_jacobian">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.GeneralizedGaussian.compute_jacobian.html#giant.point_spread_functions.GeneralizedGaussian.compute_jacobian">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">computed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method computes the Jacobian of the PSF with respect to a change in the state.</span>
 
 <span class="sd">        This is used internally for computing the covariance.  It returns a 5xn matrix defined as</span>
@@ -1036,8 +1088,11 @@
 
         <span class="k">return</span> <span class="n">jacobian</span></div>
 
-<div class="viewcode-block" id="GeneralizedGaussian.update_state"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.GeneralizedGaussian.update_state.html#giant.point_spread_functions.GeneralizedGaussian.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">NONEARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GeneralizedGaussian.update_state">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.GeneralizedGaussian.update_state.html#giant.point_spread_functions.GeneralizedGaussian.update_state">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">NONEARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Updates the current values based on the provided update vector.</span>
 
 <span class="sd">        The provided update vector is in the order of :math:`[x_0, y_0, a, b, c, A]`.</span>
@@ -1048,7 +1103,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">update</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sigma_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
@@ -1066,21 +1121,25 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">c_coef</span> <span class="o">+=</span> <span class="n">update</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">+=</span> <span class="n">update</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span></div>
 
+
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The formal covariance of the PSF parameters after fitting this PSF model to data.</span>
 
-<span class="sd">        If this instance is not the result of a fit (:meth:`fit`) of if :attr:`save_residuals` is ``False`` then this</span>
-<span class="sd">        will return None.</span>
+<span class="sd">        If this instance is not the result of a fit (:meth:`fit`) or if :attr:`save_residuals` is ``False`` then this</span>
+<span class="sd">        will raise an assertion error</span>
 
 <span class="sd">        The order of the state vector (and thus the covariance matrix) is :math:`[x_0, y_0, a, b, c, A]`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_covariance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;you have not performed a fit with this instance&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_covariance</span>
 
-<div class="viewcode-block" id="GeneralizedGaussian.evaluate"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.GeneralizedGaussian.evaluate.html#giant.point_spread_functions.GeneralizedGaussian.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="GeneralizedGaussian.evaluate">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.GeneralizedGaussian.evaluate.html#giant.point_spread_functions.GeneralizedGaussian.evaluate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method evaluates the PSF at the given x and y.</span>
 
 <span class="sd">        This method is not intended to be used to apply the PSF for an image (use the callable capability of the class</span>
@@ -1110,11 +1169,15 @@
             <span class="n">extras</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
-            <span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a_coef</span> <span class="o">*</span> <span class="n">delta_x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">b_coef</span> <span class="o">*</span> <span class="n">delta_x</span> <span class="o">*</span> <span class="n">delta_y</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_coef</span> <span class="o">*</span> <span class="n">delta_y</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="n">extras</span></div></div>
+            <span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a_coef</span> <span class="o">*</span> <span class="n">delta_x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">b_coef</span> <span class="o">*</span> <span class="n">delta_x</span> <span class="o">*</span> <span class="n">delta_y</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_coef</span> <span class="o">*</span> <span class="n">delta_y</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="n">extras</span></div>
+</div>
 
 
-<div class="viewcode-block" id="IterativeGeneralizedGaussian"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussian.html#giant.point_spread_functions.IterativeGeneralizedGaussian">[docs]</a><span class="k">class</span> <span class="nc">IterativeGeneralizedGaussian</span><span class="p">(</span><span class="n">GeneralizedGaussian</span><span class="p">,</span> <span class="n">InitialGuessIterativeNonlinearLSTSQPSF</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IterativeGeneralizedGaussian">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussian.html#giant.point_spread_functions.IterativeGeneralizedGaussian">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IterativeGeneralizedGaussian</span><span class="p">(</span><span class="n">GeneralizedGaussian</span><span class="p">,</span> <span class="n">InitialGuessIterativeNonlinearLSTSQPSF</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for representing and fitting a generalized (rotated) 2D Gaussian point spread function using iterative</span>
 <span class="sd">    non-linear least squares.</span>
 
@@ -1127,9 +1190,11 @@
 <span class="sd">    This class can be used anywhere GIANT expects a point spread function</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="IterativeGeneralizedGaussian.fit"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussian.fit.html#giant.point_spread_functions.IterativeGeneralizedGaussian.fit">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="vm">__qualname__</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="IterativeGeneralizedGaussian.fit">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussian.fit.html#giant.point_spread_functions.IterativeGeneralizedGaussian.fit">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This fits a 2d gaussian function to a surface using iterative non-linear least squares estimation.</span>
 
 <span class="sd">        The fit assumes that z = f(x, y) where f is the gaussian function (and thus z is the &quot;height&quot; of the gaussian</span>
@@ -1154,7 +1219,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># do the fit using the default setup from InitialGuessIterativeNonlinearLSTSQPSF</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">fit_lstsq</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>  <span class="c1"># type: IterativeGeneralizedGaussian</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">fit_lstsq</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> 
 
         <span class="c1"># check if something isn&#39;t right</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">a_coef</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">b_coef</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
@@ -1165,11 +1230,15 @@
         <span class="n">out</span><span class="o">.</span><span class="n">_convert_to_pa</span><span class="p">()</span>
         <span class="n">out</span><span class="o">.</span><span class="n">determine_size</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="n">out</span></div></div>
+        <span class="k">return</span> <span class="n">out</span></div>
+</div>
 
 
-<div class="viewcode-block" id="IterativeGeneralizedGaussianWBackground"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussianWBackground.html#giant.point_spread_functions.IterativeGeneralizedGaussianWBackground">[docs]</a><span class="k">class</span> <span class="nc">IterativeGeneralizedGaussianWBackground</span><span class="p">(</span><span class="n">GeneralizedGaussian</span><span class="p">,</span> <span class="n">InitialGuessIterativeNonlinearLSTSQPSFwBackground</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IterativeGeneralizedGaussianWBackground">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussianWBackground.html#giant.point_spread_functions.IterativeGeneralizedGaussianWBackground">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IterativeGeneralizedGaussianWBackground</span><span class="p">(</span><span class="n">GeneralizedGaussian</span><span class="p">,</span> <span class="n">InitialGuessIterativeNonlinearLSTSQPSFwBackground</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for representing and fitting the superposition of a standard (non-rotated) 2D Gaussian point spread function</span>
 <span class="sd">    and a linear background gradiant using iterative non-linear least squares.</span>
 
@@ -1186,12 +1255,12 @@
 <span class="sd">    This class can be used anywhere GIANT expects a point spread function</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">b_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">c_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">sigma_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sigma_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">amplitude</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">centroid_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">centroid_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">b_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">c_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">sigma_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sigma_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">amplitude</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">centroid_x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">centroid_y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="n">size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bg_b_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bg_c_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">bg_d_coef</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param a_coef: The a coefficient of the Gaussian polynomial</span>
 <span class="sd">        :param b_coef: The b coefficient of the Gaussian polynomial</span>
 <span class="sd">        :param c_coef: The c coefficient of the Gaussian polynomial</span>
@@ -1216,9 +1285,11 @@
                          <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="n">amplitude</span><span class="p">,</span> <span class="n">centroid_x</span><span class="o">=</span><span class="n">centroid_x</span><span class="p">,</span> <span class="n">centroid_y</span><span class="o">=</span><span class="n">centroid_y</span><span class="p">,</span>
                          <span class="n">bg_b_coef</span><span class="o">=</span><span class="n">bg_b_coef</span><span class="p">,</span> <span class="n">bg_c_coef</span><span class="o">=</span><span class="n">bg_c_coef</span><span class="p">,</span> <span class="n">bg_d_coef</span><span class="o">=</span><span class="n">bg_d_coef</span><span class="p">)</span>
 
-<div class="viewcode-block" id="IterativeGeneralizedGaussianWBackground.fit"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussianWBackground.fit.html#giant.point_spread_functions.IterativeGeneralizedGaussianWBackground.fit">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;IterativeGaussianWBackground&#39;</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="IterativeGeneralizedGaussianWBackground.fit">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussianWBackground.fit.html#giant.point_spread_functions.IterativeGeneralizedGaussianWBackground.fit">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This fits a 2d gaussian function to a surface using iterative non-linear least squares estimation.</span>
 
 <span class="sd">        The fit assumes that z = f(x, y) where f is the gaussian function (and thus z is the &quot;height&quot; of the gaussian</span>
@@ -1253,8 +1324,11 @@
 
         <span class="k">return</span> <span class="n">out</span></div>
 
-<div class="viewcode-block" id="IterativeGeneralizedGaussianWBackground.update_state"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussianWBackground.update_state.html#giant.point_spread_functions.IterativeGeneralizedGaussianWBackground.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">NONEARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IterativeGeneralizedGaussianWBackground.update_state">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussianWBackground.update_state.html#giant.point_spread_functions.IterativeGeneralizedGaussianWBackground.update_state">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">NONEARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Updates the current values based on the provided update vector.</span>
 
 <span class="sd">        The provided update vector is in the order of :math:`[x_0, y_0, \sigma_x, \sigma_y, A, B, C, D]`.</span>
@@ -1270,8 +1344,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">apply_update_bg</span><span class="p">(</span><span class="n">update</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="IterativeGeneralizedGaussianWBackground.compute_jacobian"><a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussianWBackground.compute_jacobian.html#giant.point_spread_functions.IterativeGeneralizedGaussianWBackground.compute_jacobian">[docs]</a>    <span class="k">def</span> <span class="nf">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">computed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IterativeGeneralizedGaussianWBackground.compute_jacobian">
+<a class="viewcode-back" href="../../../point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussianWBackground.compute_jacobian.html#giant.point_spread_functions.IterativeGeneralizedGaussianWBackground.compute_jacobian">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">computed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method computes the Jacobian of the PSF with respect to a change in the state.</span>
 
 <span class="sd">        It returns a mx8 matrix defined as</span>
@@ -1298,7 +1375,9 @@
 <span class="sd">        :return: The Jacobian matrix as a mx8 numpy array</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_jacobian_all</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">computed</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_jacobian_all</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">computed</span><span class="p">)</span></div>
+</div>
+
 </pre></div>
 
           </div>
@@ -1314,17 +1393,24 @@
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

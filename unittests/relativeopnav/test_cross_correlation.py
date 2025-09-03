@@ -1,3 +1,4 @@
+from typing import cast, Any
 from unittest import TestCase
 
 import giant.rotations as at
@@ -16,8 +17,10 @@ from giant.ray_tracer.scene import Scene, SceneObject
 from giant.ray_tracer.illumination import McEwenIllumination
 from giant.ray_tracer.rays import Rays
 
+from giant.point_spread_functions.gaussians import Gaussian
+
 from giant.relative_opnav.relnav_class import RelativeOpNav
-from giant.relative_opnav import XCorrCenterFinding
+from giant.relative_opnav import XCorrCenterFinding, XCorrCenterFindingOptions
 from giant.image_processing import quadric_peak_finder_2d
 
 import numpy as np
@@ -66,7 +69,7 @@ class TestRelNav(TestCase):
             elif time == datetime(2017, 2, 2, 0, 0, 0):
                 return at.Rotation(np.array([0, 0, 0]))
             else:
-                return np.array([0, 0, 0])
+                return at.Rotation(np.array([0, 0, 0]))
 
         self.target_frame_fun = target_frame_fun
 
@@ -87,7 +90,7 @@ class TestRelNav(TestCase):
             elif time == datetime(2017, 2, 2, 0, 0, 0):
                 return at.Rotation(np.array([0, 0, -100.00001]))
             else:
-                return np.array([0, 0, 0])
+                return at.Rotation()
 
         self.light_frame_fun = light_frame_fun
 
@@ -109,7 +112,7 @@ class TestRelNav(TestCase):
 
         self.camera = MyTestCamera(images=self.images, model=self.cmodel, name="AwesomeCam",
                                    spacecraft_name="AwesomeSpacecraft", frame="AwesomeFrame",
-                                   parse_data=False, psf=TestCallable(), attitude_function=self.camera_frame_fun,
+                                   parse_data=False, psf=Gaussian(), attitude_function=self.camera_frame_fun,
                                    start_date=datetime(2017, 2, 1, 0, 0, 0, 0),
                                    end_date=datetime(2017, 2, 2, 0, 0, 0, 0),
                                    default_image_class=OpNavImage, metadata_only=False)
@@ -137,9 +140,6 @@ class TestRelNav(TestCase):
         self.relnav = RelativeOpNav(self.camera, self.opnav_scene, xcorr_kwargs={"grid_size": 3, "denoise_image": True},
                                     brdf=McEwenIllumination(), auto_corrections=None)
 
-        # Define ImageProcessing object
-        self.image_processing = gimp.ImageProcessing()
-
         # Define Rays object
         start = np.zeros(3)
         direction = np.array(1000 * [[0, 0, 1]]).T
@@ -147,8 +147,7 @@ class TestRelNav(TestCase):
 
         # Definite XCorrCenterFinding object
         self.xcorr = XCorrCenterFinding(scene=self.opnav_scene, camera=self.camera,
-                                        image_processing=self.image_processing,
-                                        brdf=McEwenIllumination(), rays=self.rays)
+                                        options=XCorrCenterFindingOptions(rays=self.rays))
 
     def test_init(self):
 
@@ -161,14 +160,14 @@ class TestRelNav(TestCase):
         # Test Camera
         self.assertIsInstance(self.xcorr.camera, Camera)
 
-        # Test ImageProcessing
-        self.assertIsInstance(self.xcorr.image_processing, gimp.ImageProcessing)
 
         # Test Rays.start
-        np.testing.assert_equal(self.xcorr.rays.start, np.zeros((3, self.rays.num_rays)))
+        self.assertIsNotNone(self.xcorr.rays)
+        rays = cast(Rays, self.xcorr.rays)
+        np.testing.assert_equal(rays.start, np.zeros((3, self.rays.num_rays)))
 
         # Test Rays.direction
-        self.assertTrue((self.xcorr.rays.direction == [[0], [0], [1]]).all())
+        self.assertTrue((rays.direction == [[0], [0], [1]]).all())
 
     def test_pixel_level_peak_finder(self):
 
@@ -216,12 +215,15 @@ class TestRelNav(TestCase):
 
         eul, elr = self.target_obj.get_bounding_pixels(self.camera.model, temperature=0)
 
-        np.testing.assert_equal(ul, eul)
-        np.testing.assert_equal(lr, elr)
+        np.testing.assert_equal(ul, np.floor(eul))
+        np.testing.assert_equal(lr, np.ceil(elr))
 
     def test_estimate(self):
 
         self.xcorr.rays = None
-        self.xcorr.estimate(self.images[0])
+        with self.assertWarnsRegex(UserWarning, "Correlation peak too low.*"):
+            self.xcorr.estimate(self.images[0])
 
-        self.assertIn('Failed', self.xcorr.details[0])
+        self.assertIsNotNone(self.xcorr.details)
+        details = cast(list[dict[str, Any]], self.xcorr.details)
+        self.assertIn('Failed', details[0])

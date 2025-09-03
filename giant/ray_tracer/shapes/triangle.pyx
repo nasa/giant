@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 """
@@ -31,7 +30,7 @@ Use
 ---
 
 In general users will rarely directly need to create instances of these classes, as GIANT provides tools the create them
-from common formats in the scripts :mod:`.ingest_shape`, :mod:`.spc_to_feature_catalogue`, and :mod:`.tile_shape`.  If
+from common formats in the scripts :mod:`.ingest_shape`, :mod:`.spc_to_feature_catalog`, and :mod:`.tile_shape`.  If
 you do need to use these classes directly the documentation below should help you (and examining the aforementioned
 scripts as examples would also be helpful).
 """

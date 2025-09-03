@@ -1,7 +1,3 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
-
-
 """
 Ingest a tessellated shape model and store it in a GIANT KDTree for use in GIANT relative OpNav processes.
 
@@ -60,10 +56,10 @@ from giant.utilities.tee import Tee
 
 from giant.scripts.shape_stats import describe_shape, GCOEF
 
-from giant._typing import PATH, Real
+from giant._typing import PATH
 
 
-def read_obj(file: PATH, conv: Real = 1., me: bool = False) -> Union[Triangle64, Triangle32]:
+def read_obj(file: PATH, conv: float = 1., single_triangle_precision: bool = False) -> Union[Triangle64, Triangle32]:
     """
     Reads simply formatted obj files into the GIANT triangle format.
 
@@ -72,7 +68,7 @@ def read_obj(file: PATH, conv: Real = 1., me: bool = False) -> Union[Triangle64,
 
     :param file:  The file to read the shape model from
     :param conv:  The conversion factor used to convert the units to kilometers
-    :param me:  Use memory efficient triangles
+    :param single_triangle_precision:  Use memory efficient triangles
     :return: The triangle object representing the shape
     """
 
@@ -84,13 +80,13 @@ def read_obj(file: PATH, conv: Real = 1., me: bool = False) -> Union[Triangle64,
 
     facets = contents[contents["type"] == 'f']["value"].astype(int) - 1
 
-    if me:
+    if single_triangle_precision:
         return Triangle32(vecs.astype(np.float64), 1, facets.astype(np.uint32))
     else:
         return Triangle64(vecs.astype(np.float64), 1, facets.astype(np.uint32))
 
 
-def read_tab(file: PATH, conv: Real = 1., me: bool = False) -> Union[Triangle64, Triangle32]:
+def read_tab(file: PATH, conv: float = 1., single_triangle_precision: bool = False) -> Union[Triangle64, Triangle32]:
     """
     Reads vertice/facet tables from PDS into the GIANT triangle format.
     
@@ -98,27 +94,27 @@ def read_tab(file: PATH, conv: Real = 1., me: bool = False) -> Union[Triangle64,
     
     :param file:  The file to read the shape model from
     :param conv:  The conversion factor used to convert the units to kilometers
-    :param me:  Use memory efficient triangles
+    :param single_triangle_precision:  Use memory efficient triangles
     :return: The triangle object representing the shape
     """
 
     with open(file, 'r') as f:
         n_vertices, n_facets = [int(x) for x in f.readline().split()] 
 
-        if me:
+        if single_triangle_precision:
             vertices = np.loadtxt(f, dtype=np.float32, max_rows=n_vertices).reshape(n_vertices, 3) * conv
         else:
             vertices = np.loadtxt(f, dtype=np.float64, max_rows=n_vertices).reshape(n_vertices, 3) * conv
 
         facets = np.loadtxt(f, dtype=np.uint32, max_rows=n_facets).reshape(n_facets, 3)
 
-    if me:
+    if single_triangle_precision:
         return Triangle32(vertices, 1, facets)
     else:
         return Triangle64(vertices, 1, facets)
 
 
-def process_dsk(dsk_file: PATH, conv: Real = 1., me: bool = False) -> Union[Triangle64, Triangle32]:
+def process_dsk(dsk_file: PATH, conv: float = 1., single_triangle_precision: bool = False) -> Union[Triangle64, Triangle32]:
     """
     Ingest a DSK file into a GIANT KDTree.
 
@@ -135,7 +131,7 @@ def process_dsk(dsk_file: PATH, conv: Real = 1., me: bool = False) -> Union[Tria
     :param dsk_file: The SPICE DSK file to ingest
     :param conv: A conversion scale to use to change units.  Since SPICE uses kilometers (as does GIANT usually) this
                  should typically be 1.0
-    :param me:  Use memory efficient triangles
+    :param single_triangle_precision:  Use memory efficient triangles
     :return: The triangle object representing the shape
     """
 
@@ -226,7 +222,7 @@ def process_dsk(dsk_file: PATH, conv: Real = 1., me: bool = False) -> Union[Tria
             raise FileNotFoundError('dskexp is not available on the path')
 
     # use read_obj to import the obj file
-    tris = read_obj(tmp_file, conv=conv, me=me)
+    tris = read_obj(tmp_file, conv=conv, single_triangle_precision=single_triangle_precision)
 
     # delete the temp file
     os.remove(tmp_file)
@@ -256,7 +252,7 @@ def _get_parser():
                         default=4.89e-9, type=float)
     parser.add_argument('-f', '--fix_offset', help='Correct the com to cof offset', action='store_true',
                         default=False)
-    parser.add_argument('-e', '--memory_efficient', help='Use memory efficient triangles', action='store_true',
+    parser.add_argument('-s32', '--single_triangle_precision', help='Use single precision triangles', action='store_true',
                         default=False)
     parser.add_argument('-s', '--compute_statistics', help='Compute the statistics for the shape', action='store_true',
                         default=False)
@@ -287,7 +283,6 @@ def main():
             in_type = 'tab'
         elif ext.lower() == '.txt':
             in_type = 'icq'
-
         elif ext.lower() == ".bds":
             in_type = 'dsk'
 
@@ -297,16 +292,16 @@ def main():
         in_type = args.type.lower()
 
     if in_type == 'obj':
-        tris = read_obj(args.shape, conv=args.conv, me=args.memory_efficient)
+        tris = read_obj(args.shape, conv=args.conv, single_triangle_precision=args.single_triangle_precision)
     elif in_type == "tab":
-        tris = read_tab(args.shape, conv=args.conv, me=args.memory_efficient)
+        tris = read_tab(args.shape, conv=args.conv, single_triangle_precision=args.single_triangle_precision)
     elif in_type == 'icq':
         sobj = ShapeModel(args.shape)
 
-        tris = sobj.get_triangles(me=args.memory_efficient)
+        tris = sobj.get_triangles(triangle_precision= '32' if args.single_triangle_precision else '64')
 
     elif in_type == "dsk":
-        tris = process_dsk(args.shape, conv=args.conv, me=args.memory_efficient)
+        tris = process_dsk(args.shape, conv=args.conv, single_triangle_precision=args.single_triangle_precision)
 
     else:
         raise ValueError("Don't know how to handle type {}".format(in_type))

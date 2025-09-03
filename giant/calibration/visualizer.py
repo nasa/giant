@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 r"""
@@ -22,18 +21,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-from .calibration_class import Calibration
-from ..rotations import quaternion_to_euler, euler_to_rotmat, Rotation
-from ..camera_models import CameraModel
-from .._typing import PATH
+from giant.calibration.calibration_class import Calibration
+from giant.calibration.estimators.alignment.temperature_dependent import evaluate_temperature_dependent_alignment
+from giant.rotations import quaternion_to_euler
+from giant.camera_models import CameraModel
+from giant._typing import PATH
 
-# noinspection PyUnresolvedReferences
-from ..stellar_opnav.visualizer import (show_id_results, residual_histograms, plot_residuals_vs_magnitude,
-                                        plot_residuals_vs_temperature)
+from giant.stellar_opnav.visualizers import (show_id_results, residual_histograms, residuals_vs_magnitude,
+                                             residuals_vs_temperature)
 
 
 def plot_focal_length_temperature_dependence(calib: Calibration, show_individual_focal_lengths: bool = True,
-                                             pdf_name: Optional[PATH] = None):
+                                             pdf_name: Optional[PATH] = None, show: bool = True):
     """
     This function generates a figure of the camera model's focal length temperature dependence.
 
@@ -58,6 +57,7 @@ def plot_focal_length_temperature_dependence(calib: Calibration, show_individual
     :param show_individual_focal_lengths: A boolean flag specifying whether to plot the individual focal lengths for
                                           each image
     :param pdf_name: Save the plot to this file name as a pdf
+    :param show: a flag indicating whether to bring uip the live display (only checked if pdf_name is None)
     """
 
     if not hasattr(calib.model, 'get_temperature_scale'):
@@ -68,7 +68,8 @@ def plot_focal_length_temperature_dependence(calib: Calibration, show_individual
     temperatures = np.array([image.temperature for _, image in calib.camera])
 
     # get the temperature scales
-    temp_scale = calib.model.get_temperature_scale(temperatures)
+    assert (gts := getattr(calib.model, "get_temperature_scale", None)) is not None, "the camera model must support temperature dependence"
+    temp_scale = gts(temperatures)
 
     # make the figure and axes
     fig = plt.figure()
@@ -76,15 +77,16 @@ def plot_focal_length_temperature_dependence(calib: Calibration, show_individual
 
     # check if this is a single focal length model or a double focal length model and handle accordingly
     double_focal_length = False
-    if hasattr(calib.model, 'fx'):  # double focal length:
-        fx_temp_fit = abs(calib.model.fx) * temp_scale
-        fy_temp_fit = abs(calib.model.fy) * temp_scale
+    if (fx := getattr(calib.model, "fx", None)) is not None and (fy := getattr(calib.model, "fy", None)) is not None:  # double focal length:
+        fx_temp_fit = abs(fx) * temp_scale
+        fy_temp_fit = abs(fy) * temp_scale
         ax.plot(temperatures, fx_temp_fit, color='red', label='focal_x')
         ax.plot(temperatures, fy_temp_fit, color='blue', label='focal_y')
-        plt.ylabel('Focal Length, pix')
+        plt.ylabel('Abs(Focal Length), pix')
         double_focal_length = True
-    else:  # single focal length
-        f_temp_fit = calib.model.focal_length * temp_scale
+    elif (fl := getattr(calib.model, "focal_length", None)) is not None:  # single focal length
+        
+        f_temp_fit = fl * temp_scale
         ax.plot(temperatures, f_temp_fit, color='red', label='focal_length')
         plt.ylabel('Focal Length, mm')
 
@@ -102,7 +104,7 @@ def plot_focal_length_temperature_dependence(calib: Calibration, show_individual
         else:
             calib.model.estimation_parameters = ['focal_length']
         # reset the temperature coefficients
-        calib.model.temperature_coefficients[:] = 0
+        calib.model.temperature_coefficients[:] = 0 # type: ignore
 
         # get a copy of the current image mask from the camera
         orig_mask = deepcopy(calib.camera.image_mask)
@@ -110,24 +112,23 @@ def plot_focal_length_temperature_dependence(calib: Calibration, show_individual
         focal_lengths = []
 
         # loop through each turned on image
-        for ind, image in calib.camera:
+        for ind, _ in calib.camera:
 
             # if stars were found for this image, call estimate_calibration to get an updated focal length
-            if ((calib.matched_catalogue_star_records[ind] is not None) and
-                    (not calib.matched_catalogue_star_records[ind].empty)):
+            if ((mcsr := calib.matched_catalog_star_records[ind]) is not None) and (not mcsr.empty):
                 # turn off all but this image
                 calib.camera.all_off()
                 calib.camera.image_mask[ind] = True
                 # estimate the focal length
-                calib.estimate_calibration()
+                calib.estimate_geometric_calibration()
                 # reset the image mask to its original value
                 calib.camera.image_mask = deepcopy(orig_mask)
 
             # store the updated focal length
             if double_focal_length:
-                focal_lengths.append([abs(calib.model.fx), abs(calib.model.fy)])
+                focal_lengths.append([abs(calib.model.fx), abs(calib.model.fy)]) # type: ignore
             else:
-                focal_lengths.append(calib.model.focal_length)
+                focal_lengths.append(calib.model.focal_length) # type: ignore
         else:
             if double_focal_length:
                 focal_lengths.append([None, None])
@@ -152,11 +153,11 @@ def plot_focal_length_temperature_dependence(calib: Calibration, show_individual
         pdf.savefig(fig)
         pdf.close()
         plt.close(fig)
-    else:
+    elif show:
         plt.show()
 
 
-def plot_distortion_map(model: CameraModel, pdf_name: Optional[PATH] = None):
+def plot_distortion_map(model: CameraModel, pdf_name: Optional[PATH] = None, show: bool = True):
     """
     This function produces a distortion map for the provided camera model.
 
@@ -165,9 +166,10 @@ def plot_distortion_map(model: CameraModel, pdf_name: Optional[PATH] = None):
 
     :param model: The camera model to generate the distortion map for
     :param pdf_name: Used as the file name for saving the figure to pdf
+    :param show: a flag indicating whether to bring uip the live display (only checked if pdf_name is None)
     """
-
-    r, c, d = model.distortion_map((model.n_rows, model.n_cols), 100)
+    
+    r, c, d = model.distortion_map(None, 100)
     fig = plt.figure()
     cs = plt.contour(c, r, np.linalg.norm(d, axis=0).reshape(r.shape))
     plt.gca().quiver(c, r, *d, angles='xy', scale_units='xy',
@@ -185,7 +187,7 @@ def plot_distortion_map(model: CameraModel, pdf_name: Optional[PATH] = None):
         plt.show()
 
 
-def plot_alignment_residuals(calib: Calibration, pdf_name: Optional[PATH] = None):
+def plot_alignment_residuals(calib: Calibration, pdf_name: Optional[PATH] = None, show: bool = True):
 
     """
     This function plots the residual alignment errors per image as roll/pitch/yaw for both the estimated static and
@@ -217,6 +219,7 @@ def plot_alignment_residuals(calib: Calibration, pdf_name: Optional[PATH] = None
 
     :param calib: The :class:`.Calibration` instance
     :param pdf_name: Used as the file name for saving the figures to a pdf
+    :param show: a flag indicating whether to bring uip the live display (only checked if pdf_name is None)
     """
 
     if (calib.static_alignment is None) and (calib.temperature_dependent_alignment is None):
@@ -233,16 +236,16 @@ def plot_alignment_residuals(calib: Calibration, pdf_name: Optional[PATH] = None
 
     for ind, image in calib.camera:
         # check if any stars were identified for this image
-        if not calib.matched_catalogue_star_records[ind].empty:
+        if (mcsr := calib.matched_catalog_star_records[ind]) is not None and not mcsr.empty:
             temperatures.append(image.temperature)
 
             measured = image.rotation_inertial_to_camera * calib.alignment_base_frame_func(image.observation_date).inv()
             # take into account the camera model misalignment
             if hasattr(calib.model, 'get_misalignment'):
-                measured = calib.model.get_misalignment(ind)*measured
+                measured = calib.model.get_misalignment(ind)*measured  # type: ignore
 
             if calib.static_alignment is not None:
-                static_err = quaternion_to_euler(measured * calib.static_alignment.inv())
+                static_err = quaternion_to_euler((measured * calib.static_alignment.inv()).quaternion)
 
                 static_residuals[0].append(static_err[0]*1000)  # in milliradians
                 static_residuals[1].append(static_err[1]*1000)  # in milliradians
@@ -250,10 +253,8 @@ def plot_alignment_residuals(calib: Calibration, pdf_name: Optional[PATH] = None
 
             if calib.temperature_dependent_alignment is not None:
                 temperature_err = quaternion_to_euler(
-                    measured * Rotation(
-                        euler_to_rotmat(calib.temperature_dependent_alignment@[1, image.temperature],
-                                        order=calib.temperature_dependent_alignment_estimator.order)
-                    ).inv()
+                    (measured * evaluate_temperature_dependent_alignment(calib.temperature_dependent_alignment, 
+                                                                         image.temperature).inv()).quaternion
                 )
 
                 temperature_residuals[0].append(temperature_err[0]*1000)  # in milliradians
@@ -278,10 +279,7 @@ def plot_alignment_residuals(calib: Calibration, pdf_name: Optional[PATH] = None
         plt.xlabel('temperature, deg C')
         plt.ylabel('Computed to Measured Residuals, mrad')
 
-        try:
-            plt.legend().draggable()
-        except AttributeError:
-            plt.legend().set_draggable(True)
+        plt.legend().set_draggable(True)
 
         if pdf:
             pdf.savefig(fig)
@@ -299,16 +297,13 @@ def plot_alignment_residuals(calib: Calibration, pdf_name: Optional[PATH] = None
 
         plt.xlabel('temperature, deg C')
         plt.ylabel('Computed to Measured Residuals, mrad')
-        try:
-            plt.legend().draggable()
-        except AttributeError:
-            plt.legend().set_draggable(True)
+        plt.legend().set_draggable(True)
 
         if pdf:
             pdf.savefig(fig)
             plt.close(fig)
 
-    if pdf_name:
+    if pdf is not None:
         pdf.close()
-    else:
+    elif show:
         plt.show()

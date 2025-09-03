@@ -1,17 +1,16 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 r"""
-This module implements the idea of a surface feature and surface feature catalogue for GIANT.
+This module implements the idea of a surface feature and surface feature catalog for GIANT.
 
 Detailed Description
 --------------------
 
 In GIANT, a surface feature refers to a small path of surface from a body that is treated as an individual target to
-identify in an image. A feature catalogue is then a collection of these features that is used for tracking the features
+identify in an image. A feature catalog is then a collection of these features that is used for tracking the features
 together and determining which are visible/worthy to search for in a given image.  These capabilities are implemented in
-the :class:`.SurfaceFeature`, :class:`.FeatureCatalogue`, and :class:`.VisibleFeatureFinder` respectively.
+the :class:`.SurfaceFeature`, :class:`.FeatureCatalog`, and :class:`.VisibleFeatureFinder` respectively.
 
 In more detail, a :class:`.SurfaceFeature` in GIANT is essentially a wrapper around a DEM modeled as a traceable object
 (a :class:`.KDTree` or :class:`.Shape`) that also contains some basic information about the DEM, including the normal
@@ -20,13 +19,13 @@ DEM.  Additionally, the :class:`.SurfaceFeature` class provides functionality fo
 disk until it is needed as well as managing at which point it can be unloaded from memory, which can be important for
 long running processes.
 
-The :class:`.FeatureCatalogue` then stores a list of these features, as well as some numpy arrays which combine all of
+The :class:`.FeatureCatalog` then stores a list of these features, as well as some numpy arrays which combine all of
 the normal vectors, bounding box vertices, and locations into single contiguous arrays for computational efficiency.
-These numpy arrays also get rotated/translated whenever the feature catalogue gets rotated/translated, which means that
+These numpy arrays also get rotated/translated whenever the feature catalog gets rotated/translated, which means that
 they are always in the current frame (which normally ends up being the camera frame). Additionally, this class provides
 an option for filtering the features that are included when a call to the ``trace`` method is made.
 
-Finally, the :class:`.VisibleFeatureFinder` operates on a feature catalogue to identify which features are visible in an
+Finally, the :class:`.VisibleFeatureFinder` operates on a feature catalog to identify which features are visible in an
 image based on the current knowledge of the scene at the time of the image.  This filtering considers things like the
 incidence and reflection angles, the ratio of the camera ground sample distance to the feature ground sample distance,
 and the percentage of the feature predicted to actually be within the field of view of the camera.
@@ -42,20 +41,20 @@ because the surface area each feature covers is also small, which means the size
 this, we frequently have enough patches to globally cover the surface of the body we are imaging, and many times have
 features that overlap each other so we actually have enough features to cover the surface 2-3 times over.  Beyond that,
 we also typically have global coverage of the surface with features at varying ground sample distances.  All of this
-combines to mean that feature catalogues are typically huge, particularly when compared with a typical global model for
-a body.  In many cases, because of this size, it is infeasible or even impossible to store the entire feature catalogue
+combines to mean that feature catalogs are typically huge, particularly when compared with a typical global model for
+a body.  In many cases, because of this size, it is infeasible or even impossible to store the entire feature catalog
 in memory at once, even on modern systems.
 
-To overcome this issue, we have implemented a lazy loading/unloading scheme for feature catalogues and surface features
+To overcome this issue, we have implemented a lazy loading/unloading scheme for feature catalogs and surface features
 in GIANT.  The way this scheme works is when we create a :class:`.SurfaceFeature`, instead of providing the DEM data
 that represents the feature, we instead provide an absolute file path to a pickle file which contains just the DEM data
-for the feature.  When doing this, the size of each :class:`.SurfaceFeature` object in the :class:`.FeatureCatalogue` is
+for the feature.  When doing this, the size of each :class:`.SurfaceFeature` object in the :class:`.FeatureCatalog` is
 very small.  Then, when we actually need the DEM data for the feature, we load it into memory from the referenced file.
 This dramatically decreases the memory footprint of our process, making it feasible to operate through a whole feature
-catalogue without using hundreds of GB of memory.
+catalog without using hundreds of GB of memory.
 
 Now, this lazy loading is great at the start, but if we have a long running process that keeps using more and more
-features we will eventually end up loading the entire feature catalogue into memory anyway, which would ultimately
+features we will eventually end up loading the entire feature catalog into memory anyway, which would ultimately
 defeat the purpose of the lazy loading.  Therefore, we also provide an unloading mechanism, where the "time" since the
 feature was last used (time here being the number of images since we last used the feature) is used to determine if we
 should remove the feature from memory.  Additionally, we provide a check one the percentage of the total system memory
@@ -65,13 +64,13 @@ were last used.
 The combination of the loading and unloading makes surface feature navigation possible in GIANT even on systems with
 modest amounts of memory available to the system.  If you are working on a system with huge amounts of memory, you can
 bypass these features, but for most people, even with large amounts of memory, we encourage leaving them on.  For more
-details on how you can tune each of these capabilities, refer to the :class:`.FeatureCatalogue` and
+details on how you can tune each of these capabilities, refer to the :class:`.FeatureCatalog` and
 :class:`.SurfaceFeature` documentation.
 
 One thing to note about using an absolute path to the file containing the DEM information for each feature is that it
-makes feature catalogues brittle.  That is, unless the directory structure between 2 systems is the same, you cannot
-directly transfer a feature catalogue built on one system to another.  To help with doing this, we provide the methods
-:meth:`.FeatureCatalogue.update_feature_paths` and :meth:`.SurfaceFeature.update_path` which can be used to specify a
+makes feature catalogs brittle.  That is, unless the directory structure between 2 systems is the same, you cannot
+directly transfer a feature catalog built on one system to another.  To help with doing this, we provide the methods
+:meth:`.FeatureCatalog.update_feature_paths` and :meth:`.SurfaceFeature.update_path` which can be used to specify a
 a new path for the files containing the surface feature DEMs.
 
 Use
@@ -79,7 +78,7 @@ Use
 
 Generally a user will have minimal direct interaction with the classes in this module, as all of the interaction is
 handled either by the :class:`.SurfaceFeatureNavigation` class for doing navigation or the
-:mod:`.spc_to_feature_catalogue` and :mod:`.tile_shape` scripts for importing/building a feature catalogue.  If you do
+:mod:`.spc_to_feature_catalog` and :mod:`.tile_shape` scripts for importing/building a feature catalog.  If you do
 need to interact directly with the classes in this documentation we encourage you to consult the class documentation
 directly and to look at the use of these classes in the mentioned class/scripts for examples/insight.
 
@@ -97,7 +96,7 @@ from pathlib import Path
 
 from dataclasses import dataclass
 
-from typing import Optional, List, Union, Dict, Tuple, Callable
+from typing import Optional, List, Union, Dict, Tuple, Callable, cast
 
 import numpy as np
 
@@ -112,7 +111,7 @@ from giant.ray_tracer.rays import INTERSECT_DTYPE
 from giant.ray_tracer.rays import Rays
 from giant.camera_models.camera_model import CameraModel
 
-from giant._typing import Real, NONENUM, PATH, ARRAY_LIKE
+from giant._typing import NONENUM, PATH, ARRAY_LIKE
 
 
 _PROCESS: psutil.Process = psutil.Process()
@@ -123,7 +122,7 @@ This is used to query memory use statistics for the system to use in the lazy lo
 """
 
 
-class FeatureCatalogue:
+class FeatureCatalog:
     """
     This class represents a collection of :class:`.SurfaceFeatures` for use in GIANT relative OpNav.
 
@@ -146,19 +145,19 @@ class FeatureCatalogue:
     are visible for a given image in conjunction with the :class:`.VisibleFeatureFinder` class and the
     :class:`.SurfaceFeatureNavigation` class.
 
-    Similar to a :class:`.KDTree`, when something requests to rotate or translate the feature catalogue through the
+    Similar to a :class:`.KDTree`, when something requests to rotate or translate the feature catalog through the
     :meth:`rotate` and :meth:`translate` methods, the features themselves are not actually moved.  Instead the
-    rotation/translation is stored and is used to rotate/translate the rays into the original feature catalogue frame
+    rotation/translation is stored and is used to rotate/translate the rays into the original feature catalog frame
     before ray tracing for performance reasons.  These methods do update the :attr:`feature_normals`,
     :attr:`feature_locations`, and :attr:`feature_bounds` attributes though.
 
     One of the keys of the :class:`.SurfaceFeature` class is that is provides a mechanism for lazy loading/unloading of
     the DEM data itself from memory.  This class provides 2 easy properties to change the control of this lazy
     load/unload through the :attr:`stale_count_unload_threshold` and :attr:`memory_percent_unload_threshold` which can
-    be used to change the corresponding settings for all features in the catalogue.
+    be used to change the corresponding settings for all features in the catalog.
 
-    Creating a feature catalogue is a difficult process which has largely be automated into the
-    :mod:`.spc_to_feature_catalogue` and :mod:`.tile_shape` scripts, which we encourage you to consider at least as
+    Creating a feature catalog is a difficult process which has largely be automated into the
+    :mod:`.spc_to_feature_catalog` and :mod:`.tile_shape` scripts, which we encourage you to consider at least as
     examples if you are building your own.  If you are making your own, once you have your list of
     :class:`.SurfaceFeature` objects, if you are using the lazy load/unload functionality, you should also provide a
     corresponding list of dictionaries which contain the bounding box vertices under key ``'bounds'`` and the feature
@@ -171,7 +170,7 @@ class FeatureCatalogue:
 
         self.features: List['SurfaceFeature'] = features
         """
-        The list of surface features contained in the catalogue.
+        The list of surface features contained in the catalog.
         
         Each element should be a :class:`.SurfaceFeature` object which describes the surface feature.
         """
@@ -180,16 +179,16 @@ class FeatureCatalogue:
         """
         This specifies the largest order of any of the shapes used to represent the features.
                 
-        This is used to determine which ignore indices apply to the features in this catalogue, for cases where multiple
+        This is used to determine which ignore indices apply to the features in this catalog, for cases where multiple
         targets are included in a :class:`.Scene`.  In general a user does not need to worry about this number and 
         should not modify it themselves
         """
         
-        self._id_order: int = np.int64(np.log10(len(features)))
+        self._id_order: np.int64 = np.int64(np.log10(len(features)))
         """
-        This specifies the number of digits required to represent all of the features in this catalogue.
+        This specifies the number of digits required to represent all of the features in this catalog.
                 
-        This is used to determine which ignore indices apply to the features in this catalogue, for cases where multiple
+        This is used to determine which ignore indices apply to the features in this catalog, for cases where multiple
         targets are included in a :class:`.Scene`.  In general a user does not need to worry about this number and 
         should not modify it themselves
         """
@@ -204,18 +203,19 @@ class FeatureCatalogue:
             normals.append(feature.normal)
             locations.append(feature.body_fixed_center)
             if not feature.loaded and (map_info is not None):
-                self._order = max(self._order, map_info[find]['order'])
+                self._order = max(self._order, cast(int, map_info[find]['order']))
                 bounds.append(map_info[find]['bounds'])
 
             else:
+                assert feature.bounding_box is not None
                 bounds.append(feature.bounding_box.vertices)
-                if hasattr(feature.shape, "order"):
+                if (forder := getattr(feature.shape, "order", None)) is not None:
 
-                    self._order = max(self._order, feature.shape.order)
+                    self._order = max(self._order, forder)
 
-                elif hasattr(feature.shape, "num_faces"):
+                elif (fnum_faces := getattr(feature.shape, "num_faces", None)) is not None:
 
-                    self._order = max(self._order, int(np.log10(feature.shape.num_faces)))
+                    self._order = max(self._order, int(np.log10(fnum_faces)))
 
         if not normals:
             normals = [[]]
@@ -227,7 +227,7 @@ class FeatureCatalogue:
         Each row of this matrix corresponds to the same index into the :attr:`features` attribute.
         
         These vectors are rotated whenever the :meth:`rotate` method is called, therefore they should always be 
-        expressed in the internal frame (for instance in the camera frame), not in the base catalogue frame.
+        expressed in the internal frame (for instance in the camera frame), not in the base catalog frame.
         """
 
         self.feature_bounds: np.ndarray = np.array(bounds)
@@ -239,7 +239,7 @@ class FeatureCatalogue:
 
         These vectors are rotated whenever the :meth:`rotate` method is called and translated whenever the 
         :meth:`translate` method is called, therefore they should always be 
-        expressed in the internal frame (for instance in the camera frame, not in the base catalogue frame).
+        expressed in the internal frame (for instance in the camera frame, not in the base catalog frame).
         """
 
         if not locations:
@@ -252,12 +252,12 @@ class FeatureCatalogue:
 
         These vectors are rotated whenever the :meth:`rotate` method is called and translated whenever the 
         :meth:`translate` method is called, therefore they should always be 
-        expressed in the internal frame (for instance in the camera frame, not in the base catalogue frame).
+        expressed in the internal frame (for instance in the camera frame, not in the base catalog frame).
         """
 
         self.include_features: Optional[List[int]] = None
         """
-        A list of features to include when tracing this feature catalogue.
+        A list of features to include when tracing this feature catalog.
         
         The list should contain the indices into the :attr:`features` list of the features that you want to trace.  
         
@@ -268,7 +268,7 @@ class FeatureCatalogue:
 
         self._rotation: Optional[Rotation] = None
         """
-        The rotation that goes from the external frame to the original catalogue frame.
+        The rotation that goes from the external frame to the original catalog frame.
         
         Note that this is the inverse of the rotation applied through the :meth:`rotate` method, and it is 
         multiplicatively updated, not overwritten.
@@ -276,10 +276,10 @@ class FeatureCatalogue:
 
         self._position: Optional[np.ndarray] = None
         """
-        The translation vector that goes from the external frame to the original catalogue frame.
+        The translation vector that goes from the external frame to the original catalog frame.
         
         Note that this is the negative of the translation applied through the :meth:`translate` method, rotated into the 
-        original catalogue frame and added to any existing position.
+        original catalog frame and added to any existing position.
         """
 
         self._feature_bounding_boxes: Dict[int, AxisAlignedBoundingBox] = {}
@@ -291,25 +291,25 @@ class FeatureCatalogue:
 
         self._stale_count_unload_threshold: Optional[int] = None
         """
-        The current stale count unload threshold for all of the features in the catalogue.
+        The current stale count unload threshold for all of the features in the catalog.
 
         If this is ``None`` on a call to the :attr:`stale_count_unload_threshold` property, we'll just grab the value 
         from the first feature in the list.  If we set to the :attr:`stale_count_unload_threshold` property well 
-        update this and all of the features in the catalogue.
+        update this and all of the features in the catalog.
         """
 
         self._memory_percent_unload_threshold: NONENUM = None
         """
-        The current memory percent unload threshold for all of the features in the catalogue.
+        The current memory percent unload threshold for all of the features in the catalog.
         
         If this is ``None`` on a call to the :attr:`memory_percent_unload_threshold` property, we'll just grab the value 
         from the first feature in the list.  If we set to the :attr:`memory_percent_unload_threshold` property well 
-        update this and all of the features in the catalogue.
+        update this and all of the features in the catalog.
         """
 
-        self._feature_finder: Optional[Callable[[], List[int]]] = None
+        self._feature_finder: Optional[Callable[[CameraModel, Scene, float], List[int]]] = None
         """
-        This is used to determine the visible features in the catalogue.
+        This is used to determine the visible features in the catalog.
         
         It will typically be an instance of the :class:`.VisibleFeatureFinder`.  
         
@@ -319,14 +319,14 @@ class FeatureCatalogue:
     @property
     def order(self) -> int:
         """
-        This specifies the number of digits reserved for specifying facet ids for features in this catalogue
+        This specifies the number of digits reserved for specifying facet ids for features in this catalog
                 
-        This is used to determine which ignore indices apply to the features in this catalogue, for cases where multiple
+        This is used to determine which ignore indices apply to the features in this catalog, for cases where multiple
         targets are included in a :class:`.Scene`.  In general a user does not need to worry about this number and 
         should not modify it themselves
         """
         
-        return self._order + self._id_order + 1
+        return self._order + int(self._id_order) + 1
 
     @property
     def stale_count_unload_threshold(self) -> int:
@@ -334,7 +334,7 @@ class FeatureCatalogue:
         The number of times :meth:`not_found` must be called since the last :meth:`found` was called for a feature to
         be unloaded from memory.
 
-        Setting to this property will change this value for all features contained in the catalogue.
+        Setting to this property will change this value for all features contained in the catalog.
         """
 
         if self._stale_count_unload_threshold is None:
@@ -350,7 +350,7 @@ class FeatureCatalogue:
             feature.stale_count_unload_threshold = value
 
     @property
-    def feature_finder(self) -> Callable[[CameraModel, Scene, Real], List[int]]:
+    def feature_finder(self) -> Callable[[CameraModel, Scene, float], List[int]]:
         """
         This property returns the feature finder for this class, which is a callable that takes in a camera model,
         scene, and temperature and returns a list of indices into the :attr:`features` list and related.
@@ -363,11 +363,11 @@ class FeatureCatalogue:
         return self._feature_finder
 
     @feature_finder.setter
-    def feature_finder(self, val: Callable[[CameraModel, Scene, Real], List[int]]):
+    def feature_finder(self, val: Callable[[CameraModel, Scene, float], List[int]]):
         self._feature_finder = val
 
     @property
-    def memory_percent_unload_threshold(self) -> Real:
+    def memory_percent_unload_threshold(self) -> float:
         """
         The memory percentage used by the current process at which point we begin unloading features that are not found
         regardless of how long its been since a feature was used.
@@ -378,7 +378,7 @@ class FeatureCatalogue:
         If you plan to run multiple instances of GIANT/SFN at the same time then you should probably set this value
         lower so that you limit the resources they are fighting over.
 
-        Setting to this property will change this value for all features contained in the catalogue.
+        Setting to this property will change this value for all features contained in the catalog.
         """
 
         if self._memory_percent_unload_threshold is None:
@@ -395,7 +395,7 @@ class FeatureCatalogue:
 
     def update_feature_paths(self, new_path: PATH):
         """
-        This method goes through and updates the directory structure for each feature contained in the catalogue.
+        This method goes through and updates the directory structure for each feature contained in the catalog.
 
         Updates are made through a call to :meth:`.SurfaceFeature.update_path`.  With the update, we are just changing
         the directory structure, not the file itself.  Therefore the input should end with a director, not a file, and
@@ -416,7 +416,7 @@ class FeatureCatalogue:
                              rotation: Rotation, position: np.ndarray,
                              feature_bounding_boxes: Dict[int, AxisAlignedBoundingBox],
                              include_features: Optional[List[int]], order: int,
-                             id_order: Optional[int] = None) -> 'FeatureCatalogue':
+                             id_order: Optional[int] = None) -> 'FeatureCatalog':
         """
         This class method is used to initialize the class from pickle, instead of you usual init method.
 
@@ -431,7 +431,7 @@ class FeatureCatalogue:
         :param feature_bounding_boxes: A dictionary mapping feature index to an AxisAlignedBoundingBox in the original
                                        feature frame.  Usually this is empty
         :param include_features: A list of integers specifying which features to consider when tracing
-        :param order: The order of the identity for this feature catalogue, used to identify whether ignore indices
+        :param order: The order of the identity for this feature catalog, used to identify whether ignore indices
                       apply to it.
         :return: An initialized version of the class
         """
@@ -450,7 +450,7 @@ class FeatureCatalogue:
         if id_order is None:
             out._id_order = np.int64(np.log10(len(features)))
         else:
-            out._id_order = id_order
+            out._id_order = np.int64(id_order)
 
         return out
 
@@ -466,7 +466,7 @@ class FeatureCatalogue:
     @property
     def bounding_box(self) -> AxisAlignedBoundingBox:
         """
-        The approximate axis aligned bounding box of all of the features in the catalogue.
+        The approximate axis aligned bounding box of all of the features in the catalog.
 
         This is found by finding the minimum/maximum bound of the bounding box vertices (:attr:`feature_bounds`)
         rotated/translated into the current frame.  As such, it is only a rough estimate.
@@ -477,11 +477,11 @@ class FeatureCatalogue:
 
     def rotate(self, rotation: Union[Rotation, ARRAY_LIKE]):
         """
-        Rotates the feature catalogue.
+        Rotates the feature catalog.
 
         The rotation is applied to the :attr:`feature_bounds`, :attr:`feature_normals`, and :attr:`feature_locations`.
         It is not applied to the DEM data for each feature, instead, when rays are traced into the scene they are
-        rotated into the base frame for the feature catalogue before tracing.  This is generally more efficient because
+        rotated into the base frame for the feature catalog before tracing.  This is generally more efficient because
         there are normally much fewer rays to trace than DEM points to rotate.
 
         :param rotation: The rotation to apply
@@ -504,11 +504,11 @@ class FeatureCatalogue:
 
     def translate(self, translation: ARRAY_LIKE):
         """
-        Translates the feature catalogue.
+        Translates the feature catalog.
 
         The translation is applied to the :attr:`feature_bounds` and :attr:`feature_locations`.  It is not applied to
         the DEM data for each feature, instead, when rays are traced into the scene they are translated into the base
-        frame for the feature catalogue before tracing.  This is generally more efficient because there are normally
+        frame for the feature catalog before tracing.  This is generally more efficient because there are normally
         much fewer rays to trace than DEM points to rotate.
 
         :param translation: The translation to apply
@@ -544,7 +544,7 @@ class FeatureCatalogue:
 
         A user will almost never use this method directly, as it is automatically called by the :meth:`trace` method.
 
-        :param total_results: The first intersection for each ray with each feature in the catalogue
+        :param total_results: The first intersection for each ray with each feature in the catalog
         :param traced_rays: The rays that these results pertain to
         :return: The shrunk array specifying the first intersection for each array
         """
@@ -552,7 +552,7 @@ class FeatureCatalogue:
         if total_results.shape[0] == 1:
             return total_results[0]
 
-        nan_check = total_results["check"].any(axis=0).squeeze()
+        nan_check = cast(np.ndarray, total_results["check"].any(axis=0).squeeze())
 
         if not np.any(nan_check):
             return total_results[0]
@@ -566,19 +566,19 @@ class FeatureCatalogue:
 
     def trace(self, rays: Rays) -> np.ndarray:
         """
-        This method traces rays through the feature catalogue, optionally filtering which features are included traced
+        This method traces rays through the feature catalog, optionally filtering which features are included traced
         through the :attr:`include_features` attribute.
 
-        The rays are first rotated/translated into the base frame of the feature catalogue and are then traced through
+        The rays are first rotated/translated into the base frame of the feature catalog and are then traced through
         each active feature to look for intersections.  Only the first (shortest distance) intersection for each ray is
         returned.  The results are returned as a numpy array with type :attr:`.INTERSECT_DTYPE`.
 
         If the :attr:`include_features` attribute is set to ``None``, then this method will attempt to smartly only load
         features where the Rays intersect the bounding box of the feature, before "lazy loading" the feature.  This is
-        typically only used in the case when you are tracing the full feature catalogue to render a high resolution
+        typically only used in the case when you are tracing the full feature catalog to render a high resolution
         image.
 
-        :param rays: The rays to trace through the feature catalogue
+        :param rays: The rays to trace through the feature catalog
         :return: A numpy array specifying where each ray intersected with type :attr:`.INTERSECT_DTYPE`.
         """
 
@@ -590,7 +590,7 @@ class FeatureCatalogue:
         else:
             check_bbox = False
 
-        # rotate/translate the rays into the local frame defined for the feature catalogue
+        # rotate/translate the rays into the local frame defined for the feature catalog
         if (self._rotation is not None) or (self._position is not None):
             rays_local = copy(rays)
 
@@ -607,18 +607,18 @@ class FeatureCatalogue:
 
         # loop through each included feature
         for feature_index in self.include_features:
-            feature = self.features[feature_index]  # type: SurfaceFeature
+            feature: SurfaceFeature = self.features[feature_index] 
 
-            # at this point we are rendering the whole feature catalogue, but we don't want to have to load everything
+            # at this point we are rendering the whole feature catalog, but we don't want to have to load everything
             # into memory if we don't need it so we trace the bounding box first to ensure that the feature is
             # intersected before loading it
             if check_bbox:
-                # in case we have an old feature catalogue that doesn't had the bbox attribute yet
+                # in case we have an old feature catalog that doesn't had the bbox attribute yet
                 if not hasattr(self, "_feature_bounding_boxes"):
                     self._feature_bounding_boxes = {}
 
                 # check to see if we already have this bounding box
-                bbox = self._feature_bounding_boxes.get(feature_index)  # type: Optional[AxisAlignedBoundingBox]
+                bbox: Optional[AxisAlignedBoundingBox] = self._feature_bounding_boxes.get(feature_index) 
                 if bbox is None:
                     # figure out what the original bounds are in the body fixed frame without loading the shape
                     bounds = self.feature_bounds[feature_index].copy()
@@ -635,7 +635,7 @@ class FeatureCatalogue:
                     self._feature_bounding_boxes[feature_index] = bbox
 
                 # check if the bounding box is hit by any of the rays
-                bbox_results = bbox.trace(rays_local)
+                bbox_results = cast(np.ndarray, bbox.trace(rays_local))
 
                 if not bbox_results.any():
                     # if not notify the feature it wasn't found and move to the next feature
@@ -651,6 +651,10 @@ class FeatureCatalogue:
 
             # modify the ignore inds for ones that apply to this feature
             if ignore_inds is not None:
+                if isinstance(ignore_inds, (float, int)):
+                    ignore_inds = np.array([ignore_inds]*rays_local.num_rays)
+                else:
+                    ignore_inds = np.asanyarray(ignore_inds)
 
                 ignore_inds[ignore_inds // (10 ** (self._order + 1)) != feature_index] = -1
                 ignore_inds[ignore_inds // (10 ** (self._order + 1)) == feature_index] %= 10 ** (self._order + 1)
@@ -710,12 +714,12 @@ class SurfaceFeature:
 
     Surface features are normally created through an external program, like SPC, or by tiling a very high resolution
     global shape model.  Both the process of ingesting a set of SPC features (called Maplets) and tiling a high
-    resolution global shape model, are available in the :mod:`.spc_to_feature_catalogue` and :mod:`.tile_shape` scripts
+    resolution global shape model, are available in the :mod:`.spc_to_feature_catalog` and :mod:`.tile_shape` scripts
     respectively, therefore, it is rare that you will manually create surface features using this class.
 
-    As discussed above, when doing surface feature navigation, the feature catalogue is normally very large, as we
+    As discussed above, when doing surface feature navigation, the feature catalog is normally very large, as we
     typically globally tile a surface at very small ground sample distances with significant overlap between each tile.
-    This means that it is usually infeasible to hold an entire feature catalogue in memory at once.  To alleviate this
+    This means that it is usually infeasible to hold an entire feature catalog in memory at once.  To alleviate this
     issue, this class provides a lazy loading/unloading mechanism that only keeps the actual shape information (which
     is by far the biggest memory hog) in memory when it is needed.  With this mechanism, the DEM shape data is only
     loaded once something trying to access the :attr:`.shape` attribute of an instance of this class.  When this
@@ -725,13 +729,13 @@ class SurfaceFeature:
     from memory. Additionally, features can be unloaded from memory every time their not found if the memory footprint
     of the current process as a percent of the total system memory exceeds the threshold specified in the
     :attr:`memory_percent_unload_threshold`.  This also can be controlled for all features in a
-    :class:`.FeatureCatalogue` through the :attr:`.FeatureCatalogue.memory_percent_unload_threshold` property.
+    :class:`.FeatureCatalog` through the :attr:`.FeatureCatalog.memory_percent_unload_threshold` property.
     This loading/unloading is managed by calls to the :meth:`found` and :meth:`not_found` methods of this class.
 
     The automatic loading and unloading of data is generally pretty invisible to the user outside of log messages, as it
     all happens automatically in the :class:`.SurfaceFeatureNavigation` and :class:`.FindVisibleFeatures` classes.  That
     being said, you may need to consider tuning how quickly things are unloaded from memory, which can easily be set for
-    all features in a catalogue through the :attr:`.FeatureCatalogue.stale_count_unload_threshold` attribute.  Typically
+    all features in a catalog through the :attr:`.FeatureCatalog.stale_count_unload_threshold` attribute.  Typically
     you want to set this sufficiently large enough that you are not frequently loading/unloading the same features over
     and over again, but small enough that you don't overwhelm the memory capabilities of your filter.  On modern solid
     state hard drives, the read speeds are generally fast enough that you can set this number fairly low, even if you
@@ -745,7 +749,7 @@ class SurfaceFeature:
     data as the first object in the file.
 
     Generally you will not interact with surface features directly all that frequently, and instead will interact with a
-    catalogue of surface features through the :class:`.FeatureCatalogue` class.
+    catalog of surface features through the :class:`.FeatureCatalog` class.
 
     .. warning::
 
@@ -756,8 +760,8 @@ class SurfaceFeature:
     """
 
     def __init__(self, shape: Union[PATH, KDTree, Shape], normal: ARRAY_LIKE, body_fixed_center: ARRAY_LIKE,
-                 name: str, ground_sample_distance: Optional[Real] = None, stale_count_unload_threshold: int = 10,
-                 memory_percent_unload_threshold: Real = 90):
+                 name: str, ground_sample_distance: Optional[float] = None, stale_count_unload_threshold: int = 10,
+                 memory_percent_unload_threshold: float = 90):
         """
         :param shape: The shape object that represents the DEM topography for the feature as a :class:`.KDTree` or
                       :class:`.Shape`, or the path to the file containing the shape object as a ``str`` or ``Path``.
@@ -807,7 +811,7 @@ class SurfaceFeature:
         The name of the feature as a string.
         """
 
-        self.ground_sample_distance: Optional[Real] = ground_sample_distance
+        self.ground_sample_distance: Optional[float] = ground_sample_distance
         """
         The average ground sample distance of the feature DEM in units of kilometers or ``None``.
         
@@ -829,7 +833,7 @@ class SurfaceFeature:
         be unloaded from memory.
         """
 
-        self.memory_percent_unload_threshold: Real = memory_percent_unload_threshold
+        self.memory_percent_unload_threshold: float = memory_percent_unload_threshold
         """
         The memory percentage used by the current process at which point we begin unloading features that are not found 
         regardless of how long its been since a feature was used.
@@ -851,9 +855,9 @@ class SurfaceFeature:
         """
         if not self.loaded:
             self.load()
-            return self._shape
-        else:
-            return self._shape
+            
+        assert self._shape is not None
+        return self._shape
 
     @property
     def bounding_box(self) -> Optional[AxisAlignedBoundingBox]:
@@ -999,7 +1003,7 @@ class VisibleFeatureFinderOptions:
 
     target_index: Optional[int] = None
     """
-    The index into the target list tor the scene object that contains the feature catalogue, or ``None`` to 
+    The index into the target list tor the scene object that contains the feature catalog, or ``None`` to 
     automatically deduce the index
     """
 
@@ -1015,22 +1019,22 @@ class VisibleFeatureFinderOptions:
     left as ``None``) is ``1.5*camera_model.field_of_view``
     """
 
-    gsd_scaling: Real = 3
+    gsd_scaling: float = 3
     """
     The ratio allowed between the ground sample distance of the camera and the ground sample distance of the feature.
     """
 
-    reflectance_angle_maximum: Real = 70
+    reflectance_angle_maximum: float = 70
     """
     The maximum reflectance angle (angle between the line of sight vector and the feature normal vector) in degrees.
     """
 
-    incident_angle_maximum: Real = 70
+    incident_angle_maximum: float = 70
     """
     The maximum incident angle (angle between the incoming light vector and the feature normal vector) in degrees.
     """
 
-    percent_in_fov: Real = 50
+    percent_in_fov: float = 50
     """
     The percentage of the feature that is in the field of view based on a bounding box test. This should be between 0 
     and 100
@@ -1054,30 +1058,30 @@ class VisibleFeatureFinder:
     for efficiency.
 
     After initializing this class with the appropriate data, you can generate a list of the visible feature indices
-    (index into the :attr:`.FeatureCatalogue.features` list and related) by calling the result and providing the
-    temperature of the camera.  This assumes that the scene/feature catalogue/light source have been appropriately
+    (index into the :attr:`.FeatureCatalog.features` list and related) by calling the result and providing the
+    temperature of the camera.  This assumes that the scene/feature catalog/light source have been appropriately
     placed in the camera frame already, so typically you should ensure that you provide a reference (not a copy) of the
-    feature catalogue and the scene.
+    feature catalog and the scene.
 
     Typically a user will not interact directly with this class and instead it will be managed by the
     :class:`.SurfaceFeatureNavigation` class.  If you do want to use it manually, provide the appropriate inputs
     to the class constructor, update the scene to place everything in the camera frame at the time you want to identify
     visible features, and then call the instance of this class providing the camera temperature at the time you want to
     identify the visible features.  The resulting list of indices can be used to index into the
-    :attr:`.FeatureCatalogue.features` list and related.
+    :attr:`.FeatureCatalog.features` list and related.
 
     To specify the settings for this class, you can either use keyword arguments or the
     :class:`.VisibleFeatureFinderOptions` dataclass, which is the preferred method.  It is not recommended to mix
     methods as this can lead to unexpected results
     """
 
-    def __init__(self, feature_catalogue: FeatureCatalogue,
+    def __init__(self, feature_catalog: FeatureCatalog,
                  options: Optional[VisibleFeatureFinderOptions] = None,
                  feature_list: Optional[List[str]] = None,
-                 off_boresight_angle_maximum: NONENUM = None, gsd_scaling: Real = 3,
-                 reflectance_angle_maximum: Real = 70, incident_angle_maximum: Real = 70, percent_in_fov: Real = 50):
+                 off_boresight_angle_maximum: NONENUM = None, gsd_scaling: float = 3,
+                 reflectance_angle_maximum: float = 70, incident_angle_maximum: float = 70, percent_in_fov: float = 50):
         """
-        :param feature_catalogue: The feature catalogue that specifies the features we care considering
+        :param feature_catalog: The feature catalog that specifies the features we care considering
         :param options: A dataclass specifying the options to set for this instance.  If provided it takes preference
                         over all key word arguments, therefore it is not recommended to mix methods.
         :param feature_list: A list of feature names to test against (useful for filtering if you only want to use a
@@ -1097,9 +1101,9 @@ class VisibleFeatureFinder:
                                This should be between 0 and 100
         """
 
-        self.feature_catalogue: FeatureCatalogue = feature_catalogue
+        self.feature_catalog: FeatureCatalog = feature_catalog
         """
-        The catalogue of features we are looking through.
+        The catalog of features we are looking through.
         """
 
         self.feature_list: Optional[List[str]] = feature_list
@@ -1111,7 +1115,7 @@ class VisibleFeatureFinder:
         the only features who's :attr:`.SurfaceFeature.name` attribute are contained in this list are considered (note
         that the name must match exactly for this to work).
 
-        If this is left as ``None`` then all features in the feature catalogue are considered.
+        If this is left as ``None`` then all features in the feature catalog are considered.
         """
 
         # compute the maximum fov extent based on the camera field of view
@@ -1135,7 +1139,7 @@ class VisibleFeatureFinder:
 
         where :math:`theta` is the view angle in degrees, :math:`\cos^{-1}` is the arc cosine in degrees, 
         :math:`\mathbf{x}_{iC}` is the vector from the camera center to the :math:`i^{th}` feature in the camera frame 
-        from :attr:`.FeatureCatalogue.feature_locations`, and :math:`\|\bullet\|` is the 2 norm of the vector.  
+        from :attr:`.FeatureCatalog.feature_locations`, and :math:`\|\bullet\|` is the 2 norm of the vector.  
         Features are marked as possibly visible if :math:`\theta` is less than this attribute.
 
         Typically this angle should be set to a multiple of the half diagonal field of view of the camera, which is what
@@ -1143,7 +1147,7 @@ class VisibleFeatureFinder:
         (which is unlikely to ever be reached).
         """
 
-        self.gsd_scaling: Real = gsd_scaling
+        self.gsd_scaling: float = gsd_scaling
         r"""
         The ratio between the camera ground sample distance and the ground sample distance of the feature itself that 
         is allowed for a feature to be considered visible.
@@ -1174,7 +1178,7 @@ class VisibleFeatureFinder:
 
         where :math:`\gamma_r` is the reflectance angle in degrees, :math:`\cos^{-1}` is the arc cosine in degrees,
         :math:`\hat{\mathbf{x}}_{ri}^T` is the unit vector from the :math:`i^{th}` feature to the camera center 
-        expressed in the camera frame (computed using :attr:`.FeatureCatalogue`.feature_locations`), and 
+        expressed in the camera frame (computed using :attr:`.FeatureCatalog`.feature_locations`), and 
         :math:`\hat{\mathbf{n}}_i` is the unit normal vector for the :math:`i^{th}` feature in the camera frame.
 
         Features are marked as possibly visible if :math:`\gamma_r` is less than this attribute.
@@ -1215,7 +1219,7 @@ class VisibleFeatureFinder:
         The actual percentage of the feature contained in the FOV is computed by 
         
         #. projecting the bounding box vertices of the feature onto the image using 
-           :meth:`.CameraModel.project_onto_image` and the :attr:`.FeatureCatalogue.feature_bounds` attribute.
+           :meth:`.CameraModel.project_onto_image` and the :attr:`.FeatureCatalog.feature_bounds` attribute.
         #. determining the axis aligned bounding box in the image by finding the min and max pixels of the projected 
            points
         #. determining the overlap between the AABB of the feature in the image and the AABB of the image 
@@ -1231,13 +1235,13 @@ class VisibleFeatureFinder:
         if options is not None:
             self.apply_options(options)
 
-        self._feature_gsds = np.fromiter((f.ground_sample_distance for f in self.feature_catalogue.features),
-                                         np.float64, count=len(self.feature_catalogue.features))
+        self._feature_gsds = np.fromiter((f.ground_sample_distance for f in self.feature_catalog.features),
+                                         np.float64, count=len(self.feature_catalog.features))
         """
         This private attribute stores the GSD for each feature as a numpy array to make logical indexing easier.
         """
 
-        self._feature_names = np.array([f.name for f in self.feature_catalogue.features])
+        self._feature_names = np.array([f.name for f in self.feature_catalog.features])
         """
         This private attribute stores the name for each feature as a numpy array to make logical indexing easier.
         """
@@ -1272,12 +1276,12 @@ class VisibleFeatureFinder:
 
         self.percent_in_fov = float(options.percent_in_fov)
 
-    def __call__(self, camera_model: CameraModel, scene: Scene, temperature: Real = 0) -> List[int]:
+    def __call__(self, camera_model: CameraModel, scene: Scene, temperature: float = 0) -> List[int]:
         """
         The call method of this class determines which features are currently visible based off of the current scene
         setup and the provided filter inputs stored in the attributes of this class.
 
-        The visible features are returned as a list of integers that index into the :attr:`.FeatureCatalogue.features`
+        The visible features are returned as a list of integers that index into the :attr:`.FeatureCatalog.features`
         list and related.
 
         If a feature is identified as not visible for the current settings, its :attr:`.SurfaceFeature.not_found` method
@@ -1293,12 +1297,12 @@ class VisibleFeatureFinder:
         target_use = None
 
         for target in scene.target_objs:
-            if target.shape is self.feature_catalogue:
+            if target.shape is self.feature_catalog:
                 target_use = target
 
         if target_use is None:
-            raise ValueError('Unable to determine which target holds the feature catalogue.  Please provide a scene'
-                             'which contains the feature catalogue in it.')
+            raise ValueError('Unable to determine which target holds the feature catalog.  Please provide a scene'
+                             'which contains the feature catalog in it.')
 
         # set the off boresight angle maximum if it hasn't been set yet
         if self.off_boresight_angle_maximum is None:
@@ -1310,8 +1314,8 @@ class VisibleFeatureFinder:
 
 
         # get the unit vectors from the camera to the features
-        reflectance_vectors = (self.feature_catalogue.feature_locations /
-                               np.linalg.norm(self.feature_catalogue.feature_locations,
+        reflectance_vectors = (self.feature_catalog.feature_locations /
+                               np.linalg.norm(self.feature_catalog.feature_locations,
                                               axis=-1, keepdims=True))
 
         # first check the feature list
@@ -1321,7 +1325,7 @@ class VisibleFeatureFinder:
             visible_feature_bool = np.ones(len(self._feature_names), dtype=bool)
 
         if not visible_feature_bool.any():
-            for feature in self.feature_catalogue.features:
+            for feature in self.feature_catalog.features:
                 feature.not_found()
             return []
 
@@ -1330,47 +1334,48 @@ class VisibleFeatureFinder:
                                                       np.cos(np.deg2rad(self.off_boresight_angle_maximum)))
         
         if not visible_feature_bool.any():
-            for feature in self.feature_catalogue.features:
+            for feature in self.feature_catalog.features:
                 feature.not_found()
             return []
 
         # now check the reflectance angle
         visible_feature_bool[visible_feature_bool] = (
                 (-reflectance_vectors[visible_feature_bool] *
-                 self.feature_catalogue.feature_normals[visible_feature_bool]).sum(axis=-1) >=
+                 self.feature_catalog.feature_normals[visible_feature_bool]).sum(axis=-1) >=
                 np.cos(np.deg2rad(self.reflectance_angle_maximum)))
         
         if not visible_feature_bool.any():
-            for feature in self.feature_catalogue.features:
+            for feature in self.feature_catalog.features:
                 feature.not_found()
             return []
 
         # now check the incidence angle
+        assert scene.light_obj is not None
         sun_direction = scene.light_obj.position.ravel() - target_use.position.ravel()
         sun_direction /= np.linalg.norm(sun_direction)
         visible_feature_bool[visible_feature_bool] = (
-                (self.feature_catalogue.feature_normals[visible_feature_bool] @ sun_direction) >=
+                (self.feature_catalog.feature_normals[visible_feature_bool] @ sun_direction) >=
                 np.cos(np.deg2rad(self.incident_angle_maximum))
         )
 
         # now check the ground sample distance
-        gsd_ratio = camera_model.compute_ground_sample_distance(
-            self.feature_catalogue.feature_locations[visible_feature_bool].T,
-            target_normal=self.feature_catalogue.feature_normals[visible_feature_bool].T,
+        gsd_ratio = cast(np.ndarray, camera_model.compute_ground_sample_distance(
+            self.feature_catalog.feature_locations[visible_feature_bool].T,
+            target_normal=self.feature_catalog.feature_normals[visible_feature_bool].T,
             temperature=temperature
-        ).squeeze() / self._feature_gsds[visible_feature_bool]
+        )).squeeze() / self._feature_gsds[visible_feature_bool]
 
         # need to mark anything as NAN as valid here because it means we don't have a GSD for that feature
         visible_feature_bool[visible_feature_bool] = np.isnan(gsd_ratio) | ((gsd_ratio <= self.gsd_scaling) &
                                                                             (gsd_ratio >= 1/self.gsd_scaling))
         
         if not visible_feature_bool.any():
-            for feature in self.feature_catalogue.features:
+            for feature in self.feature_catalog.features:
                 feature.not_found()
             return []
 
         feature_image_bounds = camera_model.project_onto_image(
-            np.hstack(self.feature_catalogue.feature_bounds[visible_feature_bool]), temperature=temperature
+            np.hstack(self.feature_catalog.feature_bounds[visible_feature_bool]), temperature=temperature  # type: ignore
         ).reshape((2, visible_feature_bool.sum(), -1)).swapaxes(0, 1)
 
         feature_image_bounds_min = feature_image_bounds.min(axis=-1)
@@ -1405,7 +1410,7 @@ class VisibleFeatureFinder:
 
         # now walk through the list and call found/not_found respectively
         visible_features = []
-        for find, feature in enumerate(self.feature_catalogue.features):
+        for find, feature in enumerate(self.feature_catalog.features):
             if visible_feature_bool[find]:
                 visible_features.append(find)
                 feature.found()

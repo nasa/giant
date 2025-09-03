@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.image_processing.correlators &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.image_processing.correlators</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">cast</span><span class="p">,</span> <span class="n">Callable</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.fftpack</span><span class="w"> </span><span class="kn">import</span> <span class="n">next_fast_len</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sig</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DOUBLE_ARRAY</span>
+
+
+<span class="n">CORRLATOR_SIGNATURE</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">],</span> <span class="n">DOUBLE_ARRAY</span><span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The call signature for a correlator function.</span>
+
+<span class="sd">The inputs are image, template as NDArrays, and then should return a float64 double precision array with the correlation surface.</span>
+<span class="sd">The correlation surface should be returnd as the same size as the provided image such that the peak of the surface corresponds </span>
+<span class="sd">to aligning the middle of the temlate with that pixel.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="cv2_correlator_2d">
+<a class="viewcode-back" href="../../../image_processing/correlators/giant.image_processing.correlators.cv2_correlator_2d.html#giant.image_processing.correlators.cv2_correlator_2d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cv2_correlator_2d</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">flag</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">TM_CCOEFF_NORMED</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function performs a 2D cross correlation between ``image`` and ``template`` and returns the correlation surface</span>
+<span class="sd">    using the `OpenCV matchTemplate function &lt;http://docs.opencv.org/3.1.0/d4/dc6/tutorial_py_template_matching.html&gt;`_.</span>
+
+<span class="sd">    The input ``image`` and ``template`` are first converted to single precision (as is required by matchTemplate) and</span>
+<span class="sd">    then given to the matchTemplate function.</span>
+
+<span class="sd">    The flag indicates the correlation coefficients to calculate (in general you will want ``cv2.TM_CCOEFF_NORMED`` for</span>
+<span class="sd">    normalized cross correlation).  For more information about this function see the OpenCV documentation at</span>
+<span class="sd">    https://docs.opencv.org/master/d4/dc6/tutorial_py_template_matching.html</span>
+
+<span class="sd">    Each pixel of the correlation surface returned by this function represents the correlation value when the center of</span>
+<span class="sd">    the template is placed at this location.  Thus, the location of any point in the template can be found by</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy</span>
+<span class="sd">    &gt;&gt;&gt; from giant.image_processing import cv2_correlator_2d</span>
+<span class="sd">    &gt;&gt;&gt; example_image = numpy.random.randn(200, 200)</span>
+<span class="sd">    &gt;&gt;&gt; example_template = example_image[30:60, 45:60]</span>
+<span class="sd">    &gt;&gt;&gt; surf = cv2_correlator_2d(example_image, example_template)</span>
+<span class="sd">    &gt;&gt;&gt; temp_middle = numpy.floor(numpy.array(example_template.shape)/2)</span>
+<span class="sd">    &gt;&gt;&gt; template_point = numpy.array([0, 0])  # upper left corner</span>
+<span class="sd">    &gt;&gt;&gt; template_point - temp_middle + numpy.unravel_index(surf.argmax(), surf.shape)</span>
+<span class="sd">    array([30., 45.])</span>
+
+<span class="sd">    :param image: The image that the template is to be matched against</span>
+<span class="sd">    :param template: the template that is to be matched against the image</span>
+<span class="sd">    :param flag: A flag indicating the correlation coefficient to be calculated</span>
+<span class="sd">    :return: A surface of the correlation coefficients for each overlap between the template and the image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">valid_dtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">vdtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">vdtype</span> <span class="ow">in</span> <span class="n">valid_dtypes</span><span class="p">):</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">vdtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">vdtype</span> <span class="ow">in</span> <span class="n">valid_dtypes</span><span class="p">):</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    
+
+    <span class="c1"># calculate what the size of the correlation surface should be and pad the image with 0s</span>
+    <span class="n">size_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">size_diff</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">size_diff</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">original_shape</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">[(</span><span class="n">lower</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">upper</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="p">(</span><span class="n">lower</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">upper</span><span class="p">[</span><span class="mi">1</span><span class="p">])],</span> <span class="s1">&#39;constant&#39;</span><span class="p">)</span>
+
+    <span class="c1"># perform the correlation</span>
+    <span class="n">cor_surf</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">DOUBLE_ARRAY</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">matchTemplate</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">flag</span><span class="p">))</span>
+
+    <span class="c1"># return the correlation surface of the appropriate size</span>
+    <span class="k">return</span> <span class="n">cor_surf</span><span class="p">[:</span><span class="n">original_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:</span><span class="n">original_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalize_xcorr_2d</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">zero_mean_temp</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">corr_surf</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function calculates normalized correlation coefficients between the template and the image based off of the</span>
+<span class="sd">    non-normalized correlation between temp and image.</span>
+
+<span class="sd">    This method works by computing the local standard deviation and mean of the image for each overlay of the template,</span>
+<span class="sd">    then dividing the correlation surface by the difference of these values (roughly at least).</span>
+
+<span class="sd">    This function is used inside of both :func:`spatial_correlator_2d` and :func:`fft_correlator_2d` to normalize the</span>
+<span class="sd">    correlation surfaces.  Typically it is not used explicitly by the user.</span>
+
+<span class="sd">    :param image: the image that was correlated against</span>
+<span class="sd">    :param zero_mean_temp: the zero mean version of the template that was correlated</span>
+<span class="sd">    :param corr_surf: the non-normalized correlation surface to be normalized</span>
+<span class="sd">    :return: the normalized correlation surface</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># the following code is based off of MATLAB&#39;s normxcorr2 which is based off of</span>
+    <span class="c1"># Lewis, J. P. &quot;Fast normalized cross-correlation.&quot; Vision interface. Vol. 10. No. 1. 1995.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">local_sum</span><span class="p">(</span><span class="n">in_mat</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the integral of in_mat over the given search areas.</span>
+
+<span class="sd">        :param in_mat: the matrix to be integrated</span>
+<span class="sd">        :param shape: the size of the search areas</span>
+<span class="sd">        :return: a matrix containing the integral of in_mat for a search area overlaid starting at each pixel of in_mat</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># first, pad in_mat so that the template can be overlaid on the borders as well</span>
+        <span class="n">in_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">in_mat</span><span class="p">,</span> <span class="p">[(</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])],</span> <span class="s1">&#39;constant&#39;</span><span class="p">)</span>
+
+        <span class="c1"># calculate the cumulative summation along the first axis (down each row)</span>
+        <span class="n">sum1</span> <span class="o">=</span> <span class="n">in_mat</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># calculate the running sums for the rows</span>
+        <span class="n">temp1</span> <span class="o">=</span> <span class="n">sum1</span><span class="p">[</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">sum1</span><span class="p">[:(</span><span class="o">-</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
+
+        <span class="c1"># calculate the cumulative summation along the second axis (down each column)</span>
+        <span class="n">sum2</span> <span class="o">=</span> <span class="n">temp1</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># calculate the running sums for the cols</span>
+        <span class="k">return</span> <span class="n">sum2</span><span class="p">[:,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">sum2</span><span class="p">[:,</span> <span class="p">:(</span><span class="o">-</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
+
+    <span class="c1"># get the integral of the images under the template for each overlay</span>
+    <span class="n">local_means</span> <span class="o">=</span> <span class="n">local_sum</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">zero_mean_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c1"># this is the template.size*mean of the image within the</span>
+                                                          <span class="c1"># template window for every overlay of the template</span>
+    <span class="n">local_sum_squares</span> <span class="o">=</span> <span class="n">local_sum</span><span class="p">(</span><span class="n">image</span> <span class="o">*</span> <span class="n">image</span><span class="p">,</span> <span class="n">zero_mean_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c1"># this is the sum of the squares of the image within</span>
+                                                                        <span class="c1"># the template window for every overlay of the template</span>
+
+    <span class="c1"># calculate the variance of the image under the template for the area overlaid under each image and ensure the</span>
+    <span class="c1"># variance is positive or zero (it will only be negative due to numerical precision issues)</span>
+    <span class="n">local_variance</span> <span class="o">=</span> <span class="n">local_sum_squares</span> <span class="o">-</span> <span class="n">local_means</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">zero_mean_temp</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">local_variance</span><span class="p">[</span><span class="n">local_variance</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># calculate the variance of the template itself</span>
+    <span class="n">temp_variance</span> <span class="o">=</span> <span class="p">(</span><span class="n">zero_mean_temp</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="c1"># calculate the product of the local standard deviations of the image and the standard deviation of the template</span>
+    <span class="c1"># (this is the same as the square root of the product of the variances)</span>
+    <span class="n">std_image_std_template</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">local_variance</span> <span class="o">*</span> <span class="n">temp_variance</span><span class="p">)</span>
+
+    <span class="c1"># calculate the normalized correlation coefficients</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">corr_surf</span> <span class="o">/</span> <span class="n">std_image_std_template</span>
+
+    <span class="c1"># check to make sure that machine precision and divide by zero errors haven&#39;t given us any invalid answers</span>
+    <span class="n">res</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># this step shouldn&#39;t be necessary due to the previous step but its basically instantaneous so keep it in to be safe</span>
+    <span class="n">res</span><span class="p">[</span><span class="n">std_image_std_template</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">res</span>
+
+
+<div class="viewcode-block" id="scipy_correlator_2d">
+<a class="viewcode-back" href="../../../image_processing/correlators/giant.image_processing.correlators.scipy_correlator_2d.html#giant.image_processing.correlators.scipy_correlator_2d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">scipy_correlator_2d</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function performs normalized cross correlation between a template and an image using scipy.signal.convolve2d</span>
+
+<span class="sd">    The correlation is performed over the full image, aligning the center of the template with every pixel in the image.</span>
+<span class="sd">    (Note that this means that if the center of the template should be outside of the image this function will not</span>
+<span class="sd">    work.)</span>
+<span class="sd">    </span>
+<span class="sd">    convolve2d will automatically switch between using frequency domain convolution and spatial domain convolution depending</span>
+<span class="sd">    on the size of the template.</span>
+
+<span class="sd">    Each pixel of the correlation surface returned by this function represents the correlation value when the center of</span>
+<span class="sd">    the template is placed at this location.  Thus, the location of any point in the template can be found by</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as numpy</span>
+<span class="sd">    &gt;&gt;&gt; from giant.image_processing import fft_correlator_2d</span>
+<span class="sd">    &gt;&gt;&gt; example_image = numpy.random.randn(200, 200)</span>
+<span class="sd">    &gt;&gt;&gt; example_template = example_image[30:60, 45:60]</span>
+<span class="sd">    &gt;&gt;&gt; surf = scipy_correlator_2d(example_image, example_template)</span>
+<span class="sd">    &gt;&gt;&gt; temp_middle = numpy.floor(numpy.array(example_template.shape)/2)</span>
+<span class="sd">    &gt;&gt;&gt; template_point = numpy.array([0, 0])  # upper left corner</span>
+<span class="sd">    &gt;&gt;&gt; template_point - temp_middle + numpy.unravel_index(surf.argmax(), surf.shape)</span>
+<span class="sd">    array([30., 45.])</span>
+
+<span class="sd">    :param image: The image that the template is to be matched against</span>
+<span class="sd">    :param template: the template that is to be matched against the image</span>
+<span class="sd">    :return: A surface of the correlation coefficients for each overlap between the template and the image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># perform the convolution.  Note that template needs to be fliplr/flipud due to the</span>
+    <span class="c1"># definition of correlation</span>
+
+    <span class="c1"># use the zero mean template to simplify some steps later</span>
+    <span class="n">zero_mean_temp</span> <span class="o">=</span> <span class="n">template</span> <span class="o">-</span> <span class="n">template</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">corr_surf</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">convolve2d</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">zero_mean_temp</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;full&#39;</span><span class="p">)</span>
+
+    <span class="c1"># this forms the un-normalized correlation surface.  Now we need to normalize:</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">_normalize_xcorr_2d</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">zero_mean_temp</span><span class="p">,</span> <span class="n">corr_surf</span><span class="p">)</span>
+
+    <span class="c1"># get the output size for output type of &quot;same&quot;</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="n">lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="c1"># return the correlation surface for type &quot;same&quot;</span>
+    <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="n">lower</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="o">-</span><span class="n">upper</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lower</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="o">-</span><span class="n">upper</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalize_xcorr_1d</span><span class="p">(</span><span class="n">extracted</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">zero_mean_predicted</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span><span class="p">,</span> <span class="n">corr_lines</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function normalizes correlation coefficients between 1d lines based off of the non-normalized correlation</span>
+<span class="sd">    between the 1d lines. This method works by computing the local standard deviation and mean of the extracted for</span>
+<span class="sd">    each overlay of the temps, then dividing the correlation surface by the difference of these values (roughly</span>
+<span class="sd">    at least). This function is used inside of :func:`n1d_correlate` to normalize the</span>
+<span class="sd">    correlation surfaces.</span>
+
+<span class="sd">    :param extracted: the extracted scan lines that were correlated against (each image should be contained in the last</span>
+<span class="sd">                      axis</span>
+<span class="sd">    :param zero_mean_predicted: the zero mean versions of the predicted_lines that were correlated</span>
+<span class="sd">    :param corr_lines: the non-normalized correlation lines to be normalized</span>
+<span class="sd">    :return: the normalized correlation lines</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># The following code is based off of MATLAB&#39;s normxcorr2 which is based off of</span>
+    <span class="c1"># Lewis, J. P. &quot;Fast normalized cross-correlation.&quot; Vision interface. Vol. 10. No. 1. 1995.</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">local_sum</span><span class="p">(</span><span class="n">in_mat</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the integral of in_mat over the given search areas.</span>
+
+<span class="sd">        :param in_mat: the matrix to be integrated</span>
+<span class="sd">        :param shape: the size of the search areas</span>
+<span class="sd">        :return: a matrix containing the integral of in_mat for a search area overlaid starting at each pixel of in_mat</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># First, pad in_mat so that the template can be overlaid on the borders as well</span>
+        <span class="n">in_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">in_mat</span><span class="p">,</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])],</span> <span class="s1">&#39;constant&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the cumulative summation along the second axis (down each column)</span>
+        <span class="n">sum2</span> <span class="o">=</span> <span class="n">in_mat</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the running sums for the cols</span>
+        <span class="k">return</span> <span class="n">sum2</span><span class="p">[:,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">sum2</span><span class="p">[:,</span> <span class="p">:(</span><span class="o">-</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
+
+    <span class="c1"># Get the integral of the extracted lines under the template for each overlay</span>
+    <span class="n">local_means</span> <span class="o">=</span> <span class="n">local_sum</span><span class="p">(</span><span class="n">extracted</span><span class="p">,</span> <span class="n">zero_mean_predicted</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c1"># this is the predicted.size*mean of the extracted</span>
+
+    <span class="c1"># Within the predicted window for every overlay of the predicted</span>
+    <span class="n">local_sum_square</span> <span class="o">=</span> <span class="n">local_sum</span><span class="p">(</span><span class="n">extracted</span> <span class="o">*</span> <span class="n">extracted</span><span class="p">,</span>
+                                 <span class="n">zero_mean_predicted</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c1"># This is the sum of the squares of the image within</span>
+    <span class="c1"># The template window for every overlay of the template</span>
+
+    <span class="c1"># Calculate the variance of the extracted lines under the predicted_lines for the area overlaid under each image and</span>
+    <span class="c1"># Ensure the variance is positive or zero (it will only be negative due to numerical precision issues)</span>
+    <span class="n">local_variance</span> <span class="o">=</span> <span class="n">local_sum_square</span> <span class="o">-</span> <span class="n">local_means</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">zero_mean_predicted</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">local_variance</span><span class="p">[</span><span class="n">local_variance</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Calculate the variance of the template itself</span>
+    <span class="n">temp_variance</span> <span class="o">=</span> <span class="p">(</span><span class="n">zero_mean_predicted</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Calculate the product of the local standard deviations of the image and the standard deviation of the template</span>
+    <span class="c1"># (This is the same as the square root of the product of the variances)</span>
+    <span class="n">std_image_std_template</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">local_variance</span> <span class="o">*</span> <span class="n">temp_variance</span><span class="p">)</span>
+
+    <span class="c1"># Calculate the normalized correlation coefficients</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">corr_lines</span> <span class="o">/</span> <span class="n">std_image_std_template</span>
+
+    <span class="c1"># Check to make sure that machine precision and divide by zero errors haven&#39;t given us any invalid answers</span>
+    <span class="n">res</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># This step shouldn&#39;t be necessary due to the previous step but its basically instantaneous so keep it in to be safe</span>
+    <span class="n">res</span><span class="p">[</span><span class="n">std_image_std_template</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">res</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_fft_correlate_1d</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function performs FFT based correlation on nd arrays of 1d scan lines.</span>
+
+<span class="sd">    :param a: array of 1d scan lines</span>
+<span class="sd">    :param b: array of 1d scan lines</span>
+<span class="sd">    :return: array of spatial correlation values</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Determine the size of the correlation surface for type &quot;full&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="c1"># Get the next fast fft length</span>
+    <span class="n">fft_size</span> <span class="o">=</span> <span class="n">next_fast_len</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+    <span class="c1"># Transform the input values into the frequency domain</span>
+    <span class="n">a_fft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfft</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">fft_size</span><span class="p">)</span>
+    <span class="n">b_fft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfft</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">fft_size</span><span class="p">)</span>
+
+    <span class="c1"># Perform the correlation and transform back to the spatial domain</span>
+    <span class="n">cc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfft</span><span class="p">(</span><span class="n">a_fft</span> <span class="o">*</span> <span class="n">b_fft</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">n</span><span class="o">=</span><span class="n">fft_size</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">cc</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:],</span> <span class="n">cc</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]])</span>
+
+
+<div class="viewcode-block" id="fft_correlator_1d">
+<a class="viewcode-back" href="../../../image_processing/correlators/giant.image_processing.correlators.fft_correlator_1d.html#giant.image_processing.correlators.fft_correlator_1d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fft_correlator_1d</span><span class="p">(</span><span class="n">extracted_lines</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">predicted_lines</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function performs 1d correlation based on extracted lines and predicted lines.</span>
+
+<span class="sd">    Each line of the input matrices should be a pair of scan lines to be correlated.  The result of this function</span>
+<span class="sd">    will be a numpy array of correlation coefficients for the cross correlation of the lines.</span>
+
+<span class="sd">    The correlation is computed using discrete fourier transforms to transform the scan lines into the frequency domain.</span>
+<span class="sd">    The correlation is then performed in the frequency domain and then transformed back into the spatial domain.</span>
+<span class="sd">    Finally, the spatial correlation lines are normalized to have values between -1 and 1 in the usual sense.</span>
+
+<span class="sd">    :param extracted_lines: array of extracted lines to be correlated</span>
+<span class="sd">    :param predicted_lines: array of predicted lines to be correlated</span>
+<span class="sd">    :return: array of correlation coefficients for each scan line pair.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Subtract the mean from each template to reduce the complexity later</span>
+    <span class="n">zero_mean_pred_lines</span> <span class="o">=</span> <span class="n">predicted_lines</span> <span class="o">-</span> <span class="n">predicted_lines</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Get the un-normalized correlation lines (for a &quot;full&quot; correlation)</span>
+    <span class="n">un_normalized_corr_lines</span> <span class="o">=</span> <span class="n">_fft_correlate_1d</span><span class="p">(</span><span class="n">extracted_lines</span><span class="p">,</span> <span class="n">zero_mean_pred_lines</span><span class="p">)</span>
+
+    <span class="c1"># Normalize the correlation coefficients to be between -1 and 1</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">_normalize_xcorr_1d</span><span class="p">(</span><span class="n">extracted_lines</span><span class="p">,</span> <span class="n">zero_mean_pred_lines</span><span class="p">,</span> <span class="n">un_normalized_corr_lines</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span>
+
+    <span class="c1"># Select only correlation coefficients for type &quot;same&quot;</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">extracted_lines</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="c1"># Determine the regions of the correlation lines that are valid</span>
+    <span class="n">lower</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">diff</span><span class="p">))</span>
+    <span class="n">upper</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">diff</span><span class="p">))</span>
+
+    <span class="c1"># Only return the valid regions</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">lower</span><span class="p">:</span><span class="o">-</span><span class="n">upper</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

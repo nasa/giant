@@ -1,11 +1,14 @@
 from unittest import TestCase
 
+from typing import cast
+
 import numpy as np
 
 import pandas as pd
 
 from giant.image import OpNavImage
-from giant.calibration.calibration_class import Calibration
+from giant.calibration.calibration_class import Calibration, CalibrationOptions
+from giant.stellar_opnav.star_identification import StarIDOptions
 from giant.calibration import estimators as est
 from giant.camera_models import PinholeModel
 from giant.stellar_opnav import estimators as sopnavest
@@ -16,13 +19,15 @@ import copy
 
 from datetime import datetime
 
+import warnings
+
 
 class MyTestCamera(Camera):
     def preprocessor(self, image):
         return image
 
 
-class BogusCatalogue:
+class BogusCatalog:
     pass
 
 
@@ -50,6 +55,9 @@ class TestCalibration(TestCase):
             return at.Rotation(np.array([0, 0, 0]))
 
         self.base_frame_function = base_frame_function
+        self.default_options = CalibrationOptions(star_id_options=StarIDOptions(catalog=BogusCatalog()), # pyright: ignore[reportArgumentType]
+                                                  geometric_estimator_type=est.geometric.GeometricEstimatorImplementations.LMA)
+
 
     @staticmethod
     def load_image(a, b, n, r):
@@ -81,30 +89,22 @@ class TestCalibration(TestCase):
 
     def load_calibration(self):
         cam = self.load_camera()
-
-        cal = Calibration(cam, image_processing_kwargs=None, star_id_kwargs={'catalogue': BogusCatalogue()},
-                          attitude_estimator=sopnavest.DavenportQMethod(),
-                          calibration_estimator=est.LMAEstimator(),
-                          static_alignment_estimator=est.StaticAlignmentEstimator())
+        
+        cal = Calibration(cam, options=self.default_options)
 
         return cal
 
     def load_calibration_with_data(self):
         cam = self.load_camera_with_data()
-        cal = Calibration(cam, image_processing_kwargs=None, star_id_kwargs={'catalogue': BogusCatalogueWithData()},
-                          attitude_estimator=sopnavest.DavenportQMethod(),
-                          calibration_estimator=est.LMAEstimator(),
-                          static_alignment_estimator=est.StaticAlignmentEstimator())
+        cal = Calibration(cam, options=self.default_options)
 
         return cal
 
     def test__init__(self):
         cal = self.load_calibration()
 
-        self.assertIsInstance(cal._calibration_est, est.LMAEstimator)
-        self.assertIsInstance(cal._static_alignment_est, est.StaticAlignmentEstimator)
-        self.assertIsNone(cal._initial_calibration_est_kwargs)
-        self.assertIsNone(cal._initial_static_alignment_est_kwargs)
+        self.assertIsInstance(cal.geometric_estimator, est.LMAEstimator)
+        self.assertIsInstance(cal.attitude_estimator, sopnavest.DavenportQMethod)
 
     def test_estimate_calibration(self):
         images = [OpNavImage(self.load_image(49, 49, 100, 5), observation_date=datetime(2017, 2, 1, 0, 0, 0),
@@ -116,37 +116,44 @@ class TestCalibration(TestCase):
 
         camera = MyTestCamera(images=images, model=cmodel)
 
-        cal = Calibration(camera, image_processing_kwargs=None, star_id_kwargs={'catalogue': BogusCatalogue()})
+        cal = Calibration(camera, options=CalibrationOptions(star_id_options=StarIDOptions(catalog=BogusCatalog()))) # pyright: ignore[reportArgumentType]
 
-        cal._calibration_est = est.LMAEstimator(model=PinholeModel(kx=500, ky=500, px=49, py=49, focal_length=10,
-                                                                   n_rows=5000, n_cols=5000,
-                                                                   misalignment=[[1e-12, -2e-14, 3e-10],
-                                                                                 [2e-15, 1e-13, 3e-10]],
-                                                                   estimation_parameters=['multiple misalignments']),
-                                                measurements=np.hstack([np.arange(0, 6).reshape((2, 3)),
-                                                                        np.arange(0, 8).reshape((2, 4))]),
-                                                camera_frame_directions=[np.arange(0, 9).reshape((3, 3)),
-                                                                         np.arange(0, 12).reshape((3, 4))],
-                                                measurement_covariance=np.random.rand(14 * 14).reshape((14, 14)),
-                                                temperatures=[20, 20])
+        cal.geometric_estimator = est.LMAEstimator(model=PinholeModel(kx=500, ky=500, px=49, py=49, focal_length=10,
+                                                   n_rows=5000, n_cols=5000,
+                                                   misalignment=[[1e-12, -2e-14, 3e-10],
+                                                                 [2e-15, 1e-13, 3e-10]],
+                                                   estimation_parameters=['multiple misalignments']))
 
-        cal._matched_extracted_image_points = [np.arange(0, 6).reshape((2, 3), order='F'),
-                                               np.arange(0, 8).reshape(2, 4)]
-        cal._matched_catalogue_unit_vectors_camera = [np.arange(0, 9).reshape(3, 3), np.arange(0, 12).reshape(3, 4)]
+        cal.geometric_estimator.measurements = np.hstack([np.arange(0, 6).reshape((2, 3)),
+                                                          np.arange(0, 8).reshape((2, 4))]).astype(np.float64)
+        cal.geometric_estimator.camera_frame_directions = [np.arange(0, 9).reshape((3, 3)).astype(np.float64),
+                                                           np.arange(0, 12).reshape((3, 4)).astype(np.float64)]
+        cal.geometric_estimator.measurement_covariance = np.random.rand(14 * 14).reshape((14, 14))
+        cal.geometric_estimator.temperatures=[20, 20]
+
+        cal._matched_extracted_image_points = [np.arange(0, 6).reshape((2, 3), order='F').astype(np.float64),
+                                               np.arange(0, 8).reshape(2, 4).astype(np.float64)]
+        cal._matched_catalog_unit_vectors_camera = [np.arange(0, 9).reshape(3, 3).astype(np.float64), 
+                                                    np.arange(0, 12).reshape(3, 4).astype(np.float64)]
 
         cal_copy = copy.deepcopy(cal)
 
         # Check non-weighted estimation
-        cal.estimate_calibration()
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            cal.estimate_geometric_calibration()
 
-        self.assertFalse(cal._calibration_est.weighted_estimation)
-        self.assertEqual(cal_copy.model.kx, cal.model.kx)
-        self.assertNotEqual(cal_copy.model.ky, cal.model.ky)
-        self.assertNotEqual(cal_copy.model.kx, cal.model.px)
-        self.assertNotEqual(cal_copy.model.ky, cal.model.py)
+        self.assertFalse(cal.geometric_estimator.weighted_estimation)
+        copy_model = cast(PinholeModel, cal_copy.model)
+        cal_model = cast(PinholeModel, cal.model)
+        self.assertEqual(copy_model.kx, cal_model.kx)
+        self.assertNotEqual(copy_model.ky, cal_model.ky)
+        self.assertNotEqual(copy_model.kx, cal_model.px)
+        self.assertNotEqual(copy_model.ky, cal_model.py)
 
         # Check weighted estimation
-        cal._matched_weights_picture = [np.arange(1, 7), np.arange(1, 9)]
+        cal._matched_weights_picture = [np.arange(1, 7).astype(np.float64), 
+                                        np.arange(1, 9).astype(np.float64)]
 
     def test_estimate_alignment(self):
         images = [OpNavImage(self.load_image(49, 49, 100, 5), observation_date=datetime(2017, 2, 1, 0, 0, 0),
@@ -158,18 +165,17 @@ class TestCalibration(TestCase):
 
         camera = MyTestCamera(images=images, model=cmodel)
 
-        cal = Calibration(camera, image_processing_kwargs=None, star_id_kwargs={'catalogue': BogusCatalogue()})
+        cal = Calibration(camera, options=self.default_options)
 
-        cal._matched_catalogue_unit_vectors_inertial = [np.arange(1, 10).reshape(3, 3), np.arange(1, 13).reshape(3, 4)]
+        cal._matched_catalog_unit_vectors_inertial = [np.arange(1, 10).reshape(3, 3).astype(np.float64), 
+                                                      np.arange(1, 13).reshape(3, 4).astype(np.float64)]
 
-        cal_copy = copy.deepcopy(cal)
-
-        cal._matched_extracted_image_points = [np.arange(0, 6).reshape((2, 3), order='F'),
-                                               np.arange(0, 8).reshape(2, 4)]
-        cal._matched_catalogue_unit_vectors_camera = [np.arange(0, 9).reshape(3, 3), np.arange(0, 12).reshape(3, 4)]
+        cal._matched_extracted_image_points = [np.arange(0, 6).reshape((2, 3), order='F').astype(np.float64),
+                                               np.arange(0, 8).reshape(2, 4).astype(np.float64)]
+        cal._matched_catalog_unit_vectors_camera = [np.arange(0, 9).reshape(3, 3).astype(np.float64), 
+                                                    np.arange(0, 12).reshape(3, 4).astype(np.float64)]
 
         cal.alignment_base_frame_func = self.base_frame_function
-        cal.estimate_static_alignment()
+        res = cal.estimate_static_alignment()
 
-        self.assertIsNone(cal_copy.static_alignment)
-        self.assertIsInstance(cal.static_alignment, at.Rotation)
+        self.assertIsInstance(res, at.Rotation)

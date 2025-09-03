@@ -1,0 +1,10 @@
+Surface64.merge
+===============
+
+.. currentmodule:: giant.ray_tracer.shapes.surface
+
+:mod:`giant.ray_tracer.shapes.surface`\:
+
+.. automethod:: Surface64.merge
+
+|

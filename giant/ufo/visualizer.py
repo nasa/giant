@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 """
@@ -20,6 +19,8 @@ from typing import Optional
 import matplotlib.pyplot as plt
 from matplotlib.colorbar import Colorbar
 from matplotlib import rcParams
+from matplotlib.figure import Figure
+from matplotlib.axes import Axes
 from matplotlib.backend_bases import KeyEvent
 
 import pandas as pd
@@ -36,7 +37,7 @@ class _InteractiveDetectionExplorer:
     Not to be used externally
     """
 
-    def __init__(self, figure: plt.Figure, ax: plt.Axes, ufos: pd.DataFrame, camera: Camera,
+    def __init__(self, figure: Figure, ax: Axes, ufos: pd.DataFrame, camera: Camera,
                  log_scale: bool = False):
 
         self.current_rc_params = rcParams.copy()
@@ -62,7 +63,7 @@ class _InteractiveDetectionExplorer:
 
         self.colorbar: Optional[Colorbar] = None
 
-        self.canvas_event_id = self.figure.canvas.mpl_connect('key_press_event', self._on_key_press)
+        self.canvas_event_id = self.figure.canvas.mpl_connect('key_press_event', self._on_key_press) # pyright: ignore[reportArgumentType]
 
         self.figure.suptitle('Left => previous frame, Right => next frame')
 
@@ -165,7 +166,7 @@ def show_detections(ufos: pd.DataFrame, camera: Camera, save_frames: bool = Fals
         del explorer
 
     elif save_frames:
-        fig: plt.Figure = plt.figure()
+        fig: Figure = plt.figure()
 
         ax = fig.add_subplot(111)
         colorbar = None
@@ -176,7 +177,7 @@ def show_detections(ufos: pd.DataFrame, camera: Camera, save_frames: bool = Fals
                 colorbar.remove()
 
             ax.cla()
-
+            assert image.file is not None
             image_file = os.path.splitext(os.path.basename(image.file))[0]
 
             image_mask = ufos.image_file == image_file
@@ -205,9 +206,9 @@ def show_detections(ufos: pd.DataFrame, camera: Camera, save_frames: bool = Fals
             if log_scale:
                 # noinspection PyArgumentList
                 image = image.astype(np.float32) - image.min() + 100
-            fig: plt.Figure = plt.figure()
+            fig: Figure = plt.figure()
             ax = fig.add_subplot()
-
+            assert image.file is not None
             image_file = os.path.splitext(os.path.basename(image.file))[0]
 
             image_mask = ufos.image_file == image_file

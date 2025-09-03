@@ -1,36 +1,36 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>giant.relative_opnav.estimators.unresolved &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
-    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../../../_static/logo.ico"/>
+    <title>giant.relative_opnav.estimators.unresolved &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../../_static/logo.ico"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
     <link rel="copyright" title="Copyright" href="../../../../copyright.html" />
    
   <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../../../../index.html">
-    <img class="logo" src="../../../../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../../../../_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -63,7 +63,7 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../../search.html" method="get">
@@ -71,8 +71,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -89,11 +89,7 @@
           <div class="body" role="main">
             
   <h1>Source code for giant.relative_opnav.estimators.unresolved</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
-<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
-
-
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">This module provides a class which implements an unresolved center finding RelNav technique along with a new meta class</span>
 <span class="sd">that adds concrete center-of-brightness to center-of-figure correction methods.</span>
 
@@ -120,8 +116,8 @@
 <span class="sd">------</span>
 
 <span class="sd">The primary control for tuning this technique is through the tuning of the</span>
-<span class="sd">:meth:`.ImageProcessing.locate_subpixel_poi_in_roi` method.  There are a number of tuning parameters</span>
-<span class="sd">for this method and we direct you to its documentation for more details.</span>
+<span class="sd">:class:`.PointOfInterestFinder` clas.  There are a number of tuning parameters</span>
+<span class="sd">for this class and we direct you to its documentation for more details.</span>
 
 <span class="sd">In addition, there are a few tuning parameters for the class itself.</span>
 <span class="sd">The search region is controlled by the :attr:`~.UnresolvedCenterFinding.search_distance` attribute.  This should be an</span>
@@ -142,41 +138,47 @@
 <span class="sd">:class:`.RelativeOpNav` user interface refer to the :mod:`.relnav_class` documentation.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
-<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">cast</span>
 
-<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.rays</span> <span class="kn">import</span> <span class="n">Rays</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.scene</span> <span class="kn">import</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">SceneObject</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.illumination</span> <span class="kn">import</span> <span class="n">IlluminationModel</span><span class="p">,</span> <span class="n">McEwenIllumination</span>
-<span class="kn">from</span> <span class="nn">giant.camera</span> <span class="kn">import</span> <span class="n">Camera</span>
-<span class="kn">from</span> <span class="nn">giant.image</span> <span class="kn">import</span> <span class="n">OpNavImage</span>
-<span class="kn">from</span> <span class="nn">giant.image_processing</span> <span class="kn">import</span> <span class="n">ImageProcessing</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 
-<span class="kn">from</span> <span class="nn">giant.relative_opnav.estimators.estimator_interface_abc</span> <span class="kn">import</span> <span class="n">RelNavEstimator</span><span class="p">,</span> <span class="n">RelNavObservablesType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.rays</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rays</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">SceneObject</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.illumination</span><span class="w"> </span><span class="kn">import</span> <span class="n">IlluminationModel</span><span class="p">,</span> <span class="n">McEwenIllumination</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.shapes.triangle</span><span class="w"> </span><span class="kn">import</span> <span class="n">Triangle32</span><span class="p">,</span> <span class="n">Triangle64</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Traceable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera</span><span class="w"> </span><span class="kn">import</span> <span class="n">Camera</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpNavImage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image_processing.point_source_finder</span><span class="w"> </span><span class="kn">import</span> <span class="n">PointOfInterestFinder</span><span class="p">,</span> <span class="n">PointOfInterestFinderOptions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes.user_option_configured</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptionConfigured</span>
 
-<span class="kn">from</span> <span class="nn">giant._typing</span> <span class="kn">import</span> <span class="n">Real</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.relative_opnav.estimators.estimator_interface_abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">RelNavEstimator</span><span class="p">,</span> <span class="n">RelNavObservablesType</span>
 
 
-<div class="viewcode-block" id="PhaseCorrectionType"><a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrectionType.html#giant.relative_opnav.estimators.unresolved.PhaseCorrectionType">[docs]</a><span class="k">class</span> <span class="nc">PhaseCorrectionType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PhaseCorrectionType">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrectionType.html#giant.relative_opnav.estimators.unresolved.PhaseCorrectionType">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PhaseCorrectionType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This enumeration provides the possible phase correction methods to use to convert the observed center-of-brightness</span>
 <span class="sd">    to a center of figure observation.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">SIMPLE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This method assumes a spherical target and computes the phase correction for a sphere </span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">RASTERED</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This method assumes a tessellated object and renders it using rasterization to compute the phase correction.</span>
 <span class="sd">    </span>
 <span class="sd">    This will be much more accurate than the SIMPLE method for most tessellated targets, especially for ones that are </span>
@@ -184,9 +186,33 @@
 <span class="sd">    accuracy could be useless if the object is still very small in the FOV of the camera.</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
 
+    
 
-<div class="viewcode-block" id="PhaseCorrector"><a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrector.html#giant.relative_opnav.estimators.unresolved.PhaseCorrector">[docs]</a><span class="k">class</span> <span class="nc">PhaseCorrector</span><span class="p">(</span><span class="n">RelNavEstimator</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PhaseCorrectorOptions">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrectorOptions.html#giant.relative_opnav.estimators.unresolved.PhaseCorrectorOptions">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PhaseCorrectorOptions</span><span class="p">(</span><span class="n">UserOptions</span><span class="p">):</span>
+    
+        <span class="n">phase_correction_type</span><span class="p">:</span> <span class="n">PhaseCorrectionType</span>  <span class="o">=</span> <span class="n">PhaseCorrectionType</span><span class="o">.</span><span class="n">SIMPLE</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The type of phase correction to use, if requested.</span>
+
+<span class="sd">        See :class:`.PhaseCorrectionType` for details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">brdf</span><span class="p">:</span> <span class="n">IlluminationModel</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">McEwenIllumination</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The illumination model used to convert geometry into expected illumination.  </span>
+
+<span class="sd">        This is only used if the ``RASTERED`` phase correction type is chosen and is ignored otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+        
+        
+<div class="viewcode-block" id="PhaseCorrector">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrector.html#giant.relative_opnav.estimators.unresolved.PhaseCorrector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PhaseCorrector</span><span class="p">(</span><span class="n">RelNavEstimator</span><span class="p">,</span> <span class="n">PhaseCorrectorOptions</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class adds phase correction capabilities to RelNavEstimator.</span>
 
 <span class="sd">    Phase correction is the process by which we attempt to move an observed center of brightness (the centroid of a</span>
@@ -211,46 +237,26 @@
 <span class="sd">    refer to the :mod:`.relative_opnav.estimators` documentation.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span> <span class="n">image_processing</span><span class="p">:</span> <span class="n">ImageProcessing</span><span class="p">,</span>
-                 <span class="n">phase_correction_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">PhaseCorrectionType</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">PhaseCorrectionType</span><span class="o">.</span><span class="n">SIMPLE</span><span class="p">,</span>
-                 <span class="n">brdf</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">IlluminationModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span>
+                 <span class="n">options</span><span class="p">:</span> <span class="n">PhaseCorrectorOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param scene: The :class:`.Scene` object containing the target, light, and obscuring objects.</span>
 <span class="sd">        :param camera: The :class:`.Camera` object containing the camera model and images to be utilized</span>
-<span class="sd">        :param image_processing: The :class:`.ImageProcessing` object to be used to process the images</span>
-<span class="sd">        :param phase_correction_type: The type of phase correction to use.  Should be one of the PhaseCorrectionType</span>
+<span class="sd">        :param options: The options configuring the phase corrections</span>
 <span class="sd">                                      enum values</span>
-<span class="sd">        :param brdf: The illumination model to use to compute the illumination values if the ``RASTERED`` phase</span>
-<span class="sd">                     correction type is used.  If the ``RASTERED`` phase correction type is not used this is ignored.</span>
-<span class="sd">                     If this is left as ``None`` and the ``Rastered`` phase correction type is used, this will default</span>
-<span class="sd">                     to the McEwen Model, :class:`.McEwenIllumination`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">image_processing</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            
+            <span class="n">options</span><span class="o">.</span><span class="n">apply_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">phase_correction_type</span><span class="p">:</span> <span class="n">PhaseCorrectionType</span> <span class="o">=</span> <span class="n">phase_correction_type</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The type of phase correction to use, if requested.</span>
-
-<span class="sd">        See :class:`.PhaseCorrectionType` for details.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phase_correction_type</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">phase_correction_type</span> <span class="o">=</span> <span class="n">PhaseCorrectionType</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">phase_correction_type</span><span class="o">.</span><span class="n">upper</span><span class="p">()]</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">brdf</span><span class="p">:</span> <span class="n">IlluminationModel</span> <span class="o">=</span> <span class="n">brdf</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The illumination model used to convert geometry into expected illumination.  </span>
-
-<span class="sd">        This is only used if the ``RASTERED`` phase correction type is chosen and is ignored otherwise.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phase_correction_type</span> <span class="ow">is</span> <span class="n">PhaseCorrectionType</span><span class="o">.</span><span class="n">RASTERED</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">brdf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">brdf</span> <span class="o">=</span> <span class="n">McEwenIllumination</span><span class="p">()</span>
-
-<div class="viewcode-block" id="PhaseCorrector.simple_phase_correction"><a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrector.simple_phase_correction.html#giant.relative_opnav.estimators.unresolved.PhaseCorrector.simple_phase_correction">[docs]</a>    <span class="k">def</span> <span class="nf">simple_phase_correction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span> <span class="n">line_of_sight_sun_image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-                                <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PhaseCorrector.simple_phase_correction">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrector.simple_phase_correction.html#giant.relative_opnav.estimators.unresolved.PhaseCorrector.simple_phase_correction">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">simple_phase_correction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span> <span class="n">line_of_sight_sun_image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                                <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method computes the simple phase correction assuming the target is a sphere.</span>
 
 <span class="sd">        First, the apparent diameter of the target in pixels is computed using</span>
@@ -290,8 +296,11 @@
 
         <span class="k">return</span> <span class="n">correction</span></div>
 
-<div class="viewcode-block" id="PhaseCorrector.rastered_phase_correction"><a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrector.rastered_phase_correction.html#giant.relative_opnav.estimators.unresolved.PhaseCorrector.rastered_phase_correction">[docs]</a>    <span class="k">def</span> <span class="nf">rastered_phase_correction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PhaseCorrector.rastered_phase_correction">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrector.rastered_phase_correction.html#giant.relative_opnav.estimators.unresolved.PhaseCorrector.rastered_phase_correction">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rastered_phase_correction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method computes the phase correction by raster rendering the target to determine the offset from the center</span>
 <span class="sd">        of illumination to the center of figure.</span>
 
@@ -315,36 +324,49 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># get the rasterized illumination</span>
-        <span class="n">brightness</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span> <span class="n">vertices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scene</span><span class="o">.</span><span class="n">raster_render</span><span class="p">(</span><span class="n">target_ind</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">brdf</span><span class="p">)</span>
+        <span class="n">brightness</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">raster_render</span><span class="p">(</span><span class="n">target_ind</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">brdf</span><span class="p">)</span>
 
         <span class="n">illuminated_facets</span> <span class="o">=</span> <span class="n">brightness</span> <span class="o">&gt;</span> <span class="mi">0</span>
 
-        <span class="c1"># get the area</span>
-        <span class="n">illuminated_sides</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">sides</span><span class="p">[</span><span class="n">illuminated_facets</span><span class="p">]</span>
-        <span class="c1"># compute the norm of the cross product of the sides for the triangles divided by 2</span>
-        <span class="n">areas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">illuminated_sides</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">illuminated_sides</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="p">(</span><span class="n">Triangle64</span><span class="p">,</span> <span class="n">Triangle32</span><span class="p">)):</span>
+            <span class="c1"># get the area</span>
+            <span class="n">illuminated_sides</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">sides</span><span class="p">[</span><span class="n">illuminated_facets</span><span class="p">]</span>
+            <span class="c1"># compute the norm of the cross product of the sides for the triangles divided by 2</span>
+            <span class="n">areas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">illuminated_sides</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">illuminated_sides</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
 
-        <span class="c1"># compute the photo-center offset in the camera frame</span>
-        <span class="n">facet_brightness</span> <span class="o">=</span> <span class="n">areas</span><span class="o">*</span><span class="n">brightness</span><span class="p">[</span><span class="n">illuminated_facets</span><span class="p">]</span>
-        <span class="n">photo_center_offset</span> <span class="o">=</span> <span class="p">(</span><span class="n">facet_brightness</span><span class="o">*</span><span class="n">centers</span><span class="p">[</span><span class="n">illuminated_facets</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="n">facet_brightness</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="c1"># compute the photo-center offset in the camera frame</span>
+            <span class="n">facet_brightness</span> <span class="o">=</span> <span class="n">areas</span><span class="o">*</span><span class="n">brightness</span><span class="p">[</span><span class="n">illuminated_facets</span><span class="p">]</span>
+            <span class="n">photo_center_offset</span> <span class="o">=</span> <span class="p">(</span><span class="n">facet_brightness</span><span class="o">*</span><span class="n">centers</span><span class="p">[</span><span class="n">illuminated_facets</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="n">facet_brightness</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># we probably shouldn&#39;t end up here</span>
+            <span class="n">photo_center_offset</span> <span class="o">=</span> <span class="p">(</span><span class="n">brightness</span><span class="p">[</span><span class="n">illuminated_facets</span><span class="p">]</span><span class="o">*</span><span class="n">centers</span><span class="p">[</span><span class="n">illuminated_facets</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="n">brightness</span><span class="p">[</span><span class="n">illuminated_facets</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
         <span class="c1"># project the photo center into the camera</span>
-        <span class="n">image_photo_center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">photo_center_offset</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+        <span class="n">image_photo_center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">photo_center_offset</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
 
         <span class="c1"># compute and return the offset from the photo center to the center of figure</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">-</span> <span class="n">image_photo_center</span></div>
 
-<div class="viewcode-block" id="PhaseCorrector.compute_line_of_sight_sun_image"><a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrector.compute_line_of_sight_sun_image.html#giant.relative_opnav.estimators.unresolved.PhaseCorrector.compute_line_of_sight_sun_image">[docs]</a>    <span class="k">def</span> <span class="nf">compute_line_of_sight_sun_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+
+<div class="viewcode-block" id="PhaseCorrector.compute_line_of_sight_sun_image">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrector.compute_line_of_sight_sun_image.html#giant.relative_opnav.estimators.unresolved.PhaseCorrector.compute_line_of_sight_sun_image">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_line_of_sight_sun_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="c1"># get the line of sight from the sun in the image</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The light_obj must be specified by this point&#39;</span><span class="p">)</span>
+        <span class="n">lpos</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
         <span class="n">line_of_sight_sun</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
         <span class="n">line_of_sight_sun</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">line_of_sight_sun</span><span class="p">)</span>
         <span class="n">line_of_sight_sun_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_directions</span><span class="p">(</span><span class="n">line_of_sight_sun</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">line_of_sight_sun_image</span></div>
 
-<div class="viewcode-block" id="PhaseCorrector.compute_phase_correction"><a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrector.compute_phase_correction.html#giant.relative_opnav.estimators.unresolved.PhaseCorrector.compute_phase_correction">[docs]</a>    <span class="k">def</span> <span class="nf">compute_phase_correction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span><span class="p">,</span>
+
+<div class="viewcode-block" id="PhaseCorrector.compute_phase_correction">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.PhaseCorrector.compute_phase_correction.html#giant.relative_opnav.estimators.unresolved.PhaseCorrector.compute_phase_correction">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_phase_correction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                  <span class="n">line_of_sight_sun_image</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The method computes the phase correction assuming a spherical target.</span>
 
 <span class="sd">        The phase correction attempts to move the observed center-of-brightness measurement to be</span>
@@ -378,11 +400,49 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">simple_phase_correction</span><span class="p">(</span><span class="n">target_ind</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">line_of_sight_sun_image</span><span class="p">,</span> <span class="n">temperature</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rastered_phase_correction</span><span class="p">(</span><span class="n">target_ind</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">temperature</span><span class="p">)</span></div></div>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rastered_phase_correction</span><span class="p">(</span><span class="n">target_ind</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">temperature</span><span class="p">)</span></div>
+</div>
 
 
-<div class="viewcode-block" id="UnresolvedCenterFinding"><a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding.html#giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding">[docs]</a><span class="k">class</span> <span class="nc">UnresolvedCenterFinding</span><span class="p">(</span><span class="n">PhaseCorrector</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="UnresolvedCenterFindingOptions">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.UnresolvedCenterFindingOptions.html#giant.relative_opnav.estimators.unresolved.UnresolvedCenterFindingOptions">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">UnresolvedCenterFindingOptions</span><span class="p">(</span><span class="n">PhaseCorrectorOptions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param search_distance: The search radius to search around the predicted centers for the observed centers of</span>
+<span class="sd">                            the target objects</span>
+<span class="sd">    :param apply_phase_correction: A boolean flag specifying whether to apply the phase correction to the observed</span>
+<span class="sd">                                    center of brightness to get closer to the center of figure based on the predicted</span>
+<span class="sd">                                    apparent diameter of the object.</span>
+<span class="sd">    :param phase_correction_type: The type of phase correction to use.  Should be one of the PhaseCorrectionType</span>
+<span class="sd">                                    enum values</span>
+<span class="sd">    :param brdf: The illumination model to use to compute the illumination values if the ``RASTERED`` phase</span>
+<span class="sd">                    correction type is used.  If the ``RASTERED`` phase correction type is not used this is ignored.</span>
+<span class="sd">                    If this is left as ``None`` and the ``Rastered`` phase correction type is used, this will default</span>
+<span class="sd">                    to the McEwen Model, :class:`.McEwenIllumination</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">search_distance</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Half of the distance to search around the predicted centers for the observed centers of the target objects in </span>
+<span class="sd">    pixels.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">apply_phase_correction</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A boolean flag specifying whether to apply the phase correction or not</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">point_of_interest_finder_options</span><span class="p">:</span> <span class="n">PointOfInterestFinderOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The options to use to configure the point of interest finder</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="UnresolvedCenterFinding">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding.html#giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UnresolvedCenterFinding</span><span class="p">(</span><span class="n">UserOptionConfigured</span><span class="p">[</span><span class="n">UnresolvedCenterFindingOptions</span><span class="p">],</span> <span class="n">PhaseCorrector</span><span class="p">,</span> <span class="n">UnresolvedCenterFindingOptions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class implements GIANT&#39;s version of unresolved center finding for extracting bearing measurements to unresolved</span>
 <span class="sd">    targets in an image.</span>
 
@@ -442,53 +502,37 @@
 <span class="sd">        image time.  This class does not update the scene automatically.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">technique</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;unresolved&#39;</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="n">technique</span> <span class="o">=</span> <span class="s1">&#39;unresolved&#39;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The name of the technique identifier in the :class:`.RelativeOpNav` class.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">observable_type</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RelNavObservablesType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">RelNavObservablesType</span><span class="o">.</span><span class="n">CENTER_FINDING</span><span class="p">]</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="n">observable_type</span> <span class="o">=</span> <span class="p">[</span><span class="n">RelNavObservablesType</span><span class="o">.</span><span class="n">CENTER_FINDING</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The type of observables this technique generates.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span> <span class="n">image_processing</span><span class="p">:</span> <span class="n">ImageProcessing</span><span class="p">,</span>
-                 <span class="n">search_distance</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span> <span class="n">apply_phase_correction</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                 <span class="n">phase_correction_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">PhaseCorrectionType</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">PhaseCorrectionType</span><span class="o">.</span><span class="n">SIMPLE</span><span class="p">,</span>
-                 <span class="n">brdf</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">IlluminationModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span> 
+                <span class="n">options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UnresolvedCenterFindingOptions</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param scene: The :class:`.Scene` object containing the target, light, and obscuring objects.</span>
 <span class="sd">        :param camera: The :class:`.Camera` object containing the camera model and images to be utilized</span>
 <span class="sd">        :param image_processing: The :class:`.ImageProcessing` object to be used to process the images</span>
-<span class="sd">        :param search_distance: The search radius to search around the predicted centers for the observed centers of</span>
-<span class="sd">                                the target objects</span>
-<span class="sd">        :param apply_phase_correction: A boolean flag specifying whether to apply the phase correction to the observed</span>
-<span class="sd">                                       center of brightness to get closer to the center of figure based on the predicted</span>
-<span class="sd">                                       apparent diameter of the object.</span>
-<span class="sd">        :param phase_correction_type: The type of phase correction to use.  Should be one of the PhaseCorrectionType</span>
-<span class="sd">                                      enum values</span>
-<span class="sd">        :param brdf: The illumination model to use to compute the illumination values if the ``RASTERED`` phase</span>
-<span class="sd">                     correction type is used.  If the ``RASTERED`` phase correction type is not used this is ignored.</span>
-<span class="sd">                     If this is left as ``None`` and the ``Rastered`` phase correction type is used, this will default</span>
-<span class="sd">                     to the McEwen Model, :class:`.McEwenIllumination`.</span>
+<span class="sd">        :param options: A dataclass specifying the options to set for this instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">image_processing</span><span class="p">,</span> <span class="n">phase_correction_type</span><span class="o">=</span><span class="n">phase_correction_type</span><span class="p">,</span> <span class="n">brdf</span><span class="o">=</span><span class="n">brdf</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">search_distance</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">search_distance</span><span class="p">)</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Half of the distance to search around the predicted centers for the observed centers of the target objects in </span>
-<span class="sd">        pixels.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">apply_phase_correction</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">apply_phase_correction</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A boolean flag specifying whether to apply the phase correction or not</span>
+        
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">UnresolvedCenterFindingOptions</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">point_of_interest_finder</span> <span class="o">=</span> <span class="n">PointOfInterestFinder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">point_of_interest_finder_options</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The instance of the point of interest finder to use when identifying the center of the uneresolved target</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
 
-<div class="viewcode-block" id="UnresolvedCenterFinding.estimate"><a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding.estimate.html#giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding.estimate">[docs]</a>    <span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">include_targets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="UnresolvedCenterFinding.estimate">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/unresolved/giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding.estimate.html#giant.relative_opnav.estimators.unresolved.UnresolvedCenterFinding.estimate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">include_targets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method extracts the observed sub-pixel centers for each requested target object from the supplied image.</span>
 
 <span class="sd">        The method works by first predicting the center of the target objects, then searching for bright spots around</span>
@@ -505,6 +549,11 @@
 <span class="sd">        :param include_targets: An argument specifying which targets should be processed for this image.  If ``None``</span>
 <span class="sd">                                then all are processed (no, the irony is not lost on me...)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The light_obj cannot be None at this point&#39;</span><span class="p">)</span>
+        
+        <span class="n">lpos</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
 
         <span class="c1"># process each requested target</span>
         <span class="k">for</span> <span class="n">target_ind</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_generator</span><span class="p">(</span><span class="n">include_targets</span><span class="p">):</span>
@@ -513,9 +562,10 @@
             <span class="n">relative_position</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 
             <span class="c1"># predict where the target should be</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">relative_position</span><span class="p">,</span>
-                                                                                      <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+            <span class="n">predicted</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">relative_position</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
 
+            <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">predicted</span>
+            
             <span class="c1"># check if this is being obscured by anything in the scene so we can&#39;t see it</span>
             <span class="c1"># also store the closest other object in the scene in the image</span>
 
@@ -524,7 +574,7 @@
                            <span class="o">-</span><span class="n">relative_position</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">relative_position</span><span class="p">))</span>
 
             <span class="c1"># trace a ray from the object to the sun.  If we strike something the object is shadowed</span>
-            <span class="n">shad_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">-</span> <span class="n">relative_position</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+            <span class="n">shad_dir</span> <span class="o">=</span> <span class="n">lpos</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">-</span> <span class="n">relative_position</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
             <span class="n">shad_ray</span> <span class="o">=</span> <span class="n">Rays</span><span class="p">(</span><span class="n">relative_position</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">shad_dir</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">shad_dir</span><span class="p">))</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">obscuring_objs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -540,6 +590,9 @@
             <span class="k">for</span> <span class="n">obscurer</span> <span class="ow">in</span> <span class="n">possible_obscurers</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">obscurer</span> <span class="ow">is</span> <span class="n">target</span><span class="p">:</span>
                     <span class="k">continue</span>
+                
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obscurer</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Traceable</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The obscurer must be traceable&#39;</span><span class="p">)</span>
 
                 <span class="c1"># trace a ray from the target to the camera to see if we strike anything on the way</span>
                 <span class="n">ores</span> <span class="o">=</span> <span class="n">obscurer</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">vis_ray</span><span class="p">)</span>
@@ -561,9 +614,9 @@
                     <span class="n">stop_processing</span> <span class="o">=</span> <span class="kc">True</span>
                     <span class="k">break</span>
 
-                <span class="n">image_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">obscurer</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                <span class="n">image_distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">obscurer</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
                                                                                      <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span> <span class="o">-</span>
-                                                <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">])</span>
+                                                      <span class="n">predicted</span><span class="p">))</span>
 
                 <span class="n">closest_other_distance</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">closest_other_distance</span><span class="p">,</span> <span class="n">image_distance</span><span class="p">)</span>
 
@@ -576,10 +629,10 @@
                               <span class="sa">f</span><span class="s2">&quot;the search distance is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">search_distance</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="c1"># determine the pixels we will search for the target in</span>
-            <span class="n">lr_search</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">round</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">search_distance</span><span class="p">,</span>
-                                                                                              <span class="bp">self</span><span class="o">.</span><span class="n">search_distance</span><span class="p">)</span>
-            <span class="n">ud_search</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">round</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">search_distance</span><span class="p">,</span>
-                                                                                              <span class="bp">self</span><span class="o">.</span><span class="n">search_distance</span><span class="p">)</span>
+            <span class="n">predicted_int</span> <span class="o">=</span> <span class="n">predicted</span><span class="o">.</span><span class="n">round</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+            <span class="n">lr_search</span> <span class="o">=</span> <span class="n">predicted_int</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">search_distance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">search_distance</span><span class="p">)</span>
+            <span class="n">ud_search</span> <span class="o">=</span> <span class="n">predicted_int</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">search_distance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">search_distance</span><span class="p">)</span>
+            
             <span class="c1"># check that we are within the field of view for our search region</span>
             <span class="n">top_bound</span> <span class="o">=</span> <span class="n">ud_search</span> <span class="o">&lt;</span> <span class="mi">0</span>
             <span class="n">bottom_bound</span> <span class="o">=</span> <span class="n">ud_search</span> <span class="o">&gt;=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -595,28 +648,14 @@
 
             <span class="c1"># build the region of interest to search</span>
             <span class="c1"># noinspection PyTypeChecker</span>
-            <span class="n">roi</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">lr_search</span><span class="p">[</span><span class="o">~</span><span class="n">fov_test</span><span class="p">],</span> <span class="n">ud_search</span><span class="p">[</span><span class="o">~</span><span class="n">fov_test</span><span class="p">])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">roi</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">lr_search</span><span class="p">[</span><span class="o">~</span><span class="n">fov_test</span><span class="p">],</span> <span class="n">ud_search</span><span class="p">[</span><span class="o">~</span><span class="n">fov_test</span><span class="p">])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
             <span class="c1"># use the star centroiding to find the pixel level location of the object</span>
             <span class="c1"># note that this will call denoise_image for us if it is turned on</span>
-            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">locate_subpixel_poi_in_roi</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">roi</span><span class="p">)</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point_of_interest_finder</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">roi</span><span class="p">)</span>
 
             <span class="c1"># parse the output</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">save_psf</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">return_stats</span><span class="p">:</span>
-                    <span class="n">points</span><span class="p">,</span> <span class="n">illums</span><span class="p">,</span> <span class="n">psfs</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">snrs</span> <span class="o">=</span> <span class="n">res</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">points</span><span class="p">,</span> <span class="n">illums</span><span class="p">,</span> <span class="n">psfs</span> <span class="o">=</span> <span class="n">res</span>
-                    <span class="n">snrs</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">return_stats</span><span class="p">:</span>
-                    <span class="n">points</span><span class="p">,</span> <span class="n">illums</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">snrs</span> <span class="o">=</span> <span class="n">res</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">points</span><span class="p">,</span> <span class="n">illums</span> <span class="o">=</span> <span class="n">res</span>
-                    <span class="n">snrs</span> <span class="o">=</span> <span class="kc">None</span>
-                <span class="n">psfs</span> <span class="o">=</span> <span class="kc">None</span>
-
-            <span class="n">points</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">centroids</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="c1"># TODO: consider picking the closest point to the a priori in this instance and throwing a warning</span>
@@ -651,10 +690,9 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">correction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;PSF&#39;</span><span class="p">:</span> <span class="n">psfs</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Point of Interest Results&#39;</span><span class="p">:</span> <span class="n">res</span><span class="p">,</span>
                                             <span class="s1">&#39;Phase Correction&#39;</span><span class="p">:</span> <span class="n">correction</span><span class="p">,</span>
-                                            <span class="s1">&#39;SNR&#39;</span><span class="p">:</span> <span class="n">snrs</span><span class="p">,</span>
-                                            <span class="s1">&#39;Max intensity&#39;</span><span class="p">:</span> <span class="n">illums</span><span class="p">}</span>
+                                            <span class="p">}</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;unable to locate subpixel center for epoch: </span><span class="si">{0}</span><span class="s1"> obj: </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">,</span>
@@ -662,7 +700,9 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Failed&#39;</span><span class="p">:</span> <span class="s2">&quot;Bad PSF fit&quot;</span><span class="p">}</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">])</span>
-                <span class="k">continue</span></div></div>
+                <span class="k">continue</span></div>
+</div>
+
 </pre></div>
 
           </div>
@@ -678,17 +718,24 @@
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

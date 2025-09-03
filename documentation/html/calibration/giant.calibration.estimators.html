@@ -1,39 +1,39 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>giant.calibration.estimators &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <title>giant.calibration.estimators &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="copyright" title="Copyright" href="../copyright.html" />
-    <link rel="next" title="giant.calibration.estimators.CalibrationEstimator" href="estimators/giant.calibration.estimators.CalibrationEstimator.html" />
+    <link rel="next" title="alignment" href="estimators/giant.calibration.estimators.alignment.html" />
     <link rel="prev" title="Calibration.limit_magnitude" href="calibration_class/giant.calibration.calibration_class.Calibration.limit_magnitude.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../index.html">
-    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -64,13 +64,13 @@
   <li><a href="../giant.html">API Reference</a><ul>
   <li><a href="../giant.calibration.html">giant.calibration</a><ul>
       <li>Previous: <a href="calibration_class/giant.calibration.calibration_class.Calibration.limit_magnitude.html" title="previous chapter">Calibration.limit_magnitude</a></li>
-      <li>Next: <a href="estimators/giant.calibration.estimators.CalibrationEstimator.html" title="next chapter">giant.calibration.estimators.CalibrationEstimator</a></li>
+      <li>Next: <a href="estimators/giant.calibration.estimators.alignment.html" title="next chapter">alignment</a></li>
   </ul></li>
   </ul></li>
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -78,8 +78,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -93,7 +93,7 @@
           <a href="calibration_class/giant.calibration.calibration_class.Calibration.limit_magnitude.html" title="Previous document">Calibration.limit_magnitude</a>
         </li>
         <li>
-          <a href="estimators/giant.calibration.estimators.CalibrationEstimator.html" title="Next document">giant.calibration.estimators.CalibrationEstimator</a>
+          <a href="estimators/giant.calibration.estimators.alignment.html" title="Next document">alignment</a>
           &rarr;
         </li>
     </ul>
@@ -104,48 +104,55 @@
           <div class="body" role="main">
             
   <section id="module-giant.calibration.estimators">
-<span id="giant-calibration-estimators"></span><h1>giant.calibration.estimators<a class="headerlink" href="#module-giant.calibration.estimators" title="Permalink to this headline">¶</a></h1>
-<p>This module provides the ability to estimate geometric camera models as well as static and temperature dependent
-attitude alignment based off of observations of stars in monocular images.</p>
-<p>In general, a user will not directly interface with the classes defined in this module, and instead will work with the
-<a class="reference internal" href="calibration_class/giant.calibration.calibration_class.Calibration.html#giant.calibration.calibration_class.Calibration" title="giant.calibration.calibration_class.Calibration"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calibration</span></code></a> class.</p>
-<section id="description-of-the-problem">
-<h2>Description of the Problem<a class="headerlink" href="#description-of-the-problem" title="Permalink to this headline">¶</a></h2>
-<p>There are 3 minimization problems we are solving in this module. The first is to minimize the residuals
-between predicted and observed pixel locations for stars in an image.  The predicted pixel locations are determined by
-taking a star direction from a catalogue, rotating it into the camera frame (based on an estimate of the rotation
-between the camera frame and the star catalogue frame also determined from the observation of the star images), and then
-projecting it onto the image using the <a class="reference internal" href="../camera_model/giant.camera_models.camera_model.CameraModel.project_onto_image.html#giant.camera_models.camera_model.CameraModel.project_onto_image" title="giant.camera_models.camera_model.CameraModel.project_onto_image"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CameraModel.project_onto_image()</span></code></a> method.  We are really estimating a
-change to the projection here, as it is assumed that the rotation between the camera frame and the catalogue frame is
-already well known.</p>
-<p>The second is to minimize the residual angles between sets of unit vectors expressed in 2 different frames.  This is
-exactly the same problem solved in the <a class="reference internal" href="../stellar_opnav/giant.stellar_opnav.estimators.html#module-giant.stellar_opnav.estimators" title="giant.stellar_opnav.estimators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">stellar_opnav.estimators</span></code></a> module, but in this case we generally are doing
-the solution over many different images, instead of for a single image.  This is done to estimate a constant static
-alignment between 2 frames.</p>
-<p>The final is to minimize the residuals between Euler angles between one frame an another over many images.  This is done
-to estimate a temperature dependent alignment between 2 frames.</p>
-</section>
-<p class="rubric">Classes</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<span id="giant-calibration-estimators"></span><h1>giant.calibration.estimators<a class="headerlink" href="#module-giant.calibration.estimators" title="Link to this heading">¶</a></h1>
+<p class="rubric">Modules</p>
+<table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="estimators/giant.calibration.estimators.CalibrationEstimator.html#giant.calibration.estimators.CalibrationEstimator" title="giant.calibration.estimators.CalibrationEstimator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CalibrationEstimator</span></code></a></p></td>
-<td><p>This abstract base class serves as the template for implementing a class for doing camera model estimation in GIANT.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="estimators/giant.calibration.estimators.alignment.html#module-giant.calibration.estimators.alignment" title="giant.calibration.estimators.alignment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">alignment</span></code></a></p></td>
+<td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="estimators/giant.calibration.estimators.IterativeNonlinearLSTSQ.html#giant.calibration.estimators.IterativeNonlinearLSTSQ" title="giant.calibration.estimators.IterativeNonlinearLSTSQ"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IterativeNonlinearLSTSQ</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="estimators/giant.calibration.estimators.geometric.html#module-giant.calibration.estimators.geometric" title="giant.calibration.estimators.geometric"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geometric</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="estimators/alignment/giant.calibration.estimators.alignment.static.static_alignment_estimator.html#giant.calibration.estimators.alignment.static.static_alignment_estimator" title="giant.calibration.estimators.alignment.static.static_alignment_estimator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">static_alignment_estimator</span></code></a></p></td>
+<td><p>This function estimates a static attitude alignment between one frame and another.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="estimators/alignment/giant.calibration.estimators.alignment.temperature_dependent.temperature_dependent_alignment_estimator.html#giant.calibration.estimators.alignment.temperature_dependent.temperature_dependent_alignment_estimator" title="giant.calibration.estimators.alignment.temperature_dependent.temperature_dependent_alignment_estimator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">temperature_dependent_alignment_estimator</span></code></a></p></td>
+<td><p>This function estimates a temperature dependent attitude alignment between one frame and another.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="estimators/alignment/giant.calibration.estimators.alignment.temperature_dependent.evaluate_temperature_dependent_alignment.html#giant.calibration.estimators.alignment.temperature_dependent.evaluate_temperature_dependent_alignment" title="giant.calibration.estimators.alignment.temperature_dependent.evaluate_temperature_dependent_alignment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_temperature_dependent_alignment</span></code></a></p></td>
+<td><p>This function takes a fit temperature dependent alignment solution and evaluates what the  alignment rotation is at a specified temperature.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="estimators/geometric/giant.calibration.estimators.geometric.geometric_estimator.GeometricEstimatorOptions.html#giant.calibration.estimators.geometric.geometric_estimator.GeometricEstimatorOptions" title="giant.calibration.estimators.geometric.geometric_estimator.GeometricEstimatorOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeometricEstimatorOptions</span></code></a></p></td>
+<td><p>GeometricEstimatorOptions(weighted_estimation: bool = False, a_priori_model_covariance: Optional[numpy.ndarray[tuple[Any, ...], numpy.dtype[numpy.float64]]] = None)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="estimators/geometric/giant.calibration.estimators.geometric.geometric_estimator.GeometricEstimator.html#giant.calibration.estimators.geometric.geometric_estimator.GeometricEstimator" title="giant.calibration.estimators.geometric.geometric_estimator.GeometricEstimator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeometricEstimator</span></code></a></p></td>
+<td><p>This protocol class serves as the template for implementing a class for doing geometric camera model estimation in GIANT.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="estimators/geometric/giant.calibration.estimators.geometric.iterative_nonlinear_lstsq.IterativeNonlinearLstSqOptions.html#giant.calibration.estimators.geometric.iterative_nonlinear_lstsq.IterativeNonlinearLstSqOptions" title="giant.calibration.estimators.geometric.iterative_nonlinear_lstsq.IterativeNonlinearLstSqOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IterativeNonlinearLstSqOptions</span></code></a></p></td>
+<td><p>IterativeNonlinearLstSqOptions(weighted_estimation: bool = False, a_priori_model_covariance: Optional[numpy.ndarray[tuple[Any, ...], numpy.dtype[numpy.float64]]] = None, max_iter: int = 20, residual_atol: float = 1e-10, residual_rtol: float = 1e-10, state_atol: float = 1e-10, state_rtol: float = 1e-10)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="estimators/geometric/giant.calibration.estimators.geometric.iterative_nonlinear_lstsq.IterativeNonlinearLSTSQ.html#giant.calibration.estimators.geometric.iterative_nonlinear_lstsq.IterativeNonlinearLSTSQ" title="giant.calibration.estimators.geometric.iterative_nonlinear_lstsq.IterativeNonlinearLSTSQ"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IterativeNonlinearLSTSQ</span></code></a></p></td>
 <td><p>This concrete estimator implements iterative non-linear least squares for estimating an updated camera model.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="estimators/giant.calibration.estimators.LMAEstimator.html#giant.calibration.estimators.LMAEstimator" title="giant.calibration.estimators.LMAEstimator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LMAEstimator</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="estimators/geometric/giant.calibration.estimators.geometric.lma.LMAEstimatorOptions.html#giant.calibration.estimators.geometric.lma.LMAEstimatorOptions" title="giant.calibration.estimators.geometric.lma.LMAEstimatorOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LMAEstimatorOptions</span></code></a></p></td>
+<td><p>LMAEstimatorOptions(weighted_estimation: bool = False, a_priori_model_covariance: Optional[numpy.ndarray[tuple[Any, ...], numpy.dtype[numpy.float64]]] = None, max_iter: int = 20, residual_atol: float = 1e-10, residual_rtol: float = 1e-10, state_atol: float = 1e-10, state_rtol: float = 1e-10, max_divergence_steps: int = 5)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="estimators/geometric/giant.calibration.estimators.geometric.lma.LMAEstimator.html#giant.calibration.estimators.geometric.lma.LMAEstimator" title="giant.calibration.estimators.geometric.lma.LMAEstimator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LMAEstimator</span></code></a></p></td>
 <td><p>This implements a Levenberg-Marquardt Algorithm estimator, which is analogous to a damped iterative non-linear least squares.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="estimators/giant.calibration.estimators.StaticAlignmentEstimator.html#giant.calibration.estimators.StaticAlignmentEstimator" title="giant.calibration.estimators.StaticAlignmentEstimator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StaticAlignmentEstimator</span></code></a></p></td>
-<td><p>This class estimates a static attitude alignment between one frame and another.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="estimators/giant.calibration.estimators.TemperatureDependentAlignmentEstimator.html#giant.calibration.estimators.TemperatureDependentAlignmentEstimator" title="giant.calibration.estimators.TemperatureDependentAlignmentEstimator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TemperatureDependentAlignmentEstimator</span></code></a></p></td>
-<td><p>This class estimates a temperature dependent attitude alignment between one frame and another.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="estimators/geometric/giant.calibration.estimators.alignment.temperature_dependent.TemperatureDependentResults.html#giant.calibration.estimators.alignment.temperature_dependent.TemperatureDependentResults" title="giant.calibration.estimators.alignment.temperature_dependent.TemperatureDependentResults"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TemperatureDependentResults</span></code></a></p></td>
+<td><p>Named tuple to make the results clear</p></td>
 </tr>
 </tbody>
 </table>
@@ -165,7 +172,7 @@ to estimate a temperature dependent alignment between 2 frames.</p>
           <a href="calibration_class/giant.calibration.calibration_class.Calibration.limit_magnitude.html" title="Previous document">Calibration.limit_magnitude</a>
         </li>
         <li>
-          <a href="estimators/giant.calibration.estimators.CalibrationEstimator.html" title="Next document">giant.calibration.estimators.CalibrationEstimator</a>
+          <a href="estimators/giant.calibration.estimators.alignment.html" title="Next document">alignment</a>
           &rarr;
         </li>
     </ul>
@@ -176,20 +183,24 @@ to estimate a temperature dependent alignment between 2 frames.</p>
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="../_sources/calibration/giant.calibration.estimators.rst.txt"
-          rel="nofollow">Page source</a>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

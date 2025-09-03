@@ -1,0 +1,8 @@
+﻿IterativeGaussianWBackground.apply\_1d
+======================================
+
+.. currentmodule:: giant.point_spread_functions.gaussians
+
+:mod:`giant.point_spread_functions.gaussians`\:
+
+.. automethod:: IterativeGaussianWBackground.apply_1d

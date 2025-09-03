@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.catalogs.ucac &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.catalogs.ucac</h1><div class="highlight"><pre>
+<span></span>
+
+
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module defines the interface to the UCAC4 star catalog.</span>
+
+<span class="sd">Catalog Description</span>
+<span class="sd">=====================</span>
+
+<span class="sd">The UCAC4 is a catalog of 113 million stars with 105 million including proper motion solutions.  It is complete to</span>
+<span class="sd">about a magnitude of 16.  It is generally very accurate for positions, but less so for magnitudes.</span>
+
+<span class="sd">The UCAC 4 uses a file based database system that is fast for small queries, but can be slow for queries over a large</span>
+<span class="sd">area.  It also does not include blended stars (stars that are close enough that they appear as a single star in an</span>
+<span class="sd">image).  If you need faster retrieval and/or blended stars then you should use the :mod:`.giant_catalog` instead,</span>
+<span class="sd">which is built primarily using the UCAC4 catalog.</span>
+
+<span class="sd">Use</span>
+<span class="sd">===</span>
+
+<span class="sd">The UCAC4 catalog can be used anywhere that a star catalog is required in GIANT.</span>
+<span class="sd">It is stored in a number of index and binary data files on disk and takes about 9 GB of space.  If you attempt to</span>
+<span class="sd">initialize the class and point it to a directory that does not contain the UCAC4 data it will ask you if you want to</span>
+<span class="sd">download the catalog (note that the UCAC4 data is not included by default so if you have not downloaded it yourself</span>
+<span class="sd">you will definitely need to).  If you answer yes, be aware that it may take a very long time to download.</span>
+
+<span class="sd">Once you have initialized the class (and downloaded the data files), then you can access the catalog as you would any</span>
+<span class="sd">GIANT usable catalog.  Simply call :meth:`~.UCAC4.query_catalog` to get the GIANT records for the stars as a</span>
+<span class="sd">dataframe with columns according the :attr:`.GIANT_COLUMNS`.  This class also provides 2 helper methods,</span>
+<span class="sd">:meth:`~.UCAC4.query_catalog_raw` which can be used to retrieve the raw catalog entries (instead of the GIANT</span>
+<span class="sd">entries) and :meth:`~.UCAC4.cross_ref_tycho` which can be used to get the raw Tycho 2 catalog records for a UCAC4</span>
+<span class="sd">star (if available).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">operator</span><span class="w"> </span><span class="kn">import</span> <span class="n">lt</span><span class="p">,</span> <span class="n">gt</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlite3</span><span class="w"> </span><span class="kn">import</span> <span class="n">Connection</span>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">BinaryIO</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.catalogs.meta_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">GIANT_COLUMNS</span><span class="p">,</span> <span class="n">GIANT_TYPES</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.catalogs.meta_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catalog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.catalogs.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">DEG2MAS</span><span class="p">,</span> <span class="n">MAS2RAD</span><span class="p">,</span> <span class="n">PARSEC2KM</span><span class="p">,</span> <span class="n">AVG_STAR_DIST</span><span class="p">,</span> <span class="n">DEG2RAD</span><span class="p">,</span> <span class="n">AVG_STAR_DIST_SIGMA</span><span class="p">,</span>
+                                        <span class="n">apply_proper_motion</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.spherical_coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">radec_distance</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.catalogs.tycho</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tycho2</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">PATH</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">DOUBLE_ARRAY</span>
+
+
+<span class="c1"># specify which ucac cols correspond to which GIANT_COLUMNS</span>
+<span class="c1"># noinspection SpellCheckingInspection</span>
+<span class="n">_UCAC_COLS</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ra&#39;</span><span class="p">,</span> <span class="s1">&#39;spd&#39;</span><span class="p">,</span> <span class="s1">&#39;parallax&#39;</span><span class="p">,</span> <span class="s1">&#39;pmra&#39;</span><span class="p">,</span> <span class="s1">&#39;pmdc&#39;</span><span class="p">,</span> <span class="s1">&#39;apasm_v&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;sigra&#39;</span><span class="p">,</span> <span class="s1">&#39;sigdc&#39;</span><span class="p">,</span> <span class="s1">&#39;sigpara&#39;</span><span class="p">,</span> <span class="s1">&#39;sigpmr&#39;</span><span class="p">,</span> <span class="s1">&#39;sigpmd&#39;</span><span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This specifies the names of the UCAC columns that are required in converting the a GIANT star record</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># specify the mapping of UCAC columns to GIANT columns</span>
+<span class="n">_UCAC_TO_GIANT</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">_UCAC_COLS</span><span class="p">,</span> <span class="n">GIANT_COLUMNS</span><span class="p">))</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This specifies the mapping of the UCAC column names to the GIANT star record column names</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># specify the default UCAC4 directory location</span>
+<span class="n">UCAC_DIR</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;UCAC4&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This specifies the default location of the UCAC4 directory, which is in the data directory contained in the same </span>
+<span class="sd">directory containing this source file.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="UCAC4">
+<a class="viewcode-back" href="../../../catalogs/ucac/ucac/giant.catalogs.ucac.UCAC4.html#giant.catalogs.ucac.UCAC4">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UCAC4</span><span class="p">(</span><span class="n">Catalog</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class provides access to the UCAC4 star catalog.</span>
+
+<span class="sd">    This class is a fully functional catalog for GIANT and can be used anywhere that GIANT expects a star catalog.</span>
+<span class="sd">    As such, it implements the :attr:`include_proper_motion` to turn proper motion on or off as well as the method</span>
+<span class="sd">    :meth:`query_catalog` which is how stars are queried into the GIANT format.  In addition, this catalog provides</span>
+<span class="sd">    2 additional methods :meth:`cross_ref_tycho` and :meth:`query_catalog_raw` to get the corresponding Tycho 2 record</span>
+<span class="sd">    for the input stars or the raw UCAC4 records. These methods aren&#39;t used anywhere by GIANT itself, but may be useful</span>
+<span class="sd">    if you are doing some advanced analysis.</span>
+
+<span class="sd">    To use this class simply initialize it, pointing to the directory where the u4b and u4i catalog directories are</span>
+<span class="sd">    contained.  If the catalog files do not exist it will ask you if you want to download them, and if you answer yes,</span>
+<span class="sd">    it will download the UCAC4 catalog (which takes a long time in most instances).  Once the class is initialized,</span>
+<span class="sd">    you can query stars from it using :meth:`query_catalog` which will return a dataframe of the star records with</span>
+<span class="sd">    :attr:`.GIANT_COLUMNS` columns.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span> <span class="n">PATH</span> <span class="o">=</span> <span class="n">UCAC_DIR</span><span class="p">,</span> <span class="n">include_proper_motion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param directory: The directory containing the UCAC4 data.  This should contain 2 sub directories u4i and u4b.</span>
+<span class="sd">        :param include_proper_motion: A boolean flag specifying whether to apply proper motion when retrieving the stars</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">include_proper_motion</span><span class="o">=</span><span class="n">include_proper_motion</span><span class="p">)</span>
+
+        <span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">directory</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;UCAC data not found at </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">directory</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">user_response</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Would you like to download the UCAC data to this directory (y/n)?</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                  <span class="s2">&quot;    WARNING: THIS REQUIRES AN INTERNET CONNECTION, WILL TAKE A LONG TIME, AND WILL&quot;</span>
+                                  <span class="s2">&quot; USE UP 9 GB OF SPACE!</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">user_response</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+                <span class="c1"># make sure the directory exits</span>
+                <span class="n">directory</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">download_ucac</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s1">&#39;The UCAC data is not available in the specified directory.  Cannot initialize&#39;</span>
+                                        <span class="s1">&#39;The UCAC4 class.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">root_directory</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">directory</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The root directory containing the u4i and u4b catalog file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bytes_per_rec</span> <span class="o">=</span> <span class="mi">78</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The number of bytes per record in the binary files according to the UCAC4 documentation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_index_file</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_directory</span> <span class="o">/</span> <span class="s1">&#39;u4i&#39;</span> <span class="o">/</span> <span class="s1">&#39;u4index.asc&#39;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The index file to use to index into the binary files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;UCAC index file not found at </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">directory</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">user_response</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Would you like to download the UCAC data to this directory (y/n)?</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                  <span class="s2">&quot;    WARNING: THIS REQUIRES AN INTERNET CONNECTION, WILL TAKE A LONG TIME, AND WILL&quot;</span>
+                                  <span class="s2">&quot; USE UP 9 GB OF SPACE!</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">user_response</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+                <span class="n">download_ucac</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;We can&#39;t find the index file for the database.  This is a required file</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                        <span class="s2">&quot;that should be in the u4i directory in the UCAC directory. The file should</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                        <span class="s2">&quot;be called u4index.asc.  Please locate this file and place it in the proper </span><span class="se">\n</span><span class="s2">&quot;</span>
+                                        <span class="s2">&quot;directory.  Please also verify the rest of your UCAC directory.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_zone_files</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_directory</span> <span class="o">/</span> <span class="s1">&#39;u4b&#39;</span> <span class="o">/</span> <span class="s1">&#39;z</span><span class="si">{0:0&gt;3d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">zone</span><span class="p">))</span>
+                                        <span class="k">for</span> <span class="n">zone</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">901</span><span class="p">)]</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The list of zone file objects that allow reading the data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zone_files</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;UCAC zone files not found at </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">directory</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">user_response</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Would you like to download the UCAC data to this directory (y/n)?</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                      <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">WARNING: THIS REQUIRES AN INTERNET CONNECTION, WILL TAKE A LONG TIME, AND WILL&quot;</span>
+                                      <span class="s2">&quot; USE UP 9 GB OF SPACE!</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">user_response</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+                    <span class="n">download_ucac</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;We can&#39;t find  the zone files for the database. These are required files&quot;</span>
+                                            <span class="s2">&quot;that should be in the u4b directory in the UCAC directory. The files &quot;</span>
+                                            <span class="s2">&quot;should be called Z### from 001 to 900. Please locate these files and place&quot;</span>
+                                            <span class="s2">&quot; them in the proper directory.  Please also verify the rest of your UCAC &quot;</span>
+                                            <span class="s2">&quot;directory.&quot;</span><span class="p">)</span>
+                <span class="k">break</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># noinspection SpellCheckingInspection</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_supplement_file</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_directory</span> <span class="o">/</span> <span class="s1">&#39;u4i&#39;</span> <span class="o">/</span> <span class="s1">&#39;u4supl.dat&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            The supplement file object</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;UCAC supplement file not found at </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">directory</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">user_response</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Would you like to download the UCAC data to this directory (y/n)?</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                  <span class="s2">&quot;    WARNING: THIS REQUIRES AN INTERNET CONNECTION, WILL TAKE A LONG TIME, AND WILL&quot;</span>
+                                  <span class="s2">&quot; USE UP 9 GB OF SPACE!</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">user_response</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+                <span class="n">download_ucac</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+                <span class="c1"># noinspection SpellCheckingInspection</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_supplement_file</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_directory</span> <span class="o">/</span> <span class="s1">&#39;u4i&#39;</span> <span class="o">/</span> <span class="s1">&#39;u4supl.dat&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># noinspection SpellCheckingInspection</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;We can&#39;t find the supplement file for the database. This is a required file</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                        <span class="s2">&quot;that should be in the u4i directory in the UCAC4 directory. The file should</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                        <span class="s2">&quot;be called u4supl.dat.  Please locate this file and place it in </span><span class="se">\n</span><span class="s2">&quot;</span>
+                                        <span class="s2">&quot;the proper directory. Please also verify the rest of your directory directory.&quot;</span>
+                                        <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hpm_file</span><span class="p">:</span> <span class="n">BinaryIO</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_directory</span> <span class="o">/</span> <span class="s1">&#39;u4i&#39;</span> <span class="o">/</span> <span class="s1">&#39;u4hpm.dat&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            The high proper motion supplement file.</span>
+<span class="sd">            </span>
+<span class="sd">            This is a text file which contains the proper motions for high proper motion stars</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;UCAC high proper motion file not found at </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">directory</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">user_response</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Would you like to download the UCAC data to this directory (y/n)?</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                  <span class="s2">&quot;    WARNING: THIS REQUIRES AN INTERNET CONNECTION, WILL TAKE A LONG TIME, AND WILL&quot;</span>
+                                  <span class="s2">&quot; USE UP 9 GB OF SPACE!</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">user_response</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+                <span class="n">download_ucac</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_hpm_file</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_directory</span> <span class="o">/</span> <span class="s1">&#39;u4i&#39;</span> <span class="o">/</span> <span class="s1">&#39;u4hpm.dat&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;We can&#39;t find the high proper motion file.  This is </span><span class="se">\n</span><span class="s2">&quot;</span>
+                                        <span class="s2">&quot;a required file that should be in the u4i directory in the UCAC4 directory.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                        <span class="s2">&quot;The file should be called u4hpm.dat. Please locate this file and place it in</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                        <span class="s2">&quot;the proper directory. Please also verify the rest of your directory directory.&quot;</span>
+                                        <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># noinspection SpellCheckingInspection</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hippo_file</span><span class="p">:</span> <span class="n">BinaryIO</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_directory</span> <span class="o">/</span> <span class="s1">&#39;u4i&#39;</span> <span class="o">/</span> <span class="s1">&#39;hipsupl.dat&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            The Hipparcos cross reference supplement file.</span>
+<span class="sd">            </span>
+<span class="sd">            This contains bright stars included in the hipparcos catalog, including parallax</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;UCAC hipparcos supplement file not found at </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">directory</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">user_response</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Would you like to download the UCAC data to this directory (y/n)?</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                  <span class="s2">&quot;    WARNING: THIS REQUIRES AN INTERNET CONNECTION, WILL TAKE A LONG TIME, AND WILL&quot;</span>
+                                  <span class="s2">&quot; USE UP 9 GB OF SPACE!</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">user_response</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+                <span class="n">download_ucac</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+                <span class="c1"># noinspection SpellCheckingInspection</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_hippo_file</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_directory</span> <span class="o">/</span> <span class="s1">&#39;u4i&#39;</span> <span class="o">/</span> <span class="s1">&#39;hipsupl.dat&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># noinspection SpellCheckingInspection</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;We can&#39;t find the supplement file containing the hipparcos data.  This is </span><span class="se">\n</span><span class="s2">&quot;</span>
+                                        <span class="s2">&quot;a required file that should be in the u4i directory in the UCAC4 directory.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                        <span class="s2">&quot;The file should be hipsupl.dat. Please locate this file and place it in</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                        <span class="s2">&quot;the proper directory. Please also verify the rest of your directory directory.&quot;</span>
+                                        <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tycho_cross_file</span><span class="p">:</span> <span class="n">BinaryIO</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_directory</span> <span class="o">/</span> <span class="s1">&#39;u4i&#39;</span> <span class="o">/</span> <span class="s1">&#39;u4xtycho&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            This is the Tycho 2 cross reference file, which maps UCAC4 ids to Tycho 2 ids.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;UCAC tycho supplement file not found at </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">directory</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">user_response</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Would you like to download the UCAC data to this directory (y/n)?</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                  <span class="s2">&quot;    WARNING: THIS REQUIRES AN INTERNET CONNECTION, WILL TAKE A LONG TIME, AND WILL&quot;</span>
+                                  <span class="s2">&quot; USE UP 9 GB OF SPACE!</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">user_response</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+                <span class="n">download_ucac</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tycho_cross_file</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_directory</span> <span class="o">/</span> <span class="s1">&#39;u4i&#39;</span> <span class="o">/</span> <span class="s1">&#39;u4xtycho&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to find the Tycho2 2 cross reference file. &#39;</span>
+                              <span class="s1">&#39;This is required to get a true complete </span><span class="se">\n</span><span class="s1">&#39;</span>
+                              <span class="s1">&#39;catalog. Proceeding without the tycho catalog &#39;</span>
+                              <span class="s1">&#39;but be aware that your results will be </span><span class="se">\n</span><span class="s1">&#39;</span>
+                              <span class="s1">&#39;incomplete for bright stars. To use the Tycho2 catalog please locate the u4xtycho file&#39;</span>
+                              <span class="s1">&#39;and place it in the u4i directory.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># noinspection SpellCheckingInspection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cat_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ra&#39;</span><span class="p">,</span> <span class="s1">&#39;spd&#39;</span><span class="p">,</span> <span class="s1">&#39;magm&#39;</span><span class="p">,</span> <span class="s1">&#39;maga&#39;</span><span class="p">,</span> <span class="s1">&#39;sigmag&#39;</span><span class="p">,</span> <span class="s1">&#39;objt&#39;</span><span class="p">,</span> <span class="s1">&#39;cdf&#39;</span><span class="p">,</span>  <span class="c1"># 15 bytes</span>
+                                     <span class="s1">&#39;sigra&#39;</span><span class="p">,</span> <span class="s1">&#39;sigdc&#39;</span><span class="p">,</span> <span class="s1">&#39;na1&#39;</span><span class="p">,</span> <span class="s1">&#39;nu1&#39;</span><span class="p">,</span> <span class="s1">&#39;cu1&#39;</span><span class="p">,</span>  <span class="c1"># 5 bytes</span>
+                                     <span class="s1">&#39;cepra&#39;</span><span class="p">,</span> <span class="s1">&#39;cepdc&#39;</span><span class="p">,</span> <span class="s1">&#39;pmra&#39;</span><span class="p">,</span> <span class="s1">&#39;pmdc&#39;</span><span class="p">,</span> <span class="s1">&#39;sigpmr&#39;</span><span class="p">,</span> <span class="s1">&#39;sigpmd&#39;</span><span class="p">,</span>  <span class="c1"># 10 bytes</span>
+                                     <span class="s1">&#39;pts_key&#39;</span><span class="p">,</span> <span class="s1">&#39;j_m&#39;</span><span class="p">,</span> <span class="s1">&#39;h_m&#39;</span><span class="p">,</span> <span class="s1">&#39;k_m&#39;</span><span class="p">,</span> <span class="s1">&#39;icqflg_j&#39;</span><span class="p">,</span> <span class="s1">&#39;icqflg_h&#39;</span><span class="p">,</span> <span class="s1">&#39;icqflg_k&#39;</span><span class="p">,</span> <span class="s1">&#39;e2mpho_j&#39;</span><span class="p">,</span>
+                                     <span class="s1">&#39;e2mpho_h&#39;</span><span class="p">,</span> <span class="s1">&#39;e2mpho_k&#39;</span><span class="p">,</span>  <span class="c1"># 16 bytes</span>
+                                     <span class="s1">&#39;apasm_b&#39;</span><span class="p">,</span> <span class="s1">&#39;apasm_v&#39;</span><span class="p">,</span> <span class="s1">&#39;apasm_g&#39;</span><span class="p">,</span> <span class="s1">&#39;apasm_r&#39;</span><span class="p">,</span> <span class="s1">&#39;apasm_i&#39;</span><span class="p">,</span> <span class="s1">&#39;apase_b&#39;</span><span class="p">,</span> <span class="s1">&#39;apase_v&#39;</span><span class="p">,</span>
+                                     <span class="s1">&#39;apase_g&#39;</span><span class="p">,</span> <span class="s1">&#39;apase_r&#39;</span><span class="p">,</span> <span class="s1">&#39;apase_i&#39;</span><span class="p">,</span> <span class="s1">&#39;gcflg&#39;</span><span class="p">,</span>  <span class="c1"># 16 bytes</span>
+                                     <span class="s1">&#39;icf&#39;</span><span class="p">,</span>  <span class="c1"># 4 bytes</span>
+                                     <span class="s1">&#39;leda&#39;</span><span class="p">,</span> <span class="s1">&#39;x2m&#39;</span><span class="p">,</span> <span class="s1">&#39;rnm&#39;</span><span class="p">,</span> <span class="s1">&#39;zn2&#39;</span><span class="p">,</span> <span class="s1">&#39;rn2&#39;</span><span class="p">]</span>  <span class="c1"># 12 bytes</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is a list of the names of the catalog star record columns according to the UCAC4 documentation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cat_formats</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;i4&#39;</span><span class="p">,</span> <span class="s1">&#39;i4&#39;</span><span class="p">,</span> <span class="s1">&#39;i2&#39;</span><span class="p">,</span> <span class="s1">&#39;i2&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span>  <span class="c1"># 15 bytes</span>
+                                       <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span>  <span class="c1"># 5 bytes</span>
+                                       <span class="s1">&#39;i2&#39;</span><span class="p">,</span> <span class="s1">&#39;i2&#39;</span><span class="p">,</span> <span class="s1">&#39;i2&#39;</span><span class="p">,</span> <span class="s1">&#39;i2&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span>  <span class="c1"># 10 bytes</span>
+                                       <span class="s1">&#39;i4&#39;</span><span class="p">,</span> <span class="s1">&#39;i2&#39;</span><span class="p">,</span> <span class="s1">&#39;i2&#39;</span><span class="p">,</span> <span class="s1">&#39;i2&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span>  <span class="c1"># 16 bytes</span>
+                                       <span class="s1">&#39;i2&#39;</span><span class="p">,</span> <span class="s1">&#39;i2&#39;</span><span class="p">,</span> <span class="s1">&#39;i2&#39;</span><span class="p">,</span> <span class="s1">&#39;i2&#39;</span><span class="p">,</span> <span class="s1">&#39;i2&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span>  <span class="c1"># 16 bytes</span>
+                                       <span class="s1">&#39;i4&#39;</span><span class="p">,</span>  <span class="c1"># 4 bytes</span>
+                                       <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i1&#39;</span><span class="p">,</span> <span class="s1">&#39;i4&#39;</span><span class="p">,</span> <span class="s1">&#39;i2&#39;</span><span class="p">,</span> <span class="s1">&#39;i4&#39;</span><span class="p">]</span>  <span class="c1"># 12 bytes</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is a list of the types for the raw UCAC4 star record columns according to the UCAC4 documentation</span>
+<span class="sd">        </span>
+<span class="sd">        The types are numpy dtype strings</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cat_dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">({</span><span class="s1">&#39;names&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cat_names</span><span class="p">,</span> <span class="s1">&#39;formats&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cat_formats</span><span class="p">})</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is the numpy datatype that represents a record in the catalog binary files.</span>
+<span class="sd">        </span>
+<span class="sd">        This is used when accessing the binary files as memory maps.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">hpm_formats</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cat_formats</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is a list of the format strings for the high proper stars.  </span>
+<span class="sd">        </span>
+<span class="sd">        It is the mostly same as the regular table since the stars are included in the main catalog but need data </span>
+<span class="sd">        from an extra table.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># these are the 2 columns that need a slightly different format</span>
+        <span class="n">new_hpm_format_inds</span> <span class="o">=</span> <span class="p">[</span><span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">new_hpm_format_inds</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hpm_formats</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;i8&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">hpm_dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">({</span><span class="s1">&#39;names&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cat_names</span><span class="p">,</span> <span class="s1">&#39;formats&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpm_formats</span><span class="p">})</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This specifies the numpy datatype used to represent the high proper motion stars.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index_file</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;nstars&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">)],</span>
+                                                        <span class="n">usecols</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This contains the index into the catalog that is used to efficiently retrieve stars.</span>
+<span class="sd">        </span>
+<span class="sd">        The index is stored as a numpy structured array.  It gives the number of stars for each block in each zone file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="UCAC4.query_catalog">
+<a class="viewcode-back" href="../../../catalogs/ucac/ucac/giant.catalogs.ucac.UCAC4.query_catalog.html#giant.catalogs.ucac.UCAC4.query_catalog">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">query_catalog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">min_ra</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">max_ra</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">360</span><span class="p">,</span>
+                        <span class="n">min_dec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">90</span><span class="p">,</span> <span class="n">min_mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="n">max_mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+                        <span class="n">search_center</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">DOUBLE_ARRAY</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">search_radius</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">new_epoch</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">datetime</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method queries stars from the catalog that meet specified constraints and returns them as a DataFrame</span>
+<span class="sd">        with columns of :attr:`.GIANT_COLUMNS`.</span>
+
+<span class="sd">        Stars can either be queried by ID directly or by right ascension/declination/magnitude. You cannot filter using</span>
+<span class="sd">        both with this method.  If :attr:`apply_proper_motion` is ``True`` then this will shift the stars to the new</span>
+<span class="sd">        epoch input by the user (``new_epoch``) using proper motion.</span>
+
+<span class="sd">        :param ids: A sequence of star ids to retrieve from the catalog.  The ids are given by zone, rnz and should be</span>
+<span class="sd">                    input as an iterable that yields tuples (therefore if you have a dataframe you should do</span>
+<span class="sd">                    ``df.itertuples(false)``</span>
+<span class="sd">        :param min_ra: The minimum ra bound to query stars from in degrees</span>
+<span class="sd">        :param max_ra: The maximum ra bound to query stars from in degrees</span>
+<span class="sd">        :param min_dec: The minimum declination to query stars from in degrees</span>
+<span class="sd">        :param max_dec: The maximum declination to query stars from in degrees</span>
+<span class="sd">        :param min_mag: The minimum magnitude to query stars from.  Recall that magnitude is inverse (so lower</span>
+<span class="sd">                        magnitude is a dimmer star)</span>
+<span class="sd">        :param max_mag: The maximum magnitude to query stars from.  Recall that magnitude is inverse (so higher</span>
+<span class="sd">                        magnitude is a dimmer star)</span>
+<span class="sd">        :param search_center: The center of a search cone as a ra/dec pair.</span>
+<span class="sd">        :param search_radius: The radius about the center of the search cone</span>
+<span class="sd">        :param new_epoch: The epoch to translate the stars to using proper motion if :attr:`apply_proper_motion` is</span>
+<span class="sd">                          turned on</span>
+<span class="sd">        :return: A Pandas dataframe with columns :attr:`GIANT_COLUMNS`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">cat_recs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_catalog_raw</span><span class="p">(</span><span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span> <span class="n">min_ra</span><span class="o">=</span><span class="n">min_ra</span><span class="p">,</span> <span class="n">max_ra</span><span class="o">=</span><span class="n">max_ra</span><span class="p">,</span> <span class="n">min_dec</span><span class="o">=</span><span class="n">min_dec</span><span class="p">,</span> <span class="n">max_dec</span><span class="o">=</span><span class="n">max_dec</span><span class="p">,</span>
+                                                        <span class="n">min_visual_mag</span><span class="o">=</span><span class="n">min_mag</span><span class="p">,</span> <span class="n">max_visual_mag</span><span class="o">=</span><span class="n">max_mag</span><span class="p">,</span>
+                                                        <span class="n">search_center</span><span class="o">=</span><span class="n">search_center</span><span class="p">,</span> <span class="n">search_radius</span><span class="o">=</span><span class="n">search_radius</span><span class="p">,</span>
+                                                        <span class="n">generator</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="c1"># type: ignore</span>
+
+        <span class="n">giant_record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_to_giant_catalog</span><span class="p">(</span><span class="n">cat_recs</span><span class="p">)</span>
+
+        <span class="n">giant_record</span> <span class="o">=</span> <span class="n">giant_record</span><span class="p">[(</span><span class="n">giant_record</span><span class="o">.</span><span class="n">mag</span> <span class="o">&lt;=</span> <span class="n">max_mag</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">giant_record</span><span class="o">.</span><span class="n">mag</span> <span class="o">&gt;=</span> <span class="n">min_mag</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_proper_motion</span> <span class="ow">and</span> <span class="p">(</span><span class="n">new_epoch</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">apply_proper_motion</span><span class="p">(</span><span class="n">giant_record</span><span class="p">,</span> <span class="n">new_epoch</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">giant_record</span></div>
+
+
+<div class="viewcode-block" id="UCAC4.query_catalog_raw">
+<a class="viewcode-back" href="../../../catalogs/ucac/ucac/giant.catalogs.ucac.UCAC4.query_catalog_raw.html#giant.catalogs.ucac.UCAC4.query_catalog_raw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">query_catalog_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">min_ra</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">max_ra</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">360.</span><span class="p">,</span>
+                            <span class="n">min_dec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">90.</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">90.</span><span class="p">,</span>
+                            <span class="n">search_center</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">DOUBLE_ARRAY</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">search_radius</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                            <span class="n">max_visual_mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">20.</span><span class="p">,</span> <span class="n">min_visual_mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.44</span><span class="p">,</span>
+                            <span class="n">generator</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method queries stars from the catalog that meet specified constraints and returns them as a DataFrame</span>
+<span class="sd">        or as an iterable of dataframes where the columns are the raw catalog files.</span>
+
+<span class="sd">        Stars can either be queried by ID directly or by right ascension/declination/magnitude. You cannot filter using</span>
+<span class="sd">        both with this method.  This method is not usable by GIANT and it does not apply proper motion.  If you need</span>
+<span class="sd">        records that are usable by GIANT and with proper motion applied see :meth:`query_catalog`. For details on what</span>
+<span class="sd">        the columns are refer to the UCAC4 documentation (can be found online).</span>
+
+<span class="sd">        :param ids: A sequence of star ids to retrieve from the catalog.  The ids are given by zone, rnz and should be</span>
+<span class="sd">                    input as an iterable that yields tuples (therefore if you have a dataframe you should do</span>
+<span class="sd">                    ``df.itertuples(false)``</span>
+<span class="sd">        :param min_ra: The minimum ra bound to query stars from in degrees</span>
+<span class="sd">        :param max_ra: The maximum ra bound to query stars from in degrees</span>
+<span class="sd">        :param min_dec: The minimum declination to query stars from in degrees</span>
+<span class="sd">        :param max_dec: The maximum declination to query stars from in degrees</span>
+<span class="sd">        :param min_visual_mag: The minimum visual magnitude to query stars from.  Recall that magnitude is inverse (so</span>
+<span class="sd">                               lower magnitude is a dimmer star)</span>
+<span class="sd">        :param max_visual_mag: The maximum visual magnitude to query stars from.  Recall that magnitude is inverse (so</span>
+<span class="sd">                               higher magnitude is a dimmer star)</span>
+<span class="sd">        :param search_center: The center of a search cone as a ra/dec pair.</span>
+<span class="sd">        :param search_radius: The radius about the center of the search cone</span>
+<span class="sd">        :param generator: A boolean flag specifying whether to return the stars as a generator (preserving memory) or to</span>
+<span class="sd">                          to collect all of the stars into a single dataframe.  If ``True`` then the function will yield</span>
+<span class="sd">                          dataframes (which may themselves contain single or multiple stars).</span>
+<span class="sd">        :return: A (Iterable of) Pandas dataframe(s) with columns according to the catalog columns.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_from_ids</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_all_with_criteria</span><span class="p">(</span><span class="n">min_ra</span><span class="o">=</span><span class="n">min_ra</span><span class="p">,</span> <span class="n">max_ra</span><span class="o">=</span><span class="n">max_ra</span><span class="p">,</span> <span class="n">min_dec</span><span class="o">=</span><span class="n">min_dec</span><span class="p">,</span> <span class="n">max_dec</span><span class="o">=</span><span class="n">max_dec</span><span class="p">,</span>
+                                              <span class="n">search_center</span><span class="o">=</span><span class="n">search_center</span><span class="p">,</span> <span class="n">search_radius</span><span class="o">=</span><span class="n">search_radius</span><span class="p">,</span>
+                                              <span class="n">max_visual_mag</span><span class="o">=</span><span class="n">max_visual_mag</span><span class="p">,</span> <span class="n">min_visual_mag</span><span class="o">=</span><span class="n">min_visual_mag</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">generator</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">out</span><span class="p">:</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">results</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># noinspection SpellCheckingInspection</span>
+                <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cat_names</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;zone&#39;</span><span class="p">,</span> <span class="s1">&#39;rnz&#39;</span><span class="p">,</span> <span class="s1">&#39;parallax&#39;</span><span class="p">,</span> <span class="s1">&#39;sigpara&#39;</span><span class="p">])</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="UCAC4.get_from_ids">
+<a class="viewcode-back" href="../../../catalogs/ucac/ucac/giant.catalogs.ucac.UCAC4.get_from_ids.html#giant.catalogs.ucac.UCAC4.get_from_ids">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_from_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is a generator which returns single records for each requested ID.</span>
+
+<span class="sd">        ``ids`` should be iterable with each element being length 2 and returning zone, rnz.</span>
+
+<span class="sd">        The yields will be the raw catalog data.</span>
+
+<span class="sd">        :param ids: A sequence of star ids to retrieve from the catalog.  The ids are given by zone, rnz and should be</span>
+<span class="sd">                    input as an iterable that yields tuples (therefore if you have a dataframe you should do</span>
+<span class="sd">                    ``df.itertuples(false)``</span>
+<span class="sd">        :return: An Iterable of Pandas dataframes with columns according to the catalog columns.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">zone</span><span class="p">,</span> <span class="n">rnz</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="p">(</span><span class="n">rnz</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">bytes_per_rec</span>
+
+            <span class="n">records</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_zone_files</span><span class="p">[</span><span class="n">zone</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cat_dtype</span><span class="p">,</span>
+                                                            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hpm_dtype</span><span class="p">),</span>
+                                                <span class="n">index</span><span class="o">=</span><span class="s1">&#39;rnm&#39;</span><span class="p">)</span>
+            <span class="c1"># append new columns</span>
+            <span class="n">records</span> <span class="o">=</span> <span class="n">records</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">zone</span><span class="o">=</span><span class="n">zone</span><span class="p">,</span> <span class="n">rnz</span><span class="o">=</span><span class="n">rnz</span><span class="p">,</span> <span class="n">parallax</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">sigpara</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">records</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_all_with_criteria</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_ra</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">max_ra</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">360.</span><span class="p">,</span> <span class="n">min_dec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">90.</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">90.</span><span class="p">,</span>
+                               <span class="n">search_center</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">DOUBLE_ARRAY</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">search_radius</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                               <span class="n">max_visual_mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">20.</span><span class="p">,</span> <span class="n">min_visual_mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.44</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function gets all stars meeting the criteria from the catalog, yielding the results as DataFrames by</span>
+<span class="sd">        zone.</span>
+
+<span class="sd">        In general, the user should not interact with this method and instead should use :meth:`query_catalog_raw`.</span>
+
+<span class="sd">        :param min_ra: The minimum ra bound to query stars from in degrees</span>
+<span class="sd">        :param max_ra: The maximum ra bound to query stars from in degrees</span>
+<span class="sd">        :param min_dec: The minimum declination to query stars from in degrees</span>
+<span class="sd">        :param max_dec: The maximum declination to query stars from in degrees</span>
+<span class="sd">        :param min_visual_mag: The minimum visual magnitude to query stars from.  Recall that magnitude is inverse (so</span>
+<span class="sd">                               lower magnitude is a dimmer star)</span>
+<span class="sd">        :param max_visual_mag: The maximum visual magnitude to query stars from.  Recall that magnitude is inverse (so</span>
+<span class="sd">                               higher magnitude is a dimmer star)</span>
+<span class="sd">        :param search_center: The center of a search cone as a ra/dec pair.</span>
+<span class="sd">        :param search_radius: The radius about the center of the search cone</span>
+<span class="sd">        :return: An Iterable of Pandas dataframes with columns according to the catalog columns.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">search_center</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            
+            <span class="k">assert</span> <span class="n">search_radius</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;search radius must be specified if the search center is specified&quot;</span>
+            <span class="c1"># determine which zone files we need to check</span>
+
+            <span class="c1"># find the bounds based on the specified min ra/dec and the search center stuff</span>
+            <span class="n">min_ra</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">search_center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">search_radius</span><span class="p">,</span> <span class="n">min_ra</span><span class="p">))</span>
+            <span class="n">max_ra</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">search_center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">search_radius</span><span class="p">,</span> <span class="n">max_ra</span><span class="p">))</span>
+
+            <span class="n">min_dec</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">search_center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">search_radius</span><span class="p">,</span> <span class="n">min_dec</span><span class="p">))</span>
+            <span class="n">max_dec</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">search_center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">search_radius</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">min_dec</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">90.0</span><span class="p">:</span>
+                <span class="c1"># if the search region includes the south pole take all RA</span>
+                <span class="n">min_dec</span> <span class="o">=</span> <span class="o">-</span><span class="mi">90</span>
+                <span class="n">min_ra</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">max_ra</span> <span class="o">=</span> <span class="mi">360</span>
+
+            <span class="k">elif</span> <span class="n">max_dec</span> <span class="o">&gt;</span> <span class="mf">90.0</span><span class="p">:</span>
+                <span class="c1"># if the search region includes the north pole take all RA</span>
+                <span class="n">max_dec</span> <span class="o">=</span> <span class="mi">90</span>
+                <span class="n">min_ra</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">max_ra</span> <span class="o">=</span> <span class="mi">360</span>
+
+            <span class="k">if</span> <span class="n">min_ra</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># if the first point of ares is included then we need to query both the high and low RA</span>
+                <span class="n">min_ra</span> <span class="o">+=</span> <span class="mi">360</span>
+                <span class="c1"># check the upper bounds</span>
+                <span class="n">zone_start_a</span><span class="p">,</span> <span class="n">block_start_a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_zone_block</span><span class="p">(</span><span class="n">min_ra</span><span class="p">,</span> <span class="n">min_dec</span><span class="p">)</span>
+                <span class="c1"># check the lower bounds</span>
+                <span class="n">zone_start_b</span><span class="p">,</span> <span class="n">block_start_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_zone_block</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">min_dec</span><span class="p">)</span>
+                <span class="c1"># determine the limiting case</span>
+                <span class="n">zone_start</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">zone_start_a</span><span class="p">,</span> <span class="n">zone_start_b</span><span class="p">)</span>
+                <span class="n">block_start</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">block_start_a</span><span class="p">,</span> <span class="n">block_start_b</span><span class="p">)</span>
+
+                <span class="c1"># check the upper bounds</span>
+                <span class="n">zone_end_a</span><span class="p">,</span> <span class="n">block_end_a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_zone_block</span><span class="p">(</span><span class="mi">360</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">)</span>
+                <span class="c1"># check the lower bounds</span>
+                <span class="n">zone_end_b</span><span class="p">,</span> <span class="n">block_end_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_zone_block</span><span class="p">(</span><span class="n">max_ra</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">)</span>
+                <span class="c1"># determine the limiting case</span>
+                <span class="n">zone_end</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">zone_end_a</span><span class="p">,</span> <span class="n">zone_end_b</span><span class="p">)</span>
+                <span class="n">block_end</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">block_end_a</span><span class="p">,</span> <span class="n">block_end_b</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">max_ra</span> <span class="o">&gt;</span> <span class="mi">360</span><span class="p">:</span>
+                <span class="c1"># if the first point of ares is included then we need to query both the high and low RA</span>
+                <span class="n">max_ra</span> <span class="o">-=</span> <span class="mi">360</span>
+                <span class="c1"># check the upper bounds</span>
+                <span class="n">zone_start_a</span><span class="p">,</span> <span class="n">block_start_a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_zone_block</span><span class="p">(</span><span class="n">min_ra</span><span class="p">,</span> <span class="n">min_dec</span><span class="p">)</span>
+                <span class="c1"># check the lower bounds</span>
+                <span class="n">zone_start_b</span><span class="p">,</span> <span class="n">block_start_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_zone_block</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">min_dec</span><span class="p">)</span>
+                <span class="c1"># determine the limiting case</span>
+                <span class="n">zone_start</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">zone_start_a</span><span class="p">,</span> <span class="n">zone_start_b</span><span class="p">)</span>
+                <span class="n">block_start</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">block_start_a</span><span class="p">,</span> <span class="n">block_start_b</span><span class="p">)</span>
+
+                <span class="c1"># check the upper bounds</span>
+                <span class="n">zone_end_a</span><span class="p">,</span> <span class="n">block_end_a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_zone_block</span><span class="p">(</span><span class="mi">360</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">)</span>
+                <span class="c1"># check the lower bounds</span>
+                <span class="n">zone_end_b</span><span class="p">,</span> <span class="n">block_end_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_zone_block</span><span class="p">(</span><span class="n">max_ra</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">)</span>
+                <span class="c1"># determine the limiting case</span>
+                <span class="n">zone_end</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">zone_end_a</span><span class="p">,</span> <span class="n">zone_end_b</span><span class="p">)</span>
+                <span class="n">block_end</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">block_end_a</span><span class="p">,</span> <span class="n">block_end_b</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Nothing special needs to happen because we are in the ra domain</span>
+                <span class="n">zone_start</span><span class="p">,</span> <span class="n">block_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_zone_block</span><span class="p">(</span><span class="n">min_ra</span><span class="p">,</span> <span class="n">min_dec</span><span class="p">)</span>
+                <span class="n">zone_end</span><span class="p">,</span> <span class="n">block_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_zone_block</span><span class="p">(</span><span class="n">max_ra</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># if we don&#39;t have to deal with the search radius stuff then just use what the user gave us</span>
+            <span class="n">zone_start</span><span class="p">,</span> <span class="n">block_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_zone_block</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">min_ra</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">min_dec</span><span class="p">))</span>
+            <span class="n">zone_end</span><span class="p">,</span> <span class="n">block_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_zone_block</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">max_ra</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_dec</span><span class="p">))</span>
+
+        <span class="c1"># walk through each zone that we need to search</span>
+        <span class="k">for</span> <span class="n">zone</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">zone_start</span><span class="p">,</span> <span class="n">zone_end</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">zone</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">zone</span><span class="p">)</span>
+
+            <span class="c1"># Get the beginning and ending record number in the current file</span>
+            <span class="n">start</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_index_ind</span><span class="p">(</span><span class="n">zone</span><span class="p">,</span> <span class="n">block_start</span><span class="p">)]</span>
+            <span class="n">end_start</span><span class="p">,</span> <span class="n">end_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_index_ind</span><span class="p">(</span><span class="n">zone</span><span class="p">,</span> <span class="n">block_end</span><span class="p">)]</span>
+
+            <span class="n">number_of_stars</span> <span class="o">=</span> <span class="n">end_start</span> <span class="o">+</span> <span class="n">end_num</span> <span class="o">-</span> <span class="n">start</span>
+
+            <span class="c1"># Get the starting byte for the first record we need from this file and seek to it</span>
+            <span class="n">start_byte</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bytes_per_rec</span> <span class="o">*</span> <span class="n">start</span>
+
+            <span class="c1"># read in the correct rows.  First access as a memmap to conserve memory while we further limit the</span>
+            <span class="c1"># results</span>
+            <span class="c1"># noinspection PyTypeChecker</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_zone_files</span><span class="p">[</span><span class="n">zone</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cat_dtype</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span>
+                             <span class="n">offset</span><span class="o">=</span><span class="n">start_byte</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">number_of_stars</span><span class="p">,))</span>
+
+            <span class="c1"># begin to further limit the results</span>
+            <span class="k">if</span> <span class="n">search_center</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">search_radius</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;The search radius must be specified if the search center is specified&quot;</span>
+                <span class="n">bearing_check</span> <span class="o">=</span> <span class="n">radec_distance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;ra&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">MAS2RAD</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;spd&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">MAS2RAD</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                                               <span class="n">search_center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">,</span>
+                                               <span class="n">search_center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">search_radius</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bearing_check</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;ra&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">min_ra</span> <span class="o">*</span> <span class="n">DEG2MAS</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;ra&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">max_ra</span> <span class="o">*</span> <span class="n">DEG2MAS</span><span class="p">)</span> <span class="o">&amp;</span> \
+                                <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;spd&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="n">min_dec</span> <span class="o">+</span> <span class="mi">90</span><span class="p">)</span> <span class="o">*</span> <span class="n">DEG2MAS</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;spd&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">max_dec</span> <span class="o">+</span> <span class="mi">90</span><span class="p">)</span> <span class="o">*</span> <span class="n">DEG2MAS</span><span class="p">)</span>
+
+            <span class="c1"># limit the magnitude based on the APASS V magnitude if available.</span>
+            <span class="c1"># If it is not then default to the ucac magnitude but that is crappy..</span>
+            <span class="n">mag_check</span> <span class="o">=</span> <span class="p">(</span>
+                                <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;apasm_v&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">max_visual_mag</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">&amp;</span>
+                                <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;apasm_v&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">min_visual_mag</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+                        <span class="p">)</span> <span class="o">|</span> <span class="p">(</span>
+                                <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;magm&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">max_visual_mag</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">&amp;</span>
+                                <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;magm&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">min_visual_mag</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+                        <span class="p">)</span>
+
+            <span class="n">valid_data</span> <span class="o">=</span> <span class="n">bearing_check</span> <span class="o">&amp;</span> <span class="n">mag_check</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_data</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="k">continue</span>
+
+            <span class="n">records</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">valid_data</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hpm_dtype</span><span class="p">),</span>
+                                                <span class="n">index</span><span class="o">=</span><span class="s1">&#39;rnm&#39;</span><span class="p">)</span>
+
+            <span class="c1"># append new columns</span>
+            <span class="n">records</span> <span class="o">=</span> <span class="n">records</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">zone</span><span class="o">=</span><span class="n">zone</span><span class="p">,</span> <span class="n">rnz</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid_data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">start</span><span class="p">,</span>
+                                     <span class="n">parallax</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">sigpara</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
+
+            <span class="c1"># check to see if hpm stars were encountered</span>
+            <span class="c1"># noinspection SpellCheckingInspection</span>
+            <span class="n">hpm_check</span> <span class="o">=</span> <span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="s2">&quot;pmra&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">32767</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">hpm_check</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+
+                <span class="n">hpm_records</span> <span class="o">=</span> <span class="n">records</span><span class="p">[</span><span class="n">hpm_check</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+                <span class="k">for</span> <span class="n">rnm</span> <span class="ow">in</span> <span class="n">hpm_records</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+                    <span class="c1"># should probably just store this in memory instead of doing a binary</span>
+                    <span class="n">hpm_line</span> <span class="o">=</span> <span class="n">binary_search</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hpm_file</span><span class="p">,</span> <span class="n">rnm</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">hpm_line</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;something went wrong&#39;</span><span class="p">)</span>
+                    <span class="n">hpm_line</span> <span class="o">=</span> <span class="n">hpm_line</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+                    <span class="c1"># noinspection SpellCheckingInspection</span>
+                    <span class="n">hpm_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">rnm</span><span class="p">,</span> <span class="s1">&#39;pmra&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hpm_line</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                    <span class="c1"># noinspection SpellCheckingInspection</span>
+                    <span class="n">hpm_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">rnm</span><span class="p">,</span> <span class="s1">&#39;pmdc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hpm_line</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+
+                <span class="n">records</span><span class="p">[</span><span class="n">hpm_check</span><span class="p">]</span> <span class="o">=</span> <span class="n">hpm_records</span>
+
+            <span class="c1"># check to see if any hipparcos stars are included</span>
+            <span class="n">hip_flag</span> <span class="o">=</span> <span class="n">records</span><span class="p">[</span><span class="s1">&#39;icf&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span> <span class="o">//</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="mi">8</span><span class="p">)</span>
+            <span class="n">hip_check</span> <span class="o">=</span> <span class="p">(</span><span class="n">hip_flag</span> <span class="o">==</span> <span class="mi">7</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">hip_flag</span> <span class="o">==</span> <span class="mi">9</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">hip_check</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="n">running_numbers</span> <span class="o">=</span> <span class="n">records</span><span class="p">[</span><span class="n">hip_check</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+
+                <span class="c1"># get the information about each hipparcos star and add it to the data</span>
+                <span class="k">for</span> <span class="n">rnm</span> <span class="ow">in</span> <span class="n">running_numbers</span><span class="p">:</span>
+                    <span class="n">hip_rec</span> <span class="o">=</span> <span class="n">binary_search</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hippo_file</span><span class="p">,</span> <span class="n">rnm</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">hip_rec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;something went wrong&#39;</span><span class="p">)</span>
+                    <span class="n">hip_rec</span> <span class="o">=</span> <span class="n">hip_rec</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+                    <span class="n">records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">rnm</span><span class="p">,</span> <span class="s1">&#39;parallax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">hip_rec</span><span class="p">[</span><span class="mi">8</span><span class="p">])</span>
+                    <span class="n">records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">rnm</span><span class="p">,</span> <span class="s1">&#39;sigpara&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">hip_rec</span><span class="p">[</span><span class="mi">13</span><span class="p">])</span>
+
+            <span class="k">yield</span> <span class="n">records</span>
+
+<div class="viewcode-block" id="UCAC4.get_zone_block">
+<a class="viewcode-back" href="../../../catalogs/ucac/ucac/giant.catalogs.ucac.UCAC4.get_zone_block.html#giant.catalogs.ucac.UCAC4.get_zone_block">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_zone_block</span><span class="p">(</span><span class="n">ra</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dec</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This tells you the zone and block number that correspond to a specific ra dec pair</span>
+
+<span class="sd">        :param ra: the right ascension under consideration in units of degrees</span>
+<span class="sd">        :param dec: The declination under consideration in units of degrees</span>
+<span class="sd">        :return: a tuple containing the zone and block location for the ra/dec</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># zones are based on dec</span>
+        <span class="n">zone</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">dec</span> <span class="o">+</span> <span class="mi">90</span><span class="p">)</span> <span class="o">/</span> <span class="mf">0.2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># blocks are based on ra</span>
+        <span class="n">ra_ind</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">ra</span> <span class="o">/</span> <span class="mf">0.25</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># need this check because ra is &lt; 360, not &lt;=</span>
+        <span class="k">if</span> <span class="n">ra_ind</span> <span class="o">&gt;</span> <span class="mi">1440</span><span class="p">:</span>
+            <span class="n">ra_ind</span> <span class="o">=</span> <span class="mi">1440</span>
+
+        <span class="c1"># need this check for when the max dec is 90, because this is included in the last file</span>
+        <span class="k">if</span> <span class="n">zone</span> <span class="o">&gt;</span> <span class="mi">900</span><span class="p">:</span>
+            <span class="n">zone</span> <span class="o">=</span> <span class="mi">900</span>
+
+        <span class="k">return</span> <span class="n">zone</span><span class="p">,</span> <span class="n">ra_ind</span></div>
+
+
+<div class="viewcode-block" id="UCAC4.get_index_ind">
+<a class="viewcode-back" href="../../../catalogs/ucac/ucac/giant.catalogs.ucac.UCAC4.get_index_ind.html#giant.catalogs.ucac.UCAC4.get_index_ind">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_index_ind</span><span class="p">(</span><span class="n">zone</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ra_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This determines the location in the index that corresponds to the requested zone and block</span>
+
+<span class="sd">        :param zone: The zone number</span>
+<span class="sd">        :param ra_ind: The right ascension index</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">zone</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1440</span> <span class="o">+</span> <span class="n">ra_ind</span> <span class="o">-</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="UCAC4.convert_to_giant_catalog">
+<a class="viewcode-back" href="../../../catalogs/ucac/ucac/giant.catalogs.ucac.UCAC4.convert_to_giant_catalog.html#giant.catalogs.ucac.UCAC4.convert_to_giant_catalog">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">convert_to_giant_catalog</span><span class="p">(</span><span class="n">ucac_records</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method converts records in the catalog format into records in the GIANT format.</span>
+
+<span class="sd">        This is done by renaming columns and converting units.</span>
+
+<span class="sd">        :param ucac_records: The raw records from the catalog as a pandas DataFrame</span>
+<span class="sd">        :return: The GIANT records as a Pandas DataFrame</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># prep the ucac data frame (set the full index)</span>
+        <span class="n">ucac_records</span> <span class="o">=</span> <span class="n">ucac_records</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;UCAC4&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;index&#39;</span><span class="p">:</span> <span class="s1">&#39;rnm&#39;</span><span class="p">})</span>
+        <span class="n">ucac_records</span> <span class="o">=</span> <span class="n">ucac_records</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="s1">&#39;zone&#39;</span><span class="p">,</span> <span class="s1">&#39;rnz&#39;</span><span class="p">,</span> <span class="s1">&#39;rnm&#39;</span><span class="p">])</span>
+
+        <span class="n">records</span> <span class="o">=</span> <span class="n">ucac_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">_UCAC_COLS</span><span class="p">]</span>
+        <span class="n">records</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">_UCAC_TO_GIANT</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">records</span> <span class="o">=</span> <span class="n">records</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">epoch</span><span class="o">=</span><span class="mf">2000.0</span><span class="p">)</span>
+        <span class="n">records</span> <span class="o">=</span> <span class="n">records</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">GIANT_TYPES</span><span class="p">)</span>
+
+        <span class="c1"># replace invalid magnitudes with the ucac model magnitude</span>
+        <span class="n">invalid_mag</span> <span class="o">=</span> <span class="n">records</span><span class="p">[</span><span class="s1">&#39;mag&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">20000</span>
+
+        <span class="n">records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">invalid_mag</span><span class="p">,</span> <span class="s1">&#39;mag&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ucac_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">invalid_mag</span><span class="p">,</span> <span class="s1">&#39;magm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+        <span class="c1"># convert to giant units</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;ra&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">DEG2MAS</span>  <span class="c1"># MAS to DEG</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;dec&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">DEG2MAS</span>  <span class="c1"># MAS to DEG</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;dec&#39;</span><span class="p">]</span> <span class="o">-=</span> <span class="mf">90.</span>  <span class="c1"># SPD to DEC</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;distance_sigma&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">records</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>  <span class="c1"># convert parallax std to distance std</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="mi">1000</span>  <span class="c1"># MAS to arcsecond</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">**=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># parallax to distance (arcsecond to parsec)</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">*=</span> <span class="n">PARSEC2KM</span>  <span class="c1"># parsec to kilometers</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;mag&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="mf">1000.</span>  <span class="c1"># mMAG to MAG</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;ra_sigma&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">128</span>  <span class="c1"># to uint</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;ra_sigma&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">DEG2MAS</span>  <span class="c1"># to deg</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;dec_sigma&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">128</span>  <span class="c1"># to uint</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;dec_sigma&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">DEG2MAS</span>  <span class="c1"># to deg</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;ra_proper_motion&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">DEG2MAS</span>  <span class="c1"># 0.1 MAS/YR to DEG/YR</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;dec_proper_motion&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">DEG2MAS</span>  <span class="c1"># 0.1 MAS/YR to DEG/YR</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;ra_pm_sigma&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">DEG2MAS</span>  <span class="c1"># 0.1 MAS/YR to DEG/YR</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;dec_pm_sigma&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">DEG2MAS</span>  <span class="c1"># 0.1 MAS/YR to DEG/YR</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;distance_sigma&#39;</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">1000</span>  <span class="c1"># 1/MAS to parsec</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;distance_sigma&#39;</span><span class="p">]</span> <span class="o">*=</span> <span class="n">PARSEC2KM</span>  <span class="c1"># parsec to km</span>
+
+        <span class="c1"># convert the sigmas to J2000</span>
+        <span class="c1"># noinspection SpellCheckingInspection</span>
+        <span class="n">ra_shift_time</span> <span class="o">=</span> <span class="mi">2000</span> <span class="o">-</span> <span class="p">(</span><span class="n">ucac_records</span><span class="p">[</span><span class="s1">&#39;cepra&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">100</span> <span class="o">+</span> <span class="mi">1900</span><span class="p">)</span>
+        <span class="c1"># noinspection SpellCheckingInspection</span>
+        <span class="n">dec_shift_time</span> <span class="o">=</span> <span class="mi">2000</span> <span class="o">-</span> <span class="p">(</span><span class="n">ucac_records</span><span class="p">[</span><span class="s1">&#39;cepdc&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">100</span> <span class="o">+</span> <span class="mi">1900</span><span class="p">)</span>
+
+        <span class="c1"># technically this miscalculates the error for subsequent computations</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;ra_sigma&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="s1">&#39;ra_sigma&#39;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">ra_shift_time</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">records</span><span class="p">[</span><span class="s1">&#39;ra_pm_sigma&#39;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">records</span><span class="p">[</span><span class="s1">&#39;dec_sigma&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="s1">&#39;dec_sigma&#39;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">dec_shift_time</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">records</span><span class="p">[</span><span class="s1">&#39;dec_pm_sigma&#39;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># fix for stars with no parallax </span>
+        <span class="n">records</span><span class="o">.</span><span class="n">fillna</span><span class="p">({</span><span class="s1">&#39;distance_sigma&#39;</span><span class="p">:</span><span class="n">AVG_STAR_DIST_SIGMA</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">records</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">to_replace</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;distance&#39;</span><span class="p">:[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]},</span> <span class="n">value</span><span class="o">=</span><span class="n">AVG_STAR_DIST</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="c1"># fix for stars where the parallax is invalid</span>
+        <span class="n">records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">records</span><span class="o">.</span><span class="n">distance</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AVG_STAR_DIST</span>
+        <span class="n">records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">records</span><span class="o">.</span><span class="n">distance</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;distance_sigma&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AVG_STAR_DIST_SIGMA</span>
+
+        <span class="c1"># specify that the epoch of the stars is J2000</span>
+        <span class="k">return</span> <span class="n">records</span></div>
+
+
+<div class="viewcode-block" id="UCAC4.cross_ref_tycho">
+<a class="viewcode-back" href="../../../catalogs/ucac/ucac/giant.catalogs.ucac.UCAC4.cross_ref_tycho.html#giant.catalogs.ucac.UCAC4.cross_ref_tycho">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cross_ref_tycho</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ucac_labels</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">tycho_cat</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tycho2</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This retrieves the Tycho 2 catalog records for the requested UCAC4 star Zone, RNZ values.</span>
+
+<span class="sd">        :param tycho_cat: The tycho catalog instance to use.  If None, a default instance will be created</span>
+<span class="sd">        :param ucac_labels:  The UCAC 4 labels as an iterable of Zone, RNZ pairs</span>
+<span class="sd">        :return: The raw Tycho 2 star records.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">tycho_cat</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tycho_cat</span> <span class="o">=</span> <span class="n">Tycho2</span><span class="p">()</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># loop through all of the UCAC stars</span>
+        <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">ucac_labels</span><span class="p">:</span>
+
+            <span class="c1"># compose the UCAC id as included in the u4xtycho file</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1000000</span> <span class="o">+</span> <span class="n">label</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1"># search the u4xtycho file to see if this corresponds to a tycho star</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">binary_search</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tycho_cross_file</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">line</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+
+                <span class="c1"># determine the tycho2 id from the u4xtycho file</span>
+                <span class="n">t2id</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">line</span><span class="p">[:</span><span class="mi">4</span><span class="p">],</span> <span class="n">line</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">10</span><span class="p">],</span> <span class="n">line</span><span class="p">[</span><span class="mi">11</span><span class="p">]])</span>
+
+                <span class="c1"># get the tycho2 star record</span>
+                <span class="n">rec</span> <span class="o">=</span> <span class="n">tycho_cat</span><span class="o">.</span><span class="n">retrieve_record</span><span class="p">(</span><span class="n">t2id</span><span class="p">)</span>
+
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rec</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;The requested UCAC4 star does not have a tycho reference associated with it: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">label</span>
+                <span class="p">))</span>
+                <span class="c1"># todo: may need to figure out how to get a unique id here so it doesn&#39;t get overwritten</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tycho_cat</span><span class="o">.</span><span class="n">nan_frame</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">out</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UCAC4.dump_to_sqlite">
+<a class="viewcode-back" href="../../../catalogs/ucac/ucac/giant.catalogs.ucac.UCAC4.dump_to_sqlite.html#giant.catalogs.ucac.UCAC4.dump_to_sqlite">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dump_to_sqlite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_connection</span><span class="p">:</span> <span class="n">Connection</span><span class="p">,</span> <span class="n">limiting_mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">use_tycho_mag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                       <span class="n">return_locations</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">return_mag</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Use this to write the catalog to a sqlite3 database in the GIANT format.</span>
+
+<span class="sd">        You can control what stars/data are included using the key word argument inputs.  You can also have this return</span>
+<span class="sd">        the star magnitude/locations for doing blending stars.</span>
+
+<span class="sd">        In general you should not use this directly.  Instead you should use :func:`~.giant_catalog.build_catalog`</span>
+<span class="sd">        or script :mod:`~.scripts.build_catalog`.</span>
+
+<span class="sd">        :param database_connection: The connection to the database the data is to be dumped to</span>
+<span class="sd">        :param limiting_mag: The maximum magnitude to include in the catalog.  This is based off of the APASM_V</span>
+<span class="sd">                             magnitude or the UCAC4 magm magnitude, depending on which is available</span>
+<span class="sd">        :param use_tycho_mag: This flag stores the magnitude from the Tycho2 catalog for each star that is in the</span>
+<span class="sd">                              Tycho2 catalog.  Note that this will be very slow.</span>
+<span class="sd">        :param return_locations: This flag specifies to return locations for stars for doing blending</span>
+<span class="sd">        :param return_mag: This flag specifies to only return locations for stars that are brighter than this magnitude.</span>
+<span class="sd">                           If ``None`` then all stars are returned.</span>
+<span class="sd">        :return: A dataframe of the dumped stars that meet the ``return_mag`` condition or ``None`` if</span>
+<span class="sd">                 ``return_locations`` is ``False``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.tycho</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tycho2</span>
+
+        <span class="c1"># if we want to use the tycho information in place of UCAC4 then create the tycho catalog interface</span>
+        <span class="k">if</span> <span class="n">use_tycho_mag</span><span class="p">:</span>
+            <span class="n">tycho</span> <span class="o">=</span> <span class="n">Tycho2</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tycho</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># list for returning the results if we are doing that</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;dumping zone </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># loop through each zone file and dump it</span>
+        <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">records</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cast</span><span class="p">(</span><span class="n">Iterable</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_catalog_raw</span><span class="p">(</span><span class="n">max_visual_mag</span><span class="o">=</span><span class="n">limiting_mag</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="kc">True</span><span class="p">))):</span>
+
+            <span class="c1"># convert into the GIANT format</span>
+            <span class="n">giant_records</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_to_giant_catalog</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
+
+            <span class="c1"># if we are cross referencing the tycho catalog do it</span>
+            <span class="k">if</span> <span class="n">use_tycho_mag</span><span class="p">:</span>
+                <span class="n">tycho_recs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_ref_tycho</span><span class="p">(</span><span class="n">giant_records</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">droplevel</span><span class="p">([</span><span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="s1">&#39;rnm&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                                                  <span class="n">tycho_cat</span><span class="o">=</span><span class="n">tycho</span><span class="p">)</span>
+
+                <span class="c1"># add a column so we can see where the tycho information came from</span>
+                <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;tycho id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+                <span class="k">for</span> <span class="n">star_index</span><span class="p">,</span> <span class="n">magnitude_index</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">giant_records</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">tycho_recs</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">star_index</span><span class="p">]</span><span class="o">.</span><span class="n">VTmag</span><span class="p">):</span>
+                        <span class="c1"># update the magnitude if we found a tycho record</span>
+                        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">magnitude_index</span><span class="p">,</span> <span class="s1">&#39;tycho id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">-</span><span class="si">{}</span><span class="s1">-</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="o">*</span><span class="n">tycho_recs</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">star_index</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="c1"># type: ignore</span>
+                        <span class="p">)</span>
+                        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">magnitude_index</span><span class="p">,</span> <span class="s1">&#39;mag&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tycho_recs</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">star_index</span><span class="p">]</span><span class="o">.</span><span class="n">VTmag</span>
+
+            <span class="c1"># set the index to be the rnm</span>
+            <span class="n">giant_records</span> <span class="o">=</span> <span class="n">giant_records</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;rnm&#39;</span><span class="p">)</span>
+            <span class="c1"># dump it out to the GIANT catalog in the stars table</span>
+            <span class="n">giant_records</span><span class="o">.</span><span class="n">to_sql</span><span class="p">(</span><span class="s1">&#39;stars&#39;</span><span class="p">,</span> <span class="n">database_connection</span><span class="p">,</span> <span class="n">if_exists</span><span class="o">=</span><span class="s1">&#39;append&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;zone dumped in </span><span class="si">{:.3f}</span><span class="s1"> secs&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">return_locations</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">return_mag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">giant_records</span><span class="o">.</span><span class="n">mag</span> <span class="o">&lt;=</span> <span class="n">return_mag</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;ra&quot;</span><span class="p">,</span> <span class="s2">&quot;dec&quot;</span><span class="p">,</span> <span class="s2">&quot;mag&quot;</span><span class="p">]])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;ra&quot;</span><span class="p">,</span> <span class="s2">&quot;dec&quot;</span><span class="p">,</span> <span class="s2">&quot;mag&quot;</span><span class="p">]])</span>
+
+            <span class="n">zone</span> <span class="o">=</span> <span class="n">ind</span> <span class="o">+</span> <span class="mi">2</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;dumping zone </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">zone</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">return_locations</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">out</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ColumnOrder">
+<a class="viewcode-back" href="../../../catalogs/ucac/ucac/giant.catalogs.ucac.ColumnOrder.html#giant.catalogs.ucac.ColumnOrder">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ColumnOrder</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This enumeration specifies whether a column is sorted in ascending or descending order.</span>
+
+<span class="sd">    This is intended to be used as an input to :func:`binary_search`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ASCENDING</span> <span class="o">=</span> <span class="s2">&quot;ASCENDING&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The column is sorted in ascending order (smallest first)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">DESCENDING</span> <span class="o">=</span> <span class="s2">&quot;DESCENDING&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The column is sorted in DESCENDING order (smallest last)</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="binary_search">
+<a class="viewcode-back" href="../../../catalogs/ucac/ucac/giant.catalogs.ucac.binary_search.html#giant.catalogs.ucac.binary_search">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">binary_search</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">BinaryIO</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">column</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                  <span class="n">separator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">column_conversion</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="nb">float</span><span class="p">,</span>
+                  <span class="n">order</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ColumnOrder</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">ColumnOrder</span><span class="o">.</span><span class="n">ASCENDING</span><span class="p">,</span>
+                  <span class="n">start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">line_length</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This helper function does a binary search on a sorted file with fixed width lines.</span>
+
+<span class="sd">    The binary search is performed by successively checking the midpoint between the current block of the file under</span>
+<span class="sd">    consideration and using it to determine whether to search to the left or right of the midpoint for the next</span>
+<span class="sd">    iteration.  As such, this requires the lines to be sorted on the column that is being searched.  This also requires</span>
+<span class="sd">    that the column being searched is orderable (implements comparison operators) after conversion from a string.</span>
+
+<span class="sd">    The conversion into an orderable type is controlled using the ``column_conversion`` keyword argument.  This is</span>
+<span class="sd">    applied to the specified column (controlled by keyword arguments ``column`` and ``separator``) to create an</span>
+<span class="sd">    orderable object.  This can be any callable, so long as it returns an orderable object, but typically is a python</span>
+<span class="sd">    type like ``int`` or ``float``.  Note that strings are orderable as well, therefore you can make</span>
+<span class="sd">    ``column_conversion`` ``str``, however be aware that the ordering of strings can be confusing when white space is</span>
+<span class="sd">    involved (for instance ``&#39;10&#39;`` is less than ``&#39;2&#39;`` according to string comparisons).  Therefore, unless your</span>
+<span class="sd">    numbers are 0 padded (ie ``&#39;02&#39;``), we recommend using a numeric type for the ``column_conversion``.</span>
+
+<span class="sd">    If the searched for label is found in the column then the line in which it is found is returned (as a bytes object).</span>
+<span class="sd">    If it is not found then ``None`` is returned.</span>
+
+<span class="sd">    :param file: The file object to search.  This should be opened in binary read mode so that we can seek</span>
+<span class="sd">    :param label: the label we are searching for in the file object.  This must support equality comparison (==) with</span>
+<span class="sd">                  the type that is returned by ``column_conversion``.</span>
+<span class="sd">    :param column: the column index that is to be searched</span>
+<span class="sd">    :param separator: The separator spec for splitting the file.  If ``None`` then defaults to white space.  This is</span>
+<span class="sd">                      passed directly to ``str.split``</span>
+<span class="sd">    :param column_conversion: The callable to convert the column into an orderable object.  Typically this should be one</span>
+<span class="sd">                              of the python builtin types (like ``float`` or ``int``) but it can be ay callable so long</span>
+<span class="sd">                              as the return supports less than/greater than operators.  This is applied as</span>
+<span class="sd">                              ``column_conversion(line.split(sep=separator))`` where ``line`` is the current line under</span>
+<span class="sd">                              consideration.</span>
+<span class="sd">    :param order: How the column being searched is sorted.  This should be either ``ASCENDING`` or ``DESCENDING`` (one</span>
+<span class="sd">                  of the :class:`ColumnOrder` enum values)</span>
+<span class="sd">    :param start: Where to start in the file in bytes. Typically this is unused unless you know you can skip part of</span>
+<span class="sd">                  the file</span>
+<span class="sd">    :param stop: Where to stop the search in bytes.  If this is ``None`` then  it will be set to the length of the file.</span>
+<span class="sd">                 Typically this is unused unless you know you can skip part of the file</span>
+<span class="sd">    :param line_length: The number of bytes in each line.  If ``None`` then this will be computed from the file.</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># if the line length for the file wasn&#39;t specified determine it</span>
+    <span class="k">if</span> <span class="n">line_length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">SEEK_SET</span><span class="p">)</span>
+        <span class="n">file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="n">line_length</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
+
+    <span class="c1"># if the end of our search isn&#39;t specified, use the end of the file</span>
+    <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">SEEK_END</span><span class="p">)</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="n">ColumnOrder</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+
+    <span class="c1"># determine which comparison operator to use based on the sort order</span>
+    <span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="n">ColumnOrder</span><span class="o">.</span><span class="n">ASCENDING</span><span class="p">:</span>
+        <span class="n">left_comparison</span> <span class="o">=</span> <span class="n">lt</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">left_comparison</span> <span class="o">=</span> <span class="n">gt</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="c1"># determine the number of lines in the file</span>
+        <span class="n">stop_line</span> <span class="o">=</span> <span class="n">stop</span> <span class="o">//</span> <span class="n">line_length</span>
+        <span class="c1"># determine the line we are starting on</span>
+        <span class="n">start_line</span> <span class="o">=</span> <span class="n">start</span> <span class="o">//</span> <span class="n">line_length</span>
+
+        <span class="c1"># determine the line we are searching next</span>
+        <span class="n">mid_line</span> <span class="o">=</span> <span class="p">(</span><span class="n">stop_line</span> <span class="o">-</span> <span class="n">start_line</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">start_line</span>
+
+        <span class="n">mid</span> <span class="o">=</span> <span class="n">mid_line</span> <span class="o">*</span> <span class="n">line_length</span>
+
+        <span class="c1"># seek to the line to search</span>
+        <span class="n">file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">SEEK_SET</span><span class="p">)</span>
+
+        <span class="n">line</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+
+        <span class="c1"># reached the end of the file, return None to indicate failure</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># get the label from this line</span>
+        <span class="n">line_lab</span> <span class="o">=</span> <span class="n">column_conversion</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="n">separator</span><span class="p">)[</span><span class="n">column</span><span class="p">])</span> <span class="c1"># type: ignore</span>
+
+        <span class="k">if</span> <span class="n">line_lab</span> <span class="o">==</span> <span class="n">label</span><span class="p">:</span>
+            <span class="c1"># if this is the line we want return it</span>
+            <span class="k">return</span> <span class="n">line</span>
+        <span class="k">elif</span> <span class="n">mid_line</span> <span class="o">==</span> <span class="n">start_line</span> <span class="ow">or</span> <span class="n">mid_line</span> <span class="o">==</span> <span class="n">stop_line</span><span class="p">:</span>
+            <span class="c1"># if we have run out of lines to search stop</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">left_comparison</span><span class="p">(</span><span class="n">line_lab</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+            <span class="c1"># if the search line is below the label we want then search from it to the stop</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">mid</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># if the search line is above the label we want then search from the start to the search line</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="n">mid</span></div>
+
+
+
+<div class="viewcode-block" id="check_file">
+<a class="viewcode-back" href="../../../catalogs/ucac/ucac/giant.catalogs.ucac.check_file.html#giant.catalogs.ucac.check_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_file</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">md5s</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This checks the md5sum of a file to ensure it wasn&#39;t corrupted.</span>
+
+<span class="sd">    .. warning::</span>
+
+<span class="sd">        This function can only verify the integrity of the files through md5 sums which are insecure.  While the vizier</span>
+<span class="sd">        service is trusted, use this function at your own risk</span>
+
+<span class="sd">    :param file: The file to check the md5 of</span>
+<span class="sd">    :param md5s: A dictionary containing the md5 sums for each file</span>
+<span class="sd">    :return: a flag specifying if the file was correct and the dictionary of md5 sums used to check the file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+
+    <span class="k">if</span> <span class="n">md5s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">md5_file</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;md5sum.txt&quot;</span> 
+        <span class="k">if</span> <span class="n">md5_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">md5s</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">with</span> <span class="n">md5_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">m_file_obj</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">m_file_obj</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
+                        <span class="k">continue</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">fmd5</span><span class="p">,</span> <span class="n">m_file_obj</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                        <span class="n">md5s</span><span class="p">[</span><span class="n">m_file_obj</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">fmd5</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">if</span> <span class="n">base</span> <span class="o">!=</span> <span class="s2">&quot;md5sum.txt&quot;</span><span class="p">:</span>
+            <span class="c1"># MD5 has a security risk but its better than nothing...</span>
+            <span class="k">return</span> <span class="n">md5s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(),</span> <span class="n">md5s</span>  <span class="c1"># nosec</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">md5s</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">md5s</span></div>
+
+
+
+<div class="viewcode-block" id="download_ucac">
+<a class="viewcode-back" href="../../../catalogs/ucac/ucac/giant.catalogs.ucac.download_ucac.html#giant.catalogs.ucac.download_ucac">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_ucac</span><span class="p">(</span><span class="n">target_directory</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function downloads the UCAC4 catalog from vizier to the target directory.</span>
+
+<span class="sd">    This is done over ftp.  It requires an active internet connection that can connect to cdsarc.u-strasbg.fr</span>
+
+<span class="sd">    .. warning::</span>
+
+<span class="sd">        This download will take a long time and use up approximately 9 GB of space.</span>
+
+<span class="sd">    .. warning::</span>
+
+<span class="sd">        This download can only verify the integrity of the files through md5 sums which are insecure.  While the vizier</span>
+<span class="sd">        service is trusted, use this function at your own risk</span>
+
+<span class="sd">    :param target_directory: the directory to save the UCAC catalog to</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># we minimize the security risk here by using FTPS</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">ftplib</span>  <span class="c1"># nosec</span>
+
+    <span class="c1"># FTPS is secure</span>
+    <span class="n">ftp</span> <span class="o">=</span> <span class="n">ftplib</span><span class="o">.</span><span class="n">FTP_TLS</span><span class="p">(</span><span class="s1">&#39;cdsarc.u-strasbg.fr&#39;</span><span class="p">)</span>  <span class="c1"># nosec</span>
+
+    <span class="c1"># anonymous login since we&#39;re just grabbing data</span>
+    <span class="n">ftp</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+    <span class="n">ftp</span><span class="o">.</span><span class="n">sendcmd</span><span class="p">(</span><span class="s1">&#39;USER anonymous&#39;</span><span class="p">)</span>
+    <span class="n">ftp</span><span class="o">.</span><span class="n">sendcmd</span><span class="p">(</span><span class="s1">&#39;PASS anonymous@a.com&#39;</span><span class="p">)</span>
+
+    <span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="s1">&#39;pub/cats/I/322A/UCAC4/&#39;</span><span class="p">)</span>
+
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">ftp</span><span class="o">.</span><span class="n">retrlines</span><span class="p">(</span><span class="s1">&#39;LIST&#39;</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">):</span>
+            <span class="c1"># directory</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;u4b&quot;</span><span class="p">,</span> <span class="s2">&quot;u4i&quot;</span><span class="p">]:</span>
+
+                <span class="n">local_directory</span> <span class="o">=</span> <span class="n">target_directory</span> <span class="o">/</span> <span class="n">name</span>
+                <span class="n">local_directory</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+                <span class="n">download_lines</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="n">ftp</span><span class="o">.</span><span class="n">retrlines</span><span class="p">(</span><span class="s1">&#39;LIST </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">callback</span><span class="o">=</span><span class="n">download_lines</span><span class="o">.</span><span class="n">append</span><span class="p">)</span>
+
+                <span class="n">md5s</span> <span class="o">=</span> <span class="kc">None</span>
+
+                <span class="k">for</span> <span class="n">dl</span> <span class="ow">in</span> <span class="n">download_lines</span><span class="p">:</span>
+                    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                    <span class="n">file</span> <span class="o">=</span> <span class="n">dl</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+                    <span class="n">local</span> <span class="o">=</span> <span class="n">local_directory</span> <span class="o">/</span> <span class="n">file</span>
+
+                    <span class="n">downloaded</span><span class="p">,</span> <span class="n">md5s</span> <span class="o">=</span> <span class="n">check_file</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="n">md5s</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">downloaded</span><span class="p">:</span>
+                        <span class="k">with</span> <span class="n">local</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">download_file</span><span class="p">:</span>
+
+                            <span class="c1"># noinspection SpellCheckingInspection</span>
+                            <span class="n">ftp</span><span class="o">.</span><span class="n">retrbinary</span><span class="p">(</span><span class="s1">&#39;RETR </span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">file</span><span class="p">),</span> <span class="n">download_file</span><span class="o">.</span><span class="n">write</span><span class="p">)</span>
+
+                        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;u4b&#39;</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> of z900 done in </span><span class="si">{:.3f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> done in </span><span class="si">{:.3f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> already downloaded&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file</span><span class="p">))</span></div>
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

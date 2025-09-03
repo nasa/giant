@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.image_processing.edge_detection.pae_subpixel_edge_detector &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../../index.html">
+    <img class="logo" src="../../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  <li><a href="../edge_detection.html">giant.image_processing.edge_detection</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.image_processing.edge_detection.pae_subpixel_edge_detector</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes.user_option_configured</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptionConfigured</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image_processing.edge_detection.edge_detector_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeDetector</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image_processing.edge_detection.pixel_edge_detector</span><span class="w"> </span><span class="kn">import</span> <span class="n">PixelEdgeDetector</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DOUBLE_ARRAY</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PAESubpixelEdgeDetectorOptions</span><span class="p">(</span><span class="n">UserOptions</span><span class="p">):</span>
+    <span class="n">a01</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.125</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The 0, 1 coefficient (upper middle) of the Gaussian kernel representing the blurring experienced in the images being </span>
+<span class="sd">    processed for the PAE sub-pixel edge method.</span>
+
+<span class="sd">    By default this is set to 0.125 assuming a 2D gaussian kernel with a sigma of 1 pixel in each axis.  If you know a </span>
+<span class="sd">    better approximation of the gaussian kernel that represents the point spread function in the image (combined with any </span>
+<span class="sd">    gaussian blurring applied to the image to smooth out noise) then you may get better results from the PAE method by </span>
+<span class="sd">    updating this value.</span>
+
+<span class="sd">    https://www.researchgate.net/publication/233397974_Accurate_Subpixel_Edge_Location_based_on_Partial_Area_Effect</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">a11</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0625</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The 1, 1 coefficient (upper right) of the Gaussian kernel representing the blurring experienced in the images being </span>
+<span class="sd">    processed for the PAE sub-pixel edge method.</span>
+
+<span class="sd">    By default this is set to 0.0625 assuming a 2D gaussian kernel with a sigma of 1 pixel in each axis.  If you know a </span>
+<span class="sd">    better approximation of the gaussian kernel that represents the point spread function in the image (combined with any </span>
+<span class="sd">    gaussian blurring applied to the image to smooth out noise) then you may get better results from the PAE method by </span>
+<span class="sd">    updating this value.</span>
+
+<span class="sd">    https://www.researchgate.net/publication/233397974_Accurate_Subpixel_Edge_Location_based_on_Partial_Area_Effect</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This specifies whether to fit a linear (1) or quadratic (2) to the limb in the PAE method.  </span>
+<span class="sd">    </span>
+<span class="sd">    Typically quadratic produces the best results.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PAESubpixelEdgeDetector">
+<a class="viewcode-back" href="../../../../image_processing/edge_detection/giant.image_processing.edge_detection.PAESubpixelEdgeDetector.html#giant.image_processing.edge_detection.PAESubpixelEdgeDetector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PAESubpixelEdgeDetector</span><span class="p">(</span><span class="n">UserOptionConfigured</span><span class="p">[</span><span class="n">PAESubpixelEdgeDetectorOptions</span><span class="p">],</span> 
+                              <span class="n">EdgeDetector</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span><span class="p">],</span> 
+                              <span class="n">PAESubpixelEdgeDetectorOptions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class can be used to identify and refine to the subpixel location of edges in an image using the partial area effect method.</span>
+
+<span class="sd">    Edges are defined as places in the image where the illumination values abruptly transition from light to dark</span>
+<span class="sd">    or dark to light.  The algorithms in this method are based off of the Partial Area Effect as discussed in</span>
+<span class="sd">    http://www.sciencedirect.com/science/article/pii/S0262885612001850</span>
+
+<span class="sd">    First edges are detected at the pixel level by using a gradient based edge detection method.  The edges are then</span>
+<span class="sd">    refined to subpixel accuracy using the PAE.  Tests have shown that the PAE achieves accuracy better than 0.1</span>
+<span class="sd">    pixels in most cases.</span>
+
+<span class="sd">    There are three tuning parameters for the PAE technique.  The first tuning parameter is the :attr:`.order`, which specifies </span>
+<span class="sd">    whether a linear or quadratic fit is used to refine the edge location.  It should have a value of 1 or 2.  </span>
+<span class="sd">    The second and third are the :attr:`.a01` and :att:`.a11` attributes.  These specify the upper middle and upper right </span>
+<span class="sd">    coeficients of the expected 3x3 Gaussian PSF that described how edges are blurred in the image. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">PAESubpixelEdgeDetectorOptions</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">PAESubpixelEdgeDetectorOptions</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+        
+        <span class="c1"># create a local pixel level edge instance to do the initial detection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_edge_detector</span> <span class="o">=</span> <span class="n">PixelEdgeDetector</span><span class="p">()</span>
+    
+    <span class="nd">@staticmethod</span> 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_split_pos_neg_edges</span><span class="p">(</span><span class="n">horizontal_gradient</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span><span class="p">,</span> <span class="n">vertical_gradient</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span><span class="p">,</span>
+                            <span class="n">edges</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span><span class="p">,</span> <span class="n">DOUBLE_ARRAY</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function splits diagonal edges into positive/negative bins</span>
+
+<span class="sd">        :param horizontal_gradient: The horizontal gradient array</span>
+<span class="sd">        :param vertical_gradient: The vertical gradient array</span>
+<span class="sd">        :param edges: The edge array containing the pixel location of the edges as [x, y]</span>
+<span class="sd">        :return: The edges split into positive and negative groupings</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># check with edges are positive edges</span>
+        <span class="n">positive_check</span> <span class="o">=</span> <span class="n">horizontal_gradient</span><span class="p">[</span><span class="n">edges</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">vertical_gradient</span><span class="p">[</span><span class="n">edges</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="c1"># split and return the binned edges</span>
+        <span class="k">return</span> <span class="n">edges</span><span class="p">[:,</span> <span class="n">positive_check</span><span class="p">],</span> <span class="n">edges</span><span class="p">[:,</span> <span class="o">~</span><span class="n">positive_check</span><span class="p">]</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_pae_delta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sum_a</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">sum_b</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">sum_c</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+                           <span class="n">int_a</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">int_b</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method computes the subpixel location of an edge using the pae method within a pixel.</span>
+
+<span class="sd">        This method is vectorized so multiple edges can be refined at the same time.</span>
+
+<span class="sd">        Essentially this method either fits a line or a parabola to the edge based off of the intensity data surrounding</span>
+<span class="sd">        the edge.  if :attr:`pae_order` is set to 1, then a linear fit is made.  If it is set to 2 then a parabola fit</span>
+<span class="sd">        is made.</span>
+
+<span class="sd">        :param sum_a: The sum of the first row or first column (depending on whether this is a horizontal or vertical</span>
+<span class="sd">                     edge)</span>
+<span class="sd">        :param sum_b: The sum of the middle row or column (depending on whether this is a horizontal or vertical edge)</span>
+<span class="sd">        :param sum_c: The sum of the final row or column (depending on whether this is a horizontal or vertical edge)</span>
+<span class="sd">        :param int_a: The average intensity to the positive side of the edge</span>
+<span class="sd">        :param int_b: The average intensity to the negative side of the edge</span>
+<span class="sd">        :return: The offset in the local pixel for the subpixel edge locations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">a_coef</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">sum_a</span> <span class="o">+</span> <span class="n">sum_c</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sum_b</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">int_b</span> <span class="o">-</span> <span class="n">int_a</span><span class="p">))</span>
+        <span class="n">c_coef</span> <span class="o">=</span> <span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sum_b</span> <span class="o">-</span> <span class="mi">7</span> <span class="o">*</span> <span class="p">(</span><span class="n">int_b</span> <span class="o">+</span> <span class="n">int_a</span><span class="p">))</span> <span class="o">/</span>
+                  <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">int_b</span> <span class="o">-</span> <span class="n">int_a</span><span class="p">))</span> <span class="o">-</span>
+                  <span class="n">a_coef</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">24</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">a01</span> <span class="o">+</span> <span class="mi">48</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">a11</span><span class="p">)</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+
+        <span class="n">c_coef</span><span class="p">[(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">c_coef</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">|</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">c_coef</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="n">c_coef</span>
+
+<div class="viewcode-block" id="PAESubpixelEdgeDetector.refine_edges">
+<a class="viewcode-back" href="../../../../image_processing/edge_detection/giant.image_processing.edge_detection.PAESubpixelEdgeDetector.html#giant.image_processing.edge_detection.PAESubpixelEdgeDetector.refine_edges">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">refine_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">edges</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method refines pixel level edges to subpixel level using the PAE method.</span>
+
+<span class="sd">        The PAE method is explained at https://www.sciencedirect.com/science/article/pii/S0262885612001850 and is not</span>
+<span class="sd">        discussed in detail here.  In brief, a linear or parabolic function is fit to the edge data based off of the</span>
+<span class="sd">        intensity data in the pixels surrounding the edge locations.</span>
+
+<span class="sd">        To use this method, you must input the image, as well as a 2xn array of [[x], [y]] edges to be refined.</span>
+<span class="sd">        </span>
+<span class="sd">        The edges are refined and returned as a 2D array with the x locations in the first row and the y locations </span>
+<span class="sd">        in the second row.</span>
+
+<span class="sd">        :param image:  The image the edges are being extracted from</span>
+<span class="sd">        :param edges: The pixel level edges from the image as a 2D array with x in the first row and y in the</span>
+<span class="sd">                            second row</span>
+<span class="sd">        :return: The subpixel edge locations as a 2d array with the x values in the first row and the y values in the</span>
+<span class="sd">                 second row (col [x], row [y])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">horizontal_mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">vertical_mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">horizontal_gradient</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">vertical_gradient</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">gradient_magnitude</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prepare_edge_inputs</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+            
+        <span class="k">assert</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">horizontal_gradient</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">horizontal_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">vertical_gradient</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">vertical_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">gradient_magnitude</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">&quot;This should never happen&quot;</span>
+            
+        <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        
+        <span class="n">edges</span> <span class="o">=</span> <span class="n">edges</span><span class="o">.</span><span class="n">T</span>
+        
+        <span class="c1"># split into horizontal and vertical edges </span>
+        <span class="n">horizontal_edges</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">horizontal_mask</span><span class="p">[</span><span class="n">edges</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">edges</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]]]</span><span class="o">.</span><span class="n">T</span> <span class="c1"># type: ignore</span>
+        <span class="n">vertical_edges</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">vertical_mask</span><span class="p">[</span><span class="n">edges</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">edges</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]]]</span><span class="o">.</span><span class="n">T</span> <span class="c1"># type: ignore</span>
+        
+        <span class="n">horiz_pos_edges</span><span class="p">,</span> <span class="n">horiz_neg_edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_pos_neg_edges</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">horizontal_gradient</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical_gradient</span><span class="p">,</span>
+                                                                     <span class="n">horizontal_edges</span><span class="p">)</span>
+        <span class="n">vert_pos_edges</span><span class="p">,</span> <span class="n">vert_neg_edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_pos_neg_edges</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">horizontal_gradient</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical_gradient</span><span class="p">,</span>
+                                                                   <span class="n">vertical_edges</span><span class="p">)</span>
+
+        <span class="c1"># process the horizontal edges</span>
+
+        <span class="c1"># precompute the indices</span>
+        <span class="n">prm4</span> <span class="o">=</span> <span class="n">horiz_pos_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">4</span>
+        <span class="n">prm3</span> <span class="o">=</span> <span class="n">horiz_pos_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">3</span>
+        <span class="n">prm2</span> <span class="o">=</span> <span class="n">horiz_pos_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span>
+        <span class="n">prm1</span> <span class="o">=</span> <span class="n">horiz_pos_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">pr</span> <span class="o">=</span> <span class="n">horiz_pos_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">prp1</span> <span class="o">=</span> <span class="n">horiz_pos_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">prp2</span> <span class="o">=</span> <span class="n">horiz_pos_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span>
+        <span class="n">prp3</span> <span class="o">=</span> <span class="n">horiz_pos_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">3</span>
+        <span class="n">prp4</span> <span class="o">=</span> <span class="n">horiz_pos_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">4</span>
+        <span class="n">pcm1</span> <span class="o">=</span> <span class="n">horiz_pos_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">pc</span> <span class="o">=</span> <span class="n">horiz_pos_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">pcp1</span> <span class="o">=</span> <span class="n">horiz_pos_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="n">nrm4</span> <span class="o">=</span> <span class="n">horiz_neg_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">4</span>
+        <span class="n">nrm3</span> <span class="o">=</span> <span class="n">horiz_neg_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">3</span>
+        <span class="n">nrm2</span> <span class="o">=</span> <span class="n">horiz_neg_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span>
+        <span class="n">nrm1</span> <span class="o">=</span> <span class="n">horiz_neg_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">nr</span> <span class="o">=</span> <span class="n">horiz_neg_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">nrp1</span> <span class="o">=</span> <span class="n">horiz_neg_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">nrp2</span> <span class="o">=</span> <span class="n">horiz_neg_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span>
+        <span class="n">nrp3</span> <span class="o">=</span> <span class="n">horiz_neg_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">3</span>
+        <span class="n">nrp4</span> <span class="o">=</span> <span class="n">horiz_neg_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">4</span>
+        <span class="n">ncm1</span> <span class="o">=</span> <span class="n">horiz_neg_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">nc</span> <span class="o">=</span> <span class="n">horiz_neg_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ncp1</span> <span class="o">=</span> <span class="n">horiz_neg_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="c1"># calculate the average intensity on either side of the edge</span>
+        <span class="c1"># above the edge for positive sloped edges</span>
+        <span class="n">int_top_pos</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">prm3</span><span class="p">,</span> <span class="n">prm4</span><span class="p">,</span> <span class="n">prm4</span><span class="p">],</span> <span class="p">[</span><span class="n">pcm1</span><span class="p">,</span> <span class="n">pcm1</span><span class="p">,</span> <span class="n">pc</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+
+        <span class="c1"># below the edge for positive sloped edges</span>
+        <span class="n">int_bot_pos</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">prp3</span><span class="p">,</span> <span class="n">prp4</span><span class="p">,</span> <span class="n">prp4</span><span class="p">],</span> <span class="p">[</span><span class="n">pcp1</span><span class="p">,</span> <span class="n">pcp1</span><span class="p">,</span> <span class="n">pc</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+
+        <span class="c1"># above the edge for negative sloped edges</span>
+        <span class="n">int_top_neg</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">nrm3</span><span class="p">,</span> <span class="n">nrm4</span><span class="p">,</span> <span class="n">nrm4</span><span class="p">],</span> <span class="p">[</span><span class="n">ncp1</span><span class="p">,</span> <span class="n">ncp1</span><span class="p">,</span> <span class="n">nc</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+
+        <span class="c1"># below the edge for negative sloped edges</span>
+        <span class="n">int_bot_neg</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">nrp3</span><span class="p">,</span> <span class="n">nrp4</span><span class="p">,</span> <span class="n">nrp4</span><span class="p">],</span> <span class="p">[</span><span class="n">ncm1</span><span class="p">,</span> <span class="n">ncm1</span><span class="p">,</span> <span class="n">nc</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+
+        <span class="c1"># sum the columns of intensity for the positive slop edges</span>
+        <span class="n">sum_left_pos_slope</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">prm2</span><span class="p">,</span> <span class="n">prm1</span><span class="p">,</span> <span class="n">pr</span><span class="p">,</span> <span class="n">prp1</span><span class="p">,</span> <span class="n">prp2</span><span class="p">,</span> <span class="n">prp3</span><span class="p">,</span> <span class="n">prp4</span><span class="p">],</span>
+                                    <span class="p">[</span><span class="n">pcm1</span><span class="p">,</span> <span class="n">pcm1</span><span class="p">,</span> <span class="n">pcm1</span><span class="p">,</span> <span class="n">pcm1</span><span class="p">,</span> <span class="n">pcm1</span><span class="p">,</span> <span class="n">pcm1</span><span class="p">,</span> <span class="n">pcm1</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">sum_mid_pos_slope</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">prm3</span><span class="p">,</span> <span class="n">prm2</span><span class="p">,</span> <span class="n">prm1</span><span class="p">,</span> <span class="n">pr</span><span class="p">,</span> <span class="n">prp1</span><span class="p">,</span> <span class="n">prp2</span><span class="p">,</span> <span class="n">prp3</span><span class="p">],</span>
+                                    <span class="p">[</span><span class="n">pc</span><span class="p">,</span> <span class="n">pc</span><span class="p">,</span> <span class="n">pc</span><span class="p">,</span> <span class="n">pc</span><span class="p">,</span> <span class="n">pc</span><span class="p">,</span> <span class="n">pc</span><span class="p">,</span> <span class="n">pc</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">sum_right_pos_slope</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">prm4</span><span class="p">,</span> <span class="n">prm3</span><span class="p">,</span> <span class="n">prm2</span><span class="p">,</span> <span class="n">prm1</span><span class="p">,</span> <span class="n">pr</span><span class="p">,</span> <span class="n">prp1</span><span class="p">,</span> <span class="n">prp2</span><span class="p">],</span>
+                                    <span class="p">[</span><span class="n">pcp1</span><span class="p">,</span> <span class="n">pcp1</span><span class="p">,</span> <span class="n">pcp1</span><span class="p">,</span> <span class="n">pcp1</span><span class="p">,</span> <span class="n">pcp1</span><span class="p">,</span> <span class="n">pcp1</span><span class="p">,</span> <span class="n">pcp1</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># sum the columns of intensity for the negative slop edges</span>
+        <span class="n">sum_left_neg_slope</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">nrm4</span><span class="p">,</span> <span class="n">nrm3</span><span class="p">,</span> <span class="n">nrm2</span><span class="p">,</span> <span class="n">nrm1</span><span class="p">,</span> <span class="n">nr</span><span class="p">,</span> <span class="n">nrp1</span><span class="p">,</span> <span class="n">nrp2</span><span class="p">],</span>
+                                    <span class="p">[</span><span class="n">ncm1</span><span class="p">,</span> <span class="n">ncm1</span><span class="p">,</span> <span class="n">ncm1</span><span class="p">,</span> <span class="n">ncm1</span><span class="p">,</span> <span class="n">ncm1</span><span class="p">,</span> <span class="n">ncm1</span><span class="p">,</span> <span class="n">ncm1</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">sum_mid_neg_slope</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">nrm3</span><span class="p">,</span> <span class="n">nrm2</span><span class="p">,</span> <span class="n">nrm1</span><span class="p">,</span> <span class="n">nr</span><span class="p">,</span> <span class="n">nrp1</span><span class="p">,</span> <span class="n">nrp2</span><span class="p">,</span> <span class="n">nrp3</span><span class="p">],</span>
+                                    <span class="p">[</span><span class="n">nc</span><span class="p">,</span> <span class="n">nc</span><span class="p">,</span> <span class="n">nc</span><span class="p">,</span> <span class="n">nc</span><span class="p">,</span> <span class="n">nc</span><span class="p">,</span> <span class="n">nc</span><span class="p">,</span> <span class="n">nc</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">sum_right_neg_slope</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">nrm2</span><span class="p">,</span> <span class="n">nrm1</span><span class="p">,</span> <span class="n">nr</span><span class="p">,</span> <span class="n">nrp1</span><span class="p">,</span> <span class="n">nrp2</span><span class="p">,</span> <span class="n">nrp3</span><span class="p">,</span> <span class="n">nrp4</span><span class="p">],</span>
+                                    <span class="p">[</span><span class="n">ncp1</span><span class="p">,</span> <span class="n">ncp1</span><span class="p">,</span> <span class="n">ncp1</span><span class="p">,</span> <span class="n">ncp1</span><span class="p">,</span> <span class="n">ncp1</span><span class="p">,</span> <span class="n">ncp1</span><span class="p">,</span> <span class="n">ncp1</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># calculate the coefficient for the partial area for the positive slopes</span>
+        <span class="n">dy_pos_slope</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_pae_delta</span><span class="p">(</span><span class="n">sum_left_pos_slope</span><span class="p">,</span> <span class="n">sum_mid_pos_slope</span><span class="p">,</span> <span class="n">sum_right_pos_slope</span><span class="p">,</span>
+                                                <span class="n">int_top_pos</span><span class="p">,</span> <span class="n">int_bot_pos</span><span class="p">)</span>
+
+        <span class="c1"># calculate the subpixel edge locations for the positive slope edges</span>
+        <span class="n">sp_horiz_edges_pos</span> <span class="o">=</span> <span class="n">horiz_pos_edges</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">sp_horiz_edges_pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dy_pos_slope</span>
+
+        <span class="c1"># calculate the coefficient for the partial area for the positive slopes</span>
+        <span class="n">dy_neg_slope</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_pae_delta</span><span class="p">(</span><span class="n">sum_left_neg_slope</span><span class="p">,</span> <span class="n">sum_mid_neg_slope</span><span class="p">,</span> <span class="n">sum_right_neg_slope</span><span class="p">,</span>
+                                                <span class="n">int_top_neg</span><span class="p">,</span> <span class="n">int_bot_neg</span><span class="p">)</span>
+
+        <span class="c1"># calculate the subpixel edge locations for the negative slope edges</span>
+        <span class="n">sp_horiz_edges_neg</span> <span class="o">=</span> <span class="n">horiz_neg_edges</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">sp_horiz_edges_neg</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dy_neg_slope</span>
+
+        <span class="c1"># process the vertical edges</span>
+
+        <span class="c1"># precompute the indices</span>
+        <span class="n">pcm4</span> <span class="o">=</span> <span class="n">vert_pos_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">4</span>
+        <span class="n">pcm3</span> <span class="o">=</span> <span class="n">vert_pos_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">3</span>
+        <span class="n">pcm2</span> <span class="o">=</span> <span class="n">vert_pos_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span>
+        <span class="n">pcm1</span> <span class="o">=</span> <span class="n">vert_pos_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">pc</span> <span class="o">=</span> <span class="n">vert_pos_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">pcp1</span> <span class="o">=</span> <span class="n">vert_pos_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">pcp2</span> <span class="o">=</span> <span class="n">vert_pos_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span>
+        <span class="n">pcp3</span> <span class="o">=</span> <span class="n">vert_pos_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">3</span>
+        <span class="n">pcp4</span> <span class="o">=</span> <span class="n">vert_pos_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">4</span>
+        <span class="n">prm1</span> <span class="o">=</span> <span class="n">vert_pos_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">pr</span> <span class="o">=</span> <span class="n">vert_pos_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">prp1</span> <span class="o">=</span> <span class="n">vert_pos_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="n">ncm4</span> <span class="o">=</span> <span class="n">vert_neg_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">4</span>
+        <span class="n">ncm3</span> <span class="o">=</span> <span class="n">vert_neg_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">3</span>
+        <span class="n">ncm2</span> <span class="o">=</span> <span class="n">vert_neg_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span>
+        <span class="n">ncm1</span> <span class="o">=</span> <span class="n">vert_neg_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">nc</span> <span class="o">=</span> <span class="n">vert_neg_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ncp1</span> <span class="o">=</span> <span class="n">vert_neg_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">ncp2</span> <span class="o">=</span> <span class="n">vert_neg_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span>
+        <span class="n">ncp3</span> <span class="o">=</span> <span class="n">vert_neg_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">3</span>
+        <span class="n">ncp4</span> <span class="o">=</span> <span class="n">vert_neg_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">4</span>
+        <span class="n">nrm1</span> <span class="o">=</span> <span class="n">vert_neg_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">nr</span> <span class="o">=</span> <span class="n">vert_neg_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">nrp1</span> <span class="o">=</span> <span class="n">vert_neg_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="c1"># calculate the average intensity on either side of the edge</span>
+        <span class="c1"># left of the edge for positive sloped edges</span>
+        <span class="n">int_left_pos</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">prm1</span><span class="p">,</span> <span class="n">prm1</span><span class="p">,</span> <span class="n">pr</span><span class="p">],</span> <span class="p">[</span><span class="n">pcm3</span><span class="p">,</span> <span class="n">pcm4</span><span class="p">,</span> <span class="n">pcm4</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+
+        <span class="c1"># right of the edge for positive sloped edges</span>
+        <span class="n">int_right_pos</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">prp1</span><span class="p">,</span> <span class="n">prp1</span><span class="p">,</span> <span class="n">pr</span><span class="p">],</span> <span class="p">[</span><span class="n">pcp3</span><span class="p">,</span> <span class="n">pcp4</span><span class="p">,</span> <span class="n">pcp4</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+
+        <span class="c1"># left of the edge for negative sloped edges</span>
+        <span class="n">int_left_neg</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">nrp1</span><span class="p">,</span> <span class="n">nrp1</span><span class="p">,</span> <span class="n">nr</span><span class="p">],</span> <span class="p">[</span><span class="n">ncm3</span><span class="p">,</span> <span class="n">ncm4</span><span class="p">,</span> <span class="n">ncm4</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+
+        <span class="c1"># right of the edge for negative sloped edges</span>
+        <span class="n">int_right_neg</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">nrm1</span><span class="p">,</span> <span class="n">nrm1</span><span class="p">,</span> <span class="n">nr</span><span class="p">],</span> <span class="p">[</span><span class="n">ncp3</span><span class="p">,</span> <span class="n">ncp4</span><span class="p">,</span> <span class="n">ncp4</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+
+        <span class="c1"># sum the rows of intensity for the positive slop edges</span>
+        <span class="n">sum_top_pos_slope</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">prm1</span><span class="p">,</span> <span class="n">prm1</span><span class="p">,</span> <span class="n">prm1</span><span class="p">,</span> <span class="n">prm1</span><span class="p">,</span> <span class="n">prm1</span><span class="p">,</span> <span class="n">prm1</span><span class="p">,</span> <span class="n">prm1</span><span class="p">],</span>
+                                    <span class="p">[</span><span class="n">pcm2</span><span class="p">,</span> <span class="n">pcm1</span><span class="p">,</span> <span class="n">pc</span><span class="p">,</span> <span class="n">pcp1</span><span class="p">,</span> <span class="n">pcp2</span><span class="p">,</span> <span class="n">pcp3</span><span class="p">,</span> <span class="n">pcp4</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">sum_mid_pos_slope</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">pr</span><span class="p">,</span> <span class="n">pr</span><span class="p">,</span> <span class="n">pr</span><span class="p">,</span> <span class="n">pr</span><span class="p">,</span> <span class="n">pr</span><span class="p">,</span> <span class="n">pr</span><span class="p">,</span> <span class="n">pr</span><span class="p">],</span>
+                                    <span class="p">[</span><span class="n">pcm3</span><span class="p">,</span> <span class="n">pcm2</span><span class="p">,</span> <span class="n">pcm1</span><span class="p">,</span> <span class="n">pc</span><span class="p">,</span> <span class="n">pcp1</span><span class="p">,</span> <span class="n">pcp2</span><span class="p">,</span> <span class="n">pcp3</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">sum_bottom_pos_slope</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">prp1</span><span class="p">,</span> <span class="n">prp1</span><span class="p">,</span> <span class="n">prp1</span><span class="p">,</span> <span class="n">prp1</span><span class="p">,</span> <span class="n">prp1</span><span class="p">,</span> <span class="n">prp1</span><span class="p">,</span> <span class="n">prp1</span><span class="p">],</span>
+                                        <span class="p">[</span><span class="n">pcm4</span><span class="p">,</span> <span class="n">pcm3</span><span class="p">,</span> <span class="n">pcm2</span><span class="p">,</span> <span class="n">pcm1</span><span class="p">,</span> <span class="n">pc</span><span class="p">,</span> <span class="n">pcp1</span><span class="p">,</span> <span class="n">pcp2</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># sum the rows of intensity for the negative slop edges</span>
+        <span class="n">sum_top_neg_slope</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">nrm1</span><span class="p">,</span> <span class="n">nrm1</span><span class="p">,</span> <span class="n">nrm1</span><span class="p">,</span> <span class="n">nrm1</span><span class="p">,</span> <span class="n">nrm1</span><span class="p">,</span> <span class="n">nrm1</span><span class="p">,</span> <span class="n">nrm1</span><span class="p">],</span>
+                                    <span class="p">[</span><span class="n">ncm4</span><span class="p">,</span> <span class="n">ncm3</span><span class="p">,</span> <span class="n">ncm2</span><span class="p">,</span> <span class="n">ncm1</span><span class="p">,</span> <span class="n">nc</span><span class="p">,</span> <span class="n">ncp1</span><span class="p">,</span> <span class="n">ncp2</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">sum_mid_neg_slope</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">nr</span><span class="p">,</span> <span class="n">nr</span><span class="p">,</span> <span class="n">nr</span><span class="p">,</span> <span class="n">nr</span><span class="p">,</span> <span class="n">nr</span><span class="p">,</span> <span class="n">nr</span><span class="p">,</span> <span class="n">nr</span><span class="p">],</span>
+                                    <span class="p">[</span><span class="n">ncm3</span><span class="p">,</span> <span class="n">ncm2</span><span class="p">,</span> <span class="n">ncm1</span><span class="p">,</span> <span class="n">nc</span><span class="p">,</span> <span class="n">ncp1</span><span class="p">,</span> <span class="n">ncp2</span><span class="p">,</span> <span class="n">ncp3</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">sum_bottom_neg_slope</span> <span class="o">=</span> <span class="n">image</span><span class="p">[[</span><span class="n">nrp1</span><span class="p">,</span> <span class="n">nrp1</span><span class="p">,</span> <span class="n">nrp1</span><span class="p">,</span> <span class="n">nrp1</span><span class="p">,</span> <span class="n">nrp1</span><span class="p">,</span> <span class="n">nrp1</span><span class="p">,</span> <span class="n">nrp1</span><span class="p">],</span>
+                                        <span class="p">[</span><span class="n">ncm2</span><span class="p">,</span> <span class="n">ncm1</span><span class="p">,</span> <span class="n">nc</span><span class="p">,</span> <span class="n">ncp1</span><span class="p">,</span> <span class="n">ncp2</span><span class="p">,</span> <span class="n">ncp3</span><span class="p">,</span> <span class="n">ncp4</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># calculate the coefficient for the partial area for the positive slopes</span>
+        <span class="n">dx_pos_slope</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_pae_delta</span><span class="p">(</span><span class="n">sum_top_pos_slope</span><span class="p">,</span> <span class="n">sum_mid_pos_slope</span><span class="p">,</span> <span class="n">sum_bottom_pos_slope</span><span class="p">,</span>
+                                                <span class="n">int_left_pos</span><span class="p">,</span> <span class="n">int_right_pos</span><span class="p">)</span>
+
+        <span class="c1"># calculate the subpixel edge locations for the positive slope edges</span>
+        <span class="n">sp_vert_edges_pos</span> <span class="o">=</span> <span class="n">vert_pos_edges</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">sp_vert_edges_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dx_pos_slope</span>
+
+        <span class="c1"># calculate the coefficient for the partial area for the positive slopes</span>
+        <span class="n">dx_neg_slope</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_pae_delta</span><span class="p">(</span><span class="n">sum_top_neg_slope</span><span class="p">,</span> <span class="n">sum_mid_neg_slope</span><span class="p">,</span> <span class="n">sum_bottom_neg_slope</span><span class="p">,</span>
+                                                <span class="n">int_left_neg</span><span class="p">,</span> <span class="n">int_right_neg</span><span class="p">)</span>
+
+        <span class="c1"># calculate the subpixel edge locations for the negative slope edges</span>
+        <span class="n">sp_vert_edges_neg</span> <span class="o">=</span> <span class="n">vert_neg_edges</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">sp_vert_edges_neg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="n">dx_neg_slope</span>
+
+        <span class="c1"># return the subpixel edges</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">sp_horiz_edges_pos</span><span class="p">,</span> <span class="n">sp_horiz_edges_neg</span><span class="p">,</span> <span class="n">sp_vert_edges_pos</span><span class="p">,</span> <span class="n">sp_vert_edges_neg</span><span class="p">])</span></div>
+
+   
+<div class="viewcode-block" id="PAESubpixelEdgeDetector.identify_edges">
+<a class="viewcode-back" href="../../../../image_processing/edge_detection/giant.image_processing.edge_detection.PAESubpixelEdgeDetector.html#giant.image_processing.edge_detection.PAESubpixelEdgeDetector.identify_edges">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">identify_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method identifies pixel level edges in the image and then refines them to the subpixel locations using the PAE method.</span>
+<span class="sd">        </span>
+<span class="sd">        The pixel edges are detected using the :class:`.PixelEdgeDetector`.  They are then refined using :meth:`.refine_edges`.</span>
+<span class="sd">        </span>
+<span class="sd">        :param image: The image to detect the edges in.</span>
+<span class="sd">        :return: The subpixel edges as a 2xn array with x (column) components in the first axis and y (row) components in the second axis</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizontal_mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical_mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizontal_gradient</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical_gradient</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prepare_edge_inputs</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+            
+        <span class="c1"># copy over the infomration to the pixel edge detector </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_edge_detector</span><span class="o">.</span><span class="n">horizontal_gradient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizontal_gradient</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_edge_detector</span><span class="o">.</span><span class="n">vertical_gradient</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical_gradient</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_edge_detector</span><span class="o">.</span><span class="n">horizontal_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizontal_mask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_edge_detector</span><span class="o">.</span><span class="n">vertical_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical_mask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_edge_detector</span><span class="o">.</span><span class="n">gradient_magnitude</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient_magnitude</span>
+        
+        <span class="c1"># get the pixel level edges and refine them</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">refine_edges</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_edge_detector</span><span class="o">.</span><span class="n">identify_edges</span><span class="p">(</span><span class="n">image</span><span class="p">))</span></div>
+</div>
+
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

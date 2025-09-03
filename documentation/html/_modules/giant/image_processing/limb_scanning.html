@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.image_processing.limb_scanning &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.image_processing.limb_scanning</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.point_spread_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">PointSpreadFunction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.point_spread_functions.gaussians</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gaussian</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.illumination</span><span class="w"> </span><span class="kn">import</span> <span class="n">IlluminationModel</span><span class="p">,</span> <span class="n">McEwenIllumination</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">SceneObject</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.rays</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rays</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">HasFindableLimbs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera</span><span class="w"> </span><span class="kn">import</span> <span class="n">Camera</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptions</span>  
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image_processing.peak_finders</span><span class="w"> </span><span class="kn">import</span> <span class="n">parabolic_peak_finder_1d</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image_processing.correlators</span><span class="w"> </span><span class="kn">import</span> <span class="n">fft_correlator_1d</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes.user_option_configured</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptionConfigured</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DOUBLE_ARRAY</span><span class="p">,</span> <span class="n">NONEARRAY</span>
+    
+    
+<span class="n">INTERPOLATOR_METHODS</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="s2">&quot;slinear&quot;</span><span class="p">,</span> <span class="s2">&quot;cubic&quot;</span><span class="p">,</span> <span class="s2">&quot;quintic&quot;</span><span class="p">,</span> <span class="s2">&quot;pchip&quot;</span><span class="p">]</span>
+   
+    
+<div class="viewcode-block" id="LimbScannerOptions">
+<a class="viewcode-back" href="../../../image_processing/limb_scanning/giant.image_processing.limb_scanning.LimbScannerOptions.html#giant.image_processing.limb_scanning.LimbScannerOptions">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">LimbScannerOptions</span><span class="p">(</span><span class="n">UserOptions</span><span class="p">):</span>
+    
+    <span class="n">psf</span><span class="p">:</span> <span class="n">PointSpreadFunction</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">Gaussian</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The point spread function to apply to the predicted intensity lines.</span>
+
+<span class="sd">    This should provide a :meth:`~.PointSpreadFunction.apply_1d` that accepts in a numpy array where each </span>
+<span class="sd">    row is an intensity line and returns the blurred intensity lines as a numpy array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">number_of_scan_lines</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">51</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The number of scan lines to generate/limb points to extract</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">scan_range</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The extent about the illumination direction in radians in which to distribute the scan lines.</span>
+
+<span class="sd">    The scan lines are distributed +/- scan_range/2 about the illumination direction.  This therefore should </span>
+<span class="sd">    generally be less than :math:`\frac{\pi}{2}` unless you are 100% certain that the phase angle is perfectly 0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">number_of_sample_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">501</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The number of points to sample each scan line along for the extracted/predicted intensity lines</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">brdf</span><span class="p">:</span> <span class="n">IlluminationModel</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">McEwenIllumination</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The illumination function to use to render the predicted scan lines.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">peak_finder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">DOUBLE_ARRAY</span><span class="p">],</span> <span class="n">DOUBLE_ARRAY</span><span class="p">]</span> <span class="o">=</span> <span class="n">parabolic_peak_finder_1d</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    the callable to use to return the peak of the correlation lines.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">interpolator_method</span><span class="p">:</span> <span class="n">INTERPOLATOR_METHODS</span> <span class="o">=</span> <span class="s2">&quot;linear&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The method to use from scipy&#39;s RegularGridInterpolator.</span>
+<span class="sd">    </span>
+<span class="sd">    Generally linear is more than sufficient</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="LimbScanner">
+<a class="viewcode-back" href="../../../image_processing/limb_scanning/giant.image_processing.limb_scanning.LimbScanner.html#giant.image_processing.limb_scanning.LimbScanner">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LimbScanner</span><span class="p">(</span><span class="n">UserOptionConfigured</span><span class="p">[</span><span class="n">LimbScannerOptions</span><span class="p">],</span> <span class="n">LimbScannerOptions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class is used to extract limbs from an image and pair them to surface points on the target.</span>
+
+<span class="sd">    This is done by first determining the surface points on the limb based on the shape model, the scan center vector,</span>
+<span class="sd">    and the sun direction vector.  Once these surface points have been identified (using :meth:.Shape.find_limbs`) they</span>
+<span class="sd">    are projected onto the image to generate the predicted limb locations in the image.  Then the image is sampled</span>
+<span class="sd">    along the scan line through each predicted limb location and the scan center location in the image using the</span>
+<span class="sd">    ``image_interpolator`` input to get the observed intensity line.  In addition, the scan line is rendered using</span>
+<span class="sd">    ray tracing to generate the predicted intensity line.  The predicted intensity lines and the extracted intensity</span>
+<span class="sd">    lines are then compared using cross correlation to find the shift that best aligns them.  This shift is then applied</span>
+<span class="sd">    to the predicted limb locations in the image along the scan line to get the extracted limb location in the image.</span>
+<span class="sd">    This is all handled by the :meth:`extract_limbs` method.</span>
+
+<span class="sd">    There are a few tuning options for this class.  The first collection affects the scan lines that are used to extract</span>
+<span class="sd">    the limb locations from the image.  The :attr:`number_of_scan_lines` sets the number of generated scan lines and</span>
+<span class="sd">    directly corresponds to the number of limb points that will be extracted from the image.  In addition,</span>
+<span class="sd">    the :attr:`scan_range` attribute sets the angular extent about the sun direction vector that these scan lines will</span>
+<span class="sd">    be evenly distributed. Finally, the :attr:`number_of_sample_points` specifies how many samples to take along the</span>
+<span class="sd">    scan lines for both the extracted and predicted intensity lines and corresponds somewhat to how accurate the</span>
+<span class="sd">    resulting limb location will be. (Generally a higher number will lead to a higher accuracy though this is also</span>
+<span class="sd">    limited by the resolution of the image and the shape model itself.  A higher number also will make things take</span>
+<span class="sd">    longer.)</span>
+
+<span class="sd">    In addition to the control over the scan lines, you can adjust the :attr:`brdf` which is used to generate the</span>
+<span class="sd">    predicted intensity lines (although this will generally not make much difference) and you can change what peak</span>
+<span class="sd">    finder is used to find the subpixel peaks of the correlation lines.</span>
+
+<span class="sd">    This technique requires decent a priori knowledge of the relative state between the target and the camera for it to</span>
+<span class="sd">    work.  At minimum it requires that the scan center be located through both the observed target location in the image</span>
+<span class="sd">    and the target shape model placed at the current relative position in the scene.  If this isn&#39;t guaranteed by your</span>
+<span class="sd">    knowledge then you can use something like the :mod:`.moment_algorithm` to correct the gross errors in your a priori</span>
+<span class="sd">    knowledge as is done by :class:`.LimbMatching`.</span>
+
+<span class="sd">    Generally you will not use this class directly as it is used by the :class:`.LimbMatching` class.  If you want to</span>
+<span class="sd">    use it for some other purpose however, simply provide the required initialization parameters, then use</span>
+<span class="sd">    :meth:`extract_limbs` to extract the limbs from the image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">LimbScannerOptions</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param scene: The scene containing the target(s) and the light source</span>
+<span class="sd">        :param camera: The camera containing the camera model</span>
+<span class="sd">        :param options: The options structure to configure the class with</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">LimbScannerOptions</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span> <span class="o">=</span> <span class="n">scene</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The scene containing the target(s) and the light source</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span> <span class="o">=</span> <span class="n">camera</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The camera containing the camera model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">predicted_illums</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The predicted intensity lines from rendering the scan lines.</span>
+
+<span class="sd">        This will be a ``number_of_scan_lines`` by ``number_of_sample_points`` 2d array where each row is a scan line.</span>
+
+<span class="sd">        This will be ``None`` until :meth:`extract_limbs` is called</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">extracted_illums</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The extracted intensity lines from sampling the image.</span>
+
+<span class="sd">        This will be a ``number_of_scan_lines`` by ``number_of_sample_points`` 2d array where each row is a scan line.</span>
+
+<span class="sd">        This will be ``None`` until :meth:`extract_limbs` is called</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">correlation_lines</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The correlation lines resulting from doing 1D cross correlation between the predicted and extracted scan lines.</span>
+
+<span class="sd">        This will be a ``number_of_scan_lines`` by ``number_of_sample_points`` 2d array where each row is a correlation </span>
+<span class="sd">        line.</span>
+
+<span class="sd">        This will be ``None`` until :meth:`extract_limbs` is called</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">correlation_peaks</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The peaks of the correlation lines.</span>
+
+<span class="sd">        This will be a ``number_of_scan_lines`` length 1d array where each element is the peak of the corresponding </span>
+<span class="sd">        correlation line.</span>
+
+<span class="sd">        This will be ``None`` until :meth:`extract_limbs` is called</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="LimbScanner.predict_limbs">
+<a class="viewcode-back" href="../../../image_processing/limb_scanning/giant.image_processing.limb_scanning.LimbScanner.html#giant.image_processing.limb_scanning.LimbScanner.predict_limbs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_limbs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scan_center</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">line_of_sight_sun</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span>
+                      <span class="n">camera_temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predict the limb locations for a given target in the camera frame.</span>
+
+<span class="sd">        This is done by</span>
+
+<span class="sd">        #. get the angle between the illumination vector and the x axis of the image</span>
+<span class="sd">        #. Generate :attr:`number_of_scan_lines` scan angles evenly distributed between the sun angle -</span>
+<span class="sd">           :attr:`scan_range` /2 the and sun angle + :attr:`scan_range` /2</span>
+<span class="sd">        #. convert the image scan line directions into directions in the camera frame</span>
+<span class="sd">        #. use :meth:`.Shape.find_limbs` to find the limbs of the target given the scan center and the scan directions</span>
+<span class="sd">           in the camera frame</span>
+
+<span class="sd">        The limbs will be returned as a 3xn array in the camera frame.</span>
+
+<span class="sd">        This method is automatically called by :meth:`extract_limbs` and will almost never be used directly, however,</span>
+<span class="sd">        it is exposed for the adventurous types.</span>
+
+<span class="sd">        :param scan_center: the beginning of the scan in the image (pixels)</span>
+<span class="sd">        :param line_of_sight_sun: the line of sight to the sun in the image (pixels)</span>
+<span class="sd">        :param target: The target the limbs are to be predicted for</span>
+<span class="sd">        :param camera_temperature: The temperature of the camera</span>
+<span class="sd">        :return: The predicted limb locations in the camera frame</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">HasFindableLimbs</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;the target must support finding the predicted limbs with a find_limbs method&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Get the angle of the illumination direction from the x axis in the image</span>
+        <span class="n">angle_sun</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">line_of_sight_sun</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">line_of_sight_sun</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># Set the scan angles +/- scan range around the sun direction</span>
+        <span class="n">scan_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">angle_sun</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_range</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">angle_sun</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_range</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">number_of_scan_lines</span><span class="p">)</span>
+
+        <span class="c1"># get the scan directions in the image</span>
+        <span class="n">scan_dirs_pixels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">scan_angles</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">scan_angles</span><span class="p">)])</span>
+
+        <span class="c1"># get the line of sight to the target in the camera frame</span>
+        <span class="n">scan_center_camera</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="n">scan_center</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">camera_temperature</span><span class="p">)</span>
+        <span class="n">scan_center_camera</span> <span class="o">/=</span> <span class="n">scan_center_camera</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># get the scan directions in the camera frame</span>
+        <span class="n">scan_dirs_camera</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="n">scan_center</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">scan_dirs_pixels</span><span class="p">,</span>
+                                                            <span class="n">temperature</span><span class="o">=</span><span class="n">camera_temperature</span><span class="p">)</span>
+        <span class="n">scan_dirs_camera</span> <span class="o">/=</span> <span class="n">scan_dirs_camera</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">scan_dirs_camera</span> <span class="o">-=</span> <span class="n">scan_center_camera</span>
+        <span class="n">scan_dirs_camera</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">scan_dirs_camera</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># get the limbs body centered</span>
+        <span class="n">limbs</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">find_limbs</span><span class="p">(</span><span class="n">scan_center_camera</span><span class="p">,</span> <span class="n">scan_dirs_camera</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+
+        <span class="c1"># return the limbs in the camera frame</span>
+        <span class="k">return</span> <span class="n">limbs</span> <span class="o">+</span> <span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">scan_dirs_pixels</span><span class="p">,</span> <span class="n">scan_dirs_camera</span></div>
+
+
+<div class="viewcode-block" id="LimbScanner.extract_limbs">
+<a class="viewcode-back" href="../../../image_processing/limb_scanning/giant.image_processing.limb_scanning.LimbScanner.html#giant.image_processing.limb_scanning.LimbScanner.extract_limbs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_limbs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_interpolator</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">NDArray</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">],</span> <span class="n">camera_temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span>
+                      <span class="n">scan_center</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">line_of_sight_sun</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> \
+            <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method extracts limb points in an image and pairs them to surface points that likely generated them.</span>
+
+<span class="sd">        This is completed through the used of 1D cross correlation.</span>
+
+<span class="sd">        #. The predicted limb locations in the image and the scan lines are determined using :meth:`predict_limbs`</span>
+<span class="sd">        #. Scan lines are generated along the scan directions and used to create extracted intensity lines by sampling</span>
+<span class="sd">           the image and predicted intensity lines by rendering the results of a ray trace along the scan line.</span>
+<span class="sd">        #. The predicted and extracted intensity lines are cross correlated in 1 dimension :func:`.fft_correlator_1d`</span>
+<span class="sd">        #. The peak of each correlation line is found using :attr:`peak_finder`.</span>
+<span class="sd">        #. the peak of the correlation surface is translated into a shift between the predicted and extracted limb</span>
+<span class="sd">           location in the image and used to compute the extracted limb location.</span>
+
+<span class="sd">        The resulting predicted surface points, predicted image points, observed image points, and scan directions</span>
+<span class="sd">        in the camera frame are then all returned as numpy arrays.</span>
+
+<span class="sd">        :param image_interpolator: A callable which returns the interpolated image values for provided [y,x] locations</span>
+<span class="sd">                                   in the image</span>
+<span class="sd">        :param camera_temperature: The temperature of the camera in degrees at the time the image was captured</span>
+<span class="sd">        :param target: The target we are looking for limb points for</span>
+<span class="sd">        :param scan_center: The center where all of our scan lines will start</span>
+<span class="sd">        :param line_of_sight_sun:  The line of sight of the sun in the image</span>
+<span class="sd">        :return: The predicted surface points in the camera frame as a 3xn array, the predicted limbs in the image as a</span>
+<span class="sd">                 2xn array, the observed limbs in the image as a 2xn array, and the scan directions in the camera frame</span>
+<span class="sd">                 as a 3xn array of unit vectors where n is the :attr:`number_of_scan_lines`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># predict the limb locations</span>
+        <span class="n">predicted_limbs_camera</span><span class="p">,</span> <span class="n">scan_dirs</span><span class="p">,</span> <span class="n">scan_dirs_camera</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_limbs</span><span class="p">(</span><span class="n">scan_center</span><span class="p">,</span> <span class="n">line_of_sight_sun</span><span class="p">,</span>
+                                                                                 <span class="n">target</span><span class="p">,</span> <span class="n">camera_temperature</span><span class="p">)</span>
+        <span class="n">predicted_limbs_pixels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">predicted_limbs_camera</span><span class="p">,</span>
+                                                                      <span class="n">temperature</span><span class="o">=</span><span class="n">camera_temperature</span><span class="p">)</span>
+
+        <span class="c1"># set the distance to search along each scan line 2 times the apparent radius of the target in the image</span>
+        <span class="n">apparent_radius_pixels</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">predicted_limbs_pixels</span> <span class="o">-</span> <span class="n">scan_center</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="n">search_dist</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">apparent_radius_pixels</span>
+
+        <span class="c1"># Create an array of where we want to interpolate the image at/shoot rays through</span>
+        <span class="n">search_distance_array</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">DOUBLE_ARRAY</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">search_dist</span><span class="p">,</span> <span class="n">search_dist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_sample_points</span><span class="p">))</span>
+
+        <span class="c1"># Get the center of each scan line</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_sample_points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+
+        <span class="c1"># Only take the middle of the predicted scan lines since we know the limb will lie in that region</span>
+        <span class="n">template_selection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_sample_points</span> <span class="o">//</span> <span class="mi">4</span>
+
+        <span class="c1"># Determine the deltas to apply to the limb locations</span>
+        <span class="n">search_deltas</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span> <span class="o">=</span> <span class="n">scan_dirs</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">search_distance_array</span>
+
+        <span class="c1"># Get the pixels that we are sampling in the image along each scan line</span>
+        <span class="n">search_points_image</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span> <span class="o">=</span> <span class="n">search_deltas</span> <span class="o">+</span> <span class="n">predicted_limbs_pixels</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Flatten everything to just 2d matrices instead of nd matrices</span>
+        <span class="n">sp_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rollaxis</span><span class="p">(</span><span class="n">search_points_image</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Select the template portion</span>
+        <span class="n">sp_template</span> <span class="o">=</span> <span class="n">search_points_image</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">center</span> <span class="o">-</span> <span class="n">template_selection</span><span class="p">:</span><span class="n">center</span> <span class="o">+</span> <span class="n">template_selection</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">sp_flat_template</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rollaxis</span><span class="p">(</span><span class="n">sp_template</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Compute the direction vector through each pixel we are sampling in the template</span>
+        <span class="n">direction_vectors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="n">sp_flat_template</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">camera_temperature</span><span class="p">)</span>
+
+        <span class="c1"># Build the rays we are going to trace to determine our predicted scan lines</span>
+        <span class="n">render_rays</span> <span class="o">=</span> <span class="n">Rays</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">direction_vectors</span><span class="p">)</span>
+
+        <span class="c1"># Get the predicted scan line illumination inputs</span>
+        <span class="n">illum_inputs</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">get_illumination_inputs</span><span class="p">(</span><span class="n">render_rays</span><span class="p">))</span>
+
+        <span class="c1"># Compute the scan line illuminations</span>
+        <span class="n">illums</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">brdf</span><span class="p">(</span><span class="n">illum_inputs</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">search_points_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">template_selection</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Apply the psf to the predicted illuminations and store the scan lines</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">predicted_illums</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">psf</span><span class="p">(</span><span class="n">illums</span><span class="p">)</span>
+
+        <span class="c1"># Extract the scan line DN values from the image</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extracted_illums</span> <span class="o">=</span> <span class="n">image_interpolator</span><span class="p">(</span><span class="n">sp_flat</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">search_points_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                                            <span class="n">search_points_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># Do the 1d correlations between the extracted and predicted scan lines</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">correlation_lines</span> <span class="o">=</span> <span class="n">fft_correlator_1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_illums</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">predicted_illums</span><span class="p">)</span>
+
+        <span class="c1"># Find the peak of each correlation line</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">correlation_peaks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peak_finder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">correlation_lines</span><span class="p">)</span>
+
+        <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">correlation_peaks</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_sample_points</span><span class="p">),</span> <span class="n">search_distance_array</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">correlation_peaks</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="n">observed_limbs_pixels</span> <span class="o">=</span> <span class="n">distances</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">scan_dirs</span> <span class="o">+</span> <span class="n">predicted_limbs_pixels</span>
+
+        <span class="k">return</span> <span class="n">predicted_limbs_camera</span><span class="p">,</span> <span class="n">predicted_limbs_pixels</span><span class="p">,</span> <span class="n">observed_limbs_pixels</span><span class="p">,</span> <span class="n">scan_dirs_camera</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 """
@@ -22,9 +21,9 @@ software suite developed by Dr. Robert Gaskell and conceptually defines how we d
 
 From this package you can import everything you need for doing SFN in GIANT.  The most important things that you will
 need from here are the :class:`.SurfaceFeatureNavigation` class which does the actual navigation, the
-:class:`.FeatureCatalogue` class which is used to interface a list of features we want to process with the
+:class:`.FeatureCatalog` class which is used to interface a list of features we want to process with the
 :class:`.Scene` in GIANT, and the :class:`.VisibleFeatureFinder` which is used to determine which features in the
-catalogue should actually be visible in the images.
+catalog should actually be visible in the images.
 
 For more detailed description (and hints for tuning for SFN) refer to the following module and class documentation for
 the objects defined in this package.
@@ -35,14 +34,14 @@ Use
 In general you won't interact too much with the classes/functions defined in this package, with the exception of the
 :class:`.VisibleFeatureFinder`, which you will need to use to specify the settings you want when identifying possibly
 visible features.  Beyond that, most of the other tools are automatically handled for you in the :class:`.RelativeOpNav`
-class. If you need to build a feature catalogue for use with SFN, you should take a look at the
-:mod:`.spc_to_feature_catalogue` and :mod:`.tile_shape` scripts which may be able to do it for you.
+class. If you need to build a feature catalog for use with SFN, you should take a look at the
+:mod:`.spc_to_feature_catalog` and :mod:`.tile_shape` scripts which may be able to do it for you.
 """
 
 from giant.relative_opnav.estimators.sfn.sfn_correlators import sfn_correlator
-from giant.relative_opnav.estimators.sfn.surface_features import (FeatureCatalogue, SurfaceFeature,
+from giant.relative_opnav.estimators.sfn.surface_features import (FeatureCatalog, SurfaceFeature,
                                                                   VisibleFeatureFinder, VisibleFeatureFinderOptions)
 from giant.relative_opnav.estimators.sfn.sfn_class import SurfaceFeatureNavigation, SurfaceFeatureNavigationOptions
 
-__all__ = ['sfn_correlator', 'FeatureCatalogue', 'SurfaceFeatureNavigation', 'SurfaceFeatureNavigationOptions',
+__all__ = ['sfn_correlator', 'FeatureCatalog', 'SurfaceFeatureNavigation', 'SurfaceFeatureNavigationOptions',
            'SurfaceFeature', 'VisibleFeatureFinder', 'VisibleFeatureFinderOptions']

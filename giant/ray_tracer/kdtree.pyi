@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 from typing import Optional, Tuple, Union, Type
@@ -47,7 +46,7 @@ class KDNode:
               flip: bool = False,
               print_progress: bool = True) -> Union[Tuple[KDNode, KDNode], Tuple[None, None]]: ...
 
-    def __eq__(self, other: KDNode) -> bool: ...
+    def __eq__(self, other: object) -> bool: ...
 
     def translate(self, translation: ARRAY_LIKE): ...
 

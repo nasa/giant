@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.catalogs.utilities &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.catalogs.utilities</h1><div class="highlight"><pre>
+<span></span>
+
+
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This submodule provides utility constants and functions for working with star data in GIANT.</span>
+
+<span class="sd">Most of these utilities are focused on conversions of either units or of representations (ie a bearing to a unit</span>
+<span class="sd">vector) with the exception of applying proper motion and computing the distance between 2 bearings.  For more details on</span>
+<span class="sd">what is contained refer to the following summary tables and the documentation for each constant/function.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.spherical_coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">unit_to_radec</span><span class="p">,</span> <span class="n">radec_to_unit</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DEG2RAD&#39;</span><span class="p">,</span> <span class="s1">&#39;RAD2DEG&#39;</span><span class="p">,</span> <span class="s1">&#39;DEG2MAS&#39;</span><span class="p">,</span> <span class="s1">&#39;MAS2DEG&#39;</span><span class="p">,</span> <span class="s1">&#39;RAD2MAS&#39;</span><span class="p">,</span> <span class="s1">&#39;MAS2RAD&#39;</span><span class="p">,</span> <span class="s1">&#39;PARSEC2KM&#39;</span><span class="p">,</span> <span class="s1">&#39;AVG_STAR_DIST&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;SI_DAYS_PER_YEAR&#39;</span><span class="p">,</span> <span class="s1">&#39;SI_SECONDS_PER_DAY&#39;</span><span class="p">,</span> <span class="s1">&#39;MJD_EPOCH&#39;</span><span class="p">,</span> 
+           <span class="s1">&#39;timedelta_to_si_years&#39;</span><span class="p">,</span> <span class="s1">&#39;datetime_to_mjd_years&#39;</span><span class="p">,</span> <span class="s1">&#39;apply_proper_motion&#39;</span><span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Things to import if someone wants to do from giant.catalogs.utilities import *</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># CONSTANTS.</span>
+
+<span class="n">DEG2RAD</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>  <span class="c1"># rad/deg</span>
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This constant converts from units of degrees to units of radians through multiplication.</span>
+
+<span class="sd">That is ``angle_rad = angle_deg*DEG2RAD`` where ``angle_rad`` is the angle in radians and ``angle_deg`` is the angle in </span>
+<span class="sd">degrees.</span>
+
+<span class="sd">Mathematically this is :math:`\frac{\pi}{180}`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">RAD2DEG</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>  <span class="c1"># deg/rad</span>
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This constant converts from units of radians to units of degrees through multiplication.</span>
+
+<span class="sd">That is ``angle_deg = angle_rad*RAD2DEG`` where ``angle_rad`` is the angle in radians and ``angle_deg`` is the angle in </span>
+<span class="sd">degrees.</span>
+
+<span class="sd">Mathematically this is :math:`\frac{180}{\pi}`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">DEG2MAS</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">3600</span> <span class="o">*</span> <span class="mi">1000</span>  <span class="c1"># mas/deg</span>
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This constant converts from units of degrees to units of milli-arc-seconds through multiplication.</span>
+
+<span class="sd">That is ``angle_mas = angle_deg*DEG2MAS`` where ``angle_mas`` is the angle in milli-arc-seconds and ``angle_deg`` is the </span>
+<span class="sd">angle in degrees.</span>
+
+<span class="sd">Mathematically this is :math:`3600000`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">MAS2DEG</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">DEG2MAS</span>  <span class="c1"># deg/mas</span>
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This constant converts from units of milli-arc-seconds to units of degrees through multiplication.</span>
+
+<span class="sd">That is ``angle_deg = angle_mas*MAS2DEG`` where ``angle_mas`` is the angle in milli-arc-seconds and ``angle_deg`` is the </span>
+<span class="sd">angle in degrees.</span>
+
+<span class="sd">Mathematically this is :math:`\frac{1}{3600000}`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">RAD2MAS</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">RAD2DEG</span> <span class="o">*</span> <span class="n">DEG2MAS</span>
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This constant converts from units of radians to units of milli-arc-seconds through multiplication.</span>
+
+<span class="sd">That is ``angle_mas = angle_rad*RAD2MAS`` where ``angle_mas`` is the angle in milli-arc-seconds and ``angle_rad`` is the </span>
+<span class="sd">angle in radians.</span>
+
+<span class="sd">Mathematically this is :math:`\frac{180}{3600000\pi}`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">MAS2RAD</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">RAD2MAS</span>
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This constant converts from units of milli-arc-seconds to units of radians through multiplication.</span>
+
+<span class="sd">That is ``angle_rad = angle_mas*MAS2RAD`` where ``angle_mas`` is the angle in milli-arc-seconds and ``angle_rad`` is the </span>
+<span class="sd">angle in radians.</span>
+
+<span class="sd">Mathematically this is :math:`\frac{3600000\pi}{180}`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">PARSEC2KM</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30856775814913.673</span>  <span class="c1"># km</span>
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This constant converts from units of parsecs to units of kilometers through multiplication.</span>
+
+<span class="sd">That is ``distance_km = distance_parsec*PARSEC2KM`` where ``distance_km`` is the distance in kilometers and </span>
+<span class="sd">``distance_parsec`` is the distance in parsecs.</span>
+
+<span class="sd">Mathematically this is :math:`\frac{3600000\pi}{180}`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">AVG_STAR_DIST</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.428047027e15</span>  <span class="c1"># km</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The average distance of stars from the UCAC4 catalog in kilometers.  </span>
+
+<span class="sd">This value is used to set the distance for stars for which there is no distance information available.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">AVG_STAR_DIST_SIGMA</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">/</span> <span class="p">(</span><span class="n">PARSEC2KM</span><span class="o">*</span><span class="mi">1000</span><span class="o">/</span><span class="n">AVG_STAR_DIST</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">PARSEC2KM</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The sigma value to use for stars with parallax that is not well known or known at all.</span>
+
+<span class="sd">This is meant to be very high so that the stars are mostly ignored if using weighted estimation.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">SI_DAYS_PER_YEAR</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">365.25</span>  <span class="c1"># days</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This constant provides the number of SI days in a SI year.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">SI_SECONDS_PER_DAY</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">86400</span>  <span class="c1"># seconds</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This constant provides the number of SI seconds in a SI day.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">MJD_EPOCH</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1858</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">17</span><span class="p">)</span>  <span class="c1"># November 17, 1858</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This constant provides the standard modified Julian date epoch, November 17, 1858, as a datetime</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="c1"># UTILITY FUNCTIONS</span>
+<div class="viewcode-block" id="timedelta_to_si_years">
+<a class="viewcode-back" href="../../../catalogs/utilities/utilities/giant.catalogs.utilities.timedelta_to_si_years.html#giant.catalogs.utilities.timedelta_to_si_years">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">timedelta_to_si_years</span><span class="p">(</span><span class="n">delta</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function converts a python timedelta object to a fractional number of SI years.</span>
+
+<span class="sd">    The timedelta object is first converted to seconds using method ``total_seconds``, and this is then converted to SI</span>
+<span class="sd">    years.</span>
+<span class="sd">    </span>
+<span class="sd">    :param delta: The python timedelta object to be converted to fractional SI years</span>
+<span class="sd">    :return: The length of time covered by the time delta in units of fractional SI years</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">delta</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="n">SI_SECONDS_PER_DAY</span> <span class="o">/</span> <span class="n">SI_DAYS_PER_YEAR</span></div>
+
+
+
+<div class="viewcode-block" id="datetime_to_mjd_years">
+<a class="viewcode-back" href="../../../catalogs/utilities/utilities/giant.catalogs.utilities.datetime_to_mjd_years.html#giant.catalogs.utilities.datetime_to_mjd_years">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">datetime_to_mjd_years</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function converts a python datetime objects to the number of SI years since the MJD Epoch of November 17, 1858.</span>
+
+<span class="sd">    This is computed by computing the time delta between the :attr:`.MJD_EPOCH` and the input datetime object, and then</span>
+<span class="sd">    using :func:`.timedelta_to_si_years` to convert to the fractional years since the epoch.</span>
+<span class="sd">    </span>
+<span class="sd">    :param date: the python datetime object to be converted to MJD years</span>
+<span class="sd">    :return: the number of SI years since November 17, 1858</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">timedelta_to_si_years</span><span class="p">(</span><span class="n">date</span> <span class="o">-</span> <span class="n">MJD_EPOCH</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="apply_proper_motion">
+<a class="viewcode-back" href="../../../catalogs/utilities/utilities/giant.catalogs.utilities.apply_proper_motion.html#giant.catalogs.utilities.apply_proper_motion">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">apply_proper_motion</span><span class="p">(</span><span class="n">star_records</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">new_time</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">],</span>
+                        <span class="n">copy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function adjusts the right ascension and declination of stars to a new time.  </span>
+<span class="sd">    </span>
+<span class="sd">    The right ascension and declination are updated using the corresponding proper motion of the stars.  The formulation</span>
+<span class="sd">    used here assumes constant linear velocity as described in section 1.2.8 of &quot;The Hipparcos and Tycho2 Catalogs&quot;.</span>
+<span class="sd">    The bearing measurement is converted to a unit vector, which is then updated using vector addition with the delta </span>
+<span class="sd">    applied along the vectors of increasing right ascension and increasing declination.  This model also allows for </span>
+<span class="sd">    consideration of a radial velocity, but that is currently not implemented.</span>
+<span class="sd">    </span>
+<span class="sd">    The stars input into this method should be a pandas dataframe with the GIANT format.  Specifically, this function</span>
+<span class="sd">    requires the dataframe to have columns of ``[&#39;ra&#39;, &#39;dec&#39;, &#39;ra_proper_motion&#39;, &#39;dec_proper_motion&#39;, &#39;epoch&#39;]`` with</span>
+<span class="sd">    units of degrees, degrees/year, and SI years (since January 1, 1) respectively.  The updated bearing can be stored</span>
+<span class="sd">    either in a copy of the dataframe, or in-place, depending on the ``copy`` key word argument.  Either way the</span>
+<span class="sd">    resulting dataframe is returned.</span>
+<span class="sd">    </span>
+<span class="sd">    The ``new_time`` parameter should either be a datetime object, or a float of the modified julian years for the </span>
+<span class="sd">    desired time. The ``copy`` flag states whether to return a copy of the dataframe with the updates applied</span>
+<span class="sd">    (recommended), or to make the updates in place.</span>
+
+<span class="sd">    :param star_records: a pandas dataframe containing the bearing and proper motion of star records to be updated</span>
+<span class="sd">    :param new_time: the new epoch to calculate the star positions at expressed as a mjy float or python datetime object</span>
+<span class="sd">    :param copy: An option flag indicating whether to make a copy of star_records before applying proper motion</span>
+<span class="sd">    :return: a pandas dataframe containing the star records with bearing values updated to the new epoch</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">star_records</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">star_records</span>
+
+    <span class="c1"># convert the ra and dec values into radians</span>
+    <span class="n">ra0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s1">&#39;ra&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span> <span class="o">*</span> <span class="n">DEG2RAD</span> 
+    <span class="n">dec0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s1">&#39;dec&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span> <span class="o">*</span> <span class="n">DEG2RAD</span> 
+
+    <span class="c1"># assume linear motion based on Hipparcos Vol 1</span>
+    <span class="c1"># compute the unit vector for each star</span>
+    <span class="n">r_unit</span> <span class="o">=</span> <span class="n">radec_to_unit</span><span class="p">(</span><span class="n">ra0</span><span class="p">,</span> <span class="n">dec0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># compute the unit vector in the direction of increasing right ascension</span>
+    <span class="n">p_unit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">ra0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">ra0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ra0</span><span class="o">.</span><span class="n">shape</span><span class="p">)])</span>
+
+    <span class="c1"># compute the unit vector in the direction of increasing declination</span>
+    <span class="n">q_unit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">dec0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">ra0</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">dec0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">ra0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">dec0</span><span class="p">)])</span>
+
+    <span class="c1"># compute the change in distance per year (future expansion)</span>
+    <span class="n">zeta0</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s1">&#39;epoch&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+
+    <span class="c1"># compute the time delta</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_time</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">):</span>
+
+        <span class="n">new_time</span> <span class="o">=</span> <span class="n">timedelta_to_si_years</span><span class="p">(</span><span class="n">new_time</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="n">timedelta</span> <span class="o">=</span> <span class="n">new_time</span> <span class="o">-</span> <span class="n">start_time</span>
+
+    <span class="c1"># compute the new direction vector</span>
+    <span class="n">r_unit_new</span> <span class="o">=</span> <span class="n">r_unit</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">zeta0</span> <span class="o">*</span> <span class="n">timedelta</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">p_unit</span> <span class="o">*</span> <span class="n">out</span><span class="p">[</span><span class="s1">&#39;ra_proper_motion&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span> <span class="o">*</span> <span class="n">DEG2RAD</span> <span class="o">+</span>
+                                                     <span class="n">q_unit</span> <span class="o">*</span> <span class="n">out</span><span class="p">[</span><span class="s1">&#39;dec_proper_motion&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">)</span> <span class="o">*</span> <span class="n">timedelta</span>
+    <span class="n">r_unit_new</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r_unit_new</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># compute the new ra/dec and store it</span>
+    <span class="n">ra</span><span class="p">,</span> <span class="n">dec</span> <span class="o">=</span> <span class="n">unit_to_radec</span><span class="p">(</span><span class="n">r_unit_new</span><span class="p">)</span>
+
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;ra&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ra</span> <span class="o">*</span> <span class="n">RAD2DEG</span>
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;dec&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dec</span> <span class="o">*</span> <span class="n">RAD2DEG</span>
+
+    <span class="c1"># compute the new uncertainties for ra and dec</span>
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;ra_sigma&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s1">&#39;ra_sigma&#39;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">timedelta</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">out</span><span class="p">[</span><span class="s1">&#39;ra_pm_sigma&#39;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;dec_sigma&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s1">&#39;dec_sigma&#39;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">timedelta</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">out</span><span class="p">[</span><span class="s1">&#39;dec_pm_sigma&#39;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># update the epochs</span>
+    <span class="n">out</span><span class="p">[</span><span class="s2">&quot;epoch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_time</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

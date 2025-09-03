@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 r"""
@@ -105,9 +104,10 @@ from typing import Sequence, Union
 
 import numpy as np
 
+from giant.camera_models.pinhole_model import MISALIGNMENT_TYPE
 from giant.camera_models.brown_model import BrownModel
 from giant.rotations import Rotation
-from giant._typing import NONENUM, NONEARRAY, ARRAY_LIKE, Real
+from giant._typing import NONENUM, NONEARRAY, ARRAY_LIKE
 
 
 class OpenCVModel(BrownModel):
@@ -200,7 +200,7 @@ class OpenCVModel(BrownModel):
                  thinprism_1: NONENUM = None, thinprism_2: NONENUM = None,
                  thinprism_3: NONENUM = None, thinprism_4: NONENUM = None,
                  temperature_coefficients: NONEARRAY = None, a1: NONENUM = None, a2: NONENUM = None, a3: NONENUM = None,
-                 misalignment: NONEARRAY = None,
+                 misalignment: MISALIGNMENT_TYPE = None,
                  estimation_parameters: Union[str, Sequence] = 'basic', n_rows: int = 1, n_cols: int = 1):
         """
         :param intrinsic_matrix: the intrinsic matrix for the camera as a numpy shape (2, 3) array.  Note that this is
@@ -258,7 +258,7 @@ class OpenCVModel(BrownModel):
                          kx=kx, ky=ky, kxy=kxy, fx=fx, fy=fy, alpha=alpha, px=px, py=py,
                          temperature_coefficients=temperature_coefficients, a1=a1, a2=a2, a3=a3,
                          misalignment=misalignment, use_a_priori=use_a_priori,
-                         estimation_parameters=estimation_parameters, n_rows=n_rows, n_cols=n_cols)
+                         n_rows=n_rows, n_cols=n_cols)
 
         # set the distortion coefficients vector
         self.distortion_coefficients = np.zeros(12)
@@ -378,7 +378,7 @@ class OpenCVModel(BrownModel):
         A list specifying the important attributes the must be saved/loaded for this camera model to be completely 
         reconstructed. 
         """
-
+        self.estimation_parameters = estimation_parameters
         self.field_of_view = field_of_view
 
     def __repr__(self):
@@ -815,7 +815,7 @@ class OpenCVModel(BrownModel):
         return radial_distortion + decentering_distortion + prism_distortion
 
     def project_onto_image(self, points_in_camera_frame: ARRAY_LIKE, image: int = 0,
-                           temperature: Real = 0) -> np.ndarray:
+                           temperature: float = 0) -> np.ndarray:
         """
         This method transforms 3D points or directions expressed in the camera frame into the corresponding 2D image
         locations.
@@ -881,6 +881,8 @@ class OpenCVModel(BrownModel):
         :param radius6: The radial distance to the sixth power from the optical axis
         :return: The partial derivative of the distortion with respect to a change in the gnomic location
         """
+        
+        gnomic = np.asanyarray(gnomic)
 
         row = gnomic[1]
         col = gnomic[0]
@@ -929,6 +931,8 @@ class OpenCVModel(BrownModel):
         :param radius6: The radial distance to the sixth power from the optical axis
         :return: The partial derivative of the distortion with respect to a change in the gnomic location
         """
+        
+        gnomic = np.asanyarray(gnomic)
 
         row = gnomic[1]
         col = gnomic[0]
@@ -950,8 +954,7 @@ class OpenCVModel(BrownModel):
 
         return wrt_x + wrt_r
 
-    # noinspection PyMethodOverriding
-    def _compute_ddistorted_gnomic_ddistortion(self, gnomic_loc: ARRAY_LIKE,
+    def _compute_ddistorted_gnomic_ddistortion(self, gnomic_loc: ARRAY_LIKE, # type: ignore
                                                radius2: float, radius4: float, radius6: float) -> np.ndarray:
         r"""
         Computes the partial derivative of the distorted gnomic location with respect to a change in the distortion
@@ -983,6 +986,8 @@ class OpenCVModel(BrownModel):
                  coefficients
         """
 
+        gnomic_loc = np.asanyarray(gnomic_loc)
+        
         radial_numer = 1 + self.k1 * radius2 + self.k2 * radius4 + self.k3 * radius6
         radial_denom = 1 + self.k4 * radius2 + self.k5 * radius4 + self.k6 * radius6
 
@@ -1028,7 +1033,7 @@ class OpenCVModel(BrownModel):
         jacobian_parameters = np.hstack([getattr(self.element_dict[element], 'start', self.element_dict[element])
                                          for element in self.estimation_parameters])
 
-        update_vec = self._fix_update_vector(update_vec, jacobian_parameters)
+        update_vec = self._fix_update_vector(np.asanyarray(update_vec, dtype=np.float64), jacobian_parameters)
 
         update_vec = np.asarray(update_vec).ravel()
 

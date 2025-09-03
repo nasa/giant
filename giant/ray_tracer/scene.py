@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 """
@@ -27,31 +26,28 @@ In general, besides initializing your :class:`.Scene` and :class:`.SceneObject` 
 with the scene classes much, as this is done for you in the rest of GIANT.
 """
 
-import datetime
-from typing import Callable, Optional, Any, List
+from typing import Callable, Optional, List, cast
 import warnings
 from typing import Tuple, Union
 from enum import Enum
 import copy
 
 import numpy as np
+from numpy.typing import NDArray
 
 from giant.ray_tracer.rays import Rays
-from giant.rotations import Rotation, quaternion_inverse, rotvec_to_rotmat
-from giant.ray_tracer.shapes import Point, Surface, Ellipsoid, Shape
+from giant.rotations import Rotation
+from giant.ray_tracer.shapes import RawSurface, Ellipsoid, Shape
 from giant.ray_tracer.kdtree import KDTree
-from giant._typing import Real, ARRAY_LIKE
+from giant.ray_tracer._typing import Moveable, Traceable, HasBoundingBox, HasCircumscribingSphere, HasReferenceEllipsoid
+from giant._typing import ARRAY_LIKE, DatetimeLike, DOUBLE_ARRAY
 from giant.camera_models import CameraModel
 from giant.image import OpNavImage
 from giant.ray_tracer.illumination import IlluminationModel, ILLUM_DTYPE
 from giant.ray_tracer.rays import INTERSECT_DTYPE
-from giant.ray_tracer.utilities import to_block
+from giant.ray_tracer.utilities import to_block, correct_stellar_aberration, correct_light_time
 
 
-SPEED_OF_LIGHT = 299792.458  # km/sec
-"""
-The speed of light in kilometers per second
-"""
 
 _SCAN_DIRS = np.array([[1, 0, -1, 0], [0, 1, 0, -1], [0, 0, 0, 0]])
 """
@@ -192,7 +188,7 @@ class SceneObject:
     Now, lets use the position function and orientation function we provided to update the rays position/orientation
     automatically
 
-        >>> scene_obj.place(datetime.datetime.utcnow())
+        >>> scene_obj.place(datetime.datetime.now(datetime.timezone.utc))
         >>> print(scene_obj.shape.start)
         [-5.  6.  7.]
         >>> print(scene_obj.shape.direction)
@@ -222,12 +218,12 @@ class SceneObject:
     has been rotated/translated into the camera frame).
     """
 
-    def __init__(self, shape: Shape,
+    def __init__(self, shape: Moveable,
                  current_position: Optional[ARRAY_LIKE] = None,
                  current_orientation: Optional[Union[Rotation, ARRAY_LIKE]] = None,
                  name: str = 'object',
-                 position_function: Optional[Callable[[datetime], np.ndarray]] = None,
-                 orientation_function: Optional[Callable[[datetime], Rotation]] = None,
+                 position_function: Optional[Callable[[DatetimeLike], np.ndarray]] = None,
+                 orientation_function: Optional[Callable[[DatetimeLike], Rotation]] = None,
                  corrections: Optional[CorrectionsType] = CorrectionsType.LTPS):
         """
         :param shape: The shape that represents the object.  This is typically a subclass of :class:`.Shape`, but can be
@@ -252,7 +248,7 @@ class SceneObject:
                             when the :attr:`position_function` and :attr:`orientation_function` are not ``None``.
         """
 
-        self.position_function: Optional[Callable[[datetime], np.ndarray]] = position_function
+        self.position_function: Optional[Callable[[DatetimeLike], np.ndarray]] = position_function
         """
         A function which accepts a python datetime object and returns a 3 element array giving
         the position of the object at the requested time.  
@@ -261,7 +257,7 @@ class SceneObject:
         inertial frame.  While this is not required, it is strongly encouraged in most cases
         """
 
-        self.orientation_function: Optional[Callable[[datetime], Rotation]] = orientation_function
+        self.orientation_function: Optional[Callable[[DatetimeLike], Rotation]] = orientation_function
         """
        A function which accepts a python datetime object and returns a :class:`.Rotation`
        that gives the orientation of the object at the requested time.  
@@ -280,28 +276,28 @@ class SceneObject:
         when the :attr:`position_function` and :attr:`orientation_function` are not ``None``. 
         """
 
-        self._shape = None
-        self.shape = shape
+        self._shape = self.check_shape(shape)
 
-        self._position = None
+        self._position = np.zeros(3, dtype=np.float64)
         if current_position is not None:
             self.position = current_position
-        else:
-            self.position = np.zeros(3, dtype=np.float64)
 
-        self._orientation = None
+        self._orientation = Rotation()
         if current_orientation is not None:
             self.orientation = current_orientation
-        else:
-            self.orientation = Rotation([0, 0, 0, 1])
 
         self.name = name
         """
         The name of the object, used for logging purposes and readability.
         """
 
+        self.date = None
+        """
+        The date the scene was mostly recently updated to. 
+        """
+
     @property
-    def shape(self) -> Union[Shape, Any]:
+    def shape(self) -> Moveable:
         """
         This is the shape of interest.
 
@@ -314,11 +310,14 @@ class SceneObject:
     @shape.setter
     def shape(self, val):
 
-        if hasattr(val, "translate") and hasattr(val, "rotate"):
-            self._shape = val
-
-        else:
-            raise AttributeError("The object must have translate and rotate attributes\n")
+        self._shape = self.check_shape(val)
+        
+    def check_shape(self, val: Moveable) -> Moveable:
+        
+        if not isinstance(val, Moveable):
+            raise AttributeError("The object must have translate and rotate methods\n")
+        
+        return val
 
     @property
     def position(self) -> np.ndarray:
@@ -338,6 +337,13 @@ class SceneObject:
         else:
 
             raise ValueError('The position array must be of length three')
+        
+    @property
+    def distance(self) -> float:
+        """
+        This is the current distance to this object as a float
+        """
+        return float(np.linalg.norm(self._position))
 
     @property
     def orientation(self) -> Rotation:
@@ -399,12 +405,12 @@ class SceneObject:
 
         self.shape.rotate(previous_orientation.inv())
 
-        self.shape.rotate(new_orientation)
+        self.shape.rotate(self.orientation)
 
         # update the orientation of the position
-        self.position = np.matmul(quaternion_inverse(previous_orientation).matrix, self.position)
+        self.position = previous_orientation.matrix.T @ self.position
 
-        self.position = np.matmul(self.orientation.matrix, self.position)
+        self.position = self.orientation.matrix @ self.position
 
     def translate(self, translation: ARRAY_LIKE):
         """
@@ -424,7 +430,7 @@ class SceneObject:
 
             raise ValueError("You have entered an improperly sized translation.\n"
                              "Only length 3 translations are allowed.\n"
-                             "You entered a translation of length {0}".format(len(translation)))
+                             "You entered a translation of length {0}".format(np.size(translation)))
 
     def rotate(self, rotation: Union[Rotation, ARRAY_LIKE]):
         """
@@ -433,18 +439,18 @@ class SceneObject:
         :param rotation: how we are to rotate the current frame/location
         """
 
-        self.shape.rotate(rotation)
 
         if not isinstance(rotation, Rotation):
             rotation = Rotation(rotation)
 
+        self.shape.rotate(rotation)
         self.orientation.rotate(rotation)
 
         # update the orientation of the position
         self.position = np.matmul(rotation.matrix, self.position)
 
     def get_bounding_pixels(self, model: CameraModel, image: int = 0,
-                            temperature: Real = 0.0) -> Tuple[np.ndarray, np.ndarray]:
+                            temperature: float = 0.0) -> Tuple[DOUBLE_ARRAY, DOUBLE_ARRAY]:
         """
         Computes the bounding pixels for the given camera model and the current location.
 
@@ -463,12 +469,8 @@ class SceneObject:
         :return: The minimum (upper left) and maximum (lower right) pixel bounds that should contain the object based
                  off of the scene as a tuple of length 2 numpy arrays (min, max).  Note that these are inclusive bounds
         """
-
-        if isinstance(self._shape, Point):
-            center = model.project_onto_image(self._position.ravel(), temperature=temperature, image=image).ravel()
-            return center-1, center+1
-
-        elif isinstance(self._shape, Ellipsoid):
+        
+        if isinstance(self._shape, Ellipsoid):
             cicum_sphere = Ellipsoid(self._position.ravel(),
                                      principal_axes=np.array([self._shape.principal_axes.max()] * 3))
 
@@ -476,24 +478,26 @@ class SceneObject:
 
             image_locs = model.project_onto_image(limbs, image=image,
                                                   temperature=temperature)
-
-        elif (hasattr(self._shape, 'circumscribing_sphere') and
-              (getattr(self._shape, 'circumscribing_sphere') is not None)):
-            limbs = self._shape.circumscribing_sphere.find_limbs(self._position.ravel() /
-                                                                 np.linalg.norm(self._position),
-                                                                 _SCAN_DIRS)
+            
+        elif isinstance(self._shape, HasCircumscribingSphere):
+            limbs = self._shape.circumscribing_sphere.find_limbs(self._position.ravel() / np.linalg.norm(self._position),
+                                             _SCAN_DIRS)
 
             image_locs = model.project_onto_image(limbs, image=image,
                                                   temperature=temperature)
+            
+        elif isinstance(self._shape, HasBoundingBox):
 
-        else:
             image_locs = model.project_onto_image(self._shape.bounding_box.vertices, image=image,
                                                   temperature=temperature)
-
-        # noinspection PyArgumentList
+            
+        else:
+            center = model.project_onto_image(self._position, temperature=temperature, image=image)
+            return center-1.0, center+1.0
+            
         return image_locs.min(axis=-1), image_locs.max(axis=-1)
 
-    def get_apparent_diameter(self, model: CameraModel, image: int = 0, temperature: Real = 0.0) -> float:
+    def get_apparent_diameter(self, model: CameraModel, image: int = 0, temperature: float = 0.0) -> float:
         """
         Computes the apparent diameter for the given camera model and the current location.
 
@@ -514,37 +518,30 @@ class SceneObject:
         :return: The approximate apparent diameter of the object in pixels.  Note that if the contained object is a
                  :class:`.Point` this will always return 0.
         """
-
-        if isinstance(self._shape, Point):
-            return 0.0
-
-        elif isinstance(self._shape, Ellipsoid):
-
-            ref_sphere = Ellipsoid(self._position.ravel(),
-                                   principal_axes=np.array([self._shape.principal_axes.mean()] * 3))
-
-        elif getattr(self._shape, 'reference_ellipsoid', None) is not None:
+        
+        if isinstance(self._shape, HasReferenceEllipsoid):  # covers most shapes, including Ellipsoid
             ref_sphere = Ellipsoid(self._position.ravel(),
                                    principal_axes=np.array([self._shape.reference_ellipsoid.principal_axes.mean()] * 3))
-
-        else:
+        elif isinstance(self._shape, HasBoundingBox): # covers any other 3d shape
             # we really should never get here, but if we do, this is probably a poor approximation..
             ref_sphere = Ellipsoid(self._position.ravel(),
                                    np.array([(self._shape.bounding_box.max_sides -
                                               self._shape.bounding_box.min_sides).mean() / 2] * 3))
-
+            
+        else: # should only end up here for a Point or similar
+            return 0.0
+        
         # get the limbs from the reference sphere
         limbs = ref_sphere.find_limbs(self.position.ravel() / np.linalg.norm(self.position),
                                       _SCAN_DIRS)
 
         # project the limbs onto the image
-        image_locs = model.project_onto_image(limbs, image=image,
-                                              temperature=temperature)
+        image_locs = model.project_onto_image(limbs, image=image, temperature=temperature)
 
         # get the norm of the extent of the projected limbs to be the apparent diameter
         return np.linalg.norm(image_locs.T.reshape(-1, 2, 1) - image_locs.reshape(1, 2, -1), axis=1).max(initial=0)
 
-    def place(self, date: datetime):
+    def place(self, date: DatetimeLike):
         """
         Place the object using the :attr:`orientation_function` and :attr:`position_function` at the requested date.
 
@@ -566,6 +563,7 @@ class SceneObject:
             self.change_position(new_position)
         else:
             warnings.warn("Attempted to place a SceneObject without a position_function")
+        self.date = date
 
 
 class Scene:
@@ -614,18 +612,19 @@ class Scene:
         the class
         """
 
-        self._target_objs = None
+        self._target_objs = []
         self.target_objs = target_objs
 
-        self._obscuring_objs = None
+        self._obscuring_objs = []
         self.obscuring_objs = obscuring_objs
 
         self._light_obj = None
         self.light_obj = light_obj
+        
 
 
     @property
-    def target_objs(self) -> Optional[List[SceneObject]]:
+    def target_objs(self) -> List[SceneObject]:
         """
         A list of objects to be tracked/rendered in the scene.
 
@@ -652,19 +651,22 @@ class Scene:
         # update the order
         for obj in self.target_objs:
 
-            if hasattr(obj.shape, "order"):
+            if (obj_order := getattr(obj.shape, "order", None)) is not None:
 
-                self.order = max(self.order, obj.shape.order)
+                self.order = max(self.order, obj_order)
 
-            elif hasattr(obj.shape, "num_faces"):
+            elif (obj_faces := getattr(obj.shape, "num_faces", None)) is not None:
 
-                self.order = max(self.order, int(np.log10(obj.shape.num_faces)))
+                self.order = max(self.order, int(np.log10(obj_faces)))
 
-            elif hasattr(obj.shape, "id"):
-                self.order = max(self.order, int(np.log10(obj.shape.id)))
+            elif (obj_id := getattr(obj.shape, 'id', None)) is not None:
+                self.order = max(self.order, int(np.log10(obj_id)))
+            
+            else:
+                raise ValueError(f"We don't know how to set the order for an object of type {obj.shape.__class__.__name__}")
 
     @property
-    def obscuring_objs(self) -> Optional[List[SceneObject]]:
+    def obscuring_objs(self) -> List[SceneObject]:
         """
         A list of objects to be kept up to date with the scene but which are not actually used in the scene
         """
@@ -726,6 +728,9 @@ class Scene:
         :param target_index: the index into the :attr:`target_objs` list for which to compute the phase angle for
         :return: the phase angle in radians
         """
+        
+        if self.light_obj is None:
+            raise ValueError('The light_obj cannot be None when computing the phase angle')
 
         # get the unit vector from the target to the light
         line_of_sight_light = self.light_obj.position.ravel() - self._target_objs[target_index].position.ravel()
@@ -735,7 +740,7 @@ class Scene:
         line_of_sight_observer = (-self._target_objs[target_index].position.ravel() /
                                   np.linalg.norm(self._target_objs[target_index].position))
 
-        return np.arccos(line_of_sight_light@line_of_sight_observer)
+        return float(np.arccos(line_of_sight_light@line_of_sight_observer))
 
     def trace(self, trace_rays: Rays) -> np.ndarray:
         """
@@ -759,16 +764,20 @@ class Scene:
         results = []
 
         for ind, target in enumerate(self.target_objs):
+            if not isinstance(target.shape, Traceable):
+                raise ValueError(f"Target {ind} doesn't support ray tracing")
 
             ignore_inds = copy.deepcopy(trace_rays.ignore)
 
             if ignore_inds is not None:
+                if isinstance(ignore_inds, int):
+                    ignore_inds = [ignore_inds]*trace_rays.num_rays
 
                 ignore_inds = to_block(ignore_inds)
 
                 ignore_inds[ignore_inds // (10 ** (self.order + 1)) != ind] = -1
                 ignore_inds[ignore_inds // (10 ** (self.order + 1)) == ind] = (
-                    ignore_inds[ignore_inds // (10 ** (self.order + 1)) == ind].astype(np.longfloat) %
+                    ignore_inds[ignore_inds // (10 ** (self.order + 1)) == ind].astype(np.longdouble) %
                     (10 ** (self.order + 1))
                 ).astype(np.int64)
 
@@ -828,8 +837,10 @@ class Scene:
                 return illum_params
 
         shadow_start = initial_intersect[initial_intersect["check"]]["intersect"]
+        
+        lpos = getattr(self.light_obj.shape, "position", self.light_obj.position)
 
-        shadow_dir = self.light_obj.shape.location.flatten() - shadow_start
+        shadow_dir = lpos.ravel() - shadow_start
 
         shadow_dir /= np.linalg.norm(shadow_dir, axis=-1, keepdims=True)
 
@@ -852,8 +863,8 @@ class Scene:
                 if check[0]:
                     illum_params[0] = (-np.atleast_2d(shadow_rays.direction.T),
                                        -np.atleast_2d(trace_rays.direction.T),
-                                       np.atleast_2d(initial_intersect[check]["normal"]),
-                                       np.atleast_1d(initial_intersect[check]["albedo"]),
+                                       np.atleast_2d(initial_intersect["normal"]),
+                                       np.atleast_1d(initial_intersect["albedo"]),
                                        np.atleast_1d(check))
 
             else:
@@ -899,8 +910,7 @@ class Scene:
         if res.shape[0] == 1:
             return res[0]
 
-        # nan_check = ~np.isnan(res["albedo"]).all(axis=0).squeeze()
-        nan_check = res["check"].any(axis=0).squeeze()
+        nan_check = cast(NDArray[np.bool], res["check"].any(axis=0).squeeze())
 
         if not np.any(nan_check):
             return res[0]
@@ -941,11 +951,14 @@ class Scene:
         """
 
         target = self._target_objs[target_ind]
+        
+        if self.light_obj is None:
+            raise ValueError('Cannot rasterize when the light obj is None')
 
         if isinstance(target.shape, KDTree):
-            shape = target.shape.shapes
+            shape = target.shape.surface
 
-        elif not isinstance(target.shape, Surface):
+        elif not isinstance(target.shape, RawSurface):
             raise ValueError('Unable to rasterize targets that are not a surface')
         else:
             shape = target.shape
@@ -959,7 +972,8 @@ class Scene:
         centers = facets_camera.mean(axis=-1)
 
         # get the incidence vectors to each facet
-        incidence = centers - self._light_obj.position.reshape(1, 3)
+        lpos = getattr(self.light_obj.shape, 'position', self.light_obj.position)
+        incidence = centers - lpos.reshape(1, 3)
         incidence /= np.linalg.norm(incidence, axis=-1, keepdims=True)
 
         # get the exidence vectors from each facet
@@ -970,7 +984,10 @@ class Scene:
 
         illum_inp['exidence'] = -exidence
         illum_inp['incidence'] = incidence
-        illum_inp['albedo'] = 1  # todo: use the albedo for the centers?
+        if isinstance(shape.albedos, np.ndarray):
+            illum_inp['albedo'] = shape.albedos[shape.facets].mean(axis=-1)
+        else:
+            illum_inp['albedo'] = shape.albedos  
         illum_inp['normal'] = normals
         illum_inp['visible'] = True
 
@@ -1006,12 +1023,12 @@ class Scene:
                 else:
                     use_corrections = corrections
                 self.calculate_apparent_position(obs, image, use_corrections)
-
-        if corrections is None:
-            use_corrections = getattr(self.light_obj, 'corrections', CorrectionsType.LTPS)
-        else:
-            use_corrections = corrections
-        self.calculate_apparent_position(self.light_obj, image, use_corrections)
+        if self.light_obj is not None:
+            if corrections is None:
+                use_corrections = getattr(self.light_obj, 'corrections', CorrectionsType.LTPS)
+            else:
+                use_corrections = corrections
+            self.calculate_apparent_position(self.light_obj, image, use_corrections)
 
     @staticmethod
     def calculate_apparent_position(target: SceneObject, image: OpNavImage,
@@ -1035,11 +1052,12 @@ class Scene:
 
         # place the target inertially at the time specified for the image
         date = image.observation_date
-
-        try:
-            # target.place(observation_date)
+        
+        if target.orientation_function is not None:
             target.change_orientation(target.orientation_function(date))
-
+            
+        if target.position_function is not None:
+            
             if (corrections is None) or (CorrectionsType.NONE == corrections):
 
                 camera_to_target_inertial = target.position_function(date) - image.position
@@ -1058,7 +1076,7 @@ class Scene:
                 camera_to_target_inertial = correct_light_time(target.position_function,
                                                                image.position, date)
 
-            elif CorrectionsType.S == corrections.lower():
+            elif CorrectionsType.S == corrections:
 
                 camera_to_target_inertial = image.position - target.position_function(date)
 
@@ -1070,126 +1088,17 @@ class Scene:
                               "doing anything")
                 camera_to_target_inertial = target.position_function(date) - image.position
 
-        except AttributeError:
-            warnings.warn('You have specified a standard SceneObject which cannot be automatically placed\n'
+        else:
+            warnings.warn('You have specified a SceneObject which cannot be automatically placed\n'
                           'We will assume that you know what you are doing and you have correctly placed this object\n'
                           'for the current image but remember that you must update the inertial location of this \n'
                           'object yourself whenever you change an image')
 
             camera_to_target_inertial = target.position - image.position
-
+        
         # change the position of the target in inertial space
         target.change_position(camera_to_target_inertial)
 
         # rotate the target into the camera frame
         target.rotate(image.rotation_inertial_to_camera)
 
-
-def correct_light_time(target_location_inertial: Callable[[datetime], np.ndarray],
-                       camera_location_inertial: np.ndarray,
-                       time: datetime.datetime) -> np.ndarray:
-    """
-    Correct an inertial position to include the time of flight for light to travel between the target and the camera.
-
-    This function iteratively calculates the time of flight of light between a target and a camera and then returns
-    the relative vector between the camera and the target accounting for light time (the apparent relative vector) in
-    inertial space.  This is done by passing a callable object for target location which accepts a python datetime
-    object and returns the inertial location of the target at that time (this is usually a function wrapped around a
-    call to spice).
-
-    Note that this assumes that the units for the input are all in kilometers.  If they are not you will get unexpected
-    results.
-
-    :param target_location_inertial: A callable object which inputs a python datetime object and outputs the inertial
-                                    location of the target at the given time
-    :param camera_location_inertial: The location of the camera in inertial space at the time the image was captured
-    :param time: The time the image was captured
-    :return: The apparent vector from the target to the camera in inertial space
-    """
-
-    time_of_flight = 0
-
-    camera_location_inertial = np.asarray(camera_location_inertial).ravel()
-
-    for _ in range(10):
-
-        target_location_reflect = np.asarray(
-            target_location_inertial(time - datetime.timedelta(seconds=time_of_flight))
-        ).ravel()
-
-        time_of_flight_new = np.linalg.norm(camera_location_inertial - target_location_reflect) / SPEED_OF_LIGHT
-
-        if np.all((time_of_flight_new - time_of_flight) < 1e-8):
-            time_of_flight = time_of_flight_new
-            break
-
-        time_of_flight = time_of_flight_new
-
-    return (target_location_inertial(time - datetime.timedelta(seconds=time_of_flight)).ravel() -
-            camera_location_inertial)
-
-
-def correct_stellar_aberration_fsp(camera_to_target_position_inertial: np.ndarray,
-                                   camera_velocity_inertial: np.ndarray) -> np.ndarray:
-    """
-    Correct for stellar aberration using linear addition.
-
-    Note that this only roughly corrects for the direction, it messes up the distance to the object, therefore you
-    should favor the :func:`.correct_stellar_aberration` function which uses rotations and thus doesn't mess with the
-    distance.
-
-    Note that this assumes that the units for the input are all in kilometers and kilometers per secon.  If they are not
-    you will get unexpected results.
-
-    :param camera_to_target_position_inertial: The vector from the camera to the target in the inertial frame
-    :param camera_velocity_inertial: The velocity of the camera in the inertial frame relative to the SSB
-    :return: the vector from the camera to the target in the inertial frame corrected for stellar aberration
-    """
-    # this is only good for adjusting the unit vector. Don't use if you need anything involving range
-
-    return (camera_to_target_position_inertial + np.linalg.norm(camera_to_target_position_inertial, axis=0) *
-            camera_velocity_inertial / SPEED_OF_LIGHT)
-
-
-def correct_stellar_aberration(camera_to_target_position_inertial: np.ndarray,
-                               camera_velocity_inertial: np.ndarray) -> np.ndarray:
-    """
-    Correct for stellar aberration using rotations.
-
-    This works by computing the rotation about the aberation axis and then applying this rotation to the vector from the
-    camera to the target in the inertial frame.  This is accurate and doesn't mess up the distance to the target.  It
-    should therefore always be preferred to :func:`.correct_stellar_aberration_fsp`
-
-    Note that this assumes that the units for the input are all in kilometers and kilometers per secon.  If they are not
-    you will get unexpected results.
-
-    :param camera_to_target_position_inertial: The vector from the camera to the target in the inertial frame
-    :param camera_velocity_inertial: The velocity of the camera in the inertial frame relative to the SSB
-    :return: the vector from the camera to the target in the inertial frame corrected for stellar aberration
-    """
-    velocity_mag = np.linalg.norm(camera_velocity_inertial)
-
-    if velocity_mag != 0:
-
-        aberration_axis = np.cross(camera_to_target_position_inertial, camera_velocity_inertial / velocity_mag, axis=0)
-
-        aberration_axis_magnitude = np.linalg.norm(aberration_axis, axis=0, keepdims=True)
-
-        velocity_sin_angle = (aberration_axis_magnitude /
-                              (np.linalg.norm(camera_to_target_position_inertial, axis=0, keepdims=True)))
-
-        aberration_angle = np.arcsin(velocity_mag * velocity_sin_angle / SPEED_OF_LIGHT)
-
-        aberration_axis /= aberration_axis_magnitude
-
-        if (np.ndim(camera_to_target_position_inertial) > 1) and (np.shape(camera_to_target_position_inertial)[-1] > 1):
-
-            return np.matmul(rotvec_to_rotmat(aberration_axis * aberration_angle),
-                             camera_to_target_position_inertial.T.reshape(-1, 3, 1)).squeeze().T
-
-        else:
-            return np.matmul(rotvec_to_rotmat(aberration_axis * aberration_angle),
-                             camera_to_target_position_inertial)
-
-    else:
-        return camera_to_target_position_inertial

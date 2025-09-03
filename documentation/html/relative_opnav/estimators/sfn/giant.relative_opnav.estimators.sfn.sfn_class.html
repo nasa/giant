@@ -1,20 +1,19 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>sfn_class &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <title>sfn_class &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="copyright" title="Copyright" href="../../../copyright.html" />
@@ -23,17 +22,18 @@
    
   <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../../../index.html">
-    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -74,7 +74,7 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
@@ -82,8 +82,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -108,10 +108,10 @@
           <div class="body" role="main">
             
   <section id="module-giant.relative_opnav.estimators.sfn.sfn_class">
-<span id="sfn-class"></span><h1>sfn_class<a class="headerlink" href="#module-giant.relative_opnav.estimators.sfn.sfn_class" title="Permalink to this headline">¶</a></h1>
+<span id="sfn-class"></span><h1>sfn_class<a class="headerlink" href="#module-giant.relative_opnav.estimators.sfn.sfn_class" title="Link to this heading">¶</a></h1>
 <p>This module provides the capability to locate surface features from a target in an image using 2D cross-correlation.</p>
 <section id="description-of-the-technique">
-<h2>Description of the Technique<a class="headerlink" href="#description-of-the-technique" title="Permalink to this headline">¶</a></h2>
+<h2>Description of the Technique<a class="headerlink" href="#description-of-the-technique" title="Link to this heading">¶</a></h2>
 <p>When a target grows to the point where we can begin to distinguish individual features on the surface in the images, we
 typically consider switching to navigating using these features instead of just the center of figure of the target.
 There are a number of reasons for this, including the fact that as the body grows in the field of view and errors in
@@ -121,13 +121,13 @@ allowing us to more accurately estimate the trajectory of the camera through tim
 <p>One of the most common ways of extracting observations of each feature is through cross correlation, using a very
 similar technique to that describe in <a class="reference internal" href="../giant.relative_opnav.estimators.cross_correlation.html#module-giant.relative_opnav.estimators.cross_correlation" title="giant.relative_opnav.estimators.cross_correlation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cross_correlation</span></code></a>.  Essentially we render what we think each feature will
 look like based on the current knowledge of the relative position and orientation of the camera with respect to each
-feature (the features are stored in a special catalogue called a <a class="reference internal" href="surface_features/giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalogue.html#giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalogue" title="giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalogue"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureCatalogue</span></code></a>).  We then take the rendered
+feature (the features are stored in a special catalog called a <a class="reference internal" href="surface_features/giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalog.html#giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalog" title="giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureCatalog</span></code></a>).  We then take the rendered
 template and use normalized cross correlation to identify the location of the feature in the image.  After we have
 identified the features in the image, we optionally solve a PnP problem to refine our knowledge of the spacecraft state
 and then repeat the process to correct any errors in the observations created by errors in our initial state estimates.</p>
 <p>In more detail, GIANT implements this using the following steps</p>
 <ol class="arabic simple">
-<li><p>Identify which features we think should be visible in the image using the <a class="reference internal" href="surface_features/giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalogue.html#giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalogue.feature_finder" title="giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalogue.feature_finder"><code class="xref py py-attr docutils literal notranslate"><span class="pre">FeatureCatalogue.feature_finder</span></code></a></p></li>
+<li><p>Identify which features we think should be visible in the image using the <a class="reference internal" href="surface_features/giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalog.html#giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalog.feature_finder" title="giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalog.feature_finder"><code class="xref py py-attr docutils literal notranslate"><span class="pre">FeatureCatalog.feature_finder</span></code></a></p></li>
 <li><p>For each feature we predict should be visible, render the template based on the a priori relative state between the
 camera and the feature using a single bounce ray trace and the routines from <a class="reference internal" href="../../../giant.ray_tracer.html#module-giant.ray_tracer" title="giant.ray_tracer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ray_tracer</span></code></a>.</p></li>
 <li><p>Perform 2D normalized cross correlation for every possible alignment between the center of the templates and the
@@ -145,17 +145,13 @@ this one to correct for errors introduced by a priori state knowledge errors.</p
 </ol>
 </section>
 <section id="tuning">
-<h2>Tuning<a class="headerlink" href="#tuning" title="Permalink to this headline">¶</a></h2>
+<h2>Tuning<a class="headerlink" href="#tuning" title="Link to this heading">¶</a></h2>
 <p>There are a few more tuning options in SFN verses normal cross correlation.  The first, and likely most important
 tuning is for identifying potentially visible features in an image.  For this, you actually want to set the
-<a class="reference internal" href="surface_features/giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalogue.html#giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalogue.feature_finder" title="giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalogue.feature_finder"><code class="xref py py-attr docutils literal notranslate"><span class="pre">FeatureCatalogue.feature_finder</span></code></a> attribute to be something that will correctly determine which features are
+<a class="reference internal" href="surface_features/giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalog.html#giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalog.feature_finder" title="giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalog.feature_finder"><code class="xref py py-attr docutils literal notranslate"><span class="pre">FeatureCatalog.feature_finder</span></code></a> attribute to be something that will correctly determine which features are
 possibly visible (typically to an instance of <a class="reference internal" href="surface_features/giant.relative_opnav.estimators.sfn.surface_features.VisibleFeatureFinder.html#giant.relative_opnav.estimators.sfn.surface_features.VisibleFeatureFinder" title="giant.relative_opnav.estimators.sfn.surface_features.VisibleFeatureFinder"><code class="xref py py-class docutils literal notranslate"><span class="pre">VisibleFeatureFinder</span></code></a>).  We discuss the tuning for the
 <a class="reference internal" href="surface_features/giant.relative_opnav.estimators.sfn.surface_features.VisibleFeatureFinder.html#giant.relative_opnav.estimators.sfn.surface_features.VisibleFeatureFinder" title="giant.relative_opnav.estimators.sfn.surface_features.VisibleFeatureFinder"><code class="xref py py-class docutils literal notranslate"><span class="pre">VisibleFeatureFinder</span></code></a> here, though you could concievably use something else if you desired.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 48%" />
-<col style="width: 52%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Parameter</p></th>
 <th class="head"><p>Description</p></th>
@@ -191,42 +187,38 @@ in the image so that you don’t waste time considering features that won’t wo
 parameters can contribute to this, but some of the most important are the <code class="docutils literal notranslate"><span class="pre">gsd_scaling</span></code>, which should typically be
 around 2 and the <code class="docutils literal notranslate"><span class="pre">off_boresight_angle_maximum</span></code> which should typically be just a little larger than the half diagonal
 field of view of the detector to avoid possibly overflowing values in the projection computation and processing features
-that are actually way outside the field of view.  Note that since you set the feature finder on each feature catalogue,
-this means that you can have different tunings for different feature catalogues (if you have multiple in a scene).</p>
+that are actually way outside the field of view.  Note that since you set the feature finder on each feature catalog,
+this means that you can have different tunings for different feature catalogs (if you have multiple in a scene).</p>
 <p>Next we have the parameters that control the actual rendering/correlation for each feature.  These are the same as for
 <a class="reference internal" href="../giant.relative_opnav.estimators.cross_correlation.html#module-giant.relative_opnav.estimators.cross_correlation" title="giant.relative_opnav.estimators.cross_correlation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cross_correlation</span></code></a>.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 40%" />
-<col style="width: 60%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Parameter</p></th>
 <th class="head"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">brdf</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.brdf" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.brdf"><code class="xref py py-attr docutils literal notranslate"><span class="pre">brdf</span></code></a></p></td>
 <td><p>The bidirectional reflectance distribution function used to compute the
 expected illumination of a ray based on the geometry of the scene.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">grid_size</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.grid_size" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.grid_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">grid_size</span></code></a></p></td>
 <td><p>The size of the grid to use for subpixel sampling when rendering the
 templates</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">peak_finder</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.peak_finder" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.peak_finder"><code class="xref py py-attr docutils literal notranslate"><span class="pre">peak_finder</span></code></a></p></td>
 <td><p>The function to use to detect the peaks of the correlation surfaces.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">blur</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.blur" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.blur"><code class="xref py py-attr docutils literal notranslate"><span class="pre">blur</span></code></a></p></td>
 <td><p>A flag specifying whether to blur the correlation surfaces to decrease
 high frequency noise before identifying the peak.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">search_region</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.search_region" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.search_region"><code class="xref py py-attr docutils literal notranslate"><span class="pre">search_region</span></code></a></p></td>
 <td><p>The search region in pixels to restrict the area the peak of
 the correlation surfaces is searched for around the a priori predicted
 centers for each feature</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">min_corr_score</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.min_corr_score" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.min_corr_score"><code class="xref py py-attr docutils literal notranslate"><span class="pre">min_corr_score</span></code></a></p></td>
 <td><p>The minimum correlation score to accept as a successful identification.
 Correlation scores range from -1 to 1, with 1 indicating perfect
 correlation.</p></td>
@@ -234,81 +226,77 @@ correlation.</p></td>
 </tbody>
 </table>
 <p>Of these options, most only make small changes to the results.  The 2 that can occasionally make large changes are
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">search_region</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">blur</span></code>.  In general
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">search_region</span></code> should be set to a few pixels larger than the expected uncertainty in
+<a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.search_region" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.search_region"><code class="xref py py-attr docutils literal notranslate"><span class="pre">search_region</span></code></a> and <a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.blur" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.blur"><code class="xref py py-attr docutils literal notranslate"><span class="pre">blur</span></code></a>.  In general
+<a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.search_region" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.search_region"><code class="xref py py-attr docutils literal notranslate"><span class="pre">search_region</span></code></a> should be set to a few pixels larger than the expected uncertainty in
 the camera/feature relative state. Since we are doing spatial correlation here we typically want this number to be as
-small as possible for efficiency while still capturing the actual peak. The <code class="xref py py-attr docutils literal notranslate"><span class="pre">blur</span></code>
+small as possible for efficiency while still capturing the actual peak. The <a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.blur" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.blur"><code class="xref py py-attr docutils literal notranslate"><span class="pre">blur</span></code></a>
 attribute can also be used to help avoid mistaken correlation (perhaps were only empty space is aligned).  Finally, the
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">min_corr_score</span></code> can generally be left at the default, though if you have a poor a
+<a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.min_corr_score" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.min_corr_score"><code class="xref py py-attr docutils literal notranslate"><span class="pre">min_corr_score</span></code></a> can generally be left at the default, though if you have a poor a
 priori knowledge of either the shape model or the relative position of the features then you may need to decrease this
 some.</p>
 <p>The last set of tuning parameters to consider are those for the PnP solver.  They are as follows:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 53%" />
-<col style="width: 47%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Parameter</p></th>
 <th class="head"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">run_pnp_solver</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.run_pnp_solver" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.run_pnp_solver"><code class="xref py py-attr docutils literal notranslate"><span class="pre">run_pnp_solver</span></code></a></p></td>
 <td><p>A flag to turn the PnP solver on</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">pnp_ransac_iterations</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.pnp_ransac_iterations" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.pnp_ransac_iterations"><code class="xref py py-attr docutils literal notranslate"><span class="pre">pnp_ransac_iterations</span></code></a></p></td>
 <td><p>The number of RANSAC iterations to attempt in the PnP
 solver</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">second_search_region</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.second_search_region" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.second_search_region"><code class="xref py py-attr docutils literal notranslate"><span class="pre">second_search_region</span></code></a></p></td>
 <td><p>The search region in pixels to restrict the area the
 peak of the correlation surfaces is searched for around
 the a priori predicted centers for each feature after
 a PnP solution has been done</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">measurement_sigma</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.measurement_sigma" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.measurement_sigma"><code class="xref py py-attr docutils literal notranslate"><span class="pre">measurement_sigma</span></code></a></p></td>
 <td><p>The uncertainty to assume for each measurement</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">position_sigma</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.position_sigma" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.position_sigma"><code class="xref py py-attr docutils literal notranslate"><span class="pre">position_sigma</span></code></a></p></td>
 <td><p>The uncertainty to assume in the a priori relative
 position vector between the camera and the features in
 kilometers</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">attitude_sigma</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.attitude_sigma" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.attitude_sigma"><code class="xref py py-attr docutils literal notranslate"><span class="pre">attitude_sigma</span></code></a></p></td>
 <td><p>The uncertainty to assume in the a priori relative
 orientation between the camera and the features in
 degrees</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">state_sigma</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.state_sigma" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.state_sigma"><code class="xref py py-attr docutils literal notranslate"><span class="pre">state_sigma</span></code></a></p></td>
 <td><p>The uncertainty to assume in the relative position and
 orientation between the camera and the features
 (overrides the individual position and attitude sigmas)</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_lsq_iterations</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.max_lsq_iterations" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.max_lsq_iterations"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_lsq_iterations</span></code></a></p></td>
 <td><p>The maximum number of iterations to attempt to converge
 in the linearized least squares solution of the PnP
 problem</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">lsq_relative_error_tolerance</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.lsq_relative_error_tolerance" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.lsq_relative_error_tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">lsq_relative_error_tolerance</span></code></a></p></td>
 <td><p>The maximum change in the residuals from one iteration
 to the next before we consider the PnP solution
 converged</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">lsq_relative_update_tolerance</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.lsq_relative_update_tolerance" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.lsq_relative_update_tolerance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">lsq_relative_update_tolerance</span></code></a></p></td>
 <td><p>The maximum change in the update vector from one
 iteration to the next before we consider the PnP
 solution converged.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">cf_results</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.cf_results" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.cf_results"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cf_results</span></code></a></p></td>
 <td><p>A numpy array specifying the observed center of figure
 for each target in the image (for instance from
 <a class="reference internal" href="../giant.relative_opnav.estimators.cross_correlation.html#module-giant.relative_opnav.estimators.cross_correlation" title="giant.relative_opnav.estimators.cross_correlation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cross_correlation</span></code></a>) to use to set the a priori
 relative state information between the camera and the
-feature catalogue</p></td>
+feature catalog</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">cf_index</span></code></p></td>
-<td><p>The mapping of feature catalogue number to column of the
+<tr class="row-odd"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.cf_index" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.cf_index"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cf_index</span></code></a></p></td>
+<td><p>The mapping of feature catalog number to column of the
 <code class="docutils literal notranslate"><span class="pre">cf_result</span></code> array.</p></td>
 </tr>
 </tbody>
@@ -327,29 +315,25 @@ are generally decent.  Finally, the <code class="docutils literal notranslate"><
 state knowledge, which in some cases can be critical to successfully identifying features.</p>
 </section>
 <section id="use">
-<h2>Use<a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h2>
+<h2>Use<a class="headerlink" href="#use" title="Link to this heading">¶</a></h2>
 <p>The class provided in this module is usually not used by the user directly, instead it is usually interfaced with
 through the <a class="reference internal" href="../../relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class using the identifier <code class="xref py py-attr docutils literal notranslate"><span class="pre">sfn</span></code>.  For more
 details on using the <a class="reference internal" href="../../relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> interface, please refer to the <a class="reference internal" href="../../giant.relative_opnav.relnav_class.html#module-giant.relative_opnav.relnav_class" title="giant.relative_opnav.relnav_class"><code class="xref py py-mod docutils literal notranslate"><span class="pre">relnav_class</span></code></a> documentation.  For
 more details on using the technique class directly, as well as a description of the <code class="docutils literal notranslate"><span class="pre">details</span></code> dictionaries produced
 by this technique, refer to the following class documentation.</p>
-<p>One implementation detail we do want to note is that you should set your <a class="reference internal" href="surface_features/giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalogue.html#giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalogue.feature_finder" title="giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalogue.feature_finder"><code class="xref py py-attr docutils literal notranslate"><span class="pre">FeatureCatalogue.feature_finder</span></code></a> on
-your feature catalogue before using this class. For instance, if your catalogue is stored in a file called
+<p>One implementation detail we do want to note is that you should set your <a class="reference internal" href="surface_features/giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalog.html#giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalog.feature_finder" title="giant.relative_opnav.estimators.sfn.surface_features.FeatureCatalog.feature_finder"><code class="xref py py-attr docutils literal notranslate"><span class="pre">FeatureCatalog.feature_finder</span></code></a> on
+your feature catalog before using this class. For instance, if your catalog is stored in a file called
 <code class="docutils literal notranslate"><span class="pre">'features.pickle'</span></code></p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pickle</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.relative_opnav.estimators.sfn.surface_features</span> <span class="kn">import</span> <span class="n">VisibleFeatureFinder</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">giant.relative_opnav.estimators.sfn.surface_features</span><span class="w"> </span><span class="kn">import</span> <span class="n">VisibleFeatureFinder</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;features.pickle&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">fc</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span>  <span class="c1"># type: VisibleFeatureFinder</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">fc</span><span class="p">:</span> <span class="n">VisibleFeatureFinder</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span> 
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fc</span><span class="o">.</span><span class="n">feature_finder</span> <span class="o">=</span> <span class="n">VisibleFeatureFinder</span><span class="p">(</span><span class="n">fc</span><span class="p">,</span> <span class="n">gsd_scaling</span><span class="o">=</span><span class="mf">2.5</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <p class="rubric">Classes</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="sfn_class/giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation.html#giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation" title="giant.relative_opnav.estimators.sfn.sfn_class.SurfaceFeatureNavigation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SurfaceFeatureNavigation</span></code></a></p></td>
 <td><p>This class implements surface feature navigation using normalized cross correlation template matching for GIANT.</p></td>
@@ -386,20 +370,24 @@ your feature catalogue before using this class. For instance, if your catalogue 
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="../../../_sources/relative_opnav/estimators/sfn/giant.relative_opnav.estimators.sfn.sfn_class.rst.txt"
-          rel="nofollow">Page source</a>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.image_processing.point_source_finder &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.image_processing.point_source_finder</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides functionality for identifying the locations of points of interest </span>
+<span class="sd">(unresolved bright spots) in an image and fitting point spread functions to them.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">cast</span><span class="p">,</span> <span class="n">NamedTuple</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.point_spread_functions.psf_meta</span><span class="w"> </span><span class="kn">import</span> <span class="n">PointSpreadFunction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.point_spread_functions.gaussians</span><span class="w"> </span><span class="kn">import</span> <span class="n">IterativeGeneralizedGaussian</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image_processing.image_flattener</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageFlattener</span><span class="p">,</span> <span class="n">ImageFlattenerOptions</span><span class="p">,</span> <span class="n">ImageFlatteningNoiseApprox</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes.user_option_configured</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptionConfigured</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes.attribute_equality_comparison</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttributeEqualityComparison</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes.attribute_printing</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttributePrinting</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ARRAY_LIKE</span>
+
+
+<div class="viewcode-block" id="FindPPOIInROIOut">
+<a class="viewcode-back" href="../../../image_processing/point_source_finder/giant.image_processing.point_source_finder.FindPPOIInROIOut.html#giant.image_processing.point_source_finder.FindPPOIInROIOut">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FindPPOIInROIOut</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This named tuple represents the output of the :meth:`.find_poit_in_roi` method.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">peak_location</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The location of the peak pixel in each detected point of interest</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">stats</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The stats of each detected point of interest blob.</span>
+<span class="sd">    </span>
+<span class="sd">    Each element corresponds to the same element in :ref:`.poi_peak_locations`</span>
+<span class="sd">    </span>
+<span class="sd">    See `OpenCV connectedComponentsWithStats &lt;https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga107a78bf7cd25dec05fb4dfc5c9e765f&gt;`_ </span>
+<span class="sd">    for details</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">peak_snr</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The peak signal to noise ratio of the blob containing the detected point of interest.</span>
+<span class="sd">    </span>
+<span class="sd">    Each element corresponds to the same element in :ref:`.poi_peak_locations`</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="POIFinderOut">
+<a class="viewcode-back" href="../../../image_processing/point_source_finder/giant.image_processing.point_source_finder.POIFinderOut.html#giant.image_processing.point_source_finder.POIFinderOut">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">POIFinderOut</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This named tuple represents the output of the point of interest finding process.</span>
+
+<span class="sd">    It contains the centroids of the identified points of interest, their intensities,</span>
+<span class="sd">    the fitted point spread functions, blob statistics, and peak signal-to-noise ratios.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">centroids</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The identied centroids of the points of interest</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">centroid_intensity</span><span class="p">:</span> <span class="n">NDArray</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The intensity of the image at the location of the centroid of the point of interest.</span>
+<span class="sd">    </span>
+<span class="sd">    Each element corresponds to the same element in ref:`.poi_centroids`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">point_spread_functions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">PointSpreadFunction</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The fit point spread function for each point of interest.</span>
+<span class="sd">    </span>
+<span class="sd">    Each element corresponds to the same element in ref:`.poi_centroids`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">stats</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The stats of each detected point of interest blob.</span>
+<span class="sd">    </span>
+<span class="sd">    See `OpenCV connectedComponentsWithStats &lt;https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga107a78bf7cd25dec05fb4dfc5c9e765f&gt;`_ </span>
+<span class="sd">    for details</span>
+<span class="sd">    </span>
+<span class="sd">    Each element corresponds to the same element in ref:`.poi_centroids`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">peak_snr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The peak signal to noise ratio of the blob containing the detected point of interest.</span>
+<span class="sd">    </span>
+<span class="sd">    Each element corresponds to the same element in ref:`.poi_centroids`</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+    
+
+<div class="viewcode-block" id="PointOfInterestFinderOptions">
+<a class="viewcode-back" href="../../../image_processing/point_source_finder/giant.image_processing.point_source_finder.PointOfInterestFinderOptions.html#giant.image_processing.point_source_finder.PointOfInterestFinderOptions">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PointOfInterestFinderOptions</span><span class="p">(</span><span class="n">UserOptions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class defines the options used to configure the PointOfInterestFinder.</span>
+
+<span class="sd">    It includes parameters for the point spread function to be fit, image flattening,</span>
+<span class="sd">    centroid size, minimum and maximum blob size, threshold for point of interest</span>
+<span class="sd">    detection, and saturation rejection.</span>
+
+<span class="sd">    These options allow for fine-tuning the point of interest detection process</span>
+<span class="sd">    to suit different types of images and detection requirements.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">point_spread_function</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">PointSpreadFunction</span><span class="p">]</span> <span class="o">=</span> <span class="n">IterativeGeneralizedGaussian</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The PSF object that estimates the center of a region of interest.</span>
+<span class="sd">    </span>
+<span class="sd">    This should be of the form::</span>
+<span class="sd">    </span>
+<span class="sd">        res = centroiding(x, y, illums)</span>
+<span class="sd">        x0, y0 = res.centroid</span>
+<span class="sd">        </span>
+<span class="sd">    where x0, y0 is the subpixel center of the blob, [...] are optional outputs containing information about the </span>
+<span class="sd">    fit, x, y are arrays of the column and row locations corresponding to illums, and illums are the illumination </span>
+<span class="sd">    values at x, y.  </span>
+<span class="sd">    </span>
+<span class="sd">    There are a few built in options for centroiding in the :mod:`.point_spread_functions` package or you can build</span>
+<span class="sd">    your own.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">image_flattener_options</span><span class="p">:</span> <span class="n">ImageFlattenerOptions</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">ImageFlattenerOptions</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The options to use when flattening the image</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">centroid_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This specifies how many pixels to include when identifying a centroid in a region of interest.</span>
+<span class="sd">    </span>
+<span class="sd">    This sets the +/- number from the peak brightness pixel in both axes (so that a value of 1 means</span>
+<span class="sd">    a 3x3 grid will be considered, a value of 2 will result in a 5x5 grid, etc).  </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">min_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This specifies the minimum number of pixels that must be connected for a blob to be considered a point of </span>
+<span class="sd">    interest.</span>
+
+<span class="sd">    Individual pixels are clumped using a connected components algorithm, and then the size of each blob is compared</span>
+<span class="sd">    against this value.  See :meth:`.locate_subpixel_poi_in_roi` for more details.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">max_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This specifies the maximum number of pixels that must be connected for a blob to be considered a point of </span>
+<span class="sd">    interest.</span>
+
+<span class="sd">    Individual pixels are clumped using a connected components algorithm, and then the size of each blob is compared</span>
+<span class="sd">    against this value.  see :meth:`.locate_subpixel_poi_in_roi` for more details.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This specifies the sigma multiplier to use when identifying a pixel as a point of interest.</span>
+<span class="sd">    </span>
+<span class="sd">    The sigma multiplier is applied to a rough noise estimate of the image (see </span>
+<span class="sd">    :meth:`.flatten_image_and_get_noise_level`) and then any pixels above this DN value are labeled as interesting </span>
+<span class="sd">    pixels that require further processing (see :meth:`.locate_subpixel_poi_in_roi`).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">reject_saturation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This boolean flag specifies whether to ignore clumps of pixels that contain saturated DN values when identifying </span>
+<span class="sd">    points of interest in an image.</span>
+<span class="sd">    </span>
+<span class="sd">    Set to True to reject any clumps containing saturated pixels.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="PointOfInterestFinder">
+<a class="viewcode-back" href="../../../image_processing/point_source_finder/giant.image_processing.point_source_finder.PointOfInterestFinder.html#giant.image_processing.point_source_finder.PointOfInterestFinder">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PointOfInterestFinder</span><span class="p">(</span><span class="n">UserOptionConfigured</span><span class="p">[</span><span class="n">PointOfInterestFinderOptions</span><span class="p">],</span>
+                            <span class="n">PointOfInterestFinderOptions</span><span class="p">,</span>
+                            <span class="n">AttributeEqualityComparison</span><span class="p">,</span>
+                            <span class="n">AttributePrinting</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class is responsible for finding and refining points of interest in an image.</span>
+
+<span class="sd">    It uses a combination of image flattening, thresholding, and point spread function fitting</span>
+<span class="sd">    to identify and locate subpixel centers of points of interest.</span>
+
+<span class="sd">    The class is configured using the PointOfInterestFinderOptions, which allows for</span>
+<span class="sd">    customization of various parameters such as the point spread function, image flattening</span>
+<span class="sd">    options, centroid size, minimum and maximum blob size, threshold, and saturation rejection.</span>
+
+<span class="sd">    Key methods:</span>
+<span class="sd">    - find_poi_in_roi: Identifies pixel-level centers of points of interest in a region of interest.</span>
+<span class="sd">    - refine_locations: Estimates subpixel centers of blobs given pixel-level locations.</span>
+<span class="sd">    - __call__: Combines find_poi_in_roi and refine_locations to identify subpixel locations of points of interest.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">PointOfInterestFinderOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param options: The options configuring this class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">PointOfInterestFinderOptions</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_flattener</span> <span class="o">=</span> <span class="n">ImageFlattener</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_flattener_options</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="PointOfInterestFinder.corners_to_roi">
+<a class="viewcode-back" href="../../../image_processing/point_source_finder/giant.image_processing.point_source_finder.PointOfInterestFinder.corners_to_roi.html#giant.image_processing.point_source_finder.PointOfInterestFinder.corners_to_roi">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">corners_to_roi</span><span class="p">(</span><span class="n">row_corners</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">column_corners</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method provides a convenient way to convert a set of corners to a region of interest that can be passed to</span>
+<span class="sd">        :meth:`find_poi_in_roi` and :meth:`locate_subpixel_poi_in_roi`.</span>
+
+<span class="sd">        This method finds the minimum and maximum row and column from row_corners and column_corners, respectively, and</span>
+<span class="sd">        then makes a call to meshgrid using these bounds, reversing the output so it is row, col instead of col, row.</span>
+
+<span class="sd">        The results from this function can be used to directly index into an image</span>
+
+<span class="sd">        &gt;&gt;&gt; import numpy</span>
+<span class="sd">        &gt;&gt;&gt; import giant.image_processing as gimp</span>
+<span class="sd">        &gt;&gt;&gt; im = numpy.random.randn(500, 600)</span>
+<span class="sd">        &gt;&gt;&gt; local_row_corners = [5.5, 3, 6.5, 8.9]</span>
+<span class="sd">        &gt;&gt;&gt; local_column_corners = [4.3, 2.7, 3.3, 7.8]</span>
+<span class="sd">        &gt;&gt;&gt; roi = im[gimp.ImageProcessing.corners_to_roi(local_row_corners, local_column_corners)]</span>
+<span class="sd">        &gt;&gt;&gt; (roi == im[3:10, 2:9]).all()</span>
+<span class="sd">        True</span>
+
+<span class="sd">        :param row_corners: a list of corner row locations</span>
+<span class="sd">        :param column_corners: a list of corner column locations</span>
+<span class="sd">        :return: row, column subscripts into an image as a tuple of ndarrays of type int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># get the bounds</span>
+        <span class="n">min_row</span><span class="p">,</span> <span class="n">min_col</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">row_corners</span><span class="p">))),</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">column_corners</span><span class="p">)))</span>
+
+        <span class="n">max_row</span><span class="p">,</span> <span class="n">max_col</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">row_corners</span><span class="p">))),</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">column_corners</span><span class="p">)))</span>
+
+        <span class="c1"># return the subscripts</span>
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]],</span> 
+                    <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">min_row</span><span class="p">,</span> <span class="n">max_row</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">min_col</span><span class="p">,</span> <span class="n">max_col</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="PointOfInterestFinder.find_poi_in_roi">
+<a class="viewcode-back" href="../../../image_processing/point_source_finder/giant.image_processing.point_source_finder.PointOfInterestFinder.find_poi_in_roi.html#giant.image_processing.point_source_finder.PointOfInterestFinder.find_poi_in_roi">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_poi_in_roi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">region</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">FindPPOIInROIOut</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method identifies pixel level centers for all points of interest inside of some region of interest.</span>
+
+<span class="sd">        A point of interest is defined as any grouping of *n* pixels that are above :attr:`.threshold` *</span>
+<span class="sd">        **standard_deviation** where :attr:`min_size` &lt;= *n* &lt;= :attr:`.max_size`.  The **standard_deviation**</span>
+<span class="sd">        is computed using the :meth:`.flatten_image_and_get_noise_level` method.</span>
+<span class="sd">        Pixels are defined to be grouped if they are neighboring:</span>
+
+<span class="sd">        .. code-block:: none</span>
+
+<span class="sd">            nnnnn</span>
+<span class="sd">            nyyyn</span>
+<span class="sd">            nyoyn</span>
+<span class="sd">            nyyyn</span>
+<span class="sd">            nnnnn</span>
+
+<span class="sd">        therefore any pixels labeled ``y`` are grouped with ``o`` whereas any pixels labeled ``n`` are not.</span>
+
+<span class="sd">        This method will ignore any blobs that contain saturated pixels if :attr:`.reject_saturation` is set to True</span>
+<span class="sd">        and the ``image`` object has an attribute :attr:`~.OpNavImage.saturation` containing the saturation level for</span>
+<span class="sd">        the image.</span>
+
+<span class="sd">        This method will also return the connected components stats (see</span>
+<span class="sd">        `OpenCV connectedComponentsWithStats &lt;https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html</span>
+<span class="sd">        #ga107a78bf7cd25dec05fb4dfc5c9e765f&gt;`_</span>
+<span class="sd">        for details) and the peak signal to noise ratio for each detection.</span>
+
+<span class="sd">        :param image: The image being considered</span>
+<span class="sd">        :param region: The region of the image to consider</span>
+<span class="sd">        :return: the pixel level locations of the points of interest in the region of interest (row, col), </span>
+<span class="sd">                 the connected component stats and the peak signal to noise ratio for each detection if</span>
+<span class="sd">                 :attr:`.return_stats` is set to True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+        <span class="c1"># select the sub image we are considering</span>
+        <span class="k">if</span> <span class="n">region</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">roi_start</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">region</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">region</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+
+            <span class="n">big_roi</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">region</span><span class="p">)]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">roi_start</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">big_roi</span> <span class="o">=</span> <span class="n">image</span>
+            
+        
+        <span class="n">roi</span><span class="p">,</span> <span class="n">noise_estimate</span><span class="p">,</span> <span class="n">slices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_flattener</span><span class="p">(</span><span class="n">big_roi</span><span class="p">)</span>
+        <span class="c1"># get the flat image and approximate noise level(s) in the image</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_flattener_options</span><span class="o">.</span><span class="n">image_flattening_noise_approximation</span> <span class="o">==</span> <span class="n">ImageFlatteningNoiseApprox</span><span class="o">.</span><span class="n">GLOBAL</span><span class="p">:</span>
+            <span class="c1"># detect pixels of interest by thresholding the flattened image at some multiple of the noise level</span>
+            <span class="n">snr</span> <span class="o">=</span> <span class="n">roi</span> <span class="o">/</span> <span class="n">noise_estimate</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># if we&#39;re doing local flattening and noise estimation</span>
+            <span class="c1"># detect pixels of interest by thresholding the flattened image at some multiple of the noise level</span>
+            <span class="n">snr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">big_roi</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">noise_estimate</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="n">slices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+            <span class="c1"># for each region, compute the &quot;snr&quot; for each detection</span>
+            <span class="k">for</span> <span class="n">noise</span><span class="p">,</span> <span class="n">slices</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">noise_estimate</span><span class="p">,</span> <span class="n">slices</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">noise</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">flat_sliced</span> <span class="o">=</span> <span class="n">roi</span><span class="p">[</span><span class="n">slices</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">slices</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+                <span class="n">snr</span><span class="p">[</span><span class="n">slices</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">slices</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">flat_sliced</span> <span class="o">/</span> <span class="n">noise</span>
+
+        <span class="n">interesting_pix</span> <span class="o">=</span> <span class="n">snr</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span>
+
+        <span class="c1"># use connected components to blob the pixels together into single objects</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">stats</span><span class="p">,</span> <span class="n">___</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">connectedComponentsWithStats</span><span class="p">(</span><span class="n">interesting_pix</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
+
+        <span class="n">poi_subs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">out_stats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">out_snrs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># loop through each grouping of pixels</span>
+        <span class="k">for</span> <span class="n">blob</span> <span class="ow">in</span> <span class="n">stats</span><span class="p">:</span>
+            <span class="n">blob</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">],</span> <span class="n">blob</span><span class="p">)</span> <span class="c1"># type hint for pylance</span>
+            <span class="n">left</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">blob</span><span class="p">[</span><span class="n">cv2</span><span class="o">.</span><span class="n">CC_STAT_LEFT</span><span class="p">]</span>
+            <span class="n">top</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">blob</span><span class="p">[</span><span class="n">cv2</span><span class="o">.</span><span class="n">CC_STAT_TOP</span><span class="p">]</span>
+            <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">blob</span><span class="p">[</span><span class="n">cv2</span><span class="o">.</span><span class="n">CC_STAT_WIDTH</span><span class="p">]</span>
+            <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">blob</span><span class="p">[</span><span class="n">cv2</span><span class="o">.</span><span class="n">CC_STAT_HEIGHT</span><span class="p">]</span>
+            <span class="n">area</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">blob</span><span class="p">[</span><span class="n">cv2</span><span class="o">.</span><span class="n">CC_STAT_AREA</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_size</span> <span class="o">&gt;=</span> <span class="n">area</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_size</span><span class="p">:</span>
+                
+                <span class="c1"># get the image of the blob</span>
+                <span class="n">poi_roi</span> <span class="o">=</span> <span class="n">roi</span><span class="p">[</span><span class="n">top</span><span class="p">:</span><span class="n">top</span> <span class="o">+</span> <span class="n">height</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span><span class="n">left</span> <span class="o">+</span> <span class="n">width</span><span class="p">]</span>
+
+                <span class="c1"># if we want to reject blobs that are affected by saturation</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reject_saturation</span><span class="p">:</span>
+
+                    <span class="c1"># ignore blobs where a portion of the blob is saturated</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">poi_roi</span> <span class="o">&gt;=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="s1">&#39;saturation&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">))</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                        <span class="k">continue</span>
+
+                <span class="c1"># get the subscript to the maximum illumination value within the current component and append it to the</span>
+                <span class="c1"># return list</span>
+
+                <span class="c1"># get the x/y location by unraveling the index (and reversing the order</span>
+                <span class="n">local_subs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanargmax</span><span class="p">(</span><span class="n">poi_roi</span><span class="p">),</span> <span class="n">poi_roi</span><span class="o">.</span><span class="n">shape</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> 
+                <span class="c1"># store the results translated back to the full image and the statistics</span>
+                <span class="n">poi_subs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">local_subs</span> <span class="o">+</span> <span class="n">blob</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="n">roi_start</span><span class="p">)</span>
+                <span class="n">out_stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">blob</span><span class="p">)</span>
+                <span class="n">out_snrs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snr</span><span class="p">[</span><span class="n">blob</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="n">blob</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">blob</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                                    <span class="n">blob</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">blob</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">blob</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="n">FindPPOIInROIOut</span><span class="p">(</span><span class="n">poi_subs</span><span class="p">,</span> <span class="n">out_stats</span><span class="p">,</span> <span class="n">out_snrs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PointOfInterestFinder.refine_locations">
+<a class="viewcode-back" href="../../../image_processing/point_source_finder/giant.image_processing.point_source_finder.PointOfInterestFinder.refine_locations.html#giant.image_processing.point_source_finder.PointOfInterestFinder.refine_locations">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">refine_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">points_of_interest</span><span class="p">:</span> <span class="n">FindPPOIInROIOut</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">POIFinderOut</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method is used to estimate the subpixel centers of blobs in an image given the pixel level location of the</span>
+<span class="sd">        blobs.</span>
+
+<span class="sd">        The method operates by performing a user specified centroiding algorithm on the image area surrounding the</span>
+<span class="sd">        specified pixel level centers of the points of interest.  The centroiding algorithm should typically be a</span>
+<span class="sd">        subclass of :class:`.PointSpreadFunction`, however it can be any object with a ``fit`` method that inputs  3</span>
+<span class="sd">        array like parameters with the first two being pixel locations and the last being DN values and returns a</span>
+<span class="sd">        object with a ``centroid`` attribute which provides the (x, y) location of the centroid.  The centroiding</span>
+<span class="sd">        algorithm is specified using the :attr:`.centroiding` attribute. The size of the area considered in the</span>
+<span class="sd">        centroiding algorithm can be specified in the :attr:`.centroid_size` attribute.</span>
+
+<span class="sd">        This method returns both the subpixel centers of the points of interest as well as the illumination values of</span>
+<span class="sd">        the pixels containing the subpixel centers of the points of interest.  Optionally, stats about the blobs that</span>
+<span class="sd">        the centroid was fit to and then full centroid fit can be returned if ``stats`` and ``snrs`` are not</span>
+<span class="sd">        None and :attr:`.save_psf` is set to True, respectively.</span>
+
+<span class="sd">        Note that if a centroid fit is unsuccessful then no information is returned for that point.  Therefore the</span>
+<span class="sd">        output arrays lengths will be less than or equal to the length of the input array.</span>
+
+<span class="sd">        This method is designed to be used in conjunction with the :meth:`find_poi_in_roi` method; however, it can be</span>
+<span class="sd">        used with any rough identification method so long as the input format is correct.</span>
+
+<span class="sd">        :param image: The image to be processed</span>
+<span class="sd">        :param points_of_interest: The named tuple containing the pixel level information about the points of interest</span>
+<span class="sd">        :return: The subpixel centers of the points of interest (col, row), the intensity of the center of the pois,</span>
+<span class="sd">                 the fit :class:`.PointSpreadFunction` to the pois, the stats from the blobs containing the pois,</span>
+<span class="sd">                 and the peak SNR of the blobs containing the pois.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># initialize lists for output</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">illums</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">psfs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">out_stats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">out_snrs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># loop through the pixel level points of interest</span>
+        <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">center</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">points_of_interest</span><span class="o">.</span><span class="n">peak_location</span><span class="p">):</span>
+
+            <span class="n">column_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_size</span><span class="p">,</span>
+                                     <span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">row_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_size</span><span class="p">,</span>
+                                  <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">col_check</span> <span class="o">=</span> <span class="p">(</span><span class="n">column_array</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">column_array</span> <span class="o">&lt;=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">row_check</span> <span class="o">=</span> <span class="p">(</span><span class="n">row_array</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">row_array</span> <span class="o">&lt;=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># valid_check = col_check &amp; row_check</span>
+            <span class="n">cols</span><span class="p">,</span> <span class="n">rows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">column_array</span><span class="p">[</span><span class="n">col_check</span><span class="p">],</span>
+                                     <span class="n">row_array</span><span class="p">[</span><span class="n">row_check</span><span class="p">])</span>
+
+            <span class="c1"># if col_check and row_check:</span>
+            <span class="k">if</span> <span class="n">cols</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">centroid_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">:</span>
+
+                <span class="n">sampled_image</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+                <span class="n">psf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point_spread_function</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">cols</span> <span class="o">-</span> <span class="n">cols</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">rows</span> <span class="o">-</span> <span class="n">rows</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">sampled_image</span><span class="p">)</span>
+
+                <span class="n">psf</span><span class="o">.</span><span class="n">shift_centroid</span><span class="p">([</span><span class="n">cols</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">rows</span><span class="o">.</span><span class="n">mean</span><span class="p">()])</span>
+
+                <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">psf</span><span class="o">.</span><span class="n">centroid</span>  
+                
+                <span class="c1"># if we&#39;re outside the image or the fit failed skip this one</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">x0</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">y0</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">((</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">))</span><span class="o">.</span><span class="n">any</span><span class="p">()):</span>
+                    <span class="k">continue</span>
+
+                <span class="c1"># check to be sure we haven&#39;t deviated too far from the original peak of interest (avoid poorly</span>
+                <span class="c1"># conditioned systems)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">center</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                    <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">])</span>
+                    <span class="n">illums</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">image</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">center</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])])</span>
+                    <span class="n">psfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">psf</span><span class="p">)</span>
+                    <span class="n">out_stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">points_of_interest</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span>
+                    <span class="n">out_snrs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">points_of_interest</span><span class="o">.</span><span class="n">peak_snr</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">POIFinderOut</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+                            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">illums</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+                            <span class="n">psfs</span><span class="p">,</span>
+                            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">out_stats</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+                            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">out_snrs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="PointOfInterestFinder.__call__">
+<a class="viewcode-back" href="../../../image_processing/point_source_finder/giant.image_processing.point_source_finder.PointOfInterestFinder.__call__.html#giant.image_processing.point_source_finder.PointOfInterestFinder.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">region</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">POIFinderOut</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method identifies the subpixel locations of points of interest in an image.</span>
+
+<span class="sd">        This method is simply a convenient way of combining :meth:`find_poi_in_roi` and :meth:`refine_locations` and</span>
+<span class="sd">        calls these two methods directly, feeding the results of the first into the second.</span>
+
+<span class="sd">        :param image: The image to be processed</span>
+<span class="sd">        :param region: The region of interest to consider as 2 numpy arrays of indices into the images or None</span>
+<span class="sd">        :return: The subpixel centers of the points of interest (col, row), the intensity of the center of the pois,</span>
+<span class="sd">                 the fit :class:`.PointSpreadFunction` to the pois, the stats from the blobs containing the pois,</span>
+<span class="sd">                 and the peak SNR of the blobs containing the pois as a named tuple.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+ 
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">refine_locations</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_poi_in_roi</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">region</span><span class="p">))</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

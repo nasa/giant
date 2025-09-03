@@ -4,10 +4,10 @@ from giant.opnav_class import OpNav
 from giant.camera import Camera
 from giant.camera_models import PinholeModel
 from giant.image import OpNavImage
-from giant.image_processing import ImageProcessing
 from giant.utilities.spice_interface import et_callable_to_datetime_callable, create_callable_orientation
-from giant.image_processing import fft_correlator_2d
 from giant.point_spread_functions import Moment
+from giant.rotations import Rotation
+from giant.point_spread_functions.gaussians import Gaussian
 import cv2
 
 import numpy as np
@@ -20,14 +20,9 @@ class MyTestCamera(Camera):
         return image
 
 
-class TestCallable:
-    def __call__(self):
-        return
-
-
 class TestAttitudeFunction:
-    def __call__(self):
-        return
+    def __call__(self, time) -> Rotation:
+        return Rotation()
 
 
 class TestOpNavClass(TestCase):
@@ -65,8 +60,6 @@ class TestOpNavClass(TestCase):
         for row, col, illum_val in zip(rows.flatten(), cols.flatten(), illum_vals.flatten()):
             cls.image[int(np.round(row)), int(np.round(col))] += illum_val
 
-        # cls.ip = giant.ImageProcessing()
-        #
         cls.radius = radius
         cls.center = np.array(center)
 
@@ -85,7 +78,7 @@ class TestOpNavClass(TestCase):
         cmodel = self.load_cmodel()
 
         return MyTestCamera(images=images, model=cmodel, name="AwesomeCam", spacecraft_name="AwesomeSpacecraft",
-                            frame="AwesomeFrame", parse_data=False, psf=TestCallable(),
+                            frame="AwesomeFrame", parse_data=False, psf=Gaussian(),
                             attitude_function=TestAttitudeFunction(),
                             start_date=datetime(2019, 5, 4, 0, 0, 0, 0), end_date=datetime(2019, 5, 5, 0, 0, 0, 0),
                             default_image_class=OpNavImage, metadata_only=False)
@@ -93,15 +86,7 @@ class TestOpNavClass(TestCase):
     def load_opnav(self):
         cam = self.load_camera()
 
-        return OpNav(cam,
-                     image_processing_kwargs={'centroiding': Moment, 'image_denoising': cv2.GaussianBlur,
-                                              'denoising_args': ((3, 3), 0), 'denoising_kwargs': None,
-                                              'denoise_flag': False, 'pae_threshold': 40,
-                                              'pae_order': 2, 'centroid_size': 1, 'correlator': fft_correlator_2d,
-                                              'correlator_kwargs': None,
-                                              'poi_min_size': 2, 'poi_max_size': 50, 'poi_threshold': 8,
-                                              'reject_saturation': True,
-                                              'subpixel_method': 'pae', 'save_psf': False, 'return_stats': False})
+        return OpNav(cam)
 
     @staticmethod
     def load_test_image(n, j, use_opnav_image=True):
@@ -131,40 +116,6 @@ class TestOpNavClass(TestCase):
 
         self.assertIsInstance(opnav_inst.camera, MyTestCamera)
 
-        self.assertIs(opnav_inst._image_processing.centroiding, Moment)
-
-        self.assertEqual(opnav_inst._image_processing.image_denoising, cv2.GaussianBlur)
-
-        self.assertEqual(opnav_inst._image_processing.denoising_args, ((3, 3), 0))
-
-        self.assertEqual(opnav_inst._image_processing.denoising_kwargs, {})
-
-        self.assertFalse(opnav_inst._image_processing.denoise_flag)
-
-        self.assertEqual(opnav_inst._image_processing.pae_threshold, 40)
-
-        self.assertEqual(opnav_inst._image_processing.pae_order, 2)
-
-        self.assertEqual(opnav_inst._image_processing.centroid_size, 1)
-
-        self.assertTrue(opnav_inst._image_processing.correlator, fft_correlator_2d)
-
-        self.assertEqual(opnav_inst._image_processing.correlator_kwargs, {})
-
-        self.assertEqual(opnav_inst._image_processing.poi_min_size, 2)
-
-        self.assertEqual(opnav_inst._image_processing.poi_max_size, 50)
-
-        self.assertEqual(opnav_inst._image_processing.poi_threshold, 8)
-
-        self.assertTrue(opnav_inst._image_processing.reject_saturation)
-
-        self.assertEqual(opnav_inst._image_processing.subpixel_method.name, 'PAE')
-
-        self.assertFalse(opnav_inst._image_processing.save_psf)
-
-        self.assertFalse(opnav_inst._image_processing.return_stats)
-
     # DONE
     def test_camera_property(self):
 
@@ -181,19 +132,6 @@ class TestOpNavClass(TestCase):
         opnav_inst.camera = MyOtherTestCamera()
 
         self.assertIsInstance(opnav_inst.camera, MyOtherTestCamera)
-
-    def test_image_processing_property(self):
-
-        opnav_inst = self.load_opnav()
-
-        self.assertEqual(opnav_inst.image_processing, opnav_inst._image_processing)
-
-        self.assertIsInstance(opnav_inst.image_processing, ImageProcessing)
-
-        nip = ImageProcessing()
-        opnav_inst.image_processing = nip
-
-        self.assertIs(opnav_inst.image_processing, nip)
 
     def test_add_images(self):
 

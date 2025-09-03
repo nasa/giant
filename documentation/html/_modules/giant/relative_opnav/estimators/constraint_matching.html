@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.relative_opnav.estimators.constraint_matching &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../../index.html">
+    <img class="logo" src="../../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.relative_opnav.estimators.constraint_matching</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module implements opportunistic feature matching between images or between an image and a template</span>
+
+<span class="sd">Description of the Technique</span>
+<span class="sd">----------------------------</span>
+
+<span class="sd">Constraint matching, or opportunistic feature matching, refers to identifying the same &quot;feature&quot; in </span>
+<span class="sd">two different images, or between an image and a rendered template.</span>
+
+<span class="sd">Between Images</span>
+<span class="sd">^^^^^^^^^^^^^^</span>
+
+<span class="sd">When doing constraint matching between 2 images, the observations are not tied to known points on the </span>
+<span class="sd">surface of the target.  This is thereore a less accurate technique (at least from an overal orbit </span>
+<span class="sd">determination perspective) than traditional terrain relative navigation, as the information we extract </span>
+<span class="sd">only pertains to the change in the location and orientation of the camera from one image to the next </span>
+<span class="sd">(and in general is just an estimate of the direction of motion due to scale ambiguities).  </span>
+
+<span class="sd">That being said, this can still be a powerful measurement type, particularly when fused with other data sets</span>
+<span class="sd">that can resolve the scale ambiguity.  Additionally, it can be used even at unmapped bodies, which can</span>
+<span class="sd">dramatically reduce the time required to be able to operate at a new target.</span>
+
+<span class="sd">Between and Image and a Template</span>
+<span class="sd">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>
+
+<span class="sd">When doing constraint matching between an image and a template we can actually tie the observations back to</span>
+<span class="sd">a known map of the body (whatever map the template was rendered from).  This means that the measurements can</span>
+<span class="sd">generally be treated the same as regular TRN/SFN measurements, though, if your template comes from a global </span>
+<span class="sd">shape model, you should expect that the resulting feature locations are less accurate than would be from</span>
+<span class="sd">a detailed map intended to make navigation maps.  Another difference from regular TRN/SFN is that you are</span>
+<span class="sd">unlikely to observe the same exact &quot;feature&quot; multiple times in different images, rather, each observation </span>
+<span class="sd">will be slightly different.  This removes some information from the orbit determination process as each observation</span>
+<span class="sd">is unique and mostly unrelated to any other observations (whereas in traditional TRN/SFN, we can do things like </span>
+<span class="sd">estimate both the spacecraft state and the feature locations since we receive multiple observations of the same</span>
+<span class="sd">feature from different images).</span>
+
+<span class="sd">The primary benefit to constraint matching in this case is again that you can begin doing a form of TRN much earlier </span>
+<span class="sd">in operations, before there has been time to make a detailed set of maps for navigation purposes.</span>
+
+<span class="sd">Tuning</span>
+<span class="sd">------</span>
+
+<span class="sd">There are several tuning parameters that can impact the performance of constraint matching, as outlined in the </span>
+<span class="sd">:class:`ConstraintMatchingOptions` class. In general though, the most critical tuning parameters are the choice </span>
+<span class="sd">of the :attr:`~ConstraintMatchingOptions.feature_matcher` and the </span>
+<span class="sd">:attr:`~ConstraintMatchingOptions.max_time_difference`, with the `feature_matcher` being the more important of</span>
+<span class="sd">the two.  In general, GIANT ships with several &quot;hand tuned&quot; feature matchers available, including SIFT and Orb.</span>
+<span class="sd">These can perform well between a template and an image, or between two images where the illumincation conditions</span>
+<span class="sd">are relatively similar (with SIFT generally outperforming Orb), but they will struggle with large changes in </span>
+<span class="sd">illumination conditions.  Optionally, you can install the open source implementation of RoMa (as described in</span>
+<span class="sd">:mod:`.roma_matcher`) which is a machine learning based technique for matching images.  This model, even without</span>
+<span class="sd">additional fine tuning, has show excellent performance even in challenging illumincation condition changes and</span>
+<span class="sd">also outperforms the hand-tuned features in cases where they are well suited</span>
+
+<span class="sd">Use</span>
+<span class="sd">---</span>
+
+<span class="sd">The class provided in this module is usually not used by the user directly, instead it is usually interfaced with</span>
+<span class="sd">through the :class:`.RelativeOpNav` class using the identifier :attr:`~.RelativeOpNav.constraint_matching`.  For more</span>
+<span class="sd">details on using the :class:`.RelativeOpNav` interface, please refer to the :mod:`.relnav_class` documentation.  For</span>
+<span class="sd">more details on using the technique class directly, as well as a description of the ``details`` dictionaries produced</span>
+<span class="sd">by this technique, refer to the following class documentation.</span>
+
+<span class="sd">.. warning::</span>
+<span class="sd">    While this technique is functional, it has undergone less development and testing than other GIANT techniques</span>
+<span class="sd">    and there could therefore be some undiscovered bugs.  Additionally, the documentation needs a little more </span>
+<span class="sd">    massaging.  PRs are welcome...</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.relative_opnav.estimators.estimator_interface_abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">RelNavEstimator</span><span class="p">,</span> <span class="n">RelNavObservablesType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.rays</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rays</span><span class="p">,</span> <span class="n">compute_rays</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">SceneObject</span><span class="p">,</span> <span class="n">Shape</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.illumination</span><span class="w"> </span><span class="kn">import</span> <span class="n">IlluminationModel</span><span class="p">,</span> <span class="n">McEwenIllumination</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera</span><span class="w"> </span><span class="kn">import</span> <span class="n">Camera</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpNavImage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image_processing.feature_matchers</span><span class="w"> </span><span class="kn">import</span> <span class="n">FeatureMatcher</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">giant.image_processing.feature_matchers</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">feature_matchers</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptionConfigured</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptions</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DOUBLE_ARRAY</span>
+
+
+<div class="viewcode-block" id="ConstraintMatchingOptions">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/constraint_matching/giant.relative_opnav.estimators.constraint_matching.ConstraintMatchingOptions.html#giant.relative_opnav.estimators.constraint_matching.ConstraintMatchingOptions">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConstraintMatchingOptions</span><span class="p">(</span><span class="n">UserOptions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This dataclass serves as one way to control the settings for the :class:`.ConstraintMatching` class.</span>
+
+<span class="sd">    You can set any of the options on an instance of this dataclass and pass it to the</span>
+<span class="sd">    :class:`.ConstraintMatching` class at initialization (or through the method</span>
+<span class="sd">    :meth:`.ConstraintMatching.apply_options`) to set the settings on the class. This class is the preferred way</span>
+<span class="sd">    of setting options on the class due to ease of use in IDEs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">match_against_template</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A flag to match keypoints between the image and a rendered template.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">match_across_images</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A flag to match keypoints across multiple images.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">min_constraints</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Minimum number of matched constraints in order for the constraint matching to be considered successful.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">compute_constraint_positions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A flag to compute the constraint target-fixed positions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">brdf</span><span class="p">:</span> <span class="n">IlluminationModel</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">McEwenIllumination</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The illumination model that transforms the geometric ray tracing results (see :const:`.ILLUM_DTYPE`) into an</span>
+<span class="sd">    intensity values. Typically this is one of the options from the :mod:`.illumination` module).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">rays</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Rays</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Rays</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The rays to use when rendering the template.  If ``None`` then the rays required to render the template will be </span>
+<span class="sd">    automatically computed.  Optionally, a list of :class:`.Rays` objects where each element corresponds to the rays to </span>
+<span class="sd">    use for the corresponding template in the :attr:`.Scene.target_objs` list.  Typically this should be left as </span>
+<span class="sd">    ``None``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">grid_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The subsampling to use per pixel when rendering the template.  This should be the number of sub-pixels per side of </span>
+<span class="sd">    a pixel (that is if grid_size=3 then subsampling will be in an equally spaced 3x3 grid -&gt; 9 sub-pixels per pixel).  </span>
+<span class="sd">    If ``rays`` is not None then this is ignored</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">template_overflow_bounds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The number of pixels to render in the template that overflow outside of the camera field of view.  Set to a number </span>
+<span class="sd">    less than 0 to accept all overflow pixels in the template.  Set to a number greater than or equal to 0 to limit the </span>
+<span class="sd">    number of overflow pixels.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">max_time_difference</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Maximum time difference between image observation dates for keypoints to be matched between images. Set to a</span>
+<span class="sd">    datetime.timedelta type.  If None, then a maximum time difference will not be applied.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">feature_matcher</span><span class="p">:</span> <span class="n">FeatureMatcher</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">feature_matchers</span><span class="o">.</span><span class="n">SIFTKeypointMatcher</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The feature matcher instance to use</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="ConstraintMatching">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/constraint_matching/giant.relative_opnav.estimators.constraint_matching.ConstraintMatching.html#giant.relative_opnav.estimators.constraint_matching.ConstraintMatching">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConstraintMatching</span><span class="p">(</span><span class="n">UserOptionConfigured</span><span class="p">[</span><span class="n">ConstraintMatchingOptions</span><span class="p">],</span> <span class="n">RelNavEstimator</span><span class="p">,</span> <span class="n">ConstraintMatchingOptions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class implements constraint matching in GIANT.</span>
+<span class="sd">    </span>
+<span class="sd">    See the module documentation or the attribute and method documentation for more details.</span>
+<span class="sd">    </span>
+<span class="sd">    .. warning::</span>
+<span class="sd">        While this technique is functional, it has undergone less development and testing than other GIANT techniques</span>
+<span class="sd">        and there could therefore be some undiscovered bugs.  Additionally, the documentation needs a little more </span>
+<span class="sd">        massaging.  PRs are welcome...</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">observable_type</span>  <span class="o">=</span> <span class="p">[</span><span class="n">RelNavObservablesType</span><span class="o">.</span><span class="n">CONSTRAINT</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This technique generates CONSTRAINT bearing observables</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">generates_templates</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A flag specifying that this RelNav estimator generates and stores templates in the :attr:`templates` attribute.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span> 
+                 <span class="n">options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ConstraintMatchingOptions</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param scene: The scene describing the a priori locations of the targets and the light source.</span>
+<span class="sd">        :param camera: The :class:`.Camera` object containing the camera model and images to be analyzed</span>
+<span class="sd">        :param options: A dataclass specifying the options to set for this instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ConstraintMatchingOptions</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraint_ids</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">))]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">))]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraint_positions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>
+
+
+
+<div class="viewcode-block" id="ConstraintMatching.render">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/constraint_matching/giant.relative_opnav.estimators.constraint_matching.ConstraintMatching.render.html#giant.relative_opnav.estimators.constraint_matching.ConstraintMatching.render">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method returns the computed illumination values for the given target and the (sub)pixels that each</span>
+<span class="sd">        illumination value corresponds to.</span>
+
+<span class="sd">        The illumination values are computed by (a) determining the rays to trace through the scene (either user</span>
+<span class="sd">        specified or by a call to :meth:`compute_rays`), (b) performing a single bounce ray trace through the scene</span>
+<span class="sd">        using a call to :meth:`.Scene.get_illumination_inputs`, and then (c) converting the results of the ray trace</span>
+<span class="sd">        into illumination values using :attr:`brdf`.</span>
+
+<span class="sd">        :param target_ind: index into the :attr:`.Scene.target_objs` list of the target being rendering</span>
+<span class="sd">        :param target: the :class:`.SceneObject` for the target being rendered</span>
+<span class="sd">        :param temperature: The temperature of the camera at the time the scene is being rendered.</span>
+<span class="sd">        :return: the computed illumination values for each ray and the pixel coordinates for each ray.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># determine the rays to trace through the scene</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># compute the rays required to render the requested target</span>
+            <span class="p">(</span><span class="n">rays</span><span class="p">,</span> <span class="n">uv</span><span class="p">),</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_rays</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rays</span><span class="p">,</span> <span class="n">Rays</span><span class="p">):</span>
+
+            <span class="n">rays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays</span>
+            <span class="c1"># compute the pixel location of each ray</span>
+            <span class="n">uv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">rays</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">rays</span><span class="o">.</span><span class="n">direction</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># compute the rays required to render the requested target</span>
+            <span class="p">(</span><span class="n">rays</span><span class="p">,</span> <span class="n">uv</span><span class="p">),</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_rays</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">rays</span><span class="p">:</span> <span class="n">Rays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
+
+            <span class="c1"># compute the pixel location of each ray</span>
+            <span class="n">uv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">rays</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">rays</span><span class="o">.</span><span class="n">direction</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Rendering </span><span class="si">{}</span><span class="s1"> rays&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rays</span><span class="o">.</span><span class="n">num_rays</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">illum_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">get_illumination_inputs</span><span class="p">(</span><span class="n">rays</span><span class="p">)</span>
+
+        <span class="c1"># compute the illumination for each ray and return it along with the pixel location for each ray</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">brdf</span><span class="p">(</span><span class="n">illum_inputs</span><span class="p">),</span> <span class="n">uv</span>  <span class="c1"># type: ignore</span></div>
+
+
+<div class="viewcode-block" id="ConstraintMatching.compute_rays">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/constraint_matching/giant.relative_opnav.estimators.constraint_matching.ConstraintMatching.compute_rays.html#giant.relative_opnav.estimators.constraint_matching.ConstraintMatching.compute_rays">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_rays</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span>
+                     <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Rays</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method computes the required rays to render a given target based on the location of the target in the</span>
+<span class="sd">        image.</span>
+
+<span class="sd">        This method first determines which pixels to trace. If a circumscribing sphere is defined for the target,</span>
+<span class="sd">        the edges of the sphere are used to compute the required pixels; otherwise, the bounding box is used. The pixels</span>
+<span class="sd">        are checked to be sure they are contained in the image.  If the expected target location is completely outside</span>
+<span class="sd">        of the image then it is relocated to be in the center of the image (for rendering purposes). The requested</span>
+<span class="sd">        subsampling for each pixel is then applied, and the sub-pixels are then converted into rays originating at the</span>
+<span class="sd">        camera origin using the :class:`.CameraModel`.</span>
+
+<span class="sd">        :param target: The target that is being rendered</span>
+<span class="sd">        :param temperature: The temperature of the camera at the time the target is being rendered</span>
+<span class="sd">        :return: The rays to trace through the scene and the  the pixel coordinates for each ray as a tuple, plus</span>
+<span class="sd">                 the bounds of the pixel coordinates</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">local_min</span><span class="p">,</span> <span class="n">local_max</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">get_bounding_pixels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="c1"># If the template size is too small, artificially increase it so we can get the PSF in there</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">local_max</span> <span class="o">-</span> <span class="n">local_min</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">local_max</span> <span class="o">+=</span> <span class="mi">3</span>
+            <span class="n">local_min</span> <span class="o">-=</span> <span class="mi">3</span>
+
+        <span class="c1"># Determine the actual bounds to use for the template so that it is within the image</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_overflow_bounds</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">min_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">local_min</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">template_overflow_bounds</span><span class="p">,</span>
+                                              <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">template_overflow_bounds</span><span class="p">])</span>
+
+            <span class="n">max_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">local_max</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">n_cols</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_overflow_bounds</span><span class="p">,</span>
+                                              <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">n_rows</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_overflow_bounds</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">min_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">local_min</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+
+            <span class="n">max_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">local_max</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">n_cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">n_rows</span><span class="p">])</span>
+
+        <span class="c1"># If the min inds are greater than the max inds then they body is outside of the FOV, move it to the center of</span>
+        <span class="c1"># the image as a work around and restart</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">min_inds</span> <span class="o">&gt;</span> <span class="n">max_inds</span><span class="p">):</span>
+
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;the predicted location of the body is outside of the FOV.  </span><span class="se">\n</span><span class="s2">&quot;</span>
+                          <span class="s2">&quot;We are moving the object to the middle of the FOV and attempting to render that way.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># set the target fully along the z-axis of the camera</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">pos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+            <span class="n">pos</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="c1"># change the target position</span>
+            <span class="n">target</span><span class="o">.</span><span class="n">change_position</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+            <span class="c1"># recurse to compute the rays for the new target location</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_rays</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Compute the rays for the template</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_overflow_bounds</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">compute_rays</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">min_inds</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">max_inds</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="p">(</span><span class="n">min_inds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">max_inds</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                                    <span class="n">grid_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid_size</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">),</span> <span class="p">(</span><span class="n">min_inds</span><span class="p">,</span> <span class="n">max_inds</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">compute_rays</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">local_min</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">local_max</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="p">(</span><span class="n">local_min</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">local_max</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                                    <span class="n">grid_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid_size</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">),</span> <span class="p">(</span><span class="n">local_min</span><span class="p">,</span> <span class="n">local_max</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">n_vals</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n_vals</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_vals</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">n_vals</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">vals</span> <span class="o">=</span> <span class="n">values</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">vals</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="n">hash_int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(),</span> <span class="mi">16</span><span class="p">))[:</span><span class="n">length</span><span class="p">])</span>
+            <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hash_int</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">keys</span>
+
+<div class="viewcode-block" id="ConstraintMatching.match_image_to_template">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/constraint_matching/giant.relative_opnav.estimators.constraint_matching.ConstraintMatching.match_image_to_template.html#giant.relative_opnav.estimators.constraint_matching.ConstraintMatching.match_image_to_template">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">match_image_to_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">include_targets</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Matches keypoints between an image and a rendered template.</span>
+<span class="sd">        </span>
+<span class="sd">        :param image: The image to locate the targets in</span>
+<span class="sd">        :param include_targets: A list specifying whether to process the corresponding target in</span>
+<span class="sd">                                :attr:`.Scene.target_objs` or ``None``.  If ``None`` then all targets are processed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">target_ind</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_generator</span><span class="p">(</span><span class="n">include_targets</span><span class="p">):</span>
+
+            <span class="c1"># Do the ray trace and render the template</span>
+            <span class="n">illums</span><span class="p">,</span> <span class="n">locs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">target_ind</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+
+            <span class="c1"># Compute the expected location of the object in the image</span>
+            <span class="n">target_center_bearing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span>
+                <span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="p">,</span>
+                <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+            <span class="c1"># Get the expected bounds of the template in the image</span>
+            <span class="c1"># noinspection PyArgumentList</span>
+            <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">locs</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(),</span> <span class="n">locs</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">())</span>
+
+            <span class="c1"># Compute the size of the template in pixels</span>
+            <span class="n">template_size</span> <span class="o">=</span> <span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span>
+
+            <span class="c1"># Initialize the template matrix</span>
+            <span class="n">template</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">template_size</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+
+            <span class="c1"># Compute the subscripts into the template</span>
+            <span class="n">subs</span> <span class="o">=</span> <span class="p">(</span><span class="n">locs</span> <span class="o">-</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">round</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+            <span class="c1"># use numpy fancy stuff to add the computed brightness for each ray to the appropriate pixels</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="p">(</span><span class="n">subs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">subs</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">illums</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+
+            <span class="c1"># Apply the psf of the camera to the template</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">psf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">templates</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">psf</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+
+            <span class="c1"># Determine the center of the body in the template</span>
+            <span class="n">center_of_template</span> <span class="o">=</span> <span class="n">target_center_bearing</span> <span class="o">-</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            
+            <span class="c1"># match keypoints between image and rendered template</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_matcher</span><span class="o">.</span><span class="n">match_images</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">templates</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">template</span>
+
+            <span class="n">n_constraints</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span>
+
+            <span class="c1"># check if matched keypoints were found</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unable to match keypoints between image and rendered template.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Failed&#39;</span><span class="p">:</span> <span class="s1">&#39;Unable to match keypoints between image and rendered template.&#39;</span><span class="p">}</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># check if the correlation score was too low</span>
+            <span class="k">if</span> <span class="n">n_constraints</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_constraints</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of detected constraints (</span><span class="si">{</span><span class="n">n_constraints</span><span class="si">}</span><span class="s2">) is less than the minimum &quot;</span>
+                              <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">min_constraints</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Failed&#39;</span><span class="p">:</span> <span class="s1">&#39;Too few constraints detected.&#39;</span><span class="p">,</span>
+                                            <span class="s2">&quot;Number of Constraints&quot;</span><span class="p">:</span> <span class="n">n_constraints</span><span class="p">}</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># store the observed constraint coordinates (from the image)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">matches</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span>  <span class="c1"># image</span>
+
+            <span class="c1"># store the computed constraint coordinates (from the template)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">matches</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># template</span>
+
+            <span class="c1"># compute and store the constraint ids, keyed from the observed constraint coordinates</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">constraint_ids</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_keys</span><span class="p">(</span><span class="n">matches</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:])</span>
+
+            <span class="c1"># store the details of the fit</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Number of Constraints&quot;</span><span class="p">:</span> <span class="n">n_constraints</span><span class="p">,</span>
+                                        <span class="s2">&quot;Target Template Coordinates&quot;</span><span class="p">:</span> <span class="n">center_of_template</span><span class="p">}</span>
+
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="ConstraintMatching.match_keypoints_across_images">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/constraint_matching/giant.relative_opnav.estimators.constraint_matching.ConstraintMatching.match_keypoints_across_images.html#giant.relative_opnav.estimators.constraint_matching.ConstraintMatching.match_keypoints_across_images">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">match_keypoints_across_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">include_targets</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Matches keypoints across different images.</span>
+<span class="sd">        </span>
+<span class="sd">        .. warning::</span>
+<span class="sd">            This currently doesn&#39;t really work if you have multiple targets in an image/scene</span>
+<span class="sd">        </span>
+<span class="sd">        :param image: The image to locate the targets in</span>
+<span class="sd">        :param include_targets: A list specifying whether to process the corresponding target in</span>
+<span class="sd">                                :attr:`.Scene.target_objs` or ``None``.  If ``None`` then all targets are processed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">target_ind</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_generator</span><span class="p">(</span><span class="n">include_targets</span><span class="p">):</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">constraint_ids</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">__</span><span class="p">,</span> <span class="n">image2</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="p">:</span>
+
+                <span class="c1"># TODO: replace this check with more robust check for &gt; 1 cameras</span>
+                <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">==</span> <span class="n">image2</span><span class="o">.</span><span class="n">observation_date</span><span class="p">:</span>  <span class="c1"># images are the same</span>
+                    <span class="k">continue</span>
+
+                <span class="c1"># TODO: replace this check with some better logic</span>
+                <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">&gt;</span> <span class="n">image2</span><span class="o">.</span><span class="n">observation_date</span><span class="p">:</span>  <span class="c1"># only process images in forward order</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Assuming we already processed this image pair.&#39;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_time_difference</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span>
+                        <span class="nb">abs</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">-</span> <span class="n">image2</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time_difference</span><span class="p">):</span>
+
+                    <span class="n">matches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_matcher</span><span class="o">.</span><span class="n">match_images</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">image2</span><span class="p">)</span>
+
+                    <span class="n">image_keypts</span> <span class="o">=</span> <span class="n">matches</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span>
+                    <span class="n">image2_keypts</span> <span class="o">=</span> <span class="n">matches</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span>
+
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">matches</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+
+                        <span class="n">image_keypt</span> <span class="o">=</span> <span class="n">matches</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span>
+                        <span class="n">image2_keypt</span> <span class="o">=</span> <span class="n">matches</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span>
+
+                        <span class="n">constraint_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_keys</span><span class="p">(</span><span class="n">image_keypt</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+                        <span class="c1"># TODO: Currently, constraints are not checked across images</span>
+                        <span class="k">if</span> <span class="n">constraint_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraint_ids</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">constraint_ids</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">constraint_id</span><span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="n">target_ind</span><span class="p">][</span><span class="n">constraint_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+                        <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="n">target_ind</span><span class="p">][</span><span class="n">constraint_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span>
+                                                <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">,</span>  <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">image_keypt</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]),</span>
+                                                <span class="n">image2</span><span class="o">.</span><span class="n">observation_date</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">image2_keypt</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]])))</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">image_keypts</span><span class="p">,</span> <span class="n">image2_keypts</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="ConstraintMatching.compute_constraint_position">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/constraint_matching/giant.relative_opnav.estimators.constraint_matching.ConstraintMatching.compute_constraint_position.html#giant.relative_opnav.estimators.constraint_matching.ConstraintMatching.compute_constraint_position">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_constraint_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">include_targets</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Trace from the camera to the target to estimate roughly the location that corresponds to each</span>
+<span class="sd">        constraint on the target model.</span>
+<span class="sd">        </span>
+<span class="sd">        :param image: The image to locate the targets in</span>
+<span class="sd">        :param include_targets: A list specifying whether to process the corresponding target in</span>
+<span class="sd">                                :attr:`.Scene.target_objs` or ``None``.  If ``None`` then all targets are processed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">target_ind</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_generator</span><span class="p">(</span><span class="n">include_targets</span><span class="p">):</span>
+
+            <span class="n">constraint_rays</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">compute_rays</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                                              <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">][</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span>  <span class="c1"># type: ignore</span>
+                                              <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span>  <span class="c1"># type: ignore</span>
+                                              <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Shape</span><span class="p">)</span>
+            <span class="n">intersects</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">constraint_rays</span><span class="p">)</span>
+
+            <span class="c1"># TODO: Check if any intersects are False</span>
+
+            <span class="n">camera_to_body_rotation</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">inv</span><span class="p">()</span> 
+
+            <span class="n">intersect_positions_body_frame</span> <span class="o">=</span> <span class="p">(</span><span class="n">camera_to_body_rotation</span><span class="o">.</span><span class="n">matrix</span> <span class="o">@</span>
+                                              <span class="n">intersects</span><span class="p">[</span><span class="s2">&quot;intersect&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+            <span class="n">camera_to_target_position_camera</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">position</span>
+            <span class="n">camera_to_target_body_frame</span> <span class="o">=</span> <span class="n">camera_to_body_rotation</span><span class="o">.</span><span class="n">matrix</span> <span class="o">@</span> <span class="n">camera_to_target_position_camera</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">constraint_positions</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">intersect_positions_body_frame</span> <span class="o">-</span> <span class="n">camera_to_target_body_frame</span>
+
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="ConstraintMatching.estimate">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/constraint_matching/giant.relative_opnav.estimators.constraint_matching.ConstraintMatching.estimate.html#giant.relative_opnav.estimators.constraint_matching.ConstraintMatching.estimate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">include_targets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Do the estimation according to the current settings</span>
+<span class="sd">        </span>
+<span class="sd">        .. warning::</span>
+<span class="sd">            Before calling this method be sure that the scene has been updated to correspond to the correct</span>
+<span class="sd">            image time.  This method does not update the scene automatically, even if the :attr:`scene` attribute is an</span>
+<span class="sd">            :class:`.Scene` instance.</span>
+
+<span class="sd">        :param image: The image to locate the targets in</span>
+<span class="sd">        :param include_targets: A list specifying whether to process the corresponding target in</span>
+<span class="sd">                                :attr:`.Scene.target_objs` or ``None``.  If ``None`` then all targets are processed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">match_against_template</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">match_across_images</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;At least one of the match_against_template or match_across_images flags must be True.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">match_against_template</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">generates_templates</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">match_image_to_template</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">include_targets</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">match_across_images</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">match_keypoints_across_images</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">include_targets</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_constraint_positions</span><span class="p">:</span>  <span class="c1"># raytrace the predicted keypoint coordinate to the shape to compute the &#39;target position&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">compute_constraint_position</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">include_targets</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

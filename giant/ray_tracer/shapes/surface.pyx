@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 """
@@ -758,6 +757,8 @@ cdef class RawSurface(Surface):
             # rotate the reference ellipsoid
             self.reference_ellipsoid.rotate(rotation)
 
+        return self
+
     def translate(self, translation):
         """
         translate(self, translation)
@@ -787,6 +788,8 @@ cdef class RawSurface(Surface):
         if self.reference_ellipsoid:
             # translate the reference ellipsoid
             self.reference_ellipsoid.translate(translation)
+
+        return self
 
     def compute_bounding_box(self):
         """

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.image_processing.otsu &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.image_processing.otsu</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides a function for performing automatic optimal thresholding based on histogram peaks referred to as the Otsu method.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">fmin</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+
+
+<div class="viewcode-block" id="otsu">
+<a class="viewcode-back" href="../../../image_processing/otsu/giant.image_processing.otsu.otsu.html#giant.image_processing.otsu">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">otsu</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function performs multilevel Otsu thresholding on a 2D array.</span>
+
+<span class="sd">    Otsu thresholding is a technique by which the optimal threshold is chosen so as to split a 2D array based on the</span>
+<span class="sd">    peaks in its histogram.  In multilevel thresholding, we choose multiple optimal thresholds so that multiple peaks</span>
+<span class="sd">    are separated.  This process is described in</span>
+<span class="sd">    &quot;Otsu N, A Threshold Selection Method from Gray-Level Histograms, IEEE Trans. Syst. Man Cybern. 1979;9:62-66.&quot;</span>
+
+<span class="sd">    To use this function, simply input the image and the number of times you want to split the histogram.  The function</span>
+<span class="sd">    will then return the optimal threshold values used to bin the image (n-1 thresholds), and a labeled image where each</span>
+<span class="sd">    bin has its own number (n labels).  Note that the function will convert the image to a uint8 image if it is not</span>
+<span class="sd">    already, and the thresholds will correspond to the uint8 image.</span>
+
+<span class="sd">    This function uses the opencv threhold function to perform the thresholding when n=2 and is based off of the</span>
+<span class="sd">    MATLAB function otsu</span>
+<span class="sd">    (https://www.mathworks.com/matlabcentral/fileexchange/26532-image-segmentation-using-otsu-thresholding?s_tid=prof_contriblnk)</span>
+<span class="sd">    for when n&gt;=3.</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy</span>
+<span class="sd">    &gt;&gt;&gt; from giant.image_processing import otsu</span>
+<span class="sd">    &gt;&gt;&gt; from giant.point_spread_functions import Gaussian</span>
+<span class="sd">    &gt;&gt;&gt; im = numpy.zeros((100, 100), dtype=numpy.float64)</span>
+<span class="sd">    &gt;&gt;&gt; x, y = numpy.meshgrid(numpy.arange(10), numpy.arange(10))</span>
+<span class="sd">    &gt;&gt;&gt; psf = Gaussian(sigma_x=1.5, sigma_y=0.7, amplitude=100, centroid_x=5, centroid_y=5)</span>
+<span class="sd">    &gt;&gt;&gt; im[50:60, 50:60] = psf.evaluate(x, y)</span>
+<span class="sd">    &gt;&gt;&gt; thresh, labeled_im = otsu(im, 3)</span>
+<span class="sd">    &gt;&gt;&gt; print(thresh)</span>
+<span class="sd">    [0.24723526470339388, 2.235294117647059]</span>
+
+<span class="sd">    :param image: The grayscale image to be thresholded as a numpy array</span>
+<span class="sd">    :param n: The number of times to bin the image (for a binary threshold n=2)</span>
+<span class="sd">    :return: The n-1 threshold values and the labeled image with the background</span>
+<span class="sd">             being labeled 0 and each subsequent bin being labeled with the next integer (ie 1, 2, 3, ...)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># convert the image to uint 8 (Assume it is already grayscale)</span>
+    <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">:</span>
+        <span class="c1"># noinspection PyArgumentList</span>
+        <span class="n">delta_conv</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">iu8</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">-</span> <span class="n">delta_conv</span>
+        <span class="n">multi_conv</span> <span class="o">=</span> <span class="mi">255</span> <span class="o">/</span> <span class="n">iu8</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">iu8</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">iu8</span> <span class="o">*</span> <span class="n">multi_conv</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">iu8</span> <span class="o">=</span> <span class="n">image</span>
+        <span class="n">delta_conv</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">multi_conv</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">threshold</span><span class="p">,</span> <span class="n">labeled_image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">threshold</span><span class="p">(</span><span class="n">iu8</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">THRESH_OTSU</span> <span class="o">+</span> <span class="n">cv2</span><span class="o">.</span><span class="n">THRESH_BINARY</span><span class="p">)</span>
+
+        <span class="n">threshold</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span>
+        <span class="n">threshold</span> <span class="o">/=</span> <span class="n">multi_conv</span>
+        <span class="n">threshold</span> <span class="o">+=</span> <span class="n">delta_conv</span>
+
+        <span class="n">threshold</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">threshold</span><span class="p">],</span> <span class="n">labeled_image</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># get the unique dn values at uint8 level</span>
+        <span class="n">unique_iu8</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">iu8</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+
+        <span class="n">range_unique_image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">unique_iu8</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># generate a histogram of the values</span>
+        <span class="n">hist</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">iu8</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">unique_iu8</span><span class="p">,</span> <span class="p">[</span><span class="mi">256</span><span class="p">]]))</span>
+
+        <span class="c1"># estimate the pdf by scaling back so the integral is equal to 1</span>
+        <span class="n">pdf</span> <span class="o">=</span> <span class="n">hist</span> <span class="o">/</span> <span class="n">hist</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="n">range_unique_image_pdf</span> <span class="o">=</span> <span class="n">range_unique_image</span> <span class="o">*</span> <span class="n">pdf</span>
+
+        <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+
+            <span class="c1"># determine the zeroth and first-order cumulative moments</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">pdf</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="n">range_unique_image_pdf</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
+
+            <span class="n">w0</span> <span class="o">=</span> <span class="n">w</span>
+            <span class="n">w2</span> <span class="o">=</span> <span class="n">pdf</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">w0</span><span class="p">,</span> <span class="n">w2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">w0</span><span class="p">,</span> <span class="n">w2</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+
+            <span class="n">mu0</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">/</span> <span class="n">w</span>
+
+            <span class="n">mu2</span> <span class="o">=</span> <span class="p">(</span><span class="n">range_unique_image_pdf</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span> <span class="o">/</span> <span class="n">pdf</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">cumsum</span><span class="p">())[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">mu0</span><span class="p">,</span> <span class="n">mu2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">mu0</span><span class="p">,</span> <span class="n">mu2</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+
+            <span class="n">w1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">w0</span> <span class="o">-</span> <span class="n">w2</span>
+
+            <span class="n">w1</span><span class="p">[</span><span class="n">w1</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+            <span class="n">mu0mue</span> <span class="o">=</span> <span class="n">mu0</span> <span class="o">-</span> <span class="n">mu</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">mu2mue</span> <span class="o">=</span> <span class="n">mu2</span> <span class="o">-</span> <span class="n">mu</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">w0mu0mue</span> <span class="o">=</span> <span class="n">w0</span> <span class="o">*</span> <span class="n">mu0mue</span>
+            <span class="n">w2mu2mue</span> <span class="o">=</span> <span class="n">w2</span> <span class="o">*</span> <span class="n">mu2mue</span>
+
+            <span class="n">sigma2b</span> <span class="o">=</span> <span class="n">w0mu0mue</span> <span class="o">*</span> <span class="n">mu0mue</span> <span class="o">+</span> <span class="n">w2mu2mue</span> <span class="o">*</span> <span class="n">mu2mue</span> <span class="o">+</span> <span class="p">(</span><span class="n">w0mu0mue</span> <span class="o">+</span> <span class="n">w2mu2mue</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">w1</span>
+
+            <span class="n">sigma2b</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">sigma2b</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="n">k</span> <span class="o">=</span> <span class="n">sigma2b</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+
+            <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">sigma2b</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+            <span class="n">labeled_image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+            <span class="n">labeled_image</span><span class="p">[(</span><span class="n">iu8</span> <span class="o">&gt;</span> <span class="n">unique_iu8</span><span class="p">[</span><span class="n">k1</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">iu8</span> <span class="o">&lt;=</span> <span class="n">unique_iu8</span><span class="p">[</span><span class="n">k2</span><span class="p">])]</span> <span class="o">=</span> <span class="mi">1</span>
+
+            <span class="n">labeled_image</span><span class="p">[</span><span class="n">iu8</span> <span class="o">&gt;</span> <span class="n">unique_iu8</span><span class="p">[</span><span class="n">k2</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">2</span>
+
+            <span class="n">thresholds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">unique_iu8</span><span class="p">[</span><span class="n">k1</span><span class="p">],</span> <span class="n">unique_iu8</span><span class="p">[</span><span class="n">k2</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+            <span class="n">thresholds</span> <span class="o">/=</span> <span class="n">multi_conv</span>
+            <span class="n">thresholds</span> <span class="o">+=</span> <span class="n">delta_conv</span>
+
+            <span class="c1"># noinspection PyTypeChecker</span>
+            <span class="n">out_thresh</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">thresholds</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> 
+
+            <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">out_thresh</span><span class="p">):</span>
+                <span class="n">out_thresh</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">image</span><span class="p">[</span><span class="n">labeled_image</span> <span class="o">==</span> <span class="n">ind</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span> <span class="n">image</span><span class="p">[</span><span class="n">labeled_image</span> <span class="o">==</span> <span class="n">ind</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+
+            <span class="k">return</span> <span class="n">out_thresh</span><span class="p">,</span> <span class="n">labeled_image</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">mut</span> <span class="o">=</span> <span class="n">range_unique_image_pdf</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">sig2t</span> <span class="o">=</span> <span class="p">((</span><span class="n">range_unique_image</span> <span class="o">-</span> <span class="n">mut</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pdf</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">sig_fun</span><span class="p">(</span><span class="n">ik</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                A temporary function for passing to the optimizer</span>
+
+<span class="sd">                :param ik:</span>
+<span class="sd">                :return:</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+
+                <span class="n">ik</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ik</span> <span class="o">*</span> <span class="p">(</span><span class="n">unique_iu8</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.000000000001</span><span class="p">)</span>
+                <span class="n">ik</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ik</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="p">((</span><span class="n">ik</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">ik</span> <span class="o">&gt;</span> <span class="n">unique_iu8</span><span class="o">.</span><span class="n">size</span><span class="p">))</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                    <span class="k">return</span> <span class="mi">1</span>
+
+                <span class="n">ik</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">ik</span><span class="p">,</span> <span class="n">unique_iu8</span><span class="o">.</span><span class="n">size</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+                <span class="n">sigma2bi</span> <span class="o">=</span> <span class="mi">0</span>
+
+                <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                    <span class="n">wj</span> <span class="o">=</span> <span class="n">pdf</span><span class="p">[</span><span class="n">ik</span><span class="p">[</span><span class="n">ii</span><span class="p">]:</span><span class="n">ik</span><span class="p">[</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+                    <span class="k">if</span> <span class="n">wj</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="mi">1</span>
+
+                    <span class="n">muj</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ik</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ik</span><span class="p">[</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">pdf</span><span class="p">[</span><span class="n">ik</span><span class="p">[</span><span class="n">ii</span><span class="p">]:</span><span class="n">ik</span><span class="p">[</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">wj</span>
+                    <span class="n">sigma2bi</span> <span class="o">+=</span> <span class="n">wj</span> <span class="o">*</span> <span class="p">(</span><span class="n">muj</span> <span class="o">-</span> <span class="n">mut</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+                <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">sigma2bi</span> <span class="o">/</span> <span class="n">sig2t</span>
+
+            <span class="n">k0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">kk</span> <span class="o">=</span> <span class="n">fmin</span><span class="p">(</span><span class="n">sig_fun</span><span class="p">,</span> <span class="n">k0</span><span class="p">,</span> <span class="n">xtol</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">disp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="n">kk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">kk</span> <span class="o">*</span> <span class="p">(</span><span class="n">unique_iu8</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+            <span class="n">labeled_image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">+</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span>
+
+            <span class="n">labeled_image</span><span class="p">[</span><span class="n">iu8</span> <span class="o">&lt;=</span> <span class="n">unique_iu8</span><span class="p">[</span><span class="n">kk</span><span class="p">[</span><span class="mi">0</span><span class="p">]]]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="n">labeled_image</span><span class="p">[(</span><span class="n">iu8</span> <span class="o">&gt;</span> <span class="n">unique_iu8</span><span class="p">[</span><span class="n">kk</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">iu8</span> <span class="o">&lt;=</span> <span class="n">unique_iu8</span><span class="p">[</span><span class="n">kk</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]])]</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+
+            <span class="c1"># put back into the original image values</span>
+            <span class="n">thresholds</span> <span class="o">=</span> <span class="n">unique_iu8</span><span class="p">[</span><span class="n">kk</span><span class="p">[:</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="n">thresholds</span> <span class="o">/=</span> <span class="n">multi_conv</span>
+            <span class="n">thresholds</span> <span class="o">+=</span> <span class="n">delta_conv</span>
+
+            <span class="c1"># noinspection PyTypeChecker</span>
+            <span class="n">out_thresh</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">thresholds</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> 
+
+            <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">out_thresh</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">out_thresh</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">image</span><span class="p">[</span><span class="n">labeled_image</span> <span class="o">==</span> <span class="n">ind</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span> <span class="n">image</span><span class="p">[</span><span class="n">labeled_image</span> <span class="o">==</span> <span class="n">ind</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">out_thresh</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="k">return</span> <span class="n">out_thresh</span><span class="p">,</span> <span class="n">labeled_image</span></div>
+
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

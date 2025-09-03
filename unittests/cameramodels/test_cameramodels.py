@@ -158,7 +158,7 @@ class TestPinholeModel(TestCase):
 
     def test_get_temperature_scale(self):
 
-        model = self.Class(temperature_coefficients=[1, 2, 3.])
+        model = self.Class(temperature_coefficients=np.array([1, 2, 3.]))
 
         self.assertEqual(model.get_temperature_scale(1), 7)
 
@@ -224,7 +224,7 @@ class TestPinholeModel(TestCase):
                 np.testing.assert_array_equal(pix, pix_true)
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, px=1500, py=1500.5,
-                           misalignment=[0, 0, np.pi])
+                           misalignment=np.array([0, 0, np.pi]))
 
         with self.subTest(misalignment=[0, 0, np.pi]):
 
@@ -239,7 +239,7 @@ class TestPinholeModel(TestCase):
                 np.testing.assert_array_almost_equal(pix, pix_true)
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, px=1500, py=1500.5,
-                           misalignment=[np.pi, 0, 0])
+                           misalignment=np.array([np.pi, 0, 0]))
 
         with self.subTest(misalignment=[np.pi, 0, 0]):
 
@@ -255,7 +255,7 @@ class TestPinholeModel(TestCase):
                 np.testing.assert_array_almost_equal(pix, pix_true)
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, px=1500, py=1500.5,
-                           misalignment=[0, np.pi, 0])
+                           misalignment=np.array([0, np.pi, 0]))
 
         with self.subTest(misalignment=[0, np.pi, 0]):
 
@@ -271,7 +271,7 @@ class TestPinholeModel(TestCase):
                 np.testing.assert_array_almost_equal(pix, pix_true)
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, px=1500, py=1500.5,
-                           misalignment=[1, 0.2, 0.3])
+                           misalignment=np.array([1, 0.2, 0.3]))
 
         with self.subTest(misalignment=[1, 0.2, 0.3]):
 
@@ -363,7 +363,7 @@ class TestPinholeModel(TestCase):
                 np.testing.assert_array_equal(pix, pix_true)
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, px=1500, py=1500.5,
-                           misalignment=[0, 0, np.pi])
+                           misalignment=np.array([0, 0, np.pi]))
 
         with self.subTest(misalignment=[0, 0, np.pi]):
 
@@ -377,7 +377,7 @@ class TestPinholeModel(TestCase):
                 np.testing.assert_array_almost_equal(pix, pix_true)
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, px=1500, py=1500.5,
-                           misalignment=[np.pi, 0, 0])
+                           misalignment=np.array([np.pi, 0, 0]))
 
         with self.subTest(misalignment=[np.pi, 0, 0]):
 
@@ -392,7 +392,7 @@ class TestPinholeModel(TestCase):
                 np.testing.assert_array_almost_equal(pix, pix_true)
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, px=1500, py=1500.5,
-                           misalignment=[0, np.pi, 0])
+                           misalignment=np.array([0., np.pi, 0.]))
 
         with self.subTest(misalignment=[0, np.pi, 0]):
 
@@ -407,7 +407,7 @@ class TestPinholeModel(TestCase):
                 np.testing.assert_array_almost_equal(pix, pix_true)
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, px=1500, py=1500.5,
-                           misalignment=[1, 0.2, 0.3])
+                           misalignment=np.array([1, 0.2, 0.3]))
 
         with self.subTest(misalignment=[1, 0.2, 0.3]):
 
@@ -994,92 +994,92 @@ class TestPinholeModel(TestCase):
         def num_deriv(loc, cmodel, delta=1e-8, image=0, temperature=0) -> np.ndarray:
             model_pert = cmodel.copy()
             model_pert.focal_length += delta
-            pix_pert_f_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_f_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.focal_length -= delta
-            pix_pert_f_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_f_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.kx += delta
-            pix_pert_kx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_kx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.ky += delta
-            pix_pert_ky_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_ky_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.px += delta
-            pix_pert_px_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_px_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.py += delta
-            pix_pert_py_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_py_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.kx -= delta
-            pix_pert_kx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_kx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.ky -= delta
-            pix_pert_ky_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_ky_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.px -= delta
-            pix_pert_px_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_px_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.py -= delta
-            pix_pert_py_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_py_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a1 += delta
-            pix_pert_a1_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a1_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a2 += delta
-            pix_pert_a2_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a2_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a3 += delta
-            pix_pert_a3_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a3_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a1 -= delta
-            pix_pert_a1_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a1_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a2 -= delta
-            pix_pert_a2_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a2_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a3 -= delta
-            pix_pert_a3_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a3_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             delta_misalignment = 1e-6
             model_pert = cmodel.copy()
             model_pert.misalignment[image][0] += delta_misalignment
-            pix_pert_mx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_mx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][1] += delta_misalignment
-            pix_pert_my_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_my_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][2] += delta_misalignment
-            pix_pert_mz_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_mz_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][0] -= delta_misalignment
-            pix_pert_mx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_mx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][1] -= delta_misalignment
-            pix_pert_my_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_my_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][2] -= delta_misalignment
-            pix_pert_mz_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_mz_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             return np.vstack([(pix_pert_f_f - pix_pert_f_b) / (delta * 2),
                               (pix_pert_kx_f - pix_pert_kx_b) / (delta * 2),
@@ -1126,92 +1126,92 @@ class TestPinholeModel(TestCase):
         def num_deriv(loc, cmodel, delta=1e-8, image=0, nimages=1, temperature=0) -> np.ndarray:
             model_pert = cmodel.copy()
             model_pert.focal_length += delta
-            pix_pert_f_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_f_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.focal_length -= delta
-            pix_pert_f_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_f_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.kx += delta
-            pix_pert_kx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_kx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.ky += delta
-            pix_pert_ky_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_ky_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.px += delta
-            pix_pert_px_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_px_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.py += delta
-            pix_pert_py_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_py_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.kx -= delta
-            pix_pert_kx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_kx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.ky -= delta
-            pix_pert_ky_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_ky_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.px -= delta
-            pix_pert_px_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_px_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.py -= delta
-            pix_pert_py_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_py_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a1 += delta
-            pix_pert_a1_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a1_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a2 += delta
-            pix_pert_a2_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a2_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a3 += delta
-            pix_pert_a3_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a3_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a1 -= delta
-            pix_pert_a1_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a1_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a2 -= delta
-            pix_pert_a2_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a2_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a3 -= delta
-            pix_pert_a3_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a3_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             delta_misalignment = 1e-6
             model_pert = cmodel.copy()
             model_pert.misalignment[image][0] += delta_misalignment
-            pix_pert_mx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_mx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][1] += delta_misalignment
-            pix_pert_my_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_my_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][2] += delta_misalignment
-            pix_pert_mz_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_mz_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][0] -= delta_misalignment
-            pix_pert_mx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_mx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][1] -= delta_misalignment
-            pix_pert_my_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_my_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][2] -= delta_misalignment
-            pix_pert_mz_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_mz_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             return np.vstack([(pix_pert_f_f - pix_pert_f_b) / (delta * 2),
                               (pix_pert_kx_f - pix_pert_kx_b) / (delta * 2),
@@ -1299,7 +1299,7 @@ class TestPinholeModel(TestCase):
                                                                  'temperature dependence',
                                                                  'multiple misalignments'])
 
-        update_vec = np.arange(14)
+        update_vec = np.arange(14).astype(np.float64)
 
         model.apply_update(update_vec)
 
@@ -1311,7 +1311,7 @@ class TestPinholeModel(TestCase):
             self.assertEqual(getattr(model, key), update_vec[model.element_dict[key][0]])
 
         for ind, vec in enumerate(update_vec[8:].reshape(-1, 3)):
-            np.testing.assert_array_almost_equal(at.Rotation(vec).q, at.Rotation(model.misalignment[ind]).q)
+            np.testing.assert_array_almost_equal(at.Rotation(vec).quaternion, at.Rotation(model.misalignment[ind]).quaternion)
 
     def test_pixels_to_gnomic(self):
 
@@ -1500,7 +1500,7 @@ class TestPinholeModel(TestCase):
 
         model.estimate_multiple_misalignments = True
 
-        model.misalignment = [1231241, 123124, .12]
+        model.misalignment = np.array([1231241, 123124, .12])
 
         self.assertNotEqual(model.kx, model_copy.kx)
         self.assertNotEqual(model.ky, model_copy.ky)
@@ -1521,7 +1521,7 @@ class TestPinholeModel(TestCase):
         element = etree.Element(self.Class.__name__)
 
         model = self.Class(focal_length=20, field_of_view=5, use_a_priori=True,
-                           misalignment=[1, 2, 3], kx=2, ky=200, px=50, py=300,
+                           misalignment=np.array([1, 2, 3]), kx=2, ky=200, px=50, py=300,
                            a1=37, a2=1, a3=-1230,
                            estimation_parameters=['a1', 'multiple misalignments'], n_rows=20, n_cols=30)
 
@@ -1840,7 +1840,8 @@ class TestOwenModel(TestPinholeModel):
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, kxy=1.5, kyx=-1.5, px=1500, py=1500.5,
                            radial2=1e-3, radial4=-2.2e-5, tangential_y=1e-3, tangential_x=1e-6,
-                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[0, 0, np.pi])
+                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=np.array([0, 0, np.pi]),
+                           field_of_view=100)
 
         with self.subTest(misalignment=[0, 0, np.pi]):
 
@@ -1859,7 +1860,8 @@ class TestOwenModel(TestPinholeModel):
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, kxy=1.5, kyx=-1.5, px=1500, py=1500.5,
                            radial2=1e-3, radial4=-2.2e-5, tangential_y=1e-3, tangential_x=1e-6,
-                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[np.pi, 0, 0])
+                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[np.pi, 0, 0],
+                           field_of_view=100)
 
         with self.subTest(misalignment=[np.pi, 0, 0]):
 
@@ -1879,7 +1881,7 @@ class TestOwenModel(TestPinholeModel):
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, kxy=1.5, kyx=-1.5, px=1500, py=1500.5,
                            radial2=1e-3, radial4=-2.2e-5, tangential_y=1e-3, tangential_x=1e-6,
-                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[0, np.pi, 0])
+                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[0, np.pi, 0], field_of_view=100)
 
         with self.subTest(misalignment=[0, np.pi, 0]):
 
@@ -1899,7 +1901,7 @@ class TestOwenModel(TestPinholeModel):
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, kxy=1.5, kyx=-1.5, px=1500, py=1500.5,
                            radial2=1e-3, radial4=-2.2e-5, tangential_y=1e-3, tangential_x=1e-6,
-                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[1, 0.2, 0.3])
+                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[1, 0.2, 0.3], field_of_view=100)
 
         with self.subTest(misalignment=[1, 0.2, 0.3]):
 
@@ -1922,7 +1924,8 @@ class TestOwenModel(TestPinholeModel):
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, kxy=1.5, kyx=-1.5, px=1500, py=1500.5,
                            radial2=1e-3, radial4=-2.2e-5, tangential_y=1e-3, tangential_x=1e-6,
-                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[[1, 0.2, 0.3], [0, 0, np.pi]])
+                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[[1, 0.2, 0.3], [0, 0, np.pi]],
+                           field_of_view=100)
 
         model.estimate_multiple_misalignments = True
 
@@ -1963,7 +1966,7 @@ class TestOwenModel(TestPinholeModel):
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, kxy=1.5, kyx=-1.5, px=1500, py=1500.5,
                            radial2=1e-3, radial4=-2.2e-5, tangential_y=1e-3, tangential_x=1e-6,
-                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, a1=1, a2=2, a3=-3)
+                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, a1=1, a2=2, a3=-3, field_of_view=100)
 
         temps = [0, 1, -1, 10, -10]
 
@@ -1980,7 +1983,8 @@ class TestOwenModel(TestPinholeModel):
 
         model = self.Class(focal_length=8.7, kx=500, ky=500.5, kxy=1.5, kyx=-1.5, px=1500, py=1500.5,
                            radial2=1e-3, radial4=-2.2e-5, tangential_y=1e-3, tangential_x=1e-6,
-                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[[1, 0.2, 0.3], [0, 0, np.pi]])
+                           pinwheel1=1e-6, pinwheel2=-2.23 - 8, misalignment=[[1, 0.2, 0.3], [0, 0, np.pi]],
+                           field_of_view=100)
 
         model.estimate_multiple_misalignments = True
 
@@ -2039,7 +2043,7 @@ class TestOwenModel(TestPinholeModel):
                        "tangential_y": 1.5e-5, "pinwheel1": 1.5e-5, "pinwheel2": 1.5e-5, "kx": 30, "ky": 40,
                        "kxy": 0.5, "kyx": -0.8, "px": 4005.23, "py": 4005.23,
                        "misalignment": [[1e-8, 1e-9, 1e-10], [-1e-8, 2e-9, -1e-11], [2e-10, -5e-12, 1e-9]],
-                       "a1": 1e-6, "a2": 2e-7, "a3": 3e-8}
+                       "a1": 1e-6, "a2": 2e-7, "a3": 3e-8, "field_of_view": 100}
 
         inputs = [np.array([[0.5, 0, 1]]).T,
                   np.array([[0, 0.5, 1], [0.5, 0.5, 1], [-0.5, 0, 1]]).T,
@@ -2170,7 +2174,7 @@ class TestOwenModel(TestPinholeModel):
                        "tangential_y": 1.5e-8, "pinwheel1": 1.5e-8, "pinwheel2": 1.5e-8, "kx": 300, "ky": 400,
                        "kxy": 0.5, "kyx": -0.8, "px": 1005.23, "py": 1005.23,
                        "misalignment": [[1e-8, 1e-9, 1e-10], [-1e-8, 2e-9, -1e-11], [2e-10, -5e-12, 1e-9]],
-                       "a1": 1e-6, "a2": 2e-7, "a3": 3e-8}
+                       "a1": 1e-6, "a2": 2e-7, "a3": 3e-8, "field_of_view": 100}
 
         inputs = [np.array([[0, 0]]).T,
                   np.array([[0, 0.1], [0.1, 0], [0.1, 0.1]]).T,
@@ -2184,7 +2188,11 @@ class TestOwenModel(TestPinholeModel):
             with self.subTest(input=input):
                 jac_ana = []
                 for dist_gnom in input.T:
-                    jac_ana.append(model._compute_dgnomic_ddist_gnomic(dist_gnom))
+                    if np.linalg.norm(dist_gnom) <= 1e-8:
+                        with self.assertWarnsRegex(UserWarning, "small radius, derivative unstable.*"):
+                            jac_ana.append(model._compute_dgnomic_ddist_gnomic(dist_gnom))
+                    else:
+                        jac_ana.append(model._compute_dgnomic_ddist_gnomic(dist_gnom))
 
                 jac_ana = np.array(jac_ana)
 
@@ -2524,156 +2532,156 @@ class TestOwenModel(TestPinholeModel):
         def num_deriv(loc, cmodel, delta=1e-8, image=0, temperature=0) -> np.ndarray:
             model_pert = cmodel.copy()
             model_pert.focal_length += delta
-            pix_pert_f_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_f_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.focal_length -= delta
-            pix_pert_f_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_f_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.kx += delta
-            pix_pert_kx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_kx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.kxy += delta
-            pix_pert_kxy_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_kxy_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.kyx += delta
-            pix_pert_kyx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_kyx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.ky += delta
-            pix_pert_ky_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_ky_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.px += delta
-            pix_pert_px_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_px_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.py += delta
-            pix_pert_py_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_py_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.kx -= delta
-            pix_pert_kx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_kx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.kxy -= delta
-            pix_pert_kxy_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_kxy_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.kyx -= delta
-            pix_pert_kyx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_kyx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.ky -= delta
-            pix_pert_ky_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_ky_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.px -= delta
-            pix_pert_px_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_px_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.py -= delta
-            pix_pert_py_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_py_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.radial2 += delta
-            pix_pert_r2_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_r2_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.radial4 += delta
-            pix_pert_r4_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_r4_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.tangential_y += delta
-            pix_pert_ty_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_ty_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.tangential_x += delta
-            pix_pert_tx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_tx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.pinwheel1 += delta
-            pix_pert_p1_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_p1_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.pinwheel2 += delta
-            pix_pert_p2_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_p2_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.radial2 -= delta
-            pix_pert_r2_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_r2_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.radial4 -= delta
-            pix_pert_r4_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_r4_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.tangential_y -= delta
-            pix_pert_ty_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_ty_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.tangential_x -= delta
-            pix_pert_tx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_tx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.pinwheel1 -= delta
-            pix_pert_p1_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_p1_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.pinwheel2 -= delta
-            pix_pert_p2_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_p2_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a1 += delta
-            pix_pert_a1_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a1_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a2 += delta
-            pix_pert_a2_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a2_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a3 += delta
-            pix_pert_a3_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a3_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a1 -= delta
-            pix_pert_a1_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a1_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a2 -= delta
-            pix_pert_a2_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a2_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a3 -= delta
-            pix_pert_a3_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a3_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             delta_m = 1e-6
             model_pert = cmodel.copy()
             model_pert.misalignment[image][0] += delta_m
-            pix_pert_mx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_mx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][1] += delta_m
-            pix_pert_my_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_my_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][2] += delta_m
-            pix_pert_mz_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_mz_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][0] -= delta_m
-            pix_pert_mx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_mx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][1] -= delta_m
-            pix_pert_my_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_my_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][2] -= delta_m
-            pix_pert_mz_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_mz_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             return np.vstack([(pix_pert_f_f - pix_pert_f_b) / (delta * 2),
                               (pix_pert_kx_f - pix_pert_kx_b) / (delta * 2),
@@ -2700,7 +2708,7 @@ class TestOwenModel(TestPinholeModel):
                        "tangential_y": 1.5e-5, "pinwheel1": 1.5e-5, "pinwheel2": 1.5e-5, "kx": 30, "ky": 40,
                        "kxy": 0.5, "kyx": -0.8, "px": 4005.23, "py": 4005.23,
                        "misalignment": [[1e-8, 1e-9, 1e-10], [-1e-8, 2e-9, -1e-11]],
-                       "a1": 1e-6, "a2": 2e-7, "a3": 3e-8}
+                       "a1": 1e-6, "a2": 2e-7, "a3": 3e-8, "field_of_view": 100}
 
         inputs = [[0.1, 0, 1], [0, 0.1, 1], [0.1, 0.1, 1], [-0.1, 0, 1], [0, -0.1, 1], [-0.1, -0.1, 1],
                   [5, 10, 1000.23], [[1], [2], [1200.23]]]
@@ -2729,155 +2737,155 @@ class TestOwenModel(TestPinholeModel):
 
             model_pert = cmodel.copy()
             model_pert.focal_length += delta
-            pix_pert_f_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_f_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.focal_length -= delta
-            pix_pert_f_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_f_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.kx += delta
-            pix_pert_kx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_kx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.kxy += delta
-            pix_pert_kxy_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_kxy_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.kyx += delta
-            pix_pert_kyx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_kyx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.ky += delta
-            pix_pert_ky_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_ky_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.px += delta
-            pix_pert_px_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_px_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.py += delta
-            pix_pert_py_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_py_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.kx -= delta
-            pix_pert_kx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_kx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.kxy -= delta
-            pix_pert_kxy_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_kxy_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.kyx -= delta
-            pix_pert_kyx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_kyx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.ky -= delta
-            pix_pert_ky_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_ky_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.px -= delta
-            pix_pert_px_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_px_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.py -= delta
-            pix_pert_py_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_py_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.radial2 += delta
-            pix_pert_r2_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_r2_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.radial4 += delta
-            pix_pert_r4_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_r4_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.tangential_y += delta
-            pix_pert_ty_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_ty_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.tangential_x += delta
-            pix_pert_tx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_tx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.pinwheel1 += delta
-            pix_pert_p1_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_p1_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.pinwheel2 += delta
-            pix_pert_p2_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_p2_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.radial2 -= delta
-            pix_pert_r2_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_r2_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.radial4 -= delta
-            pix_pert_r4_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_r4_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.tangential_y -= delta
-            pix_pert_ty_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_ty_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.tangential_x -= delta
-            pix_pert_tx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_tx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.pinwheel1 -= delta
-            pix_pert_p1_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_p1_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.pinwheel2 -= delta
-            pix_pert_p2_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_p2_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a1 += delta
-            pix_pert_a1_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a1_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a2 += delta
-            pix_pert_a2_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a2_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a3 += delta
-            pix_pert_a3_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a3_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a1 -= delta
-            pix_pert_a1_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a1_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a2 -= delta
-            pix_pert_a2_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a2_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a3 -= delta
-            pix_pert_a3_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_a3_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][0] += delta
-            pix_pert_mx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_mx_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][1] += delta
-            pix_pert_my_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_my_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][2] += delta
-            pix_pert_mz_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_mz_f = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][0] -= delta
-            pix_pert_mx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_mx_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][1] -= delta
-            pix_pert_my_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_my_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][2] -= delta
-            pix_pert_mz_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).flatten()
+            pix_pert_mz_b = model_pert.project_onto_image(loc, image=image, temperature=temperature).ravel()
 
             return np.vstack([(pix_pert_f_f - pix_pert_f_b) / (delta * 2),
                               (pix_pert_kx_f - pix_pert_kx_b) / (delta * 2),
@@ -2905,7 +2913,7 @@ class TestOwenModel(TestPinholeModel):
                        "tangential_y": 1.5e-5, "pinwheel1": 1.5e-5, "pinwheel2": 1.5e-5, "kx": 30, "ky": 40,
                        "kxy": 0.5, "kyx": -0.8, "px": 4005.23, "py": 4005.23,
                        "misalignment": [[1e-8, 1e-9, 1e-10], [-1e-8, 2e-9, -1e-11], [2e-10, -5e-12, 1e-9]],
-                       "a1": 1e-6, "a2": 2e-7, "a3": 3e-8}
+                       "a1": 1e-6, "a2": 2e-7, "a3": 3e-8, "field_of_view": 100}
 
         inputs = [np.array([[0.5, 0, 1]]).T,
                   np.array([[0, 0.5, 1], [0.5, 0.5, 1], [-0.5, 0, 1]]).T,
@@ -2973,7 +2981,7 @@ class TestOwenModel(TestPinholeModel):
         model = self.Class(**model_param, estimation_parameters=['intrinsic', "temperature dependence",
                                                                  'multiple misalignments'])
 
-        update_vec = np.arange(22)
+        update_vec = np.arange(22).astype(np.float64)
 
         model.apply_update(update_vec)
 
@@ -2985,7 +2993,7 @@ class TestOwenModel(TestPinholeModel):
             self.assertEqual(getattr(model, key), update_vec[model.element_dict[key][0]])
 
         for ind, vec in enumerate(update_vec[16:].reshape(-1, 3)):
-            np.testing.assert_array_almost_equal(at.Rotation(vec).q, at.Rotation(model.misalignment[ind]).q)
+            np.testing.assert_array_almost_equal(at.Rotation(vec).quaternion, at.Rotation(model.misalignment[ind]).quaternion)
 
     def test_pixels_to_gnomic(self):
 
@@ -3191,9 +3199,9 @@ class TestOwenModel(TestPinholeModel):
         np.testing.assert_array_equal(rows, rs)
         np.testing.assert_array_equal(cols, cs)
 
-        distl = model.distort_pixels(np.vstack([cs.flatten(), rs.flatten()]))
+        distl = model.distort_pixels(np.vstack([cs.ravel(), rs.ravel()]).astype(np.float64))
 
-        np.testing.assert_array_equal(distl - np.vstack([cs.flatten(), rs.flatten()]), dist)
+        np.testing.assert_array_equal(distl - np.vstack([cs.ravel(), rs.ravel()]), dist)
 
 
 class TestBrownModel(TestPinholeModel):
@@ -3202,7 +3210,7 @@ class TestBrownModel(TestPinholeModel):
         self.Class = BrownModel
 
     # Not supported for this model
-    test__compute_dgnomic_dfocal_length = None
+    test__compute_dgnomic_dfocal_length = None # pyright: ignore[reportAssignmentType]
 
     def test___init__(self):
         model = self.Class(intrinsic_matrix=np.array([[1, 2, 3], [4, 5, 6]]), field_of_view=20.5,
@@ -4127,131 +4135,131 @@ class TestBrownModel(TestPinholeModel):
         def num_deriv(loc, temp, cmodel, delta=1e-8, image=0) -> np.ndarray:
             model_pert = cmodel.copy()
             model_pert.fx += delta
-            pix_pert_fx_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_fx_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.fy += delta
-            pix_pert_fy_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_fy_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.alpha += delta
-            pix_pert_skew_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_skew_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.px += delta
-            pix_pert_px_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_px_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.py += delta
-            pix_pert_py_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_py_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a1 += delta
-            pix_pert_a1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a2 += delta
-            pix_pert_a2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a3 += delta
-            pix_pert_a3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.fx -= delta
-            pix_pert_fx_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_fx_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.fy -= delta
-            pix_pert_fy_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_fy_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.alpha -= delta
-            pix_pert_skew_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_skew_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.px -= delta
-            pix_pert_px_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_px_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.py -= delta
-            pix_pert_py_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_py_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k1 += delta
-            pix_pert_k1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k2 += delta
-            pix_pert_k2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k3 += delta
-            pix_pert_k3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.p1 += delta
-            pix_pert_p1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_p1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.p2 += delta
-            pix_pert_p2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_p2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k1 -= delta
-            pix_pert_k1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k2 -= delta
-            pix_pert_k2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k3 -= delta
-            pix_pert_k3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.p1 -= delta
-            pix_pert_p1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_p1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.p2 -= delta
-            pix_pert_p2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_p2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][0] += delta
-            pix_pert_mx_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_mx_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][1] += delta
-            pix_pert_my_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_my_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][2] += delta
-            pix_pert_mz_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_mz_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][0] -= delta
-            pix_pert_mx_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_mx_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][1] -= delta
-            pix_pert_my_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_my_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][2] -= delta
-            pix_pert_mz_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_mz_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a1 -= delta
-            pix_pert_a1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a2 -= delta
-            pix_pert_a2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a3 -= delta
-            pix_pert_a3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             return np.vstack([(pix_pert_fx_f - pix_pert_fx_b) / (delta * 2),
                               (pix_pert_fy_f - pix_pert_fy_b) / (delta * 2),
@@ -4303,131 +4311,131 @@ class TestBrownModel(TestPinholeModel):
 
             model_pert = cmodel.copy()
             model_pert.fx += delta
-            pix_pert_fx_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_fx_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.fy += delta
-            pix_pert_fy_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_fy_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.alpha += delta
-            pix_pert_skew_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_skew_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.px += delta
-            pix_pert_px_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_px_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.py += delta
-            pix_pert_py_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_py_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a1 += delta
-            pix_pert_a1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a2 += delta
-            pix_pert_a2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a3 += delta
-            pix_pert_a3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.fx -= delta
-            pix_pert_fx_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_fx_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.fy -= delta
-            pix_pert_fy_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_fy_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.alpha -= delta
-            pix_pert_skew_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_skew_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.px -= delta
-            pix_pert_px_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_px_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.py -= delta
-            pix_pert_py_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_py_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k1 += delta
-            pix_pert_k1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k2 += delta
-            pix_pert_k2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k3 += delta
-            pix_pert_k3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.p1 += delta
-            pix_pert_p1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_p1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.p2 += delta
-            pix_pert_p2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_p2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k1 -= delta
-            pix_pert_k1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k2 -= delta
-            pix_pert_k2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k3 -= delta
-            pix_pert_k3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.p1 -= delta
-            pix_pert_p1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_p1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.p2 -= delta
-            pix_pert_p2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_p2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][0] += delta
-            pix_pert_mx_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_mx_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][1] += delta
-            pix_pert_my_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_my_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][2] += delta
-            pix_pert_mz_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_mz_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][0] -= delta
-            pix_pert_mx_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_mx_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][1] -= delta
-            pix_pert_my_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_my_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][2] -= delta
-            pix_pert_mz_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_mz_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a1 -= delta
-            pix_pert_a1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a2 -= delta
-            pix_pert_a2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a3 -= delta
-            pix_pert_a3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             return np.vstack([(pix_pert_fx_f - pix_pert_fx_b) / (delta * 2),
                               (pix_pert_fy_f - pix_pert_fy_b) / (delta * 2),
@@ -4522,7 +4530,7 @@ class TestBrownModel(TestPinholeModel):
             self.assertEqual(getattr(model, key), update_vec[model.element_dict[key][0]])
 
         for ind, vec in enumerate(update_vec[13:].reshape(-1, 3)):
-            np.testing.assert_array_almost_equal(at.Rotation(vec).q, at.Rotation(model.misalignment[ind]).q)
+            np.testing.assert_array_almost_equal(at.Rotation(vec).quaternion, at.Rotation(model.misalignment[ind]).quaternion)
 
     def test_pixels_to_gnomic(self):
 
@@ -4737,9 +4745,9 @@ class TestBrownModel(TestPinholeModel):
         np.testing.assert_array_equal(rows, rs)
         np.testing.assert_array_equal(cols, cs)
 
-        distl = model.distort_pixels(np.vstack([cs.flatten(), rs.flatten()]))
+        distl = model.distort_pixels(np.vstack([cs.ravel(), rs.ravel()]))
 
-        np.testing.assert_array_equal(distl - np.vstack([cs.flatten(), rs.flatten()]), dist)
+        np.testing.assert_array_equal(distl - np.vstack([cs.ravel(), rs.ravel()]), dist)
 
 
 class TestOpenCVModel(TestPinholeModel):
@@ -4748,7 +4756,7 @@ class TestOpenCVModel(TestPinholeModel):
         self.Class = OpenCVModel
 
     # Not supported for this model
-    test__compute_dgnomic_dfocal_length = None
+    test__compute_dgnomic_dfocal_length = None # pyright: ignore[reportAssignmentType]
 
     def test___init__(self):
         model = self.Class(intrinsic_matrix=np.array([[1, 2, 3], [4, 5, 6]]), field_of_view=20.5,
@@ -5175,7 +5183,7 @@ class TestOpenCVModel(TestPinholeModel):
 
         for dist, sols in zip(dist_coefs, solus):
 
-            model = self.Class(**dist)
+            model = self.Class(**dist) # pyright: ignore[reportArgumentType]
 
             for inp, solu in zip(inputs, sols):
                 with self.subTest(**dist, inp=inp):
@@ -5189,7 +5197,8 @@ class TestOpenCVModel(TestPinholeModel):
 
         model = self.Class(fx=4050.5, fy=3050.25, alpha=1.5, px=1500, py=1500.5,
                            k1=0.5, k2=-0.3, k3=0.15, p1=1e-7, p2=1e-6, a1=1e-1, a2=-1e-6, a3=3e-7,
-                           k4=1, k5=-5, k6=11, s1=1e-6, s2=1e2, s3=-3e-3, s4=5e-1)
+                           k4=1, k5=-5, k6=11, s1=1e-6, s2=1e2, s3=-3e-3, s4=5e-1,
+                           field_of_view=100)
 
         temps = [0, 1, -1, 10, -10]
 
@@ -5214,7 +5223,7 @@ class TestOpenCVModel(TestPinholeModel):
         model = self.Class(fx=4050.5, fy=3050.25, alpha=1.5, px=1500, py=1500.5,
                            k1=0.5, k2=-0.3, k3=0.15, p1=1e-7, p2=1e-6,
                            k4=1, k5=-5, k6=11, s1=1e-6, s2=1e2, s3=-3e-3, s4=5e-1,
-                           misalignment=[0, 0, np.pi])
+                           misalignment=[0, 0, np.pi], field_of_view=100)
 
         with self.subTest(misalignment=[0, 0, np.pi]):
 
@@ -5234,7 +5243,7 @@ class TestOpenCVModel(TestPinholeModel):
         model = self.Class(fx=4050.5, fy=3050.25, alpha=1.5, px=1500, py=1500.5,
                            k1=0.5, k2=-0.3, k3=0.15, p1=1e-7, p2=1e-6,
                            k4=1, k5=-5, k6=11, s1=1e-6, s2=1e2, s3=-3e-3, s4=5e-1,
-                           misalignment=[np.pi, 0, 0])
+                           misalignment=[np.pi, 0, 0], field_of_view=100)
 
         with self.subTest(misalignment=[np.pi, 0, 0]):
 
@@ -5255,7 +5264,7 @@ class TestOpenCVModel(TestPinholeModel):
         model = self.Class(fx=4050.5, fy=3050.25, alpha=1.5, px=1500, py=1500.5,
                            k1=0.5, k2=-0.3, k3=0.15, p1=1e-7, p2=1e-6,
                            k4=1, k5=-5, k6=11, s1=1e-6, s2=1e2, s3=-3e-3, s4=5e-1,
-                           misalignment=[0, np.pi, 0])
+                           misalignment=[0, np.pi, 0], field_of_view=100)
 
         with self.subTest(misalignment=[0, np.pi, 0]):
 
@@ -5276,7 +5285,7 @@ class TestOpenCVModel(TestPinholeModel):
         model = self.Class(fx=4050.5, fy=3050.25, alpha=1.5, px=1500, py=1500.5,
                            k1=0.5, k2=-0.3, k3=0.15, p1=1e-7, p2=1e-6,
                            k4=1, k5=-5, k6=11, s1=1e-6, s2=1e2, s3=-3e-3, s4=5e-1,
-                           misalignment=[1, 0.2, 0.3])
+                           misalignment=[1, 0.2, 0.3], field_of_view=100)
 
         with self.subTest(misalignment=[1, 0.2, 0.3]):
 
@@ -5300,7 +5309,7 @@ class TestOpenCVModel(TestPinholeModel):
         model = self.Class(fx=4050.5, fy=3050.25, alpha=1.5, px=1500, py=1500.5,
                            k1=0.5, k2=-0.3, k3=0.15, p1=1e-7, p2=1e-6,
                            k4=1, k5=-5, k6=11, s1=1e-6, s2=1e2, s3=-3e-3, s4=5e-1,
-                           misalignment=[[1, 0.2, 0.3], [0, 0, np.pi]])
+                           misalignment=[[1, 0.2, 0.3], [0, 0, np.pi]], field_of_view=100)
 
         model.estimate_multiple_misalignments = True
 
@@ -5341,8 +5350,8 @@ class TestOpenCVModel(TestPinholeModel):
 
         model = self.Class(fx=4050.5, fy=3050.25, alpha=1.5, px=1500, py=1500.5,
                            k1=0.5, k2=-0.3, k3=0.15, p1=1e-7, p2=1e-6, a1=1, a2=2, a3=-3,
-                           k4=1, k5=-5, k6=11, s1=1e-6, s2=1e2, s3=-3e-3, s4=5e-1
-                           )
+                           k4=1, k5=-5, k6=11, s1=1e-6, s2=1e2, s3=-3e-3, s4=5e-1,
+                           field_of_view=100)
 
         temps = [0, 1, -1, 10, -10]
 
@@ -5360,7 +5369,7 @@ class TestOpenCVModel(TestPinholeModel):
         model = self.Class(fx=4050.5, fy=3050.25, alpha=1.5, px=1500, py=1500.5,
                            k1=0.5, k2=-0.3, k3=0.15, p1=1e-7, p2=1e-6,
                            k4=1, k5=-5, k6=11, s1=1e-6, s2=1e2, s3=-3e-3, s4=5e-1,
-                           misalignment=[[1, 0.2, 0.3], [0, 0, np.pi]])
+                           misalignment=[[1, 0.2, 0.3], [0, 0, np.pi]], field_of_view=100)
 
         model.estimate_multiple_misalignments = True
 
@@ -5657,7 +5666,7 @@ class TestOpenCVModel(TestPinholeModel):
 
         for dist_coef in dist_coefs:
 
-            model = self.Class(**dist_coef)
+            model = self.Class(**dist_coef) # pyright: ignore[reportArgumentType]
 
             for inp in inputs:
                 with self.subTest(**dist_coef, inp=inp):
@@ -5920,7 +5929,7 @@ class TestOpenCVModel(TestPinholeModel):
 
         for dist_coef in dist_coefs:
 
-            model = self.Class(**dist_coef)
+            model = self.Class(**dist_coef) # pyright: ignore[reportArgumentType]
 
             with self.subTest(**dist_coef):
 
@@ -5974,187 +5983,187 @@ class TestOpenCVModel(TestPinholeModel):
             model_pert = cmodel.copy()
             model_pert.fx += delta
 
-            pix_pert_fx_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_fx_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.fy += delta
-            pix_pert_fy_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_fy_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.alpha += delta
-            pix_pert_skew_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_skew_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.px += delta
-            pix_pert_px_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_px_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.py += delta
-            pix_pert_py_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_py_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a1 += delta
-            pix_pert_a1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a2 += delta
-            pix_pert_a2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a3 += delta
-            pix_pert_a3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.fx -= delta
-            pix_pert_fx_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_fx_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.fy -= delta
-            pix_pert_fy_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_fy_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.alpha -= delta
-            pix_pert_skew_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_skew_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.px -= delta
-            pix_pert_px_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_px_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.py -= delta
-            pix_pert_py_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_py_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k1 += delta
-            pix_pert_k1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k2 += delta
-            pix_pert_k2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k3 += delta
-            pix_pert_k3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k4 += delta
-            pix_pert_k4_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k4_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k5 += delta
-            pix_pert_k5_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k5_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k6 += delta
-            pix_pert_k6_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k6_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.p1 += delta
-            pix_pert_p1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_p1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.p2 += delta
-            pix_pert_p2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_p2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.s1 += delta
-            pix_pert_s1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_s1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.s2 += delta
-            pix_pert_s2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_s2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.s3 += delta
-            pix_pert_s3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_s3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.s4 += delta
-            pix_pert_s4_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_s4_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k1 -= delta
-            pix_pert_k1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k2 -= delta
-            pix_pert_k2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k3 -= delta
-            pix_pert_k3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k4 -= delta
-            pix_pert_k4_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k4_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k5 -= delta
-            pix_pert_k5_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k5_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k6 -= delta
-            pix_pert_k6_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k6_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.p1 -= delta
-            pix_pert_p1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_p1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.p2 -= delta
-            pix_pert_p2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_p2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.s1 -= delta
-            pix_pert_s1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_s1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.s2 -= delta
-            pix_pert_s2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_s2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.s3 -= delta
-            pix_pert_s3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_s3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.s4 -= delta
-            pix_pert_s4_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_s4_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][0] += delta
-            pix_pert_mx_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_mx_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][1] += delta
-            pix_pert_my_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_my_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][2] += delta
-            pix_pert_mz_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_mz_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][0] -= delta
-            pix_pert_mx_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_mx_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][1] -= delta
-            pix_pert_my_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_my_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][2] -= delta
-            pix_pert_mz_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_mz_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a1 -= delta
-            pix_pert_a1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a2 -= delta
-            pix_pert_a2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a3 -= delta
-            pix_pert_a3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             return np.vstack([(pix_pert_fx_f - pix_pert_fx_b) / (delta * 2),
                               (pix_pert_fy_f - pix_pert_fy_b) / (delta * 2),
@@ -6214,187 +6223,187 @@ class TestOpenCVModel(TestPinholeModel):
 
             model_pert = cmodel.copy()
             model_pert.fx += delta
-            pix_pert_fx_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_fx_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.fy += delta
-            pix_pert_fy_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_fy_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.alpha += delta
-            pix_pert_skew_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_skew_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.px += delta
-            pix_pert_px_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_px_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.py += delta
-            pix_pert_py_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_py_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a1 += delta
-            pix_pert_a1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a2 += delta
-            pix_pert_a2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a3 += delta
-            pix_pert_a3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.fx -= delta
-            pix_pert_fx_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_fx_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.fy -= delta
-            pix_pert_fy_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_fy_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.alpha -= delta
-            pix_pert_skew_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_skew_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.px -= delta
-            pix_pert_px_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_px_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.py -= delta
-            pix_pert_py_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_py_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k1 += delta
-            pix_pert_k1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k2 += delta
-            pix_pert_k2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k3 += delta
-            pix_pert_k3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k4 += delta
-            pix_pert_k4_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k4_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k5 += delta
-            pix_pert_k5_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k5_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k6 += delta
-            pix_pert_k6_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k6_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.p1 += delta
-            pix_pert_p1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_p1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.p2 += delta
-            pix_pert_p2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_p2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.s1 += delta
-            pix_pert_s1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_s1_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.s2 += delta
-            pix_pert_s2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_s2_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.s3 += delta
-            pix_pert_s3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_s3_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.s4 += delta
-            pix_pert_s4_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_s4_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k1 -= delta
-            pix_pert_k1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k2 -= delta
-            pix_pert_k2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k3 -= delta
-            pix_pert_k3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k4 -= delta
-            pix_pert_k4_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k4_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k5 -= delta
-            pix_pert_k5_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k5_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.k6 -= delta
-            pix_pert_k6_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_k6_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.p1 -= delta
-            pix_pert_p1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_p1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.p2 -= delta
-            pix_pert_p2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_p2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.s1 -= delta
-            pix_pert_s1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_s1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.s2 -= delta
-            pix_pert_s2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_s2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.s3 -= delta
-            pix_pert_s3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_s3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.s4 -= delta
-            pix_pert_s4_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_s4_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][0] += delta
-            pix_pert_mx_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_mx_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][1] += delta
-            pix_pert_my_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_my_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][2] += delta
-            pix_pert_mz_f = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_mz_f = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][0] -= delta
-            pix_pert_mx_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_mx_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][1] -= delta
-            pix_pert_my_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_my_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.misalignment[image][2] -= delta
-            pix_pert_mz_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_mz_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a1 -= delta
-            pix_pert_a1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a1_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a2 -= delta
-            pix_pert_a2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a2_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             model_pert = cmodel.copy()
             model_pert.a3 -= delta
-            pix_pert_a3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).flatten()
+            pix_pert_a3_b = model_pert.project_onto_image(loc, image=image, temperature=temp).ravel()
 
             return np.vstack([(pix_pert_fx_f - pix_pert_fx_b) / (delta * 2),
                               (pix_pert_fy_f - pix_pert_fy_b) / (delta * 2),
@@ -6499,12 +6508,13 @@ class TestOpenCVModel(TestPinholeModel):
             self.assertEqual(getattr(model, key), update_vec[model.element_dict[key][0]])
 
         for ind, vec in enumerate(update_vec[20:].reshape(-1, 3)):
-            np.testing.assert_array_almost_equal(at.Rotation(vec).q, at.Rotation(model.misalignment[ind]).q)
+            np.testing.assert_array_almost_equal(at.Rotation(vec).quaternion, at.Rotation(model.misalignment[ind]).quaternion)
 
     def test_pixels_to_gnomic(self):
 
         intrins_param = {"fx": 3000, "fy": 4000, "alpha": 0.5,
-                         "px": 4005.23, 'py': 2000.33, 'a1': 1e-5, 'a2': 1e-6, 'a3': -1e-7}
+                         "px": 4005.23, 'py': 2000.33, 'a1': 1e-5, 'a2': 1e-6, 'a3': -1e-7,
+                         "field_of_view": 100}
 
         dist_coefs = [{"k1": 1.5e-1},
                       {"k2": 1.5e-1},
@@ -6547,7 +6557,7 @@ class TestOpenCVModel(TestPinholeModel):
     def test_undistort_pixels(self):
 
         intrins_param = {"fx": 3000, "fy": 4000, "alpha": 0.5,
-                         "px": 4005.23, 'py': 2000.33, 'a1': 1e-5, 'a2': 1e-6, 'a3': -1e-7}
+                         "px": 4005.23, 'py': 2000.33, 'a1': 1e-5, 'a2': 1e-6, 'a3': -1e-7, "field_of_view": 100}
 
         dist_coefs = [{"k1": 1.5e-1},
                       {"k2": 1.5e-1},
@@ -6594,7 +6604,8 @@ class TestOpenCVModel(TestPinholeModel):
 
     def test_pixels_to_unit(self):
         intrins_param = {"fx": 3000, "fy": 4000, "alpha": 0.5,
-                         "px": 4005.23, 'py': 2000.33, 'a1': 1e-6, 'a2': -2e-7, 'a3': 4.5e-8}
+                         "px": 4005.23, 'py': 2000.33, 'a1': 1e-6, 'a2': -2e-7, 'a3': 4.5e-8,
+                         "field_of_view": 100}
 
         dist_coefs = [{"k1": 1.5e-1},
                       {"k2": 1.5e-1},
@@ -6738,7 +6749,7 @@ class TestOpenCVModel(TestPinholeModel):
         model = self.Class(kx=100, ky=-985.234, px=1000, py=1095, kxy=10,
                            k1=1e-6, k2=1e-12, k3=-4e-10, p1=6e-7, p2=-1e-5,
                            k4=0.1, k5=0.01, k6=0.001, s1=0.1, s2=-0.1, s3=0.5, s4=-0.6,
-                           a1=1e-6, a2=-1e-7, a3=4e-12)
+                           a1=1e-6, a2=-1e-7, a3=4e-12, field_of_view=100)
 
         rows, cols, dist = model.distortion_map((2000, 250), step=10)
 
@@ -6749,9 +6760,9 @@ class TestOpenCVModel(TestPinholeModel):
         np.testing.assert_array_equal(rows, rs)
         np.testing.assert_array_equal(cols, cs)
 
-        distl = model.distort_pixels(np.vstack([cs.flatten(), rs.flatten()]))
+        distl = model.distort_pixels(np.vstack([cs.ravel(), rs.ravel()]).astype(np.float64))
 
-        np.testing.assert_array_equal(distl - np.vstack([cs.flatten(), rs.flatten()]), dist)
+        np.testing.assert_array_equal(distl - np.vstack([cs.ravel(), rs.ravel()]), dist)
 
 
 class TestSaveLoad(TestCase):

@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 """
@@ -24,8 +23,6 @@ both of which were used heavily in developing this class.
 
 from itertools import repeat
 
-from numbers import Real, Complex
-
 import numpy as np
 import cython
 from cython.parallel import prange, parallel
@@ -35,8 +32,6 @@ from libc.math cimport sqrt, isnan
 
 from giant.rotations import Rotation
 from giant.ray_tracer.rays import INTERSECT_DTYPE
-from giant.catalogues.utilities import unit_to_radec
-
 from giant.ray_tracer.shapes.solid cimport Solid
 from giant.ray_tracer.shapes.axis_aligned_bounding_box import AxisAlignedBoundingBox
 
@@ -73,7 +68,7 @@ def quadratic_equation(a, b, c):
     :param c: the c coefficient(s) of the equation(s)
     :type c: SCALAR_OR_ARRAY
     :return: the positive and negative roots of the equation as a tuple of floats or arrays.  The negative root is first
-    :rtype: Union[Tuple[Union[Real, Complex], Union[Real, Complex]], Tuple[np.ndarray, np.ndarray]]
+    :rtype: Union[Tuple[complex, complex], Tuple[np.ndarray, np.ndarray]]
     """
     discriminant = np.sqrt(b*b - 4 * a * c)
     return (-b - discriminant) / (2 * a), (-b + discriminant) / (2 * a)
@@ -548,6 +543,7 @@ cdef class Ellipsoid(Solid):
 
             return np.ones(mult)
         else:
+            from giant.utilities.coordinate_transformations import unit_to_radec 
             radec = np.array(unit_to_radec(np.array(body_centered_vecs)/
                                            np.linalg.norm(body_centered_vecs, axis=0, keepdims=True)))
 
@@ -586,6 +582,8 @@ cdef class Ellipsoid(Solid):
         # also need to rotate the AABB bounding box
         self.bounding_box.rotate(rotation)
 
+        return self
+
     def translate(self, translation):
         """
         translate(self, translation)
@@ -603,6 +601,8 @@ cdef class Ellipsoid(Solid):
         self.center += np.asarray(translation).ravel()
 
         self.bounding_box.translate(translation)
+
+        return self
 
     def find_limbs(self, scan_center_dir, scan_dirs, observer_position=None):
         r"""
@@ -896,7 +896,6 @@ cdef class Ellipsoid(Solid):
                     #    [ r_C^T @ A_C ]
                     #    [  (c x s)^T  ]
                     for j in range(3):
-                        # for i in range(3):
                         coefs[ind, 0, j] = 2*pointsell[ind, j]
 
                         coefs[ind, 1, j] = posell[j]

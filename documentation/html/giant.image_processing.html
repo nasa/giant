@@ -1,39 +1,39 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>giant.image_processing &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
-    <link rel="shortcut icon" href="_static/logo.ico"/>
+    <title>giant.image_processing &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+    <script src="_static/documentation_options.js?v=51b770b3"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/logo.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="next" title="ImageProcessing" href="image_processing/giant.image_processing.ImageProcessing.html" />
-    <link rel="prev" title="IterativeGeneralizedGaussianWBackground.fit_lstsq" href="point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussianWBackground.fit_lstsq.html" />
+    <link rel="next" title="correlators" href="image_processing/giant.image_processing.correlators.html" />
+    <link rel="prev" title="IterativeGeneralizedGaussianWBackground.compare" href="point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussianWBackground.compare.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="index.html">
-    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    <img class="logo" src="_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -62,13 +62,13 @@
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="giant.html">API Reference</a><ul>
-      <li>Previous: <a href="point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussianWBackground.fit_lstsq.html" title="previous chapter">IterativeGeneralizedGaussianWBackground.fit_lstsq</a></li>
-      <li>Next: <a href="image_processing/giant.image_processing.ImageProcessing.html" title="next chapter">ImageProcessing</a></li>
+      <li>Previous: <a href="point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussianWBackground.compare.html" title="previous chapter">IterativeGeneralizedGaussianWBackground.compare</a></li>
+      <li>Next: <a href="image_processing/giant.image_processing.correlators.html" title="next chapter">correlators</a></li>
   </ul></li>
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -76,8 +76,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -88,10 +88,10 @@
     <ul>
         <li>
           &larr;
-          <a href="point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussianWBackground.fit_lstsq.html" title="Previous document">IterativeGeneralizedGaussianWBackground.fit_lstsq</a>
+          <a href="point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussianWBackground.compare.html" title="Previous document">IterativeGeneralizedGaussianWBackground.compare</a>
         </li>
         <li>
-          <a href="image_processing/giant.image_processing.ImageProcessing.html" title="Next document">ImageProcessing</a>
+          <a href="image_processing/giant.image_processing.correlators.html" title="Next document">correlators</a>
           &rarr;
         </li>
     </ul>
@@ -102,107 +102,57 @@
           <div class="body" role="main">
             
   <section id="module-giant.image_processing">
-<span id="giant-image-processing"></span><h1>giant.image_processing<a class="headerlink" href="#module-giant.image_processing" title="Permalink to this headline">¶</a></h1>
-<p>This module provides a number of image processing techniques for use throughout GIANT.</p>
-<p>The class provided by this module, <a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a>, is the primary tool used for working with image data
-throughout GIANT. This class provides routines to identify point sources in an image (<a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.find_poi_in_roi.html#giant.image_processing.ImageProcessing.find_poi_in_roi" title="giant.image_processing.ImageProcessing.find_poi_in_roi"><code class="xref py py-meth docutils literal notranslate"><span class="pre">find_poi_in_roi()</span></code></a>,
-<a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.refine_locations.html#giant.image_processing.ImageProcessing.refine_locations" title="giant.image_processing.ImageProcessing.refine_locations"><code class="xref py py-meth docutils literal notranslate"><span class="pre">refine_locations()</span></code></a>, <a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi.html#giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi" title="giant.image_processing.ImageProcessing.locate_subpixel_poi_in_roi"><code class="xref py py-meth docutils literal notranslate"><span class="pre">locate_subpixel_poi_in_roi()</span></code></a>), detect subpixel edges in an image (<a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.pae_edges.html#giant.image_processing.ImageProcessing.pae_edges" title="giant.image_processing.ImageProcessing.pae_edges"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pae_edges()</span></code></a>),
-perform template matching through cross correlation (<a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.correlate.html#giant.image_processing.ImageProcessing.correlate" title="giant.image_processing.ImageProcessing.correlate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">correlate()</span></code></a>), and denoise/flatten an image and get its noise
-level (<a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level.html#giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level" title="giant.image_processing.ImageProcessing.flatten_image_and_get_noise_level"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flatten_image_and_get_noise_level()</span></code></a>, <a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.denoise_image.html#giant.image_processing.ImageProcessing.denoise_image" title="giant.image_processing.ImageProcessing.denoise_image"><code class="xref py py-meth docutils literal notranslate"><span class="pre">denoise_image()</span></code></a>).</p>
-<p>For many of these methods, there are multiple algorithms that can be used to perform the same task.  The
-<a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a> class makes it easy to change what algorithm is being used by simply switching out one function
-object for another.  There are a few selections of different algorithms that can be used already provided by this
-module, and users can easily write their own algorithms and swap them in by following the instructions in the
-<a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a> class.</p>
+<span id="giant-image-processing"></span><h1>giant.image_processing<a class="headerlink" href="#module-giant.image_processing" title="Link to this heading">¶</a></h1>
+<p>This package provides a number of image processing techniques for use throughout GIANT.</p>
+<p>The functionality provided in this package, is the primary set of tools used for working with image data
+throughout GIANT. This package provides routines to identify point sources in an image (<a class="reference internal" href="image_processing/point_source_finder/giant.image_processing.point_source_finder.PointOfInterestFinder.html#giant.image_processing.point_source_finder.PointOfInterestFinder" title="giant.image_processing.point_source_finder.PointOfInterestFinder"><code class="xref py py-class docutils literal notranslate"><span class="pre">PointOfInterestFinder</span></code></a>), 
+detect edges in an image (<a class="reference internal" href="image_processing/edge_detection/giant.image_processing.edge_detection.PixelEdgeDetector.html#giant.image_processing.edge_detection.PixelEdgeDetector" title="giant.image_processing.edge_detection.PixelEdgeDetector"><code class="xref py py-class docutils literal notranslate"><span class="pre">PixelEdgeDetector</span></code></a>, <a class="reference internal" href="image_processing/edge_detection/giant.image_processing.edge_detection.PAESubpixelEdgeDetector.html#giant.image_processing.edge_detection.PAESubpixelEdgeDetector" title="giant.image_processing.edge_detection.PAESubpixelEdgeDetector"><code class="xref py py-class docutils literal notranslate"><span class="pre">PAESubpixelEdgeDetector</span></code></a>, <a class="reference internal" href="image_processing/edge_detection/giant.image_processing.edge_detection.ZernikeRampEdgeDetector.html#giant.image_processing.edge_detection.ZernikeRampEdgeDetector" title="giant.image_processing.edge_detection.ZernikeRampEdgeDetector"><code class="xref py py-class docutils literal notranslate"><span class="pre">ZernikeRampEdgeDetector</span></code></a>),
+perform template matching through cross correlation (<a class="reference internal" href="image_processing/giant.image_processing.correlators.html#module-giant.image_processing.correlators" title="giant.image_processing.correlators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">correlators</span></code></a>), detect opportunistic features in images 
+(<code class="xref py py-class docutils literal notranslate"><span class="pre">ORBKeypointMatcher</span></code>,).</p>
+<p>For many of these methods, there are multiple algorithms that can be used to perform the same task.</p>
 <p>A general user will usually not directly interact with the classes and functions in this class and instead will rely on
 the OpNav classes to interact for them.</p>
-<p class="rubric">Classes</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<p class="rubric">Modules</p>
+<table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.html#giant.image_processing.ImageProcessing" title="giant.image_processing.ImageProcessing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ImageProcessing</span></code></a></p></td>
-<td><p>This class is a collection of various image processing techniques used throughout GIANT.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.correlators.html#module-giant.image_processing.correlators" title="giant.image_processing.correlators"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correlators</span></code></a></p></td>
+<td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="image_processing/giant.image_processing.SubpixelEdgeMethods.html#giant.image_processing.SubpixelEdgeMethods" title="giant.image_processing.SubpixelEdgeMethods"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SubpixelEdgeMethods</span></code></a></p></td>
-<td><p>This enumeration provides the valid options for subpixel edge detection methods.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="image_processing/giant.image_processing.denoising.html#module-giant.image_processing.denoising" title="giant.image_processing.denoising"><code class="xref py py-obj docutils literal notranslate"><span class="pre">denoising</span></code></a></p></td>
+<td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.ImageFlatteningNoiseApprox.html#giant.image_processing.ImageFlatteningNoiseApprox" title="giant.image_processing.ImageFlatteningNoiseApprox"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ImageFlatteningNoiseApprox</span></code></a></p></td>
-<td><p>This enumeration provides the valid options for flattening an image and determining the noise levels when identifying points of interest in <a class="reference internal" href="image_processing/giant.image_processing.ImageProcessing.find_poi_in_roi.html#giant.image_processing.ImageProcessing.find_poi_in_roi" title="giant.image_processing.ImageProcessing.find_poi_in_roi"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ImageProcessing.find_poi_in_roi()</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.edge_detection.html#module-giant.image_processing.edge_detection" title="giant.image_processing.edge_detection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_detection</span></code></a></p></td>
+<td><p></p></td>
 </tr>
-</tbody>
-</table>
-<p class="rubric">Functions</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.local_maxima.html#giant.image_processing.local_maxima" title="giant.image_processing.local_maxima"><code class="xref py py-obj docutils literal notranslate"><span class="pre">local_maxima</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="image_processing/giant.image_processing.feature_matchers.html#module-giant.image_processing.feature_matchers" title="giant.image_processing.feature_matchers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">feature_matchers</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/image_flattener/giant.image_processing.image_flattener.html#module-giant.image_processing.image_flattener" title="giant.image_processing.image_flattener"><code class="xref py py-obj docutils literal notranslate"><span class="pre">image_flattener</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="image_processing/image_segmenter/giant.image_processing.image_segmenter.html#module-giant.image_processing.image_segmenter" title="giant.image_processing.image_segmenter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">image_segmenter</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/limb_edge_detection/giant.image_processing.limb_edge_detection.html#module-giant.image_processing.limb_edge_detection" title="giant.image_processing.limb_edge_detection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">limb_edge_detection</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="image_processing/limb_scanning/giant.image_processing.limb_scanning.html#module-giant.image_processing.limb_scanning" title="giant.image_processing.limb_scanning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">limb_scanning</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/local_maxima/giant.image_processing.local_maxima.html#module-giant.image_processing.local_maxima" title="giant.image_processing.local_maxima"><code class="xref py py-obj docutils literal notranslate"><span class="pre">local_maxima</span></code></a></p></td>
 <td><p>This function returns a boolean mask selecting all local maxima from a 2d array.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="image_processing/giant.image_processing.cv2_correlator_2d.html#giant.image_processing.cv2_correlator_2d" title="giant.image_processing.cv2_correlator_2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cv2_correlator_2d</span></code></a></p></td>
-<td><p>This function performs a 2D cross correlation between <code class="docutils literal notranslate"><span class="pre">image</span></code> and <code class="docutils literal notranslate"><span class="pre">template</span></code> and returns the correlation surface using the <a class="reference external" href="http://docs.opencv.org/3.1.0/d4/dc6/tutorial_py_template_matching.html">OpenCV matchTemplate function</a>.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.fft_correlator_2d.html#giant.image_processing.fft_correlator_2d" title="giant.image_processing.fft_correlator_2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fft_correlator_2d</span></code></a></p></td>
-<td><p>This function performs normalized cross correlation between a template and an image in the frequency domain.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="image_processing/giant.image_processing.spatial_correlator_2d.html#giant.image_processing.spatial_correlator_2d" title="giant.image_processing.spatial_correlator_2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial_correlator_2d</span></code></a></p></td>
-<td><p>This function performs normalized cross correlation directly (spatial correlation).</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.fft_correlator_1d.html#giant.image_processing.fft_correlator_1d" title="giant.image_processing.fft_correlator_1d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fft_correlator_1d</span></code></a></p></td>
-<td><p>This function performs 1d correlation based on extracted lines and predicted lines.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="image_processing/giant.image_processing.otsu.html#giant.image_processing.otsu" title="giant.image_processing.otsu"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otsu</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="image_processing/otsu/giant.image_processing.otsu.html#module-giant.image_processing.otsu" title="giant.image_processing.otsu"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otsu</span></code></a></p></td>
 <td><p>This function performs multilevel Otsu thresholding on a 2D array.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.quadric_peak_finder_2d.html#giant.image_processing.quadric_peak_finder_2d" title="giant.image_processing.quadric_peak_finder_2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quadric_peak_finder_2d</span></code></a></p></td>
-<td><p>This function returns a numpy array containing the (x, y) location of the maximum surface value which corresponds to the peak of the fitted quadric surface to subpixel accuracy.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/peak_finders/giant.image_processing.peak_finders.html#module-giant.image_processing.peak_finders" title="giant.image_processing.peak_finders"><code class="xref py py-obj docutils literal notranslate"><span class="pre">peak_finders</span></code></a></p></td>
+<td><p>This module provides functionality for finding the (subpixel) peak of a 2d surface or of 1d lines.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="image_processing/giant.image_processing.pixel_level_peak_finder_2d.html#giant.image_processing.pixel_level_peak_finder_2d" title="giant.image_processing.pixel_level_peak_finder_2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pixel_level_peak_finder_2d</span></code></a></p></td>
-<td><p>This function returns a numpy array containing the (x, y) location of the maximum surface value to pixel level accuracy.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="image_processing/point_source_finder/giant.image_processing.point_source_finder.html#module-giant.image_processing.point_source_finder" title="giant.image_processing.point_source_finder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">point_source_finder</span></code></a></p></td>
+<td><p>This module provides functionality for identifying the locations of points of interest  (unresolved bright spots) in an image and fitting point spread functions to them.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.quadric_peak_finder_2d.html#giant.image_processing.quadric_peak_finder_2d" title="giant.image_processing.quadric_peak_finder_2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quadric_peak_finder_2d</span></code></a></p></td>
-<td><p>This function returns a numpy array containing the (x, y) location of the maximum surface value which corresponds to the peak of the fitted quadric surface to subpixel accuracy.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="image_processing/giant.image_processing.pixel_level_peak_finder_1d.html#giant.image_processing.pixel_level_peak_finder_1d" title="giant.image_processing.pixel_level_peak_finder_1d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pixel_level_peak_finder_1d</span></code></a></p></td>
-<td><p>This function returns a numpy array containing the location of the maximum surface value to pixel level accuracy for each row of the input matrix.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.parabolic_peak_finder_1d.html#giant.image_processing.parabolic_peak_finder_1d" title="giant.image_processing.parabolic_peak_finder_1d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parabolic_peak_finder_1d</span></code></a></p></td>
-<td><p>Find the subpixel maximum location along each row.</p></td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Constants</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.HORIZONTAL_KERNEL.html#giant.image_processing.HORIZONTAL_KERNEL" title="giant.image_processing.HORIZONTAL_KERNEL"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HORIZONTAL_KERNEL</span></code></a></p></td>
-<td><p>The horizontal Sobel kernel for convolving with an image when computing the horizontal image gradients.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="image_processing/giant.image_processing.VERTICAL_KERNEL.html#giant.image_processing.VERTICAL_KERNEL" title="giant.image_processing.VERTICAL_KERNEL"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VERTICAL_KERNEL</span></code></a></p></td>
-<td><p>The vertical Sobel kernel for convolving with an image when computing the vertical image gradients.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.PAE_A01.html#giant.image_processing.PAE_A01" title="giant.image_processing.PAE_A01"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PAE_A01</span></code></a></p></td>
-<td><p>The 0, 1 coefficient (upper middle) of the Gaussian kernel representing the blurring experienced in the images being  processed for the PAE sub-pixel edge method.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="image_processing/giant.image_processing.PAE_A11.html#giant.image_processing.PAE_A11" title="giant.image_processing.PAE_A11"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PAE_A11</span></code></a></p></td>
-<td><p>The 1, 1 coefficient (upper left) of the Gaussian kernel representing the blurring experienced in the images being  processed for the PAE sub-pixel edge method.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.FIRST_ORDER_REAL_MOMENTS.html#giant.image_processing.FIRST_ORDER_REAL_MOMENTS" title="giant.image_processing.FIRST_ORDER_REAL_MOMENTS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIRST_ORDER_REAL_MOMENTS</span></code></a></p></td>
-<td><p>First order real component of Zernike Moments</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="image_processing/giant.image_processing.FIRST_ORDER_IMAGINARY_MOMENTS.html#giant.image_processing.FIRST_ORDER_IMAGINARY_MOMENTS" title="giant.image_processing.FIRST_ORDER_IMAGINARY_MOMENTS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIRST_ORDER_IMAGINARY_MOMENTS</span></code></a></p></td>
-<td><p>First order imaginary component of Zernike Moments</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/giant.image_processing.SECOND_ORDER_MOMENTS.html#giant.image_processing.SECOND_ORDER_MOMENTS" title="giant.image_processing.SECOND_ORDER_MOMENTS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SECOND_ORDER_MOMENTS</span></code></a></p></td>
-<td><p>Second order Zernike Moments</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="image_processing/utilities/giant.image_processing.utilities.html#module-giant.image_processing.utilities" title="giant.image_processing.utilities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">utilities</span></code></a></p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -219,10 +169,10 @@ the OpNav classes to interact for them.</p>
     <ul>
         <li>
           &larr;
-          <a href="point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussianWBackground.fit_lstsq.html" title="Previous document">IterativeGeneralizedGaussianWBackground.fit_lstsq</a>
+          <a href="point_spread_functions/gaussians/giant.point_spread_functions.gaussians.IterativeGeneralizedGaussianWBackground.compare.html" title="Previous document">IterativeGeneralizedGaussianWBackground.compare</a>
         </li>
         <li>
-          <a href="image_processing/giant.image_processing.ImageProcessing.html" title="Next document">ImageProcessing</a>
+          <a href="image_processing/giant.image_processing.correlators.html" title="Next document">correlators</a>
           &rarr;
         </li>
     </ul>
@@ -233,20 +183,24 @@ the OpNav classes to interact for them.</p>
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="_sources/giant.image_processing.rst.txt"
-          rel="nofollow">Page source</a>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

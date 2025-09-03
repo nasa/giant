@@ -1,36 +1,36 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>giant.relative_opnav.estimators.moment_algorithm &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
-    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../../../_static/logo.ico"/>
+    <title>giant.relative_opnav.estimators.moment_algorithm &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../../_static/logo.ico"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
     <link rel="copyright" title="Copyright" href="../../../../copyright.html" />
    
   <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../../../../index.html">
-    <img class="logo" src="../../../../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../../../../_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -63,7 +63,7 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../../search.html" method="get">
@@ -71,8 +71,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -89,11 +89,7 @@
           <div class="body" role="main">
             
   <h1>Source code for giant.relative_opnav.estimators.moment_algorithm</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
-<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
-
-
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">This module provides a class which implements a moment based (center of illumination) center finding RelNav technique.</span>
 
 <span class="sd">Description of the Technique</span>
@@ -129,12 +125,12 @@
 <span class="sd">============================================= ==========================================================================</span>
 <span class="sd">Parameter                                     Description</span>
 <span class="sd">============================================= ==========================================================================</span>
-<span class="sd">:attr:`.ImageProcessing.otsu_levels`          The number of levels to attempt to segments the histogram into using</span>
+<span class="sd">:attr:`.ImageSegmenter.otsu_levels`           The number of levels to attempt to segments the histogram into using</span>
 <span class="sd">                                              multi-level Otsu thresholding.</span>
-<span class="sd">:attr:`.ImageProcessing.minimum_segment_area` The minimum size of a segment for it to be considered a foreground object.</span>
+<span class="sd">:attr:`.ImageSegmenter.minimum_segment_area`  The minimum size of a segment for it to be considered a foreground object.</span>
 <span class="sd">                                              This can be determined automatically using the :attr:`use_apparent_area`</span>
 <span class="sd">                                              flag of this class.</span>
-<span class="sd">:attr:`.ImageProcessing.minimum_segment_dn`   The minimum DN value for a segment to be considered foreground.  This can</span>
+<span class="sd">:attr:`.ImageSegmenter.minimum_segment_dn`    The minimum DN value for a segment to be considered foreground.  This can</span>
 <span class="sd">                                              be used to help separate background segments that are slightly brighter</span>
 <span class="sd">                                              due to stray light or other noise issues.</span>
 <span class="sd">============================================= ==========================================================================</span>
@@ -172,31 +168,102 @@
 <span class="sd">by this technique, refer to the following class documentation.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span>  <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 
-<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">giant.point_spread_functions</span> <span class="kn">import</span> <span class="n">Moment</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
 
-<span class="kn">from</span> <span class="nn">giant.camera</span> <span class="kn">import</span> <span class="n">Camera</span>
-<span class="kn">from</span> <span class="nn">giant.image</span> <span class="kn">import</span> <span class="n">OpNavImage</span>
-<span class="kn">from</span> <span class="nn">giant.image_processing</span> <span class="kn">import</span> <span class="n">ImageProcessing</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.scene</span> <span class="kn">import</span> <span class="n">Scene</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.illumination</span> <span class="kn">import</span> <span class="n">IlluminationModel</span>
-<span class="kn">from</span> <span class="nn">giant._typing</span> <span class="kn">import</span> <span class="n">Real</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.point_spread_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Moment</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera</span><span class="w"> </span><span class="kn">import</span> <span class="n">Camera</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpNavImage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scene</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes.user_option_configured</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptionConfigured</span>
 
-<span class="kn">from</span> <span class="nn">giant.relative_opnav.estimators.estimator_interface_abc</span> <span class="kn">import</span> <span class="n">RelNavObservablesType</span>
-<span class="kn">from</span> <span class="nn">giant.relative_opnav.estimators.unresolved</span> <span class="kn">import</span> <span class="n">PhaseCorrector</span><span class="p">,</span> <span class="n">PhaseCorrectionType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image_processing.image_segmenter</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageSegmenter</span><span class="p">,</span> <span class="n">ImageSegmenterOptions</span>
 
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.relative_opnav.estimators.estimator_interface_abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">RelNavObservablesType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.relative_opnav.estimators.unresolved</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhaseCorrector</span><span class="p">,</span> <span class="n">PhaseCorrectorOptions</span>
 
-<div class="viewcode-block" id="MomentAlgorithm"><a class="viewcode-back" href="../../../../relative_opnav/estimators/moment_algorithm/giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.html#giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm">[docs]</a><span class="k">class</span> <span class="nc">MomentAlgorithm</span><span class="p">(</span><span class="n">PhaseCorrector</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MomentAlgorithmOptions">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/moment_algorithm/giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithmOptions.html#giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithmOptions">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MomentAlgorithmOptions</span><span class="p">(</span><span class="n">PhaseCorrectorOptions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param use_apparent_area: A boolean flag specifying whether to predict the minimum apparent area we should</span>
+<span class="sd">                                consider when segmenting the image into foreground/background objects.</span>
+<span class="sd">    :param apparent_area_margin_of_safety: The margin of safety we will use to decrease the predicted apparent area</span>
+<span class="sd">                                            to account for errors in the a priori scene/shape model as well as errors</span>
+<span class="sd">                                            introduced by assuming a spherical object.  The predicted apparent area</span>
+<span class="sd">                                            will be divided by this number and then supplied as the</span>
+<span class="sd">                                            :attr:`~.ImageProcessing.minimum_segment_area` attribute.  This should</span>
+<span class="sd">                                            always be &gt;= 1.</span>
+<span class="sd">    :param search_distance: The search radius to search around the predicted centers for the observed centers of</span>
+<span class="sd">                            the target objects.  This is used as a limit, so that if the closest segmented object to</span>
+<span class="sd">                            a predicted target location is greater than this then the target is treated as not</span>
+<span class="sd">                            found.  Additionally, if multiple segmented regions fall within this distance of the</span>
+<span class="sd">                            target then we treat it as ambiguous and not found.</span>
+<span class="sd">    :param apply_phase_correction: A boolean flag specifying whether to apply the phase correction to the observed</span>
+<span class="sd">                                    center of brightness to get closer to the center of figure based on the predicted</span>
+<span class="sd">                                    apparent diameter of the object.</span>
+<span class="sd">    :param phase_correction_type: The type of phase correction to use.  Should be one of the PhaseCorrectionType</span>
+<span class="sd">                                    enum values</span>
+<span class="sd">    :param brdf: The illumination model to use to compute the illumination values if the ``RASTERED`` phase</span>
+<span class="sd">                    correction type is used.  If the ``RASTERED`` phase correction type is not used this is ignored.</span>
+<span class="sd">                    If this is left as ``None`` and the ``Rastered`` phase correction type is used, this will default</span>
+<span class="sd">                    to the McEwen Model, :class:`.McEwenIllumination`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">use_apparent_area</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A boolean flag specifying whether to use the predicted apparent area (number of pixels) of the illuminated </span>
+<span class="sd">    target in the image to threshold what is considered a foreground object in the image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">apparent_area_margin_of_safety</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The margin of safety used to decrease the predicted apparent area for each target.</span>
+<span class="sd">    </span>
+<span class="sd">    This value should always be &gt;= 1, as the predicted area is divided by this to get the effective minimum apparent</span>
+<span class="sd">    area for the targets.  This is included to account for errors in the a priori scene/shape model for the targets</span>
+<span class="sd">    as well as the errors introduced by assuming spherical targets.  Since there is only one margin of safety for </span>
+<span class="sd">    all targets in a scene, you should set this based on the expected worst case for all of the targets.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">search_distance</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Half of the distance to search around the predicted centers for the observed centers of the target objects in </span>
+<span class="sd">    pixels.</span>
+<span class="sd">    </span>
+<span class="sd">    This is also used to identify ambiguous target to segmented area pairings.  That is, if 2 segmented areas are </span>
+<span class="sd">    within this value of the predicted center of figure for a target, then that target is treated as not found and a</span>
+<span class="sd">    warning is printed.</span>
+<span class="sd">    </span>
+<span class="sd">    If this is ``None`` then the closest segmented object from the image to the predicted center of figure of the </span>
+<span class="sd">    target in the image is always chosen.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">apply_phase_correction</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A boolean flag specifying whether to apply the phase correction or not</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">image_segmenter_options</span><span class="p">:</span> <span class="n">ImageSegmenterOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The options to use to configure the image segmenter for detecting the object in the image</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="MomentAlgorithm">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/moment_algorithm/giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.html#giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MomentAlgorithm</span><span class="p">(</span><span class="n">UserOptionConfigured</span><span class="p">[</span><span class="n">MomentAlgorithmOptions</span><span class="p">],</span> <span class="n">PhaseCorrector</span><span class="p">,</span> <span class="n">MomentAlgorithmOptions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class implements GIANT&#39;s version of moment based center finding for extracting bearing measurements to resolved</span>
 <span class="sd">    or or unresolved targets in an image.</span>
 
@@ -272,88 +339,33 @@
 <span class="sd">        image time.  This class does not update the scene automatically.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">technique</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;moment_algorithm&#39;</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="n">technique</span> <span class="o">=</span> <span class="s1">&#39;moment_algorithm&#39;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The name of the technique identifier in the :class:`.RelativeOpNav` class.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">observable_type</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RelNavObservablesType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">RelNavObservablesType</span><span class="o">.</span><span class="n">CENTER_FINDING</span><span class="p">]</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="n">observable_type</span> <span class="o">=</span> <span class="p">[</span><span class="n">RelNavObservablesType</span><span class="o">.</span><span class="n">CENTER_FINDING</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The type of observables this technique generates.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span> <span class="n">image_processing</span><span class="p">:</span> <span class="n">ImageProcessing</span><span class="p">,</span>
-                 <span class="n">use_apparent_area</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-                 <span class="n">apparent_area_margin_of_safety</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">search_distance</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">apply_phase_correction</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-                 <span class="n">phase_correction_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">PhaseCorrectionType</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">PhaseCorrectionType</span><span class="o">.</span><span class="n">SIMPLE</span><span class="p">,</span>
-                 <span class="n">brdf</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">IlluminationModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span>
+                <span class="n">options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MomentAlgorithmOptions</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param scene: The :class:`.Scene` object containing the target, light, and obscuring objects.</span>
 <span class="sd">        :param camera: The :class:`.Camera` object containing the camera model and images to be utilized</span>
 <span class="sd">        :param image_processing: The :class:`.ImageProcessing` object to be used to process the images</span>
-<span class="sd">        :param use_apparent_area: A boolean flag specifying whether to predict the minimum apparent area we should</span>
-<span class="sd">                                  consider when segmenting the image into foreground/background objects.</span>
-<span class="sd">        :param apparent_area_margin_of_safety: The margin of safety we will use to decrease the predicted apparent area</span>
-<span class="sd">                                               to account for errors in the a priori scene/shape model as well as errors</span>
-<span class="sd">                                               introduced by assuming a spherical object.  The predicted apparent area</span>
-<span class="sd">                                               will be divided by this number and then supplied as the</span>
-<span class="sd">                                               :attr:`~.ImageProcessing.minimum_segment_area` attribute.  This should</span>
-<span class="sd">                                               always be &gt;= 1.</span>
-<span class="sd">        :param search_distance: The search radius to search around the predicted centers for the observed centers of</span>
-<span class="sd">                                the target objects.  This is used as a limit, so that if the closest segmented object to</span>
-<span class="sd">                                a predicted target location is greater than this then the target is treated as not</span>
-<span class="sd">                                found.  Additionally, if multiple segmented regions fall within this distance of the</span>
-<span class="sd">                                target then we treat it as ambiguous and not found.</span>
-<span class="sd">        :param apply_phase_correction: A boolean flag specifying whether to apply the phase correction to the observed</span>
-<span class="sd">                                       center of brightness to get closer to the center of figure based on the predicted</span>
-<span class="sd">                                       apparent diameter of the object.</span>
-<span class="sd">        :param phase_correction_type: The type of phase correction to use.  Should be one of the PhaseCorrectionType</span>
-<span class="sd">                                      enum values</span>
-<span class="sd">        :param brdf: The illumination model to use to compute the illumination values if the ``RASTERED`` phase</span>
-<span class="sd">                     correction type is used.  If the ``RASTERED`` phase correction type is not used this is ignored.</span>
-<span class="sd">                     If this is left as ``None`` and the ``Rastered`` phase correction type is used, this will default</span>
-<span class="sd">                     to the McEwen Model, :class:`.McEwenIllumination`.</span>
+<span class="sd">        :param options: A dataclass specifying the options to set for this instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">image_processing</span><span class="p">,</span> <span class="n">phase_correction_type</span><span class="o">=</span><span class="n">phase_correction_type</span><span class="p">,</span> <span class="n">brdf</span><span class="o">=</span><span class="n">brdf</span><span class="p">)</span>
+        
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">MomentAlgorithmOptions</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_segmenter</span> <span class="o">=</span> <span class="n">ImageSegmenter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_segmenter_options</span><span class="p">)</span>
 
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">search_distance</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">search_distance</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Half of the distance to search around the predicted centers for the observed centers of the target objects in </span>
-<span class="sd">        pixels.</span>
-<span class="sd">        </span>
-<span class="sd">        This is also used to identify ambiguous target to segmented area pairings.  That is, if 2 segmented areas are </span>
-<span class="sd">        within this value of the predicted center of figure for a target, then that target is treated as not found and a</span>
-<span class="sd">        warning is printed.</span>
-<span class="sd">        </span>
-<span class="sd">        If this is ``None`` then the closest segmented object from the image to the predicted center of figure of the </span>
-<span class="sd">        target in the image is always chosen.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">apply_phase_correction</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">apply_phase_correction</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A boolean flag specifying whether to apply the phase correction or not</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">use_apparent_area</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">use_apparent_area</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A boolean flag specifying whether to use the predicted apparent area (number of pixels) of the illuminated </span>
-<span class="sd">        target in the image to threshold what is considered a foreground object in the image.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">apparent_area_margin_of_safety</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">apparent_area_margin_of_safety</span><span class="p">)</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The margin of safety used to decrease the predicted apparent area for each target.</span>
-<span class="sd">        </span>
-<span class="sd">        This value should always be &gt;= 1, as the predicted area is divided by this to get the effective minimum apparent</span>
-<span class="sd">        area for the targets.  This is included to account for errors in the a priori scene/shape model for the targets</span>
-<span class="sd">        as well as the errors introduced by assuming spherical targets.  Since there is only one margin of safety for </span>
-<span class="sd">        all targets in a scene, you should set this based on the expected worst case for all of the targets.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="MomentAlgorithm.estimate"><a class="viewcode-back" href="../../../../relative_opnav/estimators/moment_algorithm/giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.estimate.html#giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.estimate">[docs]</a>    <span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">include_targets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MomentAlgorithm.estimate">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/moment_algorithm/giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.estimate.html#giant.relative_opnav.estimators.moment_algorithm.MomentAlgorithm.estimate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">include_targets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method extracts the observed center of figure for each requested target object from the supplied image.</span>
 
 <span class="sd">        This method works by first predicting the location of the center-of-figure of the target objects in the image,</span>
@@ -374,7 +386,7 @@
 <span class="sd">                                then all are processed (no, the irony is not lost on me...)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># store the original segment area from image processing in case we overwrite it</span>
-        <span class="n">original_segment_area</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">minimum_segment_area</span>
+        <span class="n">original_segment_area</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_segmenter</span><span class="o">.</span><span class="n">minimum_segment_area</span>
 
         <span class="c1"># loop through the requested targets and compute their expected apparent area</span>
         <span class="n">expected_areas</span> <span class="o">=</span> <span class="p">[]</span>
@@ -402,10 +414,10 @@
             <span class="c1"># get the minimum area corrected by the margin of safety</span>
             <span class="n">minimum_area</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">expected_areas</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">apparent_area_margin_of_safety</span>
             <span class="c1"># set it to the appropriate attribute</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">minimum_segment_area</span> <span class="o">=</span> <span class="n">minimum_area</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">image_segmenter</span><span class="o">.</span><span class="n">minimum_segment_area</span> <span class="o">=</span> <span class="n">minimum_area</span>
 
         <span class="c1"># Now segment the image using Otsu/connected components</span>
-        <span class="n">segments</span><span class="p">,</span> <span class="n">foreground</span><span class="p">,</span> <span class="n">segment_stats</span><span class="p">,</span> <span class="n">segment_centroids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">segment_image</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="n">segments</span><span class="p">,</span> <span class="n">foreground</span><span class="p">,</span> <span class="n">segment_stats</span><span class="p">,</span> <span class="n">segment_centroids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_segmenter</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
 
         <span class="n">used_segments</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -426,7 +438,7 @@
             <span class="k">for</span> <span class="n">segment_ind</span><span class="p">,</span> <span class="n">centroid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segment_centroids</span><span class="p">):</span>
                 <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">centroid</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">])</span>
 
-                <span class="k">if</span> <span class="n">closest_ind</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">closest_ind</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">closest_distance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">search_distance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">search_distance</span><span class="p">:</span>
                             <span class="n">closest_ind</span> <span class="o">=</span> <span class="n">segment_ind</span>
@@ -462,7 +474,7 @@
                               <span class="sa">f</span><span class="s1">&#39;adjusting the apriori scene conditions to be better or adjusting the image processing &#39;</span>
                               <span class="sa">f</span><span class="s1">&#39;settings to find more or less segmented object&#39;</span><span class="p">)</span>
                 <span class="c1"># set the other observed bearing to np.nan</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">other_target</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">other_target</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
                 <span class="c1"># set this observed bearing to np.nan</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
@@ -524,7 +536,9 @@
                                         <span class="s1">&#39;Predicted Area&#39;</span><span class="p">:</span> <span class="n">expected_areas</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]}</span>
 
         <span class="c1"># reset the image processing minimum segment area in case we messed with it</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">minimum_segment_area</span> <span class="o">=</span> <span class="n">original_segment_area</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_segmenter</span><span class="o">.</span><span class="n">minimum_segment_area</span> <span class="o">=</span> <span class="n">original_segment_area</span></div>
+</div>
+
 </pre></div>
 
           </div>
@@ -540,17 +554,24 @@
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

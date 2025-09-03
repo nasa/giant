@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 """
@@ -25,7 +24,7 @@ functional) by supplying an instance of it to the :class:`.ExtendedKalmanFilter`
 
 from dataclasses import dataclass
 
-from typing import Optional, Type
+from typing import Optional, Type, cast
 
 import numpy as np
 
@@ -33,7 +32,7 @@ from giant.ray_tracer.scene import Scene
 from giant.ufo.dynamics import Dynamics
 from giant.ufo.measurements import OpticalBearingMeasurement, Measurement
 
-from giant._typing import Real, SCALAR_OR_ARRAY
+from giant._typing import F_SCALAR_OR_ARRAY
 
 
 
@@ -48,7 +47,7 @@ class ORExInitializer:
     reasons)
     """
 
-    initial_range: Optional[Real] = None
+    initial_range: Optional[float] = None
     """
     The initial range to the target as a number or ``None``.
     
@@ -56,21 +55,21 @@ class ORExInitializer:
     central body assumed to be the first target in the :attr:`scene` attribute.
     """
 
-    initial_cram: Real = 1e-3
+    initial_cram: float = 1e-3
     """
     The initial CrAm value for the filter in m**2/kg.  
     
     See the :class:`.SolRadAndGravityDynamics` class for details.
     """
 
-    range_variance: Real = 49.0
+    range_variance: float = 49.0
     """
     The initial range variance in km**2 for computing the initial state covariance.  
     
     This is used along with the measurement covariance to compute the initial position covariance matrix.
     """
 
-    measurement_covariance_multiplier: Real = 9.0
+    measurement_covariance_multiplier: float = 9.0
     """
     The multiplier to use on the measurement covariance when computing the state covariance.  
     
@@ -78,7 +77,7 @@ class ORExInitializer:
     3 sigma measurement uncertainty).
     """
 
-    initial_velocity_variance: SCALAR_OR_ARRAY = 1e-6
+    initial_velocity_variance: F_SCALAR_OR_ARRAY = 1e-6
     """
     The initial velocity variance in units of (km/s)**2
     
@@ -88,12 +87,12 @@ class ORExInitializer:
     be symmetric.
     """
 
-    initial_cram_variance: Real = 1.0
+    initial_cram_variance: float = 1.0
     """
     The initial CrAm variance in units of (m**2/kg)**2.
     """
 
-    minimum_initial_radius: Real = 0.250
+    minimum_initial_radius: float = 0.250
     """
     The minimum initial radius to the central body in km.  
     
@@ -177,8 +176,8 @@ class ORExInitializer:
 
         # determine the initial velocity covariance
         if np.isscalar(self.initial_velocity_variance):
-            covariance[3:6, 3:6] = np.diag([self.initial_velocity_variance]*3)
-        elif self.initial_velocity_variance.size == 3:
+            covariance[3:6, 3:6] = np.diag([cast(float, self.initial_velocity_variance)]*3)
+        elif np.size(self.initial_velocity_variance) == 3:
             covariance[3:6, 3:6] = np.diag(self.initial_velocity_variance)
         else:
             covariance[3:6, 3:6] = self.initial_velocity_variance
@@ -190,7 +189,7 @@ class ORExInitializer:
 
             # noinspection PyArgumentList
             state = state_type(image.observation_date, position_inertial, velocity=np.zeros(3, dtype=np.float64),
-                               covariance=covariance, cram=self.initial_cram)
+                               covariance=covariance, cram=self.initial_cram) # pyright: ignore[reportCallIssue]
 
         else:
 

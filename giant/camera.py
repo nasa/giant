@@ -1,7 +1,3 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
-
-
 """
 This module defines the Camera object for GIANT, which collects information about a camera and images captured by that
 camera in a single place and provides some methods for filtering, sorting, and handling the images.
@@ -23,7 +19,7 @@ remove bad pixels, subtract a flat field, etc..).
 import warnings
 from datetime import timedelta, datetime
 from enum import Enum
-from typing import Union, Sequence, Iterable, Callable, Optional, Tuple, List
+from typing import Union, Sequence, Iterator, Callable, Optional, Tuple, List, Iterable
 
 from pathlib import Path
 
@@ -32,8 +28,11 @@ import numpy as np
 from giant.image import OpNavImage, ExposureType
 from giant.camera_models import CameraModel
 from giant.rotations import slerp, Rotation
-from giant._typing import ARRAY_LIKE_2D, PATH
+from giant._typing import ARRAY_LIKE_2D, PATH, DatetimeLike, TimedeltaLike
 from giant.point_spread_functions import PointSpreadFunction
+
+
+ATTITUDE_FUNCTION_TYPE = Callable[[DatetimeLike], Rotation]
 
 
 class AttitudeUpdateMethods(Enum):
@@ -76,7 +75,7 @@ class Camera:
             >>> from giant.camera import Camera
             >>> import numpy
             >>> # generate the image data
-            >>> image_list = [numpy.random.randn(100, 100) for _ in range(10)]  # type: List[np.ndarray]
+            >>> image_list: List[np.ndarray] = [numpy.random.randn(100, 100) for _ in range(10)] 
             >>> # create an instance with the images included
             >>> cam = Camera(images=image_list, parse_data=False)
             >>> # turn off a few of the images
@@ -99,12 +98,12 @@ class Camera:
         the ``default_image_class`` argument to ``__init__``), or provide more custom functionality.
         """
 
-    def __init__(self, images: Union[Iterable[Union[PATH, ARRAY_LIKE_2D]], PATH, ARRAY_LIKE_2D, None] = None,
+    def __init__(self, images: Union[Iterable[Union[PATH, np.ndarray]], PATH, np.ndarray, None] = None,
                  model: Optional[CameraModel] = None, name: Optional[str] = None, spacecraft_name: Optional[str] = None,
                  frame: Optional[str] = None, parse_data: bool = True, psf: Optional[PointSpreadFunction] = None,
-                 attitude_function: Optional[Callable] = None, start_date: Optional[datetime] = None,
-                 end_date: Optional[datetime] = None, metadata_only: bool = False,
-                 default_image_class: type = OpNavImage):
+                 attitude_function: Optional[ATTITUDE_FUNCTION_TYPE] = None, start_date: Optional[DatetimeLike] = None,
+                 end_date: Optional[DatetimeLike] = None, metadata_only: bool = False,
+                 default_image_class: type[OpNavImage] = OpNavImage):
         """
         :param images: A single image, or a list of images to store in the camera object.  The image data can either be
                        a string (in which case it is represents the path to the image file), an array of image data
@@ -116,7 +115,7 @@ class Camera:
         :param frame: The name of the frame for this camera.  Not Required
         :param parse_data: A flag specifying whether to parse the metadata for each image when it is being loaded.
         :param psf: A callable object that applies a PSF to a 2D image, and provides a
-                    :meth`~.PointSpreadFunction.apply_1d` method to apply the PSF to 1D scan lines.  Typically this is a
+                    :meth`~.meta_psf.PointSpreadFunction.apply_1d` method to apply the PSF to 1D scan lines.  Typically this is a
                     :class:`.PointSpreadFunction` subclass.
         :param attitude_function: A function that returns the attitude of the camera frame with respect to the inertial
                                   frame for an input datetime object.  This is generally a call to a spice routine
@@ -129,15 +128,15 @@ class Camera:
         :param default_image_class: The class that the images stored in this instance should be an instance of.
         """
         # store the camera model object
-        self._model = None
+        self._model: Optional[CameraModel] = None
         self.model = model
 
         # store the image class we want to make sure our images are instances of
-        self._default_image_class = default_image_class
+        self._default_image_class: type[OpNavImage] = default_image_class
 
         # add the images and create the image mask
-        self._image_mask = []
-        self._images = []
+        self._image_mask: list[bool] = []
+        self._images: list[OpNavImage] = []
         if images is not None:
             self.add_images(images, parse_data=parse_data, metadata_only=metadata_only)
 
@@ -198,7 +197,7 @@ class Camera:
         self._attitude_function = None
         self.attitude_function = attitude_function
 
-    def __iter__(self) -> Iterable[Tuple[int, OpNavImage]]:
+    def __iter__(self) -> Iterator[Tuple[int, OpNavImage]]:
         """
         Loop through the images and their indices that are stored in the :attr:`.images` attribute
         and that are turned on according to the :attr:`.image_mask` attribute.
@@ -328,7 +327,7 @@ class Camera:
             raise ValueError('The psf object must be callable')
 
     @property
-    def attitude_function(self) -> Callable:
+    def attitude_function(self) -> ATTITUDE_FUNCTION_TYPE:
         """
         A function that returns the orientation of the camera frame with respect to the inertial frame as an
         :class:`.Rotation` object for a specific time input as a python :class:`datetime` object.
@@ -358,21 +357,15 @@ class Camera:
         transformation from the J2000 inertial frame to the `'MyNavCam'` frame.  See the :mod:`.spice_interface`
         documentation for more information about how this works.
         """
+        assert self._attitude_function is not None, 'attitude_function cannot be None at this point'
         return self._attitude_function
 
     @attitude_function.setter
-    def attitude_function(self, val: Optional[Callable]):
-        if isinstance(val, Callable):
-
-            self._attitude_function = val
-
-        elif val is None:
-
-            self._attitude_function = None
-
-        else:
-
+    def attitude_function(self, val: Optional[ATTITUDE_FUNCTION_TYPE]):
+        if val is not None and not callable(val):
             raise ValueError('The attitude_function object must be callable')
+
+        self._attitude_function = val
 
     @property
     def model(self) -> CameraModel:
@@ -388,20 +381,18 @@ class Camera:
         Although not required, it is strongly recommended that the object assigned to this property be a
         subclass of :class:`.CameraModel`.
         """
-
+        assert self._model is not None, "The camera model should not be None at this point"
         return self._model
 
     @model.setter
     def model(self, val: Optional[CameraModel]):
 
-        if isinstance(val, CameraModel):
-            self._model = val
-
-        else:
-            self._model = val
+        if val is not None and not isinstance(val, CameraModel):
             warnings.warn("The camera model you specified is not a subclass of CameraModel.\n"
                           "We'll assume you know what you're doing and have setup the proper methods.\n"
                           "In the future you should subclass CameraModel to avoid this warning.")
+            
+        self._model = val
 
     def short_on(self) -> None:
         """
@@ -567,7 +558,7 @@ class Camera:
         for ind, image in enumerate(self._images):
             self._image_mask[ind] = image.exposure_type in [ExposureType.LONG, ExposureType.DUAL]
 
-    def apply_date_range(self):
+    def apply_date_range(self) -> None:
         """
         This method filters images by date, setting any whose :attr:`~.OpNavImage.observation_date` is not
         between :attr:`start_date` and :attr:`end_date` to False.
@@ -590,23 +581,23 @@ class Camera:
         """
         if (self.start_date is not None) and (self.end_date is not None):
             for ind, image in self:
-                if not (self.start_date <= image.observation_date <= self.end_date):
+                if image.observation_date is not None and not (self.start_date <= image.observation_date <= self.end_date):
                     self._image_mask[ind] = False
 
         elif (self.start_date is None) and (self.end_date is None):
             pass
 
-        elif self.end_date is None:
+        elif self.end_date is None and self.start_date is not None:
             for ind, image in self:
-                if not (self.start_date <= image.observation_date):
+                if image.observation_date is not None and not (self.start_date <= image.observation_date):
                     self._image_mask[ind] = False
 
-        elif self.start_date is None:
+        elif self.start_date is None and self.end_date is not None:
             for ind, image in self:
-                if not (image.observation_date <= self.end_date):
+                if image.observation_date is not None and not (image.observation_date <= self.end_date):
                     self._image_mask[ind] = False
 
-    def sort_by_date(self):
+    def sort_by_date(self) -> None:
         """
         This method is used to sort the images currently loaded to the :attr:`images` attribute by date.
 
@@ -633,8 +624,8 @@ class Camera:
         self._images = sorted_images
         self._image_mask = sorted_image_mask
 
-    def add_images(self, data: Union[Iterable[Union[PATH, ARRAY_LIKE_2D]], PATH, ARRAY_LIKE_2D],
-                   parse_data: bool = True, preprocessor: bool = True, metadata_only: bool = False):
+    def add_images(self, data: Union[Iterable[Union[PATH, np.ndarray]], PATH, np.ndarray],
+                   parse_data: bool = True, preprocessor: bool = True, metadata_only: bool = False) -> None:
         """
         This method is used to add images to the :attr:`.images` while also ensuring that the :attr:`.image_mask` list
         remains the same size as the :attr:`.images` list.
@@ -676,8 +667,25 @@ class Camera:
         :param metadata_only: A flag to specify to only load the metadata for an image, not the image data itself.
         """
 
-        if isinstance(data, (list, tuple)):
+        if isinstance(data, PATH | np.ndarray):
+            image = self.image_check(data, parse_data=parse_data, metadata_only=metadata_only)
 
+            self._images.append(self.preprocessor(image))
+
+            if getattr(self.model, 'estimate_multiple_misalignments', False):
+                misalignment = getattr(self.model, 'misalignment')
+                if isinstance(misalignment, list):
+                    misalignment.append(np.zeros(3))
+
+                else:
+                    misalignment = [misalignment, np.zeros(3)]
+                    setattr(self.model, 'misalignment', misalignment)
+
+            try:
+                self._image_mask.append(True)
+            except AttributeError:
+                pass
+        else:
             for datum in data:
 
                 image = self.image_check(datum, parse_data=parse_data, metadata_only=metadata_only)
@@ -689,37 +697,21 @@ class Camera:
 
                 if getattr(self.model, 'estimate_multiple_misalignments', False):
                     if hasattr(self.model, 'misalignment'):
+                        misalignment: list[np.ndarray] | np.ndarray = getattr(self.model, 'misalignment')
 
-                        if isinstance(self.model.misalignment, list):
-                            self.model.misalignment.append(np.zeros(3))
+                        if isinstance(misalignment, list):
+                            misalignment.append(np.zeros(3))
 
                         else:
-                            self.model.misalignment = [self.model.misalignment]
-                            self.model.misalignment.append(np.zeros(3))
+                            misalignment = [misalignment, np.zeros(3)]
+                            setattr(self.model, 'misalignment', misalignment)
 
                 try:
                     self._image_mask.append(True)
                 except AttributeError:
                     pass
 
-        else:
-
-            image = self.image_check(data, parse_data=parse_data, metadata_only=metadata_only)
-
-            self._images.append(self.preprocessor(image))
-
-            if getattr(self.model, 'estimate_multiple_misalignments', False):
-
-                if hasattr(self.model, 'misalignment'):
-                    if isinstance(self.model.misalignment, list):
-                        self.model.misalignment.append(np.zeros(3))
-
-            try:
-                self._image_mask.append(True)
-            except AttributeError:
-                pass
-
-    def remove_images(self, images: Union[int, slice, Iterable[Union[int, slice]]]):
+    def remove_images(self, images: Union[int, slice, Iterable[Union[int, slice]]]) -> None:
         """
         This method is used to remove images from the :attr:`.images` list while also ensuring that the
         :attr:`.image_mask` list remains the same size as the :attr:`.images` list.
@@ -746,18 +738,18 @@ class Camera:
                 del self._images[image]
                 del self._image_mask[image]
                 if getattr(self.model, 'estimate_multiple_misalignments', False):
-                    if hasattr(self.model, 'misalignment'):
-                        del self.model.misalignment[image]
+                    misalignment = getattr(self.model, 'misalignment', [])
+                    del misalignment[image]
 
         else:
 
             del self._images[images]
             del self._image_mask[images]
             if getattr(self.model, 'estimate_multiple_misalignments', False):
-                if hasattr(self.model, 'misalignment'):
-                    del self.model.misalignment[images]
+                misalignment = getattr(self.model, 'misalignment', [])
+                del misalignment[images]
 
-    def image_check(self, data: Union[PATH, ARRAY_LIKE_2D],
+    def image_check(self, data: Union[PATH, np.ndarray],
                     parse_data: bool = True, metadata_only: bool = False) -> OpNavImage:
         """
         This method is used to interpret the image data that is supplied by the user (either during initialization or
@@ -861,16 +853,21 @@ class Camera:
                 elif self.images[ind + 1].pointing_post_fit and (not self.images[ind - 1].pointing_post_fit):
                     next_ind = ind + 1
                 else:
+                    prev_date = self.images[ind-1].observation_date
+                    next_date = self.images[ind+1].observation_date
+                    assert prev_date is not None, "observation date must not be None at this point"
+                    assert next_date is not None, "observation date must not be None at this point"
+                    assert image.observation_date is not None, "observation date must not be None at this point"
                     # 2*np.argmin - 1 will either give -1 (previous image) or 1 (next image)
-                    delta = 2 * np.argmin([abs(self.images[ind-1].observation_date - image.observation_date),
-                                           abs(self.images[ind+1].observation_date - image.observation_date)]) - 1
+                    delta = 2 * np.argmin(np.array([abs(prev_date - image.observation_date),
+                                                    abs(next_date - image.observation_date)])) - 1
 
                     next_ind = ind + delta
 
         # return the image we are considering
         return self.images[next_ind]
 
-    def _replace(self, ind: int, image: OpNavImage, max_delta: timedelta):
+    def _replace(self, ind: int, image: OpNavImage, max_delta: TimedeltaLike) -> None:
         """
         This private method applies the replace method to update short exposure attitude information from surrounding
         long exposure images.
@@ -905,6 +902,7 @@ class Camera:
 
         # if the difference between the short and long exposure image is too long
         # throw a warning and do nothing
+        assert image.observation_date is not None and next_image.observation_date is not None, "observation date cannot be None at this point"
         diff = abs(next_image.observation_date - image.observation_date)
         if diff > max_delta:
             warnings.warn("Two images are separated by too large of a time difference to use replace."
@@ -913,11 +911,11 @@ class Camera:
             return
 
         # copy the long exposure attitude to the short exposure attitude
+        assert next_image.rotation_inertial_to_camera is not None, "rotation_inertial_to_camera cannot be None at this point"
         image.rotation_inertial_to_camera = next_image.rotation_inertial_to_camera.copy()
         image.pointing_post_fit = True
 
-    # noinspection PyTypeChecker
-    def _propagate_attitude(self, ind, image, max_delta):
+    def _propagate_attitude(self, ind: int, image: OpNavImage, max_delta: TimedeltaLike) -> None:
         """
         This private method applies the delta quaternion method to update short exposure attitude information from
         surrounding long exposure images.
@@ -953,6 +951,7 @@ class Camera:
 
         # if the difference between the short and long exposure image is too long
         # throw a warning and do nothing
+        assert image.observation_date is not None and next_image.observation_date is not None, "observation date cannot be None at this point"
         diff = abs(next_image.observation_date - image.observation_date)
         if diff > max_delta:
             warnings.warn("Two images are separated by too large of a time difference to use delta quaternion."
@@ -960,18 +959,19 @@ class Camera:
             image.pointing_post_fit = False
             return
 
-        att_prev = self.attitude_function(next_image.observation_date)  # type: Rotation
+        att_prev: Rotation = self.attitude_function(next_image.observation_date) 
 
-        att_curr = self.attitude_function(image.observation_date)  # type: Rotation
+        att_curr: Rotation = self.attitude_function(image.observation_date) 
 
         # compute the delta quaternion between the long exposure and short exposure image.
         delta_q = att_curr * att_prev.inv()
 
         # apply the updated delta quaternion
+        assert next_image.rotation_inertial_to_camera is not None, "rotation_inertial_to_camera cannot be None at this point"
         image.rotation_inertial_to_camera = delta_q * next_image.rotation_inertial_to_camera
         image.pointing_post_fit = True
 
-    def _interp(self, ind, image, max_delta):
+    def _interp(self, ind: int, image: OpNavImage, max_delta: TimedeltaLike) -> None:
         """
         This private method applies the interpolate quaternion method to a given short exposure image.
 
@@ -1028,6 +1028,7 @@ class Camera:
                     self._replace(ind, image, max_delta)
                     return
 
+                assert image.observation_date is not None and image_prev.observation_date is not None and image_next.observation_date is not None, "observation_date cannot be None at this point"
                 if abs(image.observation_date - image_prev.observation_date) > max_delta:
                     warnings.warn("the time delta between two images is larger than the maximum time delta."
                                   "Falling back to replace method.")
@@ -1039,8 +1040,9 @@ class Camera:
                     self._replace(ind, image, max_delta)
 
                 else:
-                    image.rotation_inertial_to_camera = Rotation(slerp(image_prev.rotation_inertial_to_camera,
-                                                                       image_next.rotation_inertial_to_camera,
+                    assert image_prev.rotation_inertial_to_camera is not None and image_next.rotation_inertial_to_camera is not None, "rotation_inertial_to_camera cannot be None at this point"
+                    image.rotation_inertial_to_camera = Rotation(slerp(image_prev.rotation_inertial_to_camera.quaternion,
+                                                                       image_next.rotation_inertial_to_camera.quaternion,
                                                                        image.observation_date,
                                                                        image_prev.observation_date,
                                                                        image_next.observation_date))
@@ -1048,7 +1050,7 @@ class Camera:
 
     def update_short_attitude(self,
                               method: Union[str, AttitudeUpdateMethods] = AttitudeUpdateMethods.INTERPOLATE,
-                              max_delta: timedelta = timedelta(minutes=5)):
+                              max_delta: TimedeltaLike = timedelta(minutes=5)) -> None:
         r"""
         This method updates the attitude metadata for short exposure images based off of the solved for attitudes in
         the long-exposure images.
@@ -1126,7 +1128,7 @@ class Camera:
 
                 func(ind, image, max_delta)
 
-    def update_attitude_from_function(self):
+    def update_attitude_from_function(self) -> None:
         """
         This method is used ot overwrite the attitude information stored in all images that are turned on with
         information from the :attr:`.attitude_function`.
@@ -1145,5 +1147,6 @@ class Camera:
             raise ValueError("attitude_function must be callable to use update_attitude_from_file")
 
         for _, image in self:
+            assert image.observation_date is not None, "observation date cannot be None at this point"
             image.rotation_inertial_to_camera = self.attitude_function(image.observation_date)
             image.pointing_post_fit = False

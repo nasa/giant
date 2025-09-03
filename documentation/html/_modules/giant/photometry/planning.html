@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.photometry.planning &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.photometry.planning</h1><div class="highlight"><pre>
+<span></span>
+
+
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides a class for doing observation planning of a target given details about a camera, as well as a</span>
+<span class="sd">helper class for specifying discretized trajectories.</span>
+
+<span class="sd">Description</span>
+<span class="sd">-----------</span>
+<span class="sd">By observation planning, we refer to 3 interrelated processes with respect to determining when an object will be visible</span>
+<span class="sd">in a monocular camera.</span>
+
+<span class="sd">1. Determining first acquisition (the distance/time at which a specified snr can be reached for a given phase angle or</span>
+<span class="sd">   trajectory and exposure length)</span>
+<span class="sd">2. Determining exposure length (the exposure length required to achieve a specified snr for a given distance/phase angle</span>
+<span class="sd">   or trajectory)</span>
+<span class="sd">3. Determining SNR (the SNR value expected to be achieved for a given exposure length and distance/phase angle or</span>
+<span class="sd">   trajectory)</span>
+
+<span class="sd">These 3 capabilities are crucial for planning the capture of OpNav images.  They do however require more information</span>
+<span class="sd">about the electronics of the camera as well as the properties of the target being observed beyond what is required for</span>
+<span class="sd">typical OpNav scenarios. </span>
+
+<span class="sd">Use</span>
+<span class="sd">---</span>
+<span class="sd">To do observation planning in GIANT, create an instance of the :class:`.ObservationPlanner` with the appropriate data.</span>
+<span class="sd">Once initialized, you can use methods :meth:`.predict_acquisition`, :meth:`.predict_exposure`, and :meth:`.predict_snr`</span>
+<span class="sd">to cover most of your needs.  For all 3 methods, you can either specify the geometry of the observations, or you</span>
+<span class="sd">can specify a discretized trajectory to do the calculations over, using the :class:`.DiscretizedPhotometryTrajectory` class.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">least_squares</span><span class="p">,</span> <span class="n">OptimizeResult</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">Iterator</span>
+
+<span class="c1"># GIANT IMPORTS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpNavImage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scene</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.rotations</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rotation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.rotations.frames</span><span class="w"> </span><span class="kn">import</span> <span class="n">two_vector_frame</span>
+<span class="c1"># PHOTOMETRY IMPORTS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.photometry.magnitude</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhaseMagnitudeModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.photometry.photometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Photometry</span>
+
+
+<div class="viewcode-block" id="DiscretizedTrajectory">
+<a class="viewcode-back" href="../../../photometry/planning/giant.photometry.planning.DiscretizedTrajectory.html#giant.photometry.planning.DiscretizedTrajectory">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DiscretizedTrajectory</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class is used to setup a span in which to query the photometry model over. When iterating over </span>
+<span class="sd">    this class, the photometry model is placed in the correct geometry within the camera frame and points</span>
+<span class="sd">    to the defined target for each time step. </span>
+<span class="sd">    </span>
+<span class="sd">    This class should only be used to step through a photometry model by time.</span>
+<span class="sd">    </span>
+<span class="sd">    If a target_index value is not provided by the user, then the camera will point to the first target </span>
+<span class="sd">    defined in the photometry model&#39;s scene. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span>
+                 <span class="n">camera_position_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+                 <span class="n">start_bound</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">stop_bound</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">step_size</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">,</span>
+                 <span class="n">target_index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param scene: A Scene in which to find trajectory parameters</span>
+<span class="sd">        :param camera_position_function: a function that returns the position of the camera </span>
+<span class="sd">            for an input datetime</span>
+<span class="sd">        :param start_bound: A datetime object defining the beginning of the window over which the calculations are to be</span>
+<span class="sd">                            done (inclusive)</span>
+<span class="sd">        :param stop_bound: A datetime object defining the end of the window over which the calculations are to be</span>
+<span class="sd">                            done (inclusive)</span>
+<span class="sd">        :param step_size: A timedelta object specifying how to discretize the trajectory.</span>
+<span class="sd">        :param target_index: The index representing the body to point to during the trajectory in the scene objects</span>
+<span class="sd">                            defined in the photometry model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span> <span class="o">=</span> <span class="n">scene</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A Photometry object containing the scene in which to calculate photometry</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">camera_position_function</span> <span class="o">=</span> <span class="n">camera_position_function</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        a function that returns the position of the camera for an input datetime</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_index</span> <span class="o">=</span> <span class="n">target_index</span> <span class="k">if</span> <span class="n">target_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The index representing the body to point to during the trajectory in the scene objects</span>
+<span class="sd">        defined in the photometry model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_bound</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">start_bound</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A datetime object defining the beginning of the window over which the calculations are to be done (inclusive)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop_bound</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">stop_bound</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A datetime object defining the end of the window over which the calculations are to be done (inclusive)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_size</span><span class="p">:</span> <span class="n">timedelta</span> <span class="o">=</span> <span class="n">step_size</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A timedelta object defining the size of the steps to take when discretizing the trajectory</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_point_camera_at_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rotation</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the rotation neccesary to point the camera directly at the target</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">camera_to_body</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_index</span><span class="p">]</span><span class="o">.</span><span class="n">position</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera_position_function</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">camera_to_body</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">camera_to_body</span><span class="p">)</span>  <span class="c1"># unit vector camera to body</span>
+        <span class="n">x_const</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>  <span class="c1"># xdir of intertial frame</span>
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">Rotation</span><span class="p">,</span> <span class="n">two_vector_frame</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">x_const</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_place_in_camera_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Use the Scene.update() function to place the scene in the camera frame based on a blank image</span>
+<span class="sd">        </span>
+<span class="sd">        :param date: the date at which to calculate things</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># create a blank image to place the scene in the camera frame</span>
+        <span class="n">dummy_image</span> <span class="o">=</span> <span class="n">OpNavImage</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">[],</span>
+            <span class="n">observation_date</span><span class="o">=</span><span class="n">date</span><span class="p">,</span>
+            <span class="n">position</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">camera_position_function</span><span class="p">(</span><span class="n">date</span><span class="p">),</span>
+            <span class="n">rotation_inertial_to_camera</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_point_camera_at_body</span><span class="p">(</span><span class="n">date</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dummy_image</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DiscretizedTrajectory.place_and_point_to_body">
+<a class="viewcode-back" href="../../../photometry/planning/giant.photometry.planning.DiscretizedTrajectory.place_and_point_to_body.html#giant.photometry.planning.DiscretizedTrajectory.place_and_point_to_body">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">place_and_point_to_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method computes places the scene at the input date, changes the origin of the scene to the camera, </span>
+<span class="sd">        and points the camera directly at the target at ``target_index``. </span>
+
+<span class="sd">        This method requires that the scene contains at least one target object and the position functions defining each</span>
+<span class="sd">        object in the scene has the same observer.  </span>
+<span class="sd">        </span>
+<span class="sd">        :param date: the datetime in which to place the scene</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_place_in_camera_frame</span><span class="p">(</span><span class="n">date</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">datetime</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Yields the time and places the Photomerty model at the particular time pointed to the target</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">current</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_bound</span><span class="p">)</span>
+        <span class="c1"># determine if the current time is before th end time and place the photometry model then</span>
+        <span class="k">while</span> <span class="n">current</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_bound</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">place_and_point_to_body</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">current</span>
+            <span class="c1"># set the next time at the next timestep</span>
+            <span class="n">current</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_size</span>
+
+        <span class="c1"># now yield for the stop bound and place the photometric model there</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">place_and_point_to_body</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop_bound</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_bound</span></div>
+
+
+
+<div class="viewcode-block" id="ObservationPlanner">
+<a class="viewcode-back" href="../../../photometry/planning/giant.photometry.planning.ObservationPlanner.html#giant.photometry.planning.ObservationPlanner">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ObservationPlanner</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class implements observation planning functionality for GIANT.</span>
+
+<span class="sd">    This class acts as a container for details about the target/camera that are not normally used for navigation</span>
+<span class="sd">    purposes.  It then exposes the ability to use this extra information for OpNav planning purposes.</span>
+
+<span class="sd">    This class contains and Photometry model and DiscetizedPhotometricTrajectory in order to execute</span>
+<span class="sd">    planning operations on a target body over the trajectory.</span>
+<span class="sd">    </span>
+<span class="sd">    The magnitude model and luminocity function are used to determine the size and brightness of the target </span>
+<span class="sd">    as seen by the camera.</span>
+<span class="sd">    </span>
+<span class="sd">    * :meth:`predict_acquisition` - determine the minimum time over a DiscretizedTrajectory in which an SNR value is </span>
+<span class="sd">                          acquired.</span>
+<span class="sd">    * :meth:`predict_exposure` - Determine the required exposure time needed to achieve an SNR value over each step of</span>
+<span class="sd">                          a DiscretizedTrajectory.</span>
+<span class="sd">    * :meth:`predict_snr` - Determine the SNR of an image taken at each step in a DiscretizedTrajectory.</span>
+
+<span class="sd">    The following shows an example use of the ObservationPlanner type.  First, let&#39;s assume you already have a SceneObject set</span>
+<span class="sd">    up for the target body (target_obj) and the sun (sun_obj) as well as a GIANT CameraModel (camera_model). After importing the </span>
+<span class="sd">    planning and photometry packages, we&#39;ll want to define our objects within a Scene.</span>
+<span class="sd">    :</span>
+<span class="sd">        &gt;&gt;&gt; from giant.photometry.planning import ObservationPlanner, DiscretizedTrajectory</span>
+<span class="sd">        &gt;&gt;&gt; from giant.photometry.modelling import PhotometricCameraModel,scatteredLight, au, Photometry</span>
+<span class="sd">        &gt;&gt;&gt; from giant.photometry.magnitude import LinearPhaseMagnitudeModel</span>
+<span class="sd">        &gt;&gt;&gt; import numpy</span>
+<span class="sd">        &gt;&gt;&gt; from datetime import timedelta, datetime</span>
+<span class="sd">        &gt;&gt;&gt; target_scene = Scene(target_objs=[target_obj], light_obj=sun_obj)</span>
+<span class="sd">        </span>
+<span class="sd">    Next, lets set up the photometric camera model with the proper inputs. This example uses a LLORRI camera. </span>
+<span class="sd">    </span>
+<span class="sd">        &gt;&gt;&gt; LORRI = PhotometricCameraModel(gain = 21.1, #electrons/dn, transfer_time = 0.01178, </span>
+<span class="sd">                                standard_mag = 18.97, bin_mode = 1, resolved_rows_threshold = 300,</span>
+<span class="sd">                                name=&#39;lorri&#39;,dn_readnoise = 0.88, dn_rate_standard = 15816137,</span>
+<span class="sd">                                dark_current=0.0003,psf_factor=0.1, camera_model = camera_model)</span>
+<span class="sd">                                </span>
+<span class="sd">    Next, we will set up a Photometry object with the Scene and PhotomertricCameraModel. </span>
+<span class="sd">    </span>
+<span class="sd">        &gt;&gt;&gt; photometry = Photometry(scene=targetdinkinesh_scene, </span>
+<span class="sd">                        photometric_camera_model=LORRI))</span>
+<span class="sd">                        </span>
+<span class="sd">    Then, we will set up the trajectory as a DiscretizedTrajectory. This will place the scene in the camera frame for </span>
+<span class="sd">    each time step specified. This will require a camera position function in order to place the scene in the correct frame.</span>
+<span class="sd">    Note that it is assumed that the camera_position_function will return a position relative to the same central body used in</span>
+<span class="sd">    the position_function for the target_obj. For demo purposes, our function will return a constant, but this is typically defined</span>
+<span class="sd">    by spice routines.</span>
+<span class="sd">    </span>
+<span class="sd">        &gt;&gt;&gt; def camera_position_function(date):</span>
+<span class="sd">        ... return numpy.array([-5, 6, 7])</span>
+<span class="sd">        &gt;&gt;&gt; trajectory = DiscretizedTrajectory(scene=target_scene, camera_position_function, </span>
+<span class="sd">        ... start_bound = datetime(2025, 2, 16), stop_bound=datetime(2026, 2, 16), step_size=timedelta(hours=24))</span>
+<span class="sd">        </span>
+<span class="sd">    Now, we need to set up a magnitude and luminocity function used to determine the magnitude and I over F of the target based</span>
+<span class="sd">    on the phase angle. Again, for simplicity of the demo, these will be simple functions and models. We will use a different magnitude </span>
+<span class="sd">    models for when the target is resolved and unresolved.</span>
+<span class="sd">    </span>
+<span class="sd">        *** Note: the magnitude models must be set up as a PhaseMagnitudeModel object, a LinearPhaseMagnitudeModel and </span>
+<span class="sd">        HGPhaseMagnitudeModel objects are already set up in giant. However, the user can create their own. </span>
+<span class="sd">    </span>
+<span class="sd">        &gt;&gt;&gt; def target_IoverF(target_index, photometry):</span>
+<span class="sd">        ... phase_angle = photometry.scene.target_objs[target_index]</span>
+<span class="sd">        ... return 1*np.cos(phase_angle)</span>
+<span class="sd">        &gt;&gt;&gt; resolved_mag_model = LinearPhaseMagnitudeModel(phase_slope=0.4)</span>
+<span class="sd">        &gt;&gt;&gt; unresolved_mag_model = LinearPhaseMagmitudeModel(phase_slope=0.8)</span>
+<span class="sd">        </span>
+<span class="sd">    Finally, we can place all these objects into an ObservationPlanner. </span>
+
+<span class="sd">        &gt;&gt;&gt; planner = ObservationPlanner(photometry_model = photometry, trajectory = trajectory, luminosity_function = LumPhaseTable,</span>
+<span class="sd">            magnitude_model = {&#39;unresolved&#39;: unresolved_mag_model,</span>
+<span class="sd">                                &#39;resolved&#39;: resolved_mag_model</span>
+<span class="sd">                                },</span>
+<span class="sd">        )</span>
+<span class="sd">        </span>
+<span class="sd">    Now that the planner is set up, you can use this to predict acquisition times, exposure times, and SNR. </span>
+<span class="sd">    </span>
+<span class="sd">        &gt;&gt;&gt; aqu_time, aqu_dist = planner.predict_acquisition(goal_snr=10, exposure_time=5)</span>
+<span class="sd">        &gt;&gt;&gt; exp, snr = planner.predict_exposure(goal_snr=10, exposure_time_guess=5)</span>
+<span class="sd">        &gt;&gt;&gt; snr = planner.predict_snr(exposure_time=5)</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">photometry_model</span><span class="p">:</span> <span class="n">Photometry</span><span class="p">,</span> <span class="n">trajectory</span><span class="p">:</span> <span class="n">DiscretizedTrajectory</span><span class="p">,</span>
+                 <span class="n">magnitude_model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">PhaseMagnitudeModel</span><span class="p">],</span>
+                 <span class="n">luminosity_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param photometry_model: giant.photometry.Photometry object containing the scene to plan with</span>
+<span class="sd">        :param trajectory: DiscretizedPhotometricTrajectory object containing the span in which to </span>
+<span class="sd">                            search the trajectory</span>
+<span class="sd">        :param magnitude_model: A PhaseMagnitudeModel object that calculates the target magnitude based on the </span>
+<span class="sd">                            phase angle of the current trajectory</span>
+<span class="sd">        :param luminosity_function: A function with positional arguments (target_index : int, photometry : Photometry)</span>
+<span class="sd">                            to return the I over F of the target based on geometry and camera model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">photometry_model</span> <span class="o">=</span> <span class="n">photometry_model</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        giant.photometry.Photometry object containing the scene to plan with</span>
+<span class="sd">        search the trajectory</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span> <span class="o">=</span> <span class="n">trajectory</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        DiscretizedPhotometricTrajectory object containing the span in which to search the trajectory</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">luminosity_function</span> <span class="o">=</span> <span class="n">luminosity_function</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A function with positional arguments (target_index : int, photometry : Photometry)</span>
+<span class="sd">        to return the I over F of the target based on geometry and camera model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">magnitude_model</span> <span class="o">=</span> <span class="n">magnitude_model</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A PhaseMagnitudeModel object that calculates the target magnitude based on the </span>
+<span class="sd">        phase angle of the current trajectory</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">magnitude_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_magnitude_model</span>
+
+    <span class="nd">@magnitude_model</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">magnitude_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        magnitude_model can be set as as the following types:</span>
+<span class="sd">            list [unresolved, resolved],</span>
+<span class="sd">            dictionary {&#39;unresolved&#39;,&#39;resolved&#39;}</span>
+<span class="sd">            PhaseMagnitudeModel (same model used for resolved and unresolved targets).</span>
+<span class="sd">            </span>
+<span class="sd">        It is not recommended to use the same magnitude model for resolved and unresolved targets.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_magnitude_model</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_magnitude_model</span><span class="p">,</span> <span class="n">PhaseMagnitudeModel</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_magnitude_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_magnitude_model</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unresolved_magnitude_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_magnitude_model</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s1">&#39;Only one Magnitude Model provided, this will be used for both resolved and unresolved targets&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_magnitude_model</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_magnitude_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_magnitude_model</span><span class="p">[</span><span class="s1">&#39;resolved&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unresolved_magnitude_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_magnitude_model</span><span class="p">[</span><span class="s1">&#39;unresolved&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_magnitude_model</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_magnitude_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_magnitude_model</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unresolved_magnitude_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_magnitude_model</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Attempting to set invalid Magnitude Model.&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_magnitude_model</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unresolved_magnitude_model</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_target_mag</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Calculate the apparent magnitude of the Target based on the magnitude model</span>
+<span class="sd">        </span>
+<span class="sd">        This parameter is saved within the photometry object</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometry_model</span><span class="o">.</span><span class="n">resolved</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">target_index</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_magnitude_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">photometry_model</span><span class="o">.</span><span class="n">apparent_mag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">target_index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolved_magnitude_model</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unresolved_magnitude_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">photometry_model</span><span class="o">.</span><span class="n">apparent_mag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">target_index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unresolved_magnitude_model</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_target_lum</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Calculate the luminosity of the Target based on the luminosity model</span>
+<span class="sd">        </span>
+<span class="sd">        This parameter is saved within the photometry object</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">photometry_model</span><span class="o">.</span><span class="n">iof</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">target_index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">luminosity_function</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ObservationPlanner.predict_acquisition">
+<a class="viewcode-back" href="../../../photometry/planning/giant.photometry.planning.ObservationPlanner.predict_acquisition.html#giant.photometry.planning.ObservationPlanner.predict_acquisition">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_acquisition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">goal_snr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">exposure_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span>
+        <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predicts the acquisition distance (and approximate time) for the desired SNR.</span>
+
+<span class="sd">        :param desired_snr: The signal to noise ratio that you want to see as a float</span>
+<span class="sd">        :param exposure_time: The length of the exposure in seconds</span>
+<span class="sd">        :return: A tuple containing the time as a datetime and distance in km to the target when the SNR is met</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># preallocate SNR to be improved</span>
+        <span class="n">best_snr</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">time</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">):</span>
+            <span class="c1"># determine the magnitude of the target at the current time</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_target_mag</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_target_lum</span><span class="p">()</span>
+            <span class="n">snr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometry_model</span><span class="o">.</span><span class="n">snr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">target_index</span><span class="p">,</span> <span class="n">exposure_time</span><span class="p">)</span>
+
+            <span class="n">best_snr</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">best_snr</span><span class="p">,</span> <span class="n">snr</span><span class="p">)</span>
+
+            <span class="c1"># if we meet the constraints, return the time and the distance from the camera to the target</span>
+            <span class="k">if</span> <span class="n">snr</span> <span class="o">&gt;=</span> <span class="n">goal_snr</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;ObservationPlanner.predict_acquisition found that the target is acquired at the first step of the trajectory.&#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;This may not represent the true acquisition time of the target&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometry_model</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">target_index</span><span class="p">]</span><span class="o">.</span><span class="n">distance</span>
+
+        <span class="c1"># if we get here then the snr was never met.  Throw a warning and return None</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unable to meet the requested SNR constraint for the requested trajectory.&#39;</span>
+                      <span class="sa">f</span><span class="s1">&#39;Best SNR found was </span><span class="si">{</span><span class="n">best_snr</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="ObservationPlanner.predict_exposure">
+<a class="viewcode-back" href="../../../photometry/planning/giant.photometry.planning.ObservationPlanner.predict_exposure.html#giant.photometry.planning.ObservationPlanner.predict_exposure">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_exposure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">goal_snr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">exposure_time_guess</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Optimize the exposure time based on the required/goal signal-to-noise ratio</span>
+
+<span class="sd">        param: goal_snr: The desired SNR to achieve</span>
+<span class="sd">        param: exposure_time_guess: An initial guess for the exposure time in seconds for the optimizer.</span>
+<span class="sd">        :returns: tuple containing an array of the optimized exposure times over the trajectory steps and an array of</span>
+<span class="sd">                  the SNR that is calculated using that exposure time</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">optimized_snr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">goal</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            This function is used to minimize the difference between the SNR from the model and the </span>
+<span class="sd">            requested SNR</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">photometry_model</span><span class="o">.</span><span class="n">snr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">target_index</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">goal</span><span class="p">)</span>
+
+        <span class="c1"># setup exp and snr as blank arrays to append to with each trajectory step</span>
+        <span class="n">exp</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">snr</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+            
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometry_model</span><span class="o">.</span><span class="n">photometric_camera_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="c1"># step through the trajectory and get the exposure time needed for the requested SNR based</span>
+        <span class="c1"># on the trajectory geometry</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">:</span>
+
+            <span class="c1"># calculate target magnitude as seen by the camera</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_target_mag</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_target_lum</span><span class="p">()</span>
+
+            <span class="c1"># set up a least-squares optimizer to minimize the result from optimize_snr</span>
+            <span class="n">optimize</span><span class="p">:</span> <span class="n">OptimizeResult</span> <span class="o">=</span> <span class="n">least_squares</span><span class="p">(</span><span class="n">optimized_snr</span><span class="p">,</span> <span class="n">exposure_time_guess</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometry_model</span><span class="o">.</span><span class="n">photometric_camera_model</span><span class="o">.</span><span class="n">max_exposure</span><span class="p">),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">goal_snr</span><span class="p">,))</span>
+
+            <span class="k">if</span> <span class="n">optimize</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+
+                <span class="c1"># save the exposure time and snr if the optimizer successfully found a solution</span>
+                <span class="n">exp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">optimize</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">snr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">photometry_model</span><span class="o">.</span><span class="n">snr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">target_index</span><span class="p">,</span> <span class="n">optimize</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+
+            <span class="k">else</span><span class="p">:</span>
+
+                <span class="c1"># print the error message and do not save the exposure time and snr at this step if the</span>
+                <span class="c1"># optimizer failed to find a solution</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">optimize</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+                <span class="n">exp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                <span class="n">snr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">exp</span><span class="p">,</span> <span class="n">snr</span></div>
+
+
+<div class="viewcode-block" id="ObservationPlanner.predict_snr">
+<a class="viewcode-back" href="../../../photometry/planning/giant.photometry.planning.ObservationPlanner.predict_snr.html#giant.photometry.planning.ObservationPlanner.predict_snr">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_snr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the SNR for each step along the trajectory with a provided exposure time</span>
+<span class="sd">        </span>
+<span class="sd">        :param exposure_time: the exposure time in seconds to use</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># setup snr as blank array to append to with each trajectory step</span>
+        <span class="n">snr</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># calculate the snr at each step in the trajectory for a static exposure time</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_target_mag</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_target_lum</span><span class="p">()</span>
+            <span class="n">snr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">photometry_model</span><span class="o">.</span><span class="n">snr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">target_index</span><span class="p">,</span> <span class="n">exposure_time</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">snr</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

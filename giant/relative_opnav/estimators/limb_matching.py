@@ -1,7 +1,3 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
-
-
 r"""
 This module provides the capability to locate the relative position of any target body by matching the observed limb in
 an image with the shape model of the target.
@@ -53,22 +49,11 @@ Tuning
 ------
 
 There are a few parameters to tune for this method.  The main thing that may make a difference is the choice and tuning
-for the limb extraction routines.  There are 2 categories of routines you can choose from.  The first is image
-processing, where the limbs are extracted using only the image and the sun direction.  To tune the image processing limb
-extraction routines you can adjust the following :class:`.ImageProcessing` settings:
+for the limb extraction routines.  There are 2 categories of routines you can choose from.  The first is edge
+detection, where the limbs are extracted using only the image and the sun direction.  To tune the edge detection limb
+extraction routines refer to the :class:`.LimbEdgeDetection` class.
 
-========================================= ==============================================================================
-Parameter                                 Description
-========================================= ==============================================================================
-:attr:`.ImageProcessing.denoise_flag`     A flag specifying to apply :meth:`~.ImageProcessing.denoise_image` to the
-                                          image before attempting to locate the limbs.
-:attr:`.ImageProcessing.image_denoising`  The routine to use to attempt to denoise the image
-:attr:`.ImageProcessing.subpixel_method`  The subpixel method to use to refine the limb points.
-========================================= ==============================================================================
-
-Other tunings are specific to the subpixel method chosen and are discussed in :mod:`.image_processing`.
-
-The other option for limb extraction is limb scanning.  In limb scanning predicted illumination values based on the
+The other option for limb extraction is limb scanning.  In limb scanning, predicted illumination values based on the
 shape model and a prior state are correlated with extracted scan lines to locate the limbs in the image.  This technique
 can be quite accurate (if the shape model is accurate) but is typically much slower and the extraction must be repeated
 each iteration.  The general tunings to use for limb scanning are from the :class:`.LimbScanner` class:
@@ -117,22 +102,102 @@ by this technique, refer to the following class documentation.
 
 import warnings
 
-from typing import Union, Optional, List, Dict, Any
+from typing import Union, Optional, List
+from dataclasses import dataclass
 
 import numpy as np
-from scipy.interpolate import RegularGridInterpolator
 
-from giant.relative_opnav.estimators.ellipse_matching import LimbExtractionMethods, LimbScanner, EllipseMatching
-from giant.relative_opnav.estimators.estimator_interface_abc import RelNavObservablesType
+from giant.relative_opnav.estimators.estimator_interface_abc import RelNavObservablesType, RelNavEstimator
 from giant.utilities.outlier_identifier import get_outliers
 from giant.image import OpNavImage
 from giant.camera import Camera
-from giant.image_processing import ImageProcessing
 from giant.ray_tracer.scene import SceneObject, Scene
-from giant._typing import Real
+
+from giant.relative_opnav.estimators._limb_pairer import LimbPairer, LimbPairerOptions
+from giant.relative_opnav.estimators.moment_algorithm import MomentAlgorithm, MomentAlgorithmOptions
+
+from giant._typing import NONEARRAY
+
+@dataclass
+class LimbMatchingOptions(LimbPairerOptions):
+    """
+    :param extraction_method: The method to use to extract the observed limbs from the image.  Should be
+                                ``'LIMB_SCANNING'`` or ``'EDGE_DETECTION'``.  See :class:`.LimbExtractionMethods` for
+                                details.
+    :param limb_edge_detection_options: The options to use to configure the limb edge detector
+    :param limb_scanner_options: The options to use to configure the limb scanner
+    :param state_atol: the absolute tolerance state convergence criteria (np.abs(update) < state_atol).all())
+    :param state_rtol: the relative tolerance state convergence criteria (np.abs(update)/state < state_rtol).all())
+    :param residual_atol: the absolute tolerance residual convergence criteria
+    :param residual_rtol: the relative tolerance residual convergence criteria
+    :param max_iters: maximum number of iterations for iterative horizon relative navigation
+    :param recenter: A flag to estimate the center using the moment algorithm to get a fast rough estimate of the
+                        center-of-figure
+    :param discard_outliers: A flag to use Median Absolute Deviation to find outliers and get rid of
+                                them
+    :param create_gif: A flag specifying whether to build a gif of the iterations.
+    :param gif_file: the file to save the gif to, optionally with 2 positional format arguments for the image date
+                        and target name being processed
+    :param interpolator: The type of image interpolator to use if the extraction method is set to LIMB_SCANNING.
+    """
 
 
-class LimbMatching(EllipseMatching):
+    state_atol: float = 1e-6
+    """
+    The absolute tolerance state convergence criteria (np.abs(update) < state_atol).all())
+    """
+
+    state_rtol: float = 1e-4
+    """
+    The relative tolerance state convergence criteria (np.abs(update)/state < state_rtol).all())
+    """
+
+    residual_atol: float = 1e-10
+    """
+    The absolute tolerance convergence criteria for residuals 
+    (abs(new_resid_ss - old_resid_ss) < residual_atol).all())
+    """
+
+    residual_rtol: float = 1e-4
+    """
+    The relative tolerance convergence criteria for residuals
+    (abs(new_resid_ss - old_resid_ss)/old_resid_ss < residual_rtol).all())
+    """
+
+    max_iters: int = 10
+    """
+    The maximum number of iterations to attempt in the limb-matching algorithm.
+    """
+
+    recenter: bool = True
+    """
+    A flag to estimate the center using the moment algorithm to get a fast rough estimate of the
+    center-of-figure
+    """
+    
+    discard_outliers: bool = True
+    """
+    A flag specifying whether to attempt to remove outliers in the limb pairs each iteration. 
+    
+    For most targets this flag is strongly encouraged.
+    """
+
+    create_gif: bool = False
+    """
+    A flag specifying whether to create a gif of the iteration process for review.
+    """
+
+    gif_file: str = 'limb_match_summary_{}_{}.gif'
+    """
+    The file to save the gif to.
+    
+    This can optionally can include 2 format locators for the image date and target name to distinguish the gif 
+    files from each other.  The image date will be supplied as the first argument to format and the target name will 
+    be supplied as the second argument.
+    """
+
+
+class LimbMatching(LimbPairer, RelNavEstimator, LimbMatchingOptions):
     """
     This class implements GIANT's version of limb based OpNav for irregular bodies.
 
@@ -193,95 +258,40 @@ class LimbMatching(EllipseMatching):
         image time.  This class does not update the scene automatically.
     """
 
-    technique: str = 'limb_matching'
+    technique = 'limb_matching'
     """
     The name of the technique identifier in the :class:`.RelativeOpNav` class.
     """
 
-    observable_type: List[RelNavObservablesType] = [RelNavObservablesType.LIMB, RelNavObservablesType.RELATIVE_POSITION]
+    observable_type = [RelNavObservablesType.LIMB, RelNavObservablesType.RELATIVE_POSITION]
     """
     The type of observables this technique generates.
     """
 
-    def __init__(self, scene: Scene, camera: Camera, image_processing: ImageProcessing,
-                 limb_scanner: Optional[LimbScanner] = None,
-                 extraction_method: Union[LimbExtractionMethods, str] = LimbExtractionMethods.EDGE_DETECTION,
-                 state_atol: float = 1e-6, state_rtol: float = 1e-4,
-                 residual_atol: float = 1e-10, residual_rtol: float = 1e-4,
-                 max_iters: int = 10, recenter: bool = True, discard_outliers: bool = True, create_gif: bool = True,
-                 gif_file: str = 'limb_match_summary_{}_{}.gif', interpolator: type = RegularGridInterpolator):
+    def __init__(self, scene: Scene, camera: Camera, options: Optional[LimbMatchingOptions] = None):
         """
         :param scene: The :class:`.Scene` object containing the target, light, and obscuring objects.
         :param camera: The :class:`.Camera` object containing the camera model and images to be utilized
         :param image_processing: The :class:`.ImageProcessing` object to be used to process the images
-        :param limb_scanner: The :class:`.LimbScanner` object containing the limb scanning settings.
-        :param extraction_method: The method to use to extract the observed limbs from the image.  Should be
-                                  ``'LIMB_SCANNING'`` or ``'EDGE_DETECTION'``.  See :class:`.LimbExtractionMethods` for
-                                  details.
-        :param state_atol: the absolute tolerance state convergence criteria (np.abs(update) < state_atol).all())
-        :param state_rtol: the relative tolerance state convergence criteria (np.abs(update)/state < state_rtol).all())
-        :param residual_atol: the absolute tolerance residual convergence criteria
-        :param residual_rtol: the relative tolerance residual convergence criteria
-        :param max_iters: maximum number of iterations for iterative horizon relative navigation
-        :param recenter: A flag to estimate the center using the moment algorithm to get a fast rough estimate of the
-                         center-of-figure
-        :param discard_outliers: A flag to use Median Absolute Deviation to find outliers and get rid of
-                                 them
-        :param create_gif: A flag specifying whether to build a gif of the iterations.
-        :param gif_file: the file to save the gif to, optionally with 2 positional format arguments for the image date
-                         and target name being processed
-        :param interpolator: The type of image interpolator to use if the extraction method is set to LIMB_SCANNING.
+        :param options: A dataclass specifying the options to set for this instance.
         """
-
-        super().__init__(scene, camera, image_processing, limb_scanner=limb_scanner,
-                         extraction_method=extraction_method, interpolator=interpolator, recenter=recenter)
-
-        self.max_iters: int = max_iters
-        """
-        The maximum number of iterations to attempt in the limb-matching algorithm.
-        """
-
-        self.discard_outliers = discard_outliers  # type: bool
-        """
-        A flag specifying whether to attempt to remove outliers in the limb pairs each iteration. 
         
-        For most targets this flag is strongly encouraged.
-        """
-
-        self.create_gif: bool = create_gif
-        """
-        A flag specifying whether to create a gif of the iteration process for review.
-        """
-
-        self.gif_file: Optional[str] = gif_file
-        """
-        The file to save the gif to.
+        super().__init__(LimbMatchingOptions, scene, camera, options=options)
         
-        This can optionally can include 2 format locators for the image date and target name to distinguish the gif 
-        files from each other.  The image date will be supplied as the first argument to format and the target name will 
-        be supplied as the second argument.
+        moment_options = MomentAlgorithmOptions(apply_phase_correction=False, use_apparent_area=True)
+        # the moment algorithm instance to use if recentering has been requested.
+        self._moment_algorithm: MomentAlgorithm = MomentAlgorithm(scene, camera, options=moment_options)
         """
+        The moment algorithm instance to use to recenter if we are using limb scanning
+        """
+        
+        self.limbs_camera: List[NONEARRAY] = [None] * len(self.scene.target_objs)
+        """
+        The limb surface points with respect to the center of the target
 
-        self.state_atol: float = float(state_atol)
-        """
-        The absolute tolerance state convergence criteria (np.abs(update) < state_atol).all())
-        """
+        Until :meth:`estimate` is called this list will be filled with ``None``.
 
-        self.state_rtol: float = float(state_rtol)
-        """
-        The relative tolerance state convergence criteria (np.abs(update)/state < state_rtol).all())
-        """
-
-        self.residual_atol: float = float(residual_atol)
-        """
-        The absolute tolerance convergence criteria for residuals 
-        (abs(new_resid_ss - old_resid_ss) < residual_atol).all())
-        """
-
-        self.residual_rtol: float = float(residual_rtol)
-        """
-        The relative tolerance convergence criteria for residuals
-        (abs(new_resid_ss - old_resid_ss)/old_resid_ss < residual_rtol).all())
+        Each element of this list corresponds to the same element in the :attr:`.Scene.target_objs` list.
         """
 
         # these attributes are used for handling the gif generation and should not be modified by the user
@@ -289,35 +299,10 @@ class LimbMatching(EllipseMatching):
         self._gif_fig = None
         self._gif_writer = None
         self._gif_limbs_line = None
-
-        self.details: List[Dict[str, Any]] = self.details
-        """
-        =========================== ========================================================================================
-        Key                         Description
-        =========================== ========================================================================================
-        ``'Jacobian'``              The Jacobian matrix from the last completed iteration.  Only available if successful.
-        ``'Inlier Ratio'``          The ratio of inliers to outliers for the last completed iteration.  Only available if
-                                    successful.
-        ``'Covariance'``            The 3x3 covariance matrix for the estimated relative position in the camera frame based
-                                    on the residuals.  This is only available if successful
-        ``'Number of iterations'``  The number of iterations that the system converged in.  This is only available if
-                                    successful.
-        ``'Surface Limb Points'``   The surface points that correspond to the limb points in the target fixed target
-                                    centered frame.
-        ``'Failed'``                A message indicating why the fit failed.  This will only be present if the fit failed
-                                    (so you could do something like ``'Failed' in limb_matching.details[target_ind]`` to
-                                    check if something failed.  The message should be a human readable description of what
-                                    called the failure.
-        ``'Prior Residuals'``       The sum of square of the residuals from the prior iteration.  This is only available if
-                                    the fit failed due to divergence.
-        ``'Current Residuals'``     The sum of square of the residuals from the current iteration.  This is only available
-                                    if the fit failed due to divergence.
-        =========================== ========================================================================================
-        """
-
+        
     def compute_jacobian(self, target_object: SceneObject, center: np.ndarray, center_direction: np.ndarray,
                          limb_points_image: np.ndarray, limb_points_camera: np.ndarray,
-                         relative_position: np.ndarray, scan_vector: np.ndarray, temperature: Real = 0) -> np.ndarray:
+                         relative_position: np.ndarray, scan_vector: np.ndarray, temperature: float = 0) -> np.ndarray:
         r"""
         This method computes the linear change in the measurements (the distance between the predicted
         and observed limb points and the scan center) with respect to a change in the state vector.
@@ -355,7 +340,7 @@ class LimbMatching(EllipseMatching):
         """
 
         # Compute how the predicted limbs change given a change in the state vector
-        limb_jacobian = target_object.shape.compute_limb_jacobian(center_direction, scan_vector, limb_points_camera)
+        limb_jacobian = target_object.shape.compute_limb_jacobian(center_direction, scan_vector, limb_points_camera)  # type: ignore
 
         # Predict how the pixel locations change given a change in the limb points
         camera_jacobian = self.camera.model.compute_pixel_jacobian(limb_points_camera,
@@ -384,11 +369,11 @@ class LimbMatching(EllipseMatching):
         """
         # since matplotlib can cause problems sometimes only import it if a gif was requested
         import matplotlib.pyplot as plt
-        from matplotlib.animation import ImageMagickWriter
+        from matplotlib.animation import PillowWriter
 
         # create the figure and set the layout to tight
         fig = plt.figure()
-        fig.set_tight_layout(True)
+        fig.set_layout_engine('tight')
 
         # grab the primary axes
         ax = fig.add_subplot(111)
@@ -401,11 +386,12 @@ class LimbMatching(EllipseMatching):
         _, __, ___, ____, predicted_limbs_image = self.extract_and_pair_limbs(image, target, target_ind)
 
         extracted_limbs = self.observed_bearings[target_ind]
+        assert extracted_limbs is not None
         # Show the limb points found in the image
         ax.scatter(*extracted_limbs, color='blue', label='extracted limb points')
 
         # make the gif writer
-        writer = ImageMagickWriter(fps=5)
+        writer = PillowWriter(fps=5)
 
         # determine the output file and prepare the writer
         out_file = self.gif_file.format(image.observation_date.isoformat().replace('-', '').replace(':', ''),
@@ -442,7 +428,10 @@ class LimbMatching(EllipseMatching):
         :param target_ind: the index of the target being considered.
         """
         # update the location of the predicted limbs in the image
-        self._gif_limbs_line.set_offsets(self.computed_bearings[target_ind].T)
+        assert self._gif_limbs_line is not None and self._gif_writer is not None
+        bearings = self.computed_bearings[target_ind]
+        assert bearings is not None
+        self._gif_limbs_line.set_offsets(bearings.T)
 
         # add the frame to the gif
         self._gif_writer.grab_frame()
@@ -456,6 +445,7 @@ class LimbMatching(EllipseMatching):
         This is only intended for internal use by the class itself.
         """
         import matplotlib.pyplot as plt
+        assert self._gif_writer is not None
 
         # finish the gif
         self._gif_writer.finish()
@@ -492,10 +482,6 @@ class LimbMatching(EllipseMatching):
                                 then all are processed (no, the irony is not lost on me...)
         """
 
-        if self.extraction_method == LimbExtractionMethods.LIMB_SCANNING:
-            self._image_interp = self.interpolator((np.arange(image.shape[0]), np.arange(image.shape[1])), image,
-                                                   bounds_error=False, fill_value=None)
-
         # If we were requested to recenter using a moment algorithm then do it
         if self.recenter:
             print('recentering', flush=True)
@@ -508,10 +494,12 @@ class LimbMatching(EllipseMatching):
             # Store the relative position between the object and the camera in the camera frame
             relative_position = target.position.copy()
             self.computed_positions[target_ind] = relative_position
+            
+            bearings = self._moment_algorithm.observed_bearings[target_ind]
 
             # recenter based on the moment algorithm estimates
-            if self.recenter and np.isfinite(self._moment_algorithm.observed_bearings[target_ind]).all():
-                new_position = self.camera.model.pixels_to_unit(self._moment_algorithm.observed_bearings[target_ind],
+            if self.recenter and bearings is not None and np.isfinite(bearings).all():
+                new_position = self.camera.model.pixels_to_unit(bearings,
                                                                 temperature=image.temperature)
                 new_position *= np.linalg.norm(target.position)
                 target.change_position(new_position)
@@ -542,21 +530,21 @@ class LimbMatching(EllipseMatching):
                     break
 
                 # Drop any invalid limbs
-                valid_test = (~np.isnan(self.observed_bearings[target_ind]).any(axis=0) |
-                              ~np.isnan(self.computed_bearings[target_ind]).any(axis=0))
+                valid_test = (~np.isnan(self.observed_bearings[target_ind]).any(axis=0) | # type: ignore
+                              ~np.isnan(self.computed_bearings[target_ind]).any(axis=0)) # type: ignore
 
-                self.observed_bearings[target_ind] = self.observed_bearings[target_ind][:, valid_test]
-                self.computed_bearings[target_ind] = self.computed_bearings[target_ind][:, valid_test]
+                self.observed_bearings[target_ind] = self.observed_bearings[target_ind][:, valid_test] # type: ignore
+                self.computed_bearings[target_ind] = self.computed_bearings[target_ind][:, valid_test] # type: ignore
 
                 # Convert the extracted limb points in the image into unit vectors in the camera frame
-                extracted_limbs_camera = self.camera.model.pixels_to_unit(self.observed_bearings[target_ind],
+                extracted_limbs_camera = self.camera.model.pixels_to_unit(self.observed_bearings[target_ind],  # type: ignore
                                                                           temperature=image.temperature)
                 # Put everything onto the image plane at z=1
                 extracted_limbs_camera /= extracted_limbs_camera[2]
 
                 # Get the distance between the extracted limb points in the image
                 # and the scan center location in the image
-                observed_distances = np.linalg.norm(self.observed_bearings[target_ind] - scan_center.reshape(2, 1),
+                observed_distances = np.linalg.norm(self.observed_bearings[target_ind] - scan_center.reshape(2, 1),  # type: ignore
                                                     axis=0)
 
                 # If we are making a gif then update the predicted limb locations and grab the frame
@@ -566,7 +554,7 @@ class LimbMatching(EllipseMatching):
                     self._update_gif(target_ind)
 
                 # Compute the residual distances
-                residual_distances = observed_distances - np.linalg.norm(self.computed_bearings[target_ind] -
+                residual_distances = observed_distances - np.linalg.norm(self.computed_bearings[target_ind] -  # type: ignore
                                                                          scan_center.reshape(2, 1), axis=0)
 
                 # If we were told to reject outliers at each step
@@ -575,8 +563,8 @@ class LimbMatching(EllipseMatching):
                     inliers = ~get_outliers(residual_distances)
 
                     residual_distances = residual_distances[inliers]
-                    self.computed_bearings[target_ind] = self.computed_bearings[target_ind][:, inliers]
-                    self.limbs_camera[target_ind] = self.limbs_camera[target_ind][:, inliers]
+                    self.computed_bearings[target_ind] = self.computed_bearings[target_ind][:, inliers]  # type: ignore
+                    self.limbs_camera[target_ind] = self.limbs_camera[target_ind][:, inliers]  # type: ignore
                     scan_dirs_use = scan_dirs_camera[:, inliers]
 
                 else:
@@ -586,8 +574,8 @@ class LimbMatching(EllipseMatching):
                 # Compute the Jacobian matrix based on the predicted/observed limb locations
                 # noinspection PyTypeChecker
                 jacobian = self.compute_jacobian(target, scan_center, scan_center_dir,
-                                                 self.computed_bearings[target_ind],
-                                                 self.limbs_camera[target_ind],
+                                                 self.computed_bearings[target_ind],  # type: ignore
+                                                 self.limbs_camera[target_ind],  # type: ignore
                                                  relative_position,
                                                  scan_dirs_use,
                                                  temperature=image.temperature)
@@ -635,7 +623,9 @@ class LimbMatching(EllipseMatching):
                     print('converged in {} iterations'.format(iter_num))
                     break
                 elif residual_ss < residual_ss_new:
-                    warnings.warn(f'Estimation is diverging for target {target_ind}.  Stopping iteration')
+                    warnings.warn(f'Estimation is diverging for target {target_ind} after {iter_num} iterations. '
+                                  f'Divergence is {100*(residual_ss_new - residual_ss)/residual_ss}. '
+                                  'Stopping iteration')
                     self.details[target_ind] = {'Failed': 'The fit failed because it was diverging.',
                                                 'Prior Residuals': residual_ss,
                                                 'Current Residuals': residual_ss_new}
@@ -644,18 +634,19 @@ class LimbMatching(EllipseMatching):
 
                 residual_ss = residual_ss_new
 
+            # Close out the writer if we were making a gif
+            if self.create_gif:
+                self._finish_gif()
+
             if stop_process:
                 # we failed so we should set things to NaN
-                self.observed_bearings[target_ind] = np.nan*self.computed_bearings[target_ind]
+                self.observed_bearings[target_ind] = np.nan*self.computed_bearings[target_ind]  # type: ignore
                 self.observed_positions[target_ind] = target.position.copy()*np.nan
 
             else:
                 # Update the final set of limbs observed in the image that were used for the estimation
-                self.observed_bearings[target_ind] = self.observed_bearings[target_ind][:, inliers]
+                self.observed_bearings[target_ind] = self.observed_bearings[target_ind][:, inliers]  # type: ignore
 
-                # Close out the writer if we were making a gif
-                if self.create_gif:
-                    self._finish_gif()
 
                 # store the solved for state
                 self.observed_positions[target_ind] = target.position.copy()
@@ -668,7 +659,7 @@ class LimbMatching(EllipseMatching):
                 # store the details of the fit
                 self.details[target_ind] = {'Jacobian': jacobian,
                                             'Inlier Ratio': inliers.sum()/inliers.size,
-                                            'Covariance': np.linalg.pinv(jacobian.T@jacobian)*residual_distances.var(),
+                                            'Covariance': np.linalg.pinv(jacobian.T@jacobian)*residual_distances.var(),  # type: ignore
                                             'Number of Iterations': iter_num,
                                             "Surface Limb Points": target_centered_fixed_limb}
 

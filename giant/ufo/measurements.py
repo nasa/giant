@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 from abc import ABCMeta, abstractmethod
@@ -16,7 +15,7 @@ from giant.ufo.dynamics import Dynamics
 from giant.image import OpNavImage
 from giant.camera_models import CameraModel
 
-from giant._typing import SCALAR_OR_ARRAY
+from giant._typing import F_SCALAR_OR_ARRAY
 
 
 class Measurement(metaclass=ABCMeta):
@@ -37,7 +36,7 @@ class Measurement(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def predict(self, state: Dynamics.State) -> SCALAR_OR_ARRAY:
+    def predict(self, state: Dynamics.State) -> F_SCALAR_OR_ARRAY:
         """
         Predicts what the measurement should be given the current state.
 
@@ -49,7 +48,7 @@ class Measurement(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def observed(self) -> SCALAR_OR_ARRAY:
+    def observed(self) -> F_SCALAR_OR_ARRAY:
         """
         Returns the observed measurement.
         """
@@ -102,7 +101,7 @@ class Measurement(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def compare_residuals(first: SCALAR_OR_ARRAY, second: SCALAR_OR_ARRAY) -> bool:
+    def compare_residuals(first: F_SCALAR_OR_ARRAY, second: F_SCALAR_OR_ARRAY) -> bool:
         """
         This compares residuals computed using these measurement models.
 
@@ -168,7 +167,7 @@ class OpticalBearingMeasurement(Measurement):
         The location of the camera in the base dynamics frame when the measurement was captured.
         """
 
-        self._covariance: np.ndarray = covariance
+        self._covariance: np.ndarray = covariance if covariance is not None else np.eye(2, dtype=np.float64)
         """
         The measurement covariance matrix as a 2x2 numpy array or ``None``.  
         
@@ -181,9 +180,6 @@ class OpticalBearingMeasurement(Measurement):
         
         This is used primarily by the tracker to link measurement back to observation ids
         """
-
-        if self._covariance is None:
-            self._covariance = np.eye(2, dtype=np.float64)
 
     @property
     def identity(self) -> Hashable:
@@ -227,7 +223,7 @@ class OpticalBearingMeasurement(Measurement):
         """
         return self.image.observation_date
 
-    def predict(self, state: Dynamics.State) -> SCALAR_OR_ARRAY:
+    def predict(self, state: Dynamics.State) -> F_SCALAR_OR_ARRAY:
         """
         Predicts the pixel location of an observation for the given state of the target and the location of the camera
         at the time the target was observed.
@@ -285,7 +281,7 @@ class OpticalBearingMeasurement(Measurement):
         return obs_mat
 
     @staticmethod
-    def compare_residuals(first: np.ndarray, second: np.ndarray) -> bool:
+    def compare_residuals(first: np.ndarray, second: np.ndarray) -> bool: # pyright: ignore[reportIncompatibleMethodOverride]
         """
         This compares residuals computed using these measurement models.
 
@@ -300,4 +296,4 @@ class OpticalBearingMeasurement(Measurement):
         :return: ``True`` if the first residual <= second residual otherwise ``False``
         """
 
-        return np.linalg.norm(first) <= np.linalg.norm(second)
+        return bool(np.linalg.norm(first) <= np.linalg.norm(second))

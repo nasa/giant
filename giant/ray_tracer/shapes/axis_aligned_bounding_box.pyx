@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 """
@@ -460,6 +459,8 @@ cdef class AxisAlignedBoundingBox:
                 # if the box hasn't been rotated store the inverse rotation
                 self._rotation = Rotation(rotation).inv()
 
+        return self
+
     def translate(self, translation):
         """
         translate(self, translation)
@@ -486,3 +487,5 @@ cdef class AxisAlignedBoundingBox:
         self._min_sides += trans_array
 
         self._max_sides += trans_array
+
+        return self

@@ -1,0 +1,26 @@
+{% extends "!layout.html" %}
+
+{%- block footer %}
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        {% if show_copyright %}&copy;{{ copyright }} | {% endif %}
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        {%- if last_updated %}
+        Last updated on {{ last_updated }} |
+        {%- endif %}
+        {% if theme_show_powered_by|lower == 'true' %}
+        {% if show_copyright %}|{% endif %}
+        Powered by <a href="http://sphinx-doc.org/">Sphinx {{ sphinx_version }}</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster {{ alabaster_version }}</a>
+        {% endif %}
+        {% if show_copyright or theme_show_powered_by %}|{% endif %}
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+
+{%- endblock %}

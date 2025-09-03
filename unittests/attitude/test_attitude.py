@@ -3,13 +3,14 @@ from unittest import TestCase
 import numpy as np
 
 from giant import rotations as at
+from giant.rotations.core.conversions import EULER_ORDERS
 
 
 class TestAttitude(TestCase):
 
     def check_attitude(self, attitude, quaternion, mupdate, vupdate):
 
-        np.testing.assert_array_almost_equal(quaternion, attitude.q)
+        np.testing.assert_array_almost_equal(quaternion, attitude.quaternion)
         np.testing.assert_array_almost_equal(quaternion[:3], attitude.q_vector)
         self.assertAlmostEqual(quaternion[-1], attitude.q_scalar)
         self.assertIs(attitude._mupdate, mupdate)
@@ -92,6 +93,7 @@ class TestAttitude(TestCase):
 
         np.testing.assert_array_almost_equal([[1, 0, 0], [0, 0, -1], [0, 1, 0]], att.matrix)
 
+        assert att._matrix is not None
         np.testing.assert_array_almost_equal([[1, 0, 0], [0, 0, -1], [0, 1, 0]], att._matrix)
         self.assertFalse(att._mupdate)
 
@@ -121,11 +123,12 @@ class TestAttitude(TestCase):
         att = at.Rotation([np.sqrt(2) / 2, 0, 0, np.sqrt(2) / 2])
 
         np.testing.assert_array_almost_equal(att.vector, [np.pi/2, 0, 0])
+        assert att._vector is not None
         np.testing.assert_array_almost_equal(att._vector, [np.pi/2, 0, 0])
         self.assertFalse(att._vupdate)
 
         # this is bad and you should never do this but it checks that the caching is working
-        att._vector = [1, 2, 3]
+        att._vector = np.array([1, 2, 3])
 
         np.testing.assert_array_equal(att.vector, [1, 2, 3])
 
@@ -196,11 +199,11 @@ class TestAttitude(TestCase):
 
         with self.assertRaises(TypeError):
 
-            _ = att*[0, 0, 0, 1]
+            _ = att*[0, 0, 0, 1] # pyright: ignore[reportOperatorIssue]
 
         with self.assertRaises(TypeError):
 
-            _ = [0, 0, 0, 1]*att
+            _ = [0, 0, 0, 1]*att # pyright: ignore[reportOperatorIssue]
 
     # def test_imul(self):
     #     att = at.Rotation()
@@ -226,10 +229,6 @@ class TestQuaternionInverse(TestCase):
         qinv = at.quaternion_inverse([1, 2, 3, 4])
 
         np.testing.assert_array_equal(qinv, [-1, -2, -3, 4])
-
-        qinv = at.quaternion_inverse(at.Rotation([1, 2, 3, 4]))
-
-        np.testing.assert_array_almost_equal(qinv.q.flatten(), np.array([-1, -2, -3, 4])/np.sqrt(30))
 
         qinv = at.quaternion_inverse([[1, 2], [2, 3], [3, 4], [4, 5]])
 
@@ -261,13 +260,6 @@ class TestQuaternionMultiplication(TestCase):
 
         np.testing.assert_array_equal(np.abs(qm), [[0, 0], [0, 0], [1, 0], [0, 1]])
 
-        quat_1 = at.Rotation([1, 0, 0, 0])
-        quat_2 = at.Rotation([0, 0, 1, 0])
-
-        qm = at.quaternion_multiplication(quat_1, quat_2)
-
-        np.testing.assert_array_equal(np.abs(qm.q), [0, 1, 0, 0])
-
         quat_1 = [np.sqrt(2)/2, 0, 0, np.sqrt(2)/2]  # x=x, y=z, z=-y
         quat_2 = [0, np.sqrt(2)/2, 0, np.sqrt(2)/2]  # x=-z, y=y, z=x
 
@@ -292,10 +284,6 @@ class TestQuaternionToRotVec(TestCase):
         rvec = at.quaternion_to_rotvec([1, 0, 0, 0])
 
         np.testing.assert_array_almost_equal(rvec, [np.pi, 0, 0])
-
-        rvec = at.quaternion_to_rotvec(at.Rotation([-1, 0, 0, 0]))
-
-        np.testing.assert_array_almost_equal(rvec, [-np.pi, 0, 0])
 
         rvec = at.quaternion_to_rotvec([0, 1, 0, 0])
 
@@ -356,11 +344,7 @@ class TestQuaternionToRotMat(TestCase):
 
         rotmat = at.quaternion_to_rotmat([[0, 1], [0, 0], [0, 0], [1, 0]])
 
-        np.testing.assert_array_almost_equal(rotmat, [np.eye(3), [[1, 0, 0], [0, -1, 0], [0, 0, -1]]])
-
-        rotmat = at.quaternion_to_rotmat(at.Rotation([0, 1, 0, 0]))
-
-        np.testing.assert_array_almost_equal(rotmat, [[-1, 0, 0], [0, 1, 0], [0, 0, -1]])
+        np.testing.assert_array_almost_equal(rotmat, np.array([np.eye(3), [[1, 0, 0], [0, -1, 0], [0, 0, -1]]]))
 
         rotmat = at.quaternion_to_rotmat([0, 0, np.sqrt(2)/2, np.sqrt(2)/2])
 
@@ -376,7 +360,7 @@ class TestQuaternionToRotMat(TestCase):
 class TestQuaternionToEuler(TestCase):
 
     def test_quaternion_to_euler(self):
-        orders = ['xyz', 'zxy', 'yxz', 'yzx', 'xzy', 'zyx', 'xyx', 'yxy', 'xzx', 'zxz', 'yzy', 'zyz']
+        orders: list[EULER_ORDERS] = ['xyz', 'zxy', 'yxz', 'yzx', 'xzy', 'zyx', 'xyx', 'yxy', 'xzx', 'zxz', 'yzy', 'zyz']
 
         angles = [[np.pi/3, np.pi/3, 0], [0, np.pi/3, np.pi/3],
                   [np.pi/3, np.pi/3, np.pi/3],
@@ -527,10 +511,10 @@ class TestRotMatToQuaternion(TestCase):
 
         np.testing.assert_allclose(q, [0.25532186, 0.51064372, 0.76596558, 0.29555113], atol=1e-16)
 
-        q = at.rotmat_to_quaternion([[[-0.69492056, -0.19200697, 0.69297817],
+        q = at.rotmat_to_quaternion(np.array([[[-0.69492056, -0.19200697, 0.69297817],
                                       [0.71352099, -0.30378504, 0.6313497],
                                       [0.08929286, 0.93319235, 0.34810748]],
-                                     np.eye(3)])
+                                     np.eye(3)]))
 
         np.testing.assert_allclose(q.T, [[0.25532186, 0.51064372, 0.76596558, 0.29555113],
                                          [0, 0, 0, 1]], atol=1e-16)
@@ -558,7 +542,7 @@ class TestRotMatToQuaternion(TestCase):
 class TestRotMatToEuler(TestCase):
 
     def test_rotmat_to_euler(self):
-        orders = ['xyz', 'zxy', 'yxz', 'yzx', 'xzy', 'zyx', 'xyx', 'yxy', 'xzx', 'zxz', 'yzy', 'zyz']
+        orders: list[EULER_ORDERS] = ['xyz', 'zxy', 'yxz', 'yzx', 'xzy', 'zyx', 'xyx', 'yxy', 'xzx', 'zxz', 'yzy', 'zyz']
 
         angles = [[np.pi/3, np.pi/3, 0], [0, np.pi/3, np.pi/3],
                   [np.pi/3, np.pi/3, np.pi/3],
@@ -584,7 +568,7 @@ class TestRotMatToEuler(TestCase):
 
 class TestEulerToRotMat(TestCase):
     def test_euler_to_rotmat(self):
-        orders = ['xyz', 'zxy', 'yxz', 'yzx', 'xzy', 'zyx', 'xyx', 'yxy', 'xzx', 'zxz', 'yzy', 'zyz']
+        orders: list[EULER_ORDERS] = ['xyz', 'zxy', 'yxz', 'yzx', 'xzy', 'zyx', 'xyx', 'yxy', 'xzx', 'zxz', 'yzy', 'zyz']
 
         angles = [[np.pi/3, 0, 0], [0, np.pi/3, 0], [0, 0, np.pi/3],
                   [np.pi/3, np.pi/3, 0], [0, np.pi/3, np.pi/3],
@@ -612,6 +596,8 @@ class TestEulerToRotMat(TestCase):
                             update = at.rot_y(an)
                         elif ax.upper().lower() == 'z':
                             update = at.rot_z(an)
+                        else:
+                            raise ValueError(f'Invalid axis {ax} in order {order}')
 
                         rmat2 = update @ rmat2
 
@@ -813,34 +799,34 @@ class TestNLERP(TestCase):
             q0 = at.Rotation([0, 0, 0, 1])
             q1 = at.Rotation([0.5, 0.5, 0.5, 0.5])
 
-            qt = at.nlerp(q0, q1, 0)
+            qt = at.nlerp(q0.quaternion, q1.quaternion, 0)
 
-            np.testing.assert_allclose(qt.q, q0.q)
+            np.testing.assert_allclose(qt, q0.quaternion)
 
-            qt = at.nlerp(q0, q1, 1)
+            qt = at.nlerp(q0.quaternion, q1.quaternion, 1)
 
-            np.testing.assert_allclose(qt.q, q1.q)
+            np.testing.assert_allclose(qt, q1.quaternion)
 
-            qt = at.nlerp(q0, q1, 0.5)
+            qt = at.nlerp(q0.quaternion, q1.quaternion, 0.5)
 
-            qtrue = (q0.q.flatten()+q1.q.flatten())/2  # type: np.ndarray
+            qtrue = (q0.quaternion.ravel()+q1.quaternion.ravel())/2  # type: np.ndarray
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.ravel(), qtrue)
 
-            qt = at.nlerp(q0, q1, 0.25)
+            qt = at.nlerp(q0.quaternion, q1.quaternion, 0.25)
 
-            qtrue = (q0.q.flatten()*(1-0.25)+q1.q.flatten()*0.25)  # type: np.ndarray
+            qtrue = (q0.quaternion.ravel()*(1-0.25)+q1.quaternion.ravel()*0.25)  # type: np.ndarray
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.ravel(), qtrue)
 
-            qt = at.nlerp(q0, q1, 0.79)
+            qt = at.nlerp(q0.quaternion, q1.quaternion, 0.79)
 
-            qtrue = q0.q.flatten()*(1-0.79)+q1.q.flatten()*0.79  # type: np.ndarray
+            qtrue = q0.quaternion.ravel()*(1-0.79)+q1.quaternion.ravel()*0.79  # type: np.ndarray
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.ravel(), qtrue)
 
             q0 = np.array([0.23, 0.45, 0.67, 0.2])
             q0 /= np.linalg.norm(q0)
@@ -849,34 +835,34 @@ class TestNLERP(TestCase):
             q1 /= np.linalg.norm(q1)
             q1 = at.Rotation(q1)
 
-            qt = at.nlerp(q0, q1, 0)
+            qt = at.nlerp(q0.quaternion, q1.quaternion, 0)
 
-            np.testing.assert_allclose(qt.q, q0.q)
+            np.testing.assert_allclose(qt, q0.quaternion)
 
-            qt = at.nlerp(q0, q1, 1)
+            qt = at.nlerp(q0.quaternion, q1.quaternion, 1)
 
-            np.testing.assert_allclose(qt.q, q1.q)
+            np.testing.assert_allclose(qt, q1.quaternion)
 
-            qt = at.nlerp(q0, q1, 0.5)
+            qt = at.nlerp(q0.quaternion, q1.quaternion, 0.5)
 
-            qtrue = (q0.q.flatten()+q1.q.flatten())/2  # type: np.ndarray
+            qtrue = (q0.quaternion.ravel()+q1.quaternion.ravel())/2  # type: np.ndarray
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.ravel(), qtrue)
 
-            qt = at.nlerp(q0, q1, 0.25)
+            qt = at.nlerp(q0.quaternion, q1.quaternion, 0.25)
 
-            qtrue = q0.q.flatten()*(1-0.25)+q1.q.flatten()*0.25  # type: np.ndarray
+            qtrue = q0.quaternion.ravel()*(1-0.25)+q1.quaternion.ravel()*0.25  # type: np.ndarray
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.ravel(), qtrue)
 
-            qt = at.nlerp(q0, q1, 0.79)
+            qt = at.nlerp(q0.quaternion, q1.quaternion, 0.79)
 
-            qtrue = (1-0.79)*q0.q.flatten() + 0.79*q1.q.flatten()  # type: np.ndarray
+            qtrue = (1-0.79)*q0.quaternion.ravel() + 0.79*q1.quaternion.ravel()  # type: np.ndarray
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.ravel(), qtrue)
             
             
 class TestSLERP(TestCase):
@@ -912,7 +898,7 @@ class TestSLERP(TestCase):
             qt = at.slerp(q0, q1, 0.79)
 
             # comes from ODTBX matlab function
-            qtrue = [0.424985851398278, 0.424985851398278, 0.424985851398278, 0.676875969682661]
+            qtrue = np.array([0.424985851398278, 0.424985851398278, 0.424985851398278, 0.676875969682661])
 
             np.testing.assert_allclose(qt, qtrue)
 
@@ -946,7 +932,7 @@ class TestSLERP(TestCase):
             qt = at.slerp(q0, q1, 0.79)
 
             # comes from ODTBX matlab function
-            qtrue = [-0.256224563175732, 0.331694624881600, 0.813762532744541, 0.402639031082742]
+            qtrue = np.array([-0.256224563175732, 0.331694624881600, 0.813762532744541, 0.402639031082742])
 
             np.testing.assert_allclose(qt, qtrue)
             
@@ -954,34 +940,34 @@ class TestSLERP(TestCase):
             q0 = at.Rotation([0, 0, 0, 1])
             q1 = at.Rotation([0.5, 0.5, 0.5, 0.5])
 
-            qt = at.slerp(q0, q1, 0)
+            qt = at.slerp(q0.quaternion, q1.quaternion, 0)
 
-            np.testing.assert_allclose(qt.q, q0.q)
+            np.testing.assert_allclose(qt, q0.quaternion)
 
-            qt = at.slerp(q0, q1, 1)
+            qt = at.slerp(q0.quaternion, q1.quaternion, 1)
 
-            np.testing.assert_allclose(qt.q, q1.q)
+            np.testing.assert_allclose(qt, q1.quaternion)
 
-            qt = at.slerp(q0, q1, 0.5)
+            qt = at.slerp(q0.quaternion, q1.quaternion, 0.5)
 
-            qtrue = (q0.q.flatten()+q1.q.flatten())/2  # type: np.ndarray
+            qtrue = (q0.quaternion.ravel()+q1.quaternion.ravel())/2  # type: np.ndarray
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.ravel(), qtrue)
 
-            qt = at.slerp(q0, q1, 0.25)
+            qt = at.slerp(q0.quaternion, q1.quaternion, 0.25)
 
-            qtrue = (q0.q.flatten()+qtrue)/2
+            qtrue = (q0.quaternion.ravel()+qtrue)/2
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.ravel(), qtrue)
 
-            qt = at.slerp(q0, q1, 0.79)
+            qt = at.slerp(q0.quaternion, q1.quaternion, 0.79)
 
             # comes from ODTBX matlab function
-            qtrue = [0.424985851398278, 0.424985851398278, 0.424985851398278, 0.676875969682661]
+            qtrue = np.array([0.424985851398278, 0.424985851398278, 0.424985851398278, 0.676875969682661])
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.ravel(), qtrue)
             
             q0 = np.array([0.23, 0.45, 0.67, 0.2])
             q0 /= np.linalg.norm(q0)
@@ -990,31 +976,31 @@ class TestSLERP(TestCase):
             q1 /= np.linalg.norm(q1)
             q1 = at.Rotation(q1)
             
-            qt = at.slerp(q0, q1, 0)
+            qt = at.slerp(q0.quaternion, q1.quaternion, 0)
             
-            np.testing.assert_allclose(qt.q, q0.q)
+            np.testing.assert_allclose(qt, q0.quaternion)
             
-            qt = at.slerp(q0, q1, 1)
+            qt = at.slerp(q0.quaternion, q1.quaternion, 1)
 
-            np.testing.assert_allclose(qt.q, q1.q)
+            np.testing.assert_allclose(qt, q1.quaternion)
 
-            qt = at.slerp(q0, q1, 0.5)
+            qt = at.slerp(q0.quaternion, q1.quaternion, 0.5)
             
-            qtrue = (q0.q.flatten()+q1.q.flatten())/2  # type: np.ndarray
+            qtrue = (q0.quaternion.ravel()+q1.quaternion.ravel())/2  # type: np.ndarray
             qtrue /= np.linalg.norm(qtrue)
             
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.ravel(), qtrue)
 
-            qt = at.slerp(q0, q1, 0.25)
+            qt = at.slerp(q0.quaternion, q1.quaternion, 0.25)
             
-            qtrue = (q0.q.flatten()+qtrue)/2
+            qtrue = (q0.quaternion.ravel()+qtrue)/2
             qtrue /= np.linalg.norm(qtrue)
 
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.ravel(), qtrue)
 
-            qt = at.slerp(q0, q1, 0.79)
+            qt = at.slerp(q0.quaternion, q1.quaternion, 0.79)
 
             # comes from ODTBX matlab function
-            qtrue = [-0.256224563175732, 0.331694624881600, 0.813762532744541, 0.402639031082742]
+            qtrue = np.array([-0.256224563175732, 0.331694624881600, 0.813762532744541, 0.402639031082742])
             
-            np.testing.assert_allclose(qt.q.flatten(), qtrue)
+            np.testing.assert_allclose(qt.ravel(), qtrue)

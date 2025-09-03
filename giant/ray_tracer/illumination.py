@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 """
@@ -120,230 +119,7 @@ class IlluminationModel(metaclass=ABCMeta):
         """
 
         pass
-
-
-class LambertianIllumination(IlluminationModel):
-    r"""
-    This basic illumination model computes the intensity values as simply the cosine of the incidence angle times the
-    albedo.
-
-    Mathematically this is given by
-
-    .. math::
-
-        I = -\alpha_0\alpha\mathbf{n}^T\mathbf{i}
-
-    where :math:`\alpha_0` is the global albedo value, :math:`\alpha` is the local albedo, :math:`\mathbf{n}` is the
-    unit normal vector, :math:`\mathbf{i}` is the unit incidence vector, and :math:`I` is the intensity value.
-
-    This class makes use of a global albedo value stored in :attr:`global_albedo` which can be used to scale all outputs
-    from this model. For most cases of OpNav, however, this can be ignored.
-
-    Anywhere that is not visible (either because the ``visible`` flag was set to False, or the cosine of the incidence
-    angle is less than 0) is set to 0 in the return.
-    """
-
-    def __init__(self, global_albedo: float = 1.):
-        """
-        :param global_albedo: The global albedo used to scale all outputs.
-        """
-
-        self.global_albedo: float = global_albedo
-        """
-        The global albedo used to scale all output
-        """
-
-    def __call__(self, illum_inputs: np.ndarray) -> np.ndarray:
-        """
-        Computes the intensity using the Lambertian law.
-
-        :param illum_inputs: The illumination inputs as a structured numpy array
-        :return: The intensity values for the input array as a numpy double precision array
-        """
-        # compute the cosine of the incidence angle
-        cos_inc_angle = -(illum_inputs["normal"] * illum_inputs["incidence"]).sum(axis=-1)
-
-        # initialize the illumination values array
-        illum_values = np.zeros(illum_inputs.shape, dtype=np.float64)
-
-        # check which observations are actually visible
-        visible_check = illum_inputs["visible"] & (cos_inc_angle >= 0)
-
-        # compute the illumination values for only the valid observations
-        illum_values[visible_check] = (self.global_albedo * illum_inputs[visible_check]["albedo"] *
-                                       cos_inc_angle[visible_check])
-
-        return illum_values
-
-
-class LommelSeeligerIllumination(IlluminationModel):
-    r"""
-    This basic illumination model computes the intensity values as simply the cosine of the incidence angle divided by
-    the cosine of the incidence angle plus the exidence angle times the albedo.
-
-    Mathematically this is given by
-
-    .. math::
-
-        I = \alpha_0\alpha\frac{-\mathbf{n}^T\mathbf{i}}{-\mathbf{n}^T\mathbf{i}+\mathbf{n}^T\mathbf{e}}
-
-    where :math:`\alpha_0` is the global albedo value, :math:`\alpha` is the local albedo, :math:`\mathbf{n}` is the
-    unit normal vector, :math:`\mathbf{i}` is the unit incidence vector, :math:`\mathbf{e}` is the unit exidence vector,
-    and :math:`I` is the intensity value.
-
-    This class makes use of a global albedo value stored in :attr:`global_albedo` which can be used to scale all outputs
-    from this model. For most cases of OpNav, however, this can be ignored.
-
-    Anywhere that is not visible (either because the ``visible`` flag was set to False, or the cosine of the incidence
-    angle is less than 0) is set to 0 in the return.
-    """
-
-    def __init__(self, global_albedo: float = 1.):
-        """
-        :param global_albedo: The global albedo used to scale all outputs.
-        """
-
-        self.global_albedo: float = global_albedo
-        """
-        The global albedo used to scale all outputs
-        """
-
-    def __call__(self, illum_inputs: np.ndarray) -> np.ndarray:
-        """
-        Computes the intensity using the Lommel-Seeliger law.
-
-        :param illum_inputs: The illumination inputs as a structured numpy array
-        :return: The intensity values for the input array as a numpy double precision array
-        """
-        # compute the cosine of the incidence and exidence angles
-        cos_inc_angle = -(illum_inputs["normal"] * illum_inputs["incidence"]).sum(axis=-1)
-        cos_emi_angle = (illum_inputs["normal"] * illum_inputs["exidence"]).sum(axis=-1)
-
-        # initialize the illumination output array
-        illum_values = np.zeros(illum_inputs.shape, dtype=np.float64)
-
-        # check which observations are actually valid
-        visible_check = illum_inputs["visible"] & (cos_inc_angle >= 0) & (cos_emi_angle >= 0)
-
-        # compute the illumination only for the valid points
-        illum_values[visible_check] = (self.global_albedo * illum_inputs[visible_check]["albedo"] *
-                                       cos_inc_angle[visible_check] /
-                                       (cos_inc_angle[visible_check] + cos_emi_angle[visible_check]))
-
-        return illum_values
-
-
-class McEwenIllumination(IlluminationModel):
-    r"""
-    This illumination model computes the intensity values as the weighted sum between the Lommel-Seeliger and
-    Lambertian models, weighted using the phase angle.
-
-    Mathematically this is given by
-
-    .. math::
-
-        I = \alpha_0\alpha\left(-(1-\beta)\mathbf{n}^T\mathbf{i} +
-        2\beta\frac{-\mathbf{n}^T\mathbf{i}}{-\mathbf{n}^T\mathbf{i}+\mathbf{n}^T\mathbf{e}}\right)
-
-    where :math:`\alpha_0` is the global albedo value, :math:`\alpha` is the local albedo, :math:`\mathbf{n}` is the
-    unit normal vector, :math:`\mathbf{i}` is the unit incidence vector, :math:`\mathbf{e}` is the unit exidence vector,
-    :math:`\beta=e^{\frac{-a}{60}}`, :math:`a=\cos^{-1}{-\mathbf{i}^T\mathbf{e}}` is the phase angle in degrees,
-    and :math:`I` is the intensity value.
-
-    This class makes use of a global albedo value stored in :attr:`global_albedo` which can be used to scale all outputs
-    from this model. For most cases of OpNav, however, this can be ignored.
-
-    Anywhere that is not visible (either because the ``visible`` flag was set to False, or the cosine of the incidence
-    angle is less than 0) is set to 0 in the return.
-
-    This class also provides methods for both analytic and numeric Jacobian matrices, which can be using as part of
-    photoclinometry to estimate surfaces given intensity values.
-    """
-
-    def __init__(self, global_albedo: float = 1.):
-        """
-        :param global_albedo: The global albedo used to scale all outputs.
-        """
-
-        self.global_albedo: float = global_albedo
-        """
-        The global albedo used to scale all outputs
-        """
-
-    def __call__(self, illum_inputs: np.ndarray) -> np.ndarray:
-        """
-        Computes the intensity using the McEwen law.
-
-        :param illum_inputs: The illumination inputs as a structured numpy array
-        :return: The intensity values for the input array as a numpy double precision array
-        """
-
-        # compute the cosine of the incidence and emission angles
-        cos_inc_angle = -(illum_inputs["normal"] * illum_inputs["incidence"]).sum(axis=-1)
-        cos_emi_angle = (illum_inputs["normal"] * illum_inputs["exidence"]).sum(axis=-1)
-
-        # compute the phase angle in degrees
-        phase_angle = np.arccos(-(illum_inputs["incidence"] * illum_inputs["exidence"]).sum(axis=-1)) * 180 / np.pi
-
-        # initialize the illumination array
-        illum_values = np.zeros(illum_inputs.shape, dtype=np.float64)
-
-        # determine which observations are actually valid
-        visible_check = illum_inputs["visible"] & (cos_inc_angle >= 0) & (cos_emi_angle >= 0)
-
-        # compute the weighting between the lommel seeliger and the lambertian
-        beta = np.exp(-phase_angle[visible_check] / 60.)
-
-        # compute the illumination values at only the valid observations
-        illum_values[visible_check] = (self.global_albedo * illum_inputs[visible_check]["albedo"] *
-                                       ((1 - beta) * cos_inc_angle[visible_check] +
-                                        2 * beta * cos_inc_angle[visible_check] /
-                                        (cos_inc_angle[visible_check] + cos_emi_angle[visible_check])))
-
-        return illum_values
-
-    def _compute_dillum_dcosi(self, albedo: np.ndarray, beta: np.ndarray, cosi_dcosi_cose2: np.ndarray) -> np.ndarray:
-        r"""
-        Compute the change in the illumination with respect to a change in the cosine of the incidence angle
-
-        Mathematically this is given by
-
-        .. math::
-
-            \frac{\partial I}{\partial \cos(i)} \alpha_0\alpha(1-\beta+2\beta\frac{\cos{i}}{(\cos{i}+\cos{e})^2})
-
-        where :math:`\cos(i)` is the cosine of the incidence angle, :math:`\cos(e)` is the cosine of the exidence angle,
-        and all else is as defined before.
-
-        :param albedo: The albedo values as a numpy array of doubles
-        :param beta: The beta parameter as a numpy array of doubles
-        :param cosi_dcosi_cose2: The cosine of the incidence angle divided by the square of the sum of the cosine of the
-                                 incidence angle and the cosine of the exidence angle
-        :return: the change in the illumination given a change in the cosine of the incidence angle
-        """
-        return self.global_albedo * albedo * (1 - beta + 2 * beta * cosi_dcosi_cose2)
-
-    def _compute_dillum_dcose(self, albedo: np.ndarray, beta: np.ndarray, cosi_dcosi_cose2: np.ndarray) -> np.ndarray:
-        r"""
-        Compute the change in the illumination with respect to a change in the cosine of the exidence angle
-
-        Mathematically this is given by
-
-        .. math::
-
-            \frac{\partial I}{\partial \cos(e)} = \alpha_0\alpha(-2\beta\frac{\cos{i}}{(\cos{i}+\cos{e})^2})
-
-        where :math:`\cos(i)` is the cosine of the incidence angle, :math:`\cos(e)` is the cosine of the exidence angle,
-        and all else is as defined before.
-
-        :param albedo: The albedo values as a numpy array of doubles
-        :param beta: The beta parameter as a numpy array of doubles
-        :param cosi_dcosi_cose2: The cosine of the incidence angle divided by the square of the sum of the cosine of the
-                                 incidence angle and the cosine of the exidence angle
-        :return: the change in the illumination given a change in the cosine of the exidence angle
-        """
-        return -2 * beta * self.global_albedo * albedo * cosi_dcosi_cose2
-
+    
     @staticmethod
     def _compute_dnhat_dn(normal: np.ndarray) -> np.ndarray:
         r"""
@@ -366,26 +142,8 @@ class McEwenIllumination(IlluminationModel):
         otp = np.einsum('ij,jk->jik', normal.T, normal)
 
         return (otp - _EYE3 * ntn) / ntn32
-
-    def _compute_dillum_dalbedo(self, cosi: np.ndarray, beta: np.ndarray, cosi_cose: np.ndarray) -> np.ndarray:
-        r"""
-        Compute the change in the illumination with respect to a change in the local albedo
-
-        Mathematically this is given by
-
-        .. math::
-
-            \frac{\partial I}{\partial \alpha} = \alpha_0\left(-(1-\beta)\mathbf{n}^T\mathbf{i} +
-            2\beta\frac{-\mathbf{n}^T\mathbf{i}}{-\mathbf{n}^T\mathbf{i}+\mathbf{n}^T\mathbf{e}}\right)
-
-        :param cosi: The cosine of the incidence angle
-        :param beta: the beta parameter
-        :param cosi_cose: the cosine of the incidence angle plus the cosine of the exidence angle
-        :return: the change int he illumination with respect to a change in the local albedo
-        """
-        beta_cosi = beta*cosi
-        return self.global_albedo * (cosi - beta_cosi + 2 * beta_cosi / cosi_cose)
-
+    
+    @abstractmethod
     def compute_photoclinometry_jacobian(self, observations: np.ndarray, rotation_to_inertial: np.ndarray,
                                          max_inc: float = 70 * np.pi / 180,
                                          max_emi: float = 70 * np.pi / 180,
@@ -400,32 +158,11 @@ class McEwenIllumination(IlluminationModel):
 
         .. math::
 
-            \mathbf{J}=\frac{\partial I}{\partial\left[\begin{array} {ccc} h_x & h_y & \alpha \end{array}\right]} =
-            \left[\begin{array}{ccc} \frac{\partial I}{\partial h_x} & \frac{\partial I}{\partial h_y} &
-            \frac{\partial I}{\partial\alpha} \end{array}\right]
-
-        where
-
-        .. math::
-            \frac{\partial I}{\partial h_x} = \frac{\partial I}{\partial \hat{\mathbf{n}}}
-            \frac{\partial \hat{\mathbf{n}}}{\partial\mathbf{n}}\frac{\partial \mathbf{n}}{\partial h_x} \\
-            \frac{\partial I}{\partial h_y} = \frac{\partial I}{\partial \hat{\mathbf{n}}}
-            \frac{\partial \hat{\mathbf{n}}}{\partial\mathbf{n}}\frac{\partial \mathbf{n}}{\partial h_y} \\
-            \frac{\partial I}{\partial \alpha} = \alpha_0\left(-(1-\beta)\mathbf{n}^T\mathbf{i} +
-            2\beta\frac{-\mathbf{n}^T\mathbf{i}}{-\mathbf{n}^T\mathbf{i}+\mathbf{n}^T\mathbf{e}}\right) \\
-            \frac{\partial I}{\partial \hat{\mathbf{n}}} = \frac{\partial I}{\partial \cos(i)}
-            \frac{\partial \cos(i)}{\partial\hat{\mathbf{n}}} + \frac{\partial I}{\partial \cos(e)}
-            \frac{\partial \cos(e)}{\partial\hat{\mathbf{n}}}\\
-            \frac{\partial I}{\partial \cos(i)} = \alpha_0\alpha(-2\beta\frac{\cos{i}}{(\cos{i}+\cos{e})^2}) \\
-            \frac{\partial I}{\partial \cos(e)} = \alpha_0\alpha(-2\beta\frac{\cos{i}}{(\cos{i}+\cos{e})^2}) \\
-            \frac{\partial \cos(i)}{\partial \hat{\mathbf{n}}} = -\mathbf{i}^T \\
-            \frac{\partial \cos(e)}{\partial \hat{\mathbf{n}}} = \mathbf{e}^T \\
-            \frac{\partial\hat{\mathbf{n}}}{\partial\mathbf{n}} = \frac{\mathbf{n}\mathbf{n}^T-
-            \mathbf{n}^T\mathbf{n}\mathbf{I}}{(\mathbf{n}^T\mathbf{n})^{1.5}}
-
-        :math:`\cos(i)` is the cosine of the incidence angle, :math:`\cos(e)` is the cosine of the exidence angle,
-        and all else is as defined before.
-
+            \mathbf{J}=\frac{\partial I}{\partial\left[\begin{array} {ccc} h_x & h_y & \alpha \end{array}\right]} 
+            
+        where :math:`h_x` is the slope in the x direction, :math:`h_y` is the slope in the y direction, and :math:`\alpha` is the 
+        local albedo.
+            
         :param observations: The observations as a numpy array with type :attr:`.ILLUM_DTYPE`.
         :param rotation_to_inertial: The rotation that takes the frame the observations are expressed in into the the
                                      local frame for the surface (usually the local east north up frame)
@@ -437,97 +174,15 @@ class McEwenIllumination(IlluminationModel):
         :return: the jacobian matrix as a n(+3)x3 array (where n is the number of observations) and a boolean array of
                  length n specifying which rows of the jacobian matrix are valid
         """
-
-        if update:
-            out_jac = np.zeros((observations.shape[0] + 3, 3), dtype=np.float64)
-            out_jac[[-3, -2, -1], [-3, -2, -1]] = np.sqrt(update_weight)
-
-        else:
-            out_jac = np.zeros((observations.shape[0], 3), dtype=np.float64)
-
-        # extract the vectors we need from the structured array for ease of use
-        inc = -observations['incidence']
-        exi = observations['exidence']
-        nor = observations['normal']
-        alb = observations['albedo']
-
-        # compute the cosine of the incidence and exidence angles
-        cos_inc_angle = (nor * inc).sum(axis=-1)
-        cos_emi_angle = (nor * exi).sum(axis=-1)
-
-        # compute some common terms for efficiency
-        cosi_cose = cos_emi_angle + cos_inc_angle
-        cosi_cose2 = cosi_cose**2
-        cosi_dcosi_cose2 = cos_inc_angle/cosi_cose2
-
-        # compute the phase angle
-        phase_angle = np.arccos((inc * exi).sum(axis=-1))
-
-        # compute the weighting between the lambertian and the lommel seeliger
-        beta = np.exp(-phase_angle / 1.0471975511965976)
-
-        # compute the change in the illumination with respect to a change in the cosine of the incidence angle
-        dillum_dcosi = self._compute_dillum_dcosi(alb, beta, cosi_dcosi_cose2)
-
-        # compute the change in the illumination with respect to a change in the cosine of the exidence angle
-        dillum_dcose = self._compute_dillum_dcose(alb, beta, cosi_dcosi_cose2)
-
-        # compute the change in the illumination with respect to a change in the albedo
-        dillum_da = self._compute_dillum_dalbedo(cos_inc_angle, beta, cosi_cose)
-
-        # the change in the cosine of the incidence angle with respect to a change in the normal vector
-        dcosi_dnhat = inc
-        # the change in the cosine of the exidence angle with respect to a change in the normal vector
-        dcose_dnhat = exi
-
-        # the change in the unit normal vector with respect to a change in the normal vector
-        dnhat_dn = self._compute_dnhat_dn(nor)
-
-        # the change in the normal vector with respect to a change in the slope
-        dn_dhxhy = rotation_to_inertial @ _HXHYARR
-
-        # the change in the illumination with respect to a change in the slope using chain rule
-        dillum_dhxhy = ((dillum_dcosi.reshape(-1, 1) * dcosi_dnhat +
-                         dillum_dcose.reshape(-1, 1) * dcose_dnhat).reshape(-1, 1, 3) @ dnhat_dn @ dn_dhxhy).squeeze()
-
-        # initialize the boolean array for which observations are actually valid
-        valid = np.ones(out_jac.shape[0], dtype=bool)
-
-        if update:
-            # if we are doing an update step then we need to leave the last 3 rows alone
-            # check which observations are valid
-            valid[:-3] = (cos_inc_angle >= np.cos(max_inc)) & (cos_emi_angle >= np.cos(max_emi)) & \
-                    (phase_angle <= max_phase) & (cos_inc_angle > 0) & (cos_emi_angle > 0)
-            # form the jacobian matrix
-            out_jac[:-3, :2] = dillum_dhxhy.reshape(-1, 2)
-            out_jac[:-3, 2] = dillum_da.ravel()
-        else:
-            # check which observations are valid
-            valid[:] = (cos_inc_angle >= np.cos(max_inc)) & (cos_emi_angle >= np.cos(max_emi)) & \
-                    (phase_angle <= max_phase) & (cos_inc_angle > 0) & (cos_emi_angle > 0)
-            # form the jacobian matrix
-            out_jac[:, :2] = dillum_dhxhy.reshape(-1, 2)
-            out_jac[:, 2] = dillum_da.ravel()
-
-        return out_jac, valid
-
-    def numeric_derivative(self, observations: np.ndarray, rotation_to_inertial: np.ndarray, delta: float = 1e-6,
+        pass
+    
+    def compute_photoclinometry_jacobian_numeric(self, observations: np.ndarray, rotation_to_inertial: np.ndarray, delta: float = 1e-6,
                            max_inc: float = 70 * np.pi / 180, max_emi: float = 70 * np.pi / 180,
                            max_phase: float = 140 * np.pi / 180) -> Tuple[np.ndarray, np.ndarray]:
         r"""
         This computes the Jacobian matrix of the change in the illumination values given a change in the surface normal
         (represented by a change in the surface slope) and a change in the local albedo values use numeric finite
         differencing.
-
-        Mathematically the jacobian is
-
-        .. math::
-
-            \mathbf{J}=\frac{\partial I}{\partial\left[\begin{array} {ccc} h_x & h_y & \alpha \end{array}\right]} =
-            \left[\begin{array}{ccc} \frac{\partial I}{\partial h_x} & \frac{\partial I}{\partial h_y} &
-            \frac{\partial I}{\partial\alpha} \end{array}\right]
-
-        Here we compute this using numeric central finite differencing.
 
         This is primarily used for verifying the analytic jacobian given by :meth:`.compute_photoclinometry_jacobian`
         which should be preferred in most cases due to its speed/efficiency.
@@ -631,6 +286,665 @@ class McEwenIllumination(IlluminationModel):
         return np.array([(illum_dx_f - illum_dx_b) / (2 * delta),
                          (illum_dy_f - illum_dy_b) / (2 * delta),
                          (illum_alb_f - illum_alb_b) / (2 * delta)]).T, valid
+    
+
+    
+
+
+class LambertianIllumination(IlluminationModel):
+    r"""
+    This basic illumination model computes the intensity values as simply the cosine of the incidence angle times the
+    albedo.
+
+    Mathematically this is given by
+
+    .. math::
+
+        I = -\alpha_0\alpha\mathbf{n}^T\mathbf{i}
+
+    where :math:`\alpha_0` is the global albedo value, :math:`\alpha` is the local albedo, :math:`\mathbf{n}` is the
+    unit normal vector, :math:`\mathbf{i}` is the unit incidence vector, and :math:`I` is the intensity value.
+
+    This class makes use of a global albedo value stored in :attr:`global_albedo` which can be used to scale all outputs
+    from this model. For most cases of OpNav, however, this can be ignored.
+
+    Anywhere that is not visible (either because the ``visible`` flag was set to False, or the cosine of the incidence
+    angle is less than 0) is set to 0 in the return.
+    """
+
+    def __init__(self, global_albedo: float = 1.):
+        """
+        :param global_albedo: The global albedo used to scale all outputs.
+        """
+
+        self.global_albedo: float = global_albedo
+        """
+        The global albedo used to scale all output
+        """
+
+    def __call__(self, illum_inputs: np.ndarray) -> np.ndarray:
+        """
+        Computes the intensity using the Lambertian law.
+
+        :param illum_inputs: The illumination inputs as a structured numpy array
+        :return: The intensity values for the input array as a numpy double precision array
+        """
+        # compute the cosine of the incidence angle
+        cos_inc_angle = -(illum_inputs["normal"] * illum_inputs["incidence"]).sum(axis=-1)
+
+        # initialize the illumination values array
+        illum_values = np.zeros(illum_inputs.shape, dtype=np.float64)
+
+        # check which observations are actually visible
+        visible_check = illum_inputs["visible"] & (cos_inc_angle >= 0)
+
+        # compute the illumination values for only the valid observations
+        illum_values[visible_check] = (self.global_albedo * illum_inputs[visible_check]["albedo"] *
+                                       cos_inc_angle[visible_check])
+
+        return illum_values
+    
+    def compute_photoclinometry_jacobian(self, observations: np.ndarray, rotation_to_inertial: np.ndarray,
+                                         max_inc: float = 70 * np.pi / 180,
+                                         max_emi: float = 70 * np.pi / 180,
+                                         max_phase: float = 140 * np.pi / 180,
+                                         update: bool = False,
+                                         update_weight: float = 5e-3) -> Tuple[np.ndarray, np.ndarray]:
+        r"""
+        This computes the Jacobian matrix of the change in the illumination values given a change in the surface normal
+        (represented by a change in the surface slope) and a change in the local albedo values.
+
+        Mathematically the jacobian is
+
+        .. math::
+
+            \mathbf{J}=\frac{\partial I}{\partial\left[\begin{array} {ccc} h_x & h_y & \alpha \end{array}\right]} =
+            \left[\begin{array}{ccc} \frac{\partial I}{\partial h_x} & \frac{\partial I}{\partial h_y} &
+            \frac{\partial I}{\partial\alpha} \end{array}\right]
+
+        where
+
+        .. math::
+            \frac{\partial I}{\partial h_x} = \frac{\partial I}{\partial \hat{\mathbf{n}}}
+            \frac{\partial \hat{\mathbf{n}}}{\partial\mathbf{n}}\frac{\partial \mathbf{n}}{\partial h_x} \\
+            \frac{\partial I}{\partial h_y} = \frac{\partial I}{\partial \hat{\mathbf{n}}}
+            \frac{\partial \hat{\mathbf{n}}}{\partial\mathbf{n}}\frac{\partial \mathbf{n}}{\partial h_y} \\
+            \frac{\partial I}{\partial \alpha} = -\alpha_0\hat{\mathbf{n}}^T\mathbf{i} \\
+            \frac{\partial I}{\partial \hat{\mathbf{n}}} = -\alpha_0\alpha\mathbf{i}^T\\
+            \frac{\partial\hat{\mathbf{n}}}{\partial\mathbf{n}} = \frac{\mathbf{n}\mathbf{n}^T-
+            \mathbf{n}^T\mathbf{n}\mathbf{I}}{(\mathbf{n}^T\mathbf{n})^{1.5}} \\
+            \frac{\partial\mathbf{n}}{\partial h_x} = \left[\begin{array}{ccc} -1 & 0 & 0\end{array}\right] \\
+            \frac{\partial\mathbf{n}}{\partial h_y} = \left[\begin{array}{ccc} 0 & -1 & 0\end{array}\right]
+
+        :math:`\cos(i)` is the cosine of the incidence angle, :math:`\cos(e)` is the cosine of the exidence angle,
+        and all else is as defined before.
+
+        :param observations: The observations as a numpy array with type :attr:`.ILLUM_DTYPE`.
+        :param rotation_to_inertial: The rotation that takes the frame the observations are expressed in into the the
+                                     local frame for the surface (usually the local east north up frame)
+        :param max_inc: the maximum incidence angle to consider valid in radians
+        :param max_emi: the maximum emission angle to consider valid in radians
+        :param max_phase: the maximum phase angle to consider valid in radians
+        :param update: A flag specifying whether to form an update Jacobian
+        :param update_weight: The weight of the prior values if doing an update
+        :return: the jacobian matrix as a n(+3)x3 array (where n is the number of observations) and a boolean array of
+                 length n specifying which rows of the jacobian matrix are valid
+        """
+
+        if update:
+            out_jac = np.zeros((observations.shape[0] + 3, 3), dtype=np.float64)
+            out_jac[[-3, -2, -1], [-3, -2, -1]] = np.sqrt(update_weight)
+
+        else:
+            out_jac = np.zeros((observations.shape[0], 3), dtype=np.float64)
+
+        # extract the vectors we need from the structured array for ease of use
+        inc = -observations['incidence']
+        exi = observations['exidence']
+        nor = observations['normal']
+        alb = observations['albedo']
+
+
+        # the change in the unit normal vector with respect to a change in the normal vector
+        dnhat_dn = self._compute_dnhat_dn(nor)
+
+        # the change in the normal vector with respect to a change in the slope
+        dn_dhxhy = rotation_to_inertial @ _HXHYARR
+        
+        # the change in the illumination given a change in nhat
+        dillum_dnhat = self.global_albedo*alb.reshape(-1, 1)*inc
+
+        # the change in the illumination with respect to a change in the slope using chain rule
+        dillum_dhxhy = (dillum_dnhat @ dnhat_dn @ dn_dhxhy).squeeze()
+        
+        # the chagne in the illumination with respect to a change in the albedo
+        dillum_da = self.global_albedo*(nor*inc).sum(axis=-1)
+
+        # initialize the boolean array for which observations are actually valid
+        valid = np.ones(out_jac.shape[0], dtype=bool)
+        
+        # check angles
+        cos_inc_angle = (nor * inc).sum(axis=-1)
+        cos_emi_angle = (nor * exi).sum(axis=-1)
+        phase_angle = np.arccos((inc * exi).sum(axis=-1)) * 180 / np.pi
+
+        if update:
+            # if we are doing an update step then we need to leave the last 3 rows alone
+            # check which observations are valid
+            valid[:-3] = (cos_inc_angle >= np.cos(max_inc)) & (cos_emi_angle >= np.cos(max_emi)) & \
+                    (phase_angle <= max_phase) & (cos_inc_angle > 0) & (cos_emi_angle > 0)
+            # form the jacobian matrix
+            out_jac[:-3, :2] = dillum_dhxhy.reshape(-1, 2)
+            out_jac[:-3, 2] = dillum_da.ravel()
+        else:
+            # check which observations are valid
+            valid[:] = (cos_inc_angle >= np.cos(max_inc)) & (cos_emi_angle >= np.cos(max_emi)) & \
+                    (phase_angle <= max_phase) & (cos_inc_angle > 0) & (cos_emi_angle > 0)
+            # form the jacobian matrix
+            out_jac[:, :2] = dillum_dhxhy.reshape(-1, 2)
+            out_jac[:, 2] = dillum_da.ravel()
+
+        return out_jac, valid
+    
+
+class LommelSeeligerIllumination(IlluminationModel):
+    r"""
+    This basic illumination model computes the intensity values as simply the cosine of the incidence angle divided by
+    the cosine of the incidence angle plus the exidence angle times the albedo.
+
+    Mathematically this is given by
+
+    .. math::
+
+        I = \alpha_0\alpha\frac{-\mathbf{n}^T\mathbf{i}}{-\mathbf{n}^T\mathbf{i}+\mathbf{n}^T\mathbf{e}}
+
+    where :math:`\alpha_0` is the global albedo value, :math:`\alpha` is the local albedo, :math:`\mathbf{n}` is the
+    unit normal vector, :math:`\mathbf{i}` is the unit incidence vector, :math:`\mathbf{e}` is the unit exidence vector,
+    and :math:`I` is the intensity value.
+
+    This class makes use of a global albedo value stored in :attr:`global_albedo` which can be used to scale all outputs
+    from this model. For most cases of OpNav, however, this can be ignored.
+
+    Anywhere that is not visible (either because the ``visible`` flag was set to False, or the cosine of the incidence
+    angle is less than 0) is set to 0 in the return.
+    """
+
+    def __init__(self, global_albedo: float = 1.):
+        """
+        :param global_albedo: The global albedo used to scale all outputs.
+        """
+
+        self.global_albedo: float = global_albedo
+        """
+        The global albedo used to scale all outputs
+        """
+
+    def __call__(self, illum_inputs: np.ndarray) -> np.ndarray:
+        """
+        Computes the intensity using the Lommel-Seeliger law.
+
+        :param illum_inputs: The illumination inputs as a structured numpy array
+        :return: The intensity values for the input array as a numpy double precision array
+        """
+        # compute the cosine of the incidence and exidence angles
+        cos_inc_angle = -(illum_inputs["normal"] * illum_inputs["incidence"]).sum(axis=-1)
+        cos_emi_angle = (illum_inputs["normal"] * illum_inputs["exidence"]).sum(axis=-1)
+
+        # initialize the illumination output array
+        illum_values = np.zeros(illum_inputs.shape, dtype=np.float64)
+
+        # check which observations are actually valid
+        visible_check = illum_inputs["visible"] & (cos_inc_angle >= 0) & (cos_emi_angle >= 0)
+
+        # compute the illumination only for the valid points
+        illum_values[visible_check] = (self.global_albedo * illum_inputs[visible_check]["albedo"] *
+                                       cos_inc_angle[visible_check] /
+                                       (cos_inc_angle[visible_check] + cos_emi_angle[visible_check]))
+
+        return illum_values
+    
+    def _compute_dillum_dcosi(self, albedo: np.ndarray, cose_dcosi_cose2: np.ndarray) -> np.ndarray:
+        r"""
+        Compute the change in the illumination with respect to a change in the cosine of the incidence angle
+
+        Mathematically this is given by
+
+        .. math::
+
+            \frac{\partial I}{\partial \cos(i)} = \alpha_0\alpha(\frac{\cos{e}}{(\cos{i}+\cos{e})^2})
+
+        where :math:`\cos(i)` is the cosine of the incidence angle, :math:`\cos(e)` is the cosine of the exidence angle,
+        and all else is as defined before.
+
+        :param albedo: The albedo values as a numpy array of doubles
+        :param cose_dcosi_cose2: The cosine of the exidence angle divided by the square of the sum of the cosine of the
+                                 incidence angle and the cosine of the exidence angle
+        :return: the change in the illumination given a change in the cosine of the incidence angle
+        """
+        return self.global_albedo * albedo * cose_dcosi_cose2
+
+    def _compute_dillum_dcose(self, albedo: np.ndarray, beta: np.ndarray, cosi_dcosi_cose2: np.ndarray) -> np.ndarray:
+        r"""
+        Compute the change in the illumination with respect to a change in the cosine of the exidence angle
+
+        Mathematically this is given by
+
+        .. math::
+
+            \frac{\partial I}{\partial \cos(e)} = \alpha_0\alpha\frac{\cos{i}}{\left(\cos{i}+\cos{e}\right)^2}
+
+        where :math:`\cos(i)` is the cosine of the incidence angle, :math:`\cos(e)` is the cosine of the exidence angle,
+        and all else is as defined before.
+
+        :param albedo: The albedo values as a numpy array of doubles
+        :param cosi_dcosi_cose2: The cosine of the incidence angle divided by the square of the sum of the cosine of the
+                                 incidence angle and the cosine of the exidence angle
+        :return: the change in the illumination given a change in the cosine of the exidence angle
+        """
+        return self.global_albedo*albedo*cosi_dcosi_cose2
+
+    def _compute_dillum_dalbedo(self, cosi: np.ndarray, cosi_cose: np.ndarray) -> np.ndarray:
+        r"""
+        Compute the change in the illumination with respect to a change in the local albedo
+
+        Mathematically this is given by
+
+        .. math::
+
+            \frac{\partial I}{\partial \alpha} = -\alpha_0\frac{\hat{\mathbf{n}}^T\mathbf{i}}{\hat{\mathbf{n}}^T\mathbf{e}-\hat{\mathbf{n}}^T\mathbf{i}}
+
+        :param cosi: The cosine of the incidence angle
+        :param cosi_cose: the cosine of the incidence angle plus the cosine of the exidence angle
+        :return: the change in the illumination with respect to a change in the local albedo
+        """
+        return self.global_albedo * (cosi / cosi_cose)
+    
+    def compute_photoclinometry_jacobian(self, observations: np.ndarray, rotation_to_inertial: np.ndarray,
+                                         max_inc: float = 70 * np.pi / 180,
+                                         max_emi: float = 70 * np.pi / 180,
+                                         max_phase: float = 140 * np.pi / 180,
+                                         update: bool = False,
+                                         update_weight: float = 5e-3) -> Tuple[np.ndarray, np.ndarray]:
+        r"""
+        This computes the Jacobian matrix of the change in the illumination values given a change in the surface normal
+        (represented by a change in the surface slope) and a change in the local albedo values.
+
+        Mathematically the jacobian is
+
+        .. math::
+
+            \mathbf{J}=\frac{\partial I}{\partial\left[\begin{array} {ccc} h_x & h_y & \alpha \end{array}\right]} =
+            \left[\begin{array}{ccc} \frac{\partial I}{\partial h_x} & \frac{\partial I}{\partial h_y} &
+            \frac{\partial I}{\partial\alpha} \end{array}\right]
+
+        where
+
+        .. math::
+            \frac{\partial I}{\partial h_x} = \frac{\partial I}{\partial \hat{\mathbf{n}}}
+            \frac{\partial \hat{\mathbf{n}}}{\partial\mathbf{n}}\frac{\partial \mathbf{n}}{\partial h_x} \\
+            \frac{\partial I}{\partial h_y} = \frac{\partial I}{\partial \hat{\mathbf{n}}}
+            \frac{\partial \hat{\mathbf{n}}}{\partial\mathbf{n}}\frac{\partial \mathbf{n}}{\partial h_y} \\
+            \frac{\partial I}{\partial \alpha} = -\alpha_0\frac{\hat{\mathbf{n}}^T\mathbf{i}}{\hat{\mathbf{n}}^T\mathbf{e}-\hat{\mathbf{n}}^T\mathbf{i}} \\
+            \frac{\partial I}{\partial \hat{\mathbf{n}}} = \frac{\partial I}{\partial \cos(i)}
+            \frac{\partial \cos(i)}{\partial\hat{\mathbf{n}}} + \frac{\partial I}{\partial \cos(e)}
+            \frac{\partial \cos(e)}{\partial\hat{\mathbf{n}}}\\
+            \frac{\partial I}{\partial \cos(i)} = \alpha_0\alpha(\frac{\cos{e}}{\left(\cos{i}+\cos{e})^2}\right) \\
+            \frac{\partial I}{\partial \cos(e)} = \alpha_0\alpha\frac{\cos{i}}{\left(\cos{i}+\cos{e}\right)^2} \\
+            \frac{\partial \cos(i)}{\partial \hat{\mathbf{n}}} = -\mathbf{i}^T \\
+            \frac{\partial \cos(e)}{\partial \hat{\mathbf{n}}} = \mathbf{e}^T \\
+            \frac{\partial\hat{\mathbf{n}}}{\partial\mathbf{n}} = \frac{\mathbf{n}\mathbf{n}^T-
+            \mathbf{n}^T\mathbf{n}\mathbf{I}}{(\mathbf{n}^T\mathbf{n})^{1.5}} \\
+            \frac{\partial\mathbf{n}}{\partial h_x} = \left[\begin{array}{ccc} -1 & 0 & 0\end{array}\right] \\
+            \frac{\partial\mathbf{n}}{\partial h_y} = \left[\begin{array}{ccc} 0 & -1 & 0\end{array}\right]
+
+        :math:`\cos(i)` is the cosine of the incidence angle, :math:`\cos(e)` is the cosine of the exidence angle,
+        and all else is as defined before.
+
+        :param observations: The observations as a numpy array with type :attr:`.ILLUM_DTYPE`.
+        :param rotation_to_inertial: The rotation that takes the frame the observations are expressed in into the the
+                                     local frame for the surface (usually the local east north up frame)
+        :param max_inc: the maximum incidence angle to consider valid in radians
+        :param max_emi: the maximum emission angle to consider valid in radians
+        :param max_phase: the maximum phase angle to consider valid in radians
+        :param update: A flag specifying whether to form an update Jacobian
+        :param update_weight: The weight of the prior values if doing an update
+        :return: the jacobian matrix as a n(+3)x3 array (where n is the number of observations) and a boolean array of
+                 length n specifying which rows of the jacobian matrix are valid
+        """
+
+        if update:
+            out_jac = np.zeros((observations.shape[0] + 3, 3), dtype=np.float64)
+            out_jac[[-3, -2, -1], [-3, -2, -1]] = np.sqrt(update_weight)
+
+        else:
+            out_jac = np.zeros((observations.shape[0], 3), dtype=np.float64)
+
+        # extract the vectors we need from the structured array for ease of use
+        inc = -observations['incidence']
+        exi = observations['exidence']
+        nor = observations['normal']
+        alb = observations['albedo']
+
+        # compute the cosine of the incidence and exidence angles
+        cos_inc_angle = (nor * inc).sum(axis=-1)
+        cos_emi_angle = (nor * exi).sum(axis=-1)
+
+        # compute some common terms for efficiency
+        cosi_cose = cos_emi_angle + cos_inc_angle
+        cosi_cose2 = cosi_cose**2
+        cosi_dcosi_cose2 = cos_inc_angle/cosi_cose2
+        cose_dcosi_cose2 = cos_emi_angle/cosi_cose2
+
+        # compute the phase angle
+        phase_angle = np.arccos((inc * exi).sum(axis=-1))
+
+        # compute the weighting between the lambertian and the lommel seeliger
+        beta = np.exp(-phase_angle / 1.0471975511965976)
+
+        # compute the change in the illumination with respect to a change in the cosine of the incidence angle
+        dillum_dcosi = self._compute_dillum_dcosi(alb, cose_dcosi_cose2)
+
+        # compute the change in the illumination with respect to a change in the cosine of the exidence angle
+        dillum_dcose = self._compute_dillum_dcose(alb, beta, cosi_dcosi_cose2)
+
+        # compute the change in the illumination with respect to a change in the albedo
+        dillum_da = self._compute_dillum_dalbedo(cos_inc_angle, cosi_cose)
+
+        # the change in the cosine of the incidence angle with respect to a change in the normal vector
+        dcosi_dnhat = inc
+        # the change in the cosine of the exidence angle with respect to a change in the normal vector
+        dcose_dnhat = exi
+
+        # the change in the unit normal vector with respect to a change in the normal vector
+        dnhat_dn = self._compute_dnhat_dn(nor)
+
+        # the change in the normal vector with respect to a change in the slope
+        dn_dhxhy = rotation_to_inertial @ _HXHYARR
+
+        # the change in the illumination with respect to a change in the slope using chain rule
+        dillum_dhxhy = ((dillum_dcosi.reshape(-1, 1) * dcosi_dnhat +
+                         dillum_dcose.reshape(-1, 1) * dcose_dnhat).reshape(-1, 1, 3) @ dnhat_dn @ dn_dhxhy).squeeze()
+
+        # initialize the boolean array for which observations are actually valid
+        valid = np.ones(out_jac.shape[0], dtype=bool)
+
+        if update:
+            # if we are doing an update step then we need to leave the last 3 rows alone
+            # check which observations are valid
+            valid[:-3] = (cos_inc_angle >= np.cos(max_inc)) & (cos_emi_angle >= np.cos(max_emi)) & \
+                    (phase_angle <= max_phase) & (cos_inc_angle > 0) & (cos_emi_angle > 0)
+            # form the jacobian matrix
+            out_jac[:-3, :2] = dillum_dhxhy.reshape(-1, 2)
+            out_jac[:-3, 2] = dillum_da.ravel()
+        else:
+            # check which observations are valid
+            valid[:] = (cos_inc_angle >= np.cos(max_inc)) & (cos_emi_angle >= np.cos(max_emi)) & \
+                    (phase_angle <= max_phase) & (cos_inc_angle > 0) & (cos_emi_angle > 0)
+            # form the jacobian matrix
+            out_jac[:, :2] = dillum_dhxhy.reshape(-1, 2)
+            out_jac[:, 2] = dillum_da.ravel()
+
+        return out_jac, valid
+
+
+class McEwenIllumination(IlluminationModel):
+    r"""
+    This illumination model computes the intensity values as the weighted sum between the Lommel-Seeliger and
+    Lambertian models, weighted using the phase angle.
+
+    Mathematically this is given by
+
+    .. math::
+
+        I = \alpha_0\alpha\left(-(1-\beta)\mathbf{n}^T\mathbf{i} +
+        2\beta\frac{-\mathbf{n}^T\mathbf{i}}{-\mathbf{n}^T\mathbf{i}+\mathbf{n}^T\mathbf{e}}\right)
+
+    where :math:`\alpha_0` is the global albedo value, :math:`\alpha` is the local albedo, :math:`\mathbf{n}` is the
+    unit normal vector, :math:`\mathbf{i}` is the unit incidence vector, :math:`\mathbf{e}` is the unit exidence vector,
+    :math:`\beta=e^{\frac{-a}{60}}`, :math:`a=\cos^{-1}{-\mathbf{i}^T\mathbf{e}}` is the phase angle in degrees,
+    and :math:`I` is the intensity value.
+
+    This class makes use of a global albedo value stored in :attr:`global_albedo` which can be used to scale all outputs
+    from this model. For most cases of OpNav, however, this can be ignored.
+
+    Anywhere that is not visible (either because the ``visible`` flag was set to False, or the cosine of the incidence
+    angle is less than 0) is set to 0 in the return.
+
+    This class also provides methods for both analytic and numeric Jacobian matrices, which can be using as part of
+    photoclinometry to estimate surfaces given intensity values.
+    """
+
+    def __init__(self, global_albedo: float = 1.):
+        """
+        :param global_albedo: The global albedo used to scale all outputs.
+        """
+
+        self.global_albedo: float = global_albedo
+        """
+        The global albedo used to scale all outputs
+        """
+
+    def __call__(self, illum_inputs: np.ndarray) -> np.ndarray:
+        """
+        Computes the intensity using the McEwen law.
+
+        :param illum_inputs: The illumination inputs as a structured numpy array
+        :return: The intensity values for the input array as a numpy double precision array
+        """
+
+        # compute the cosine of the incidence and emission angles
+        cos_inc_angle = -(illum_inputs["normal"] * illum_inputs["incidence"]).sum(axis=-1)
+        cos_emi_angle = (illum_inputs["normal"] * illum_inputs["exidence"]).sum(axis=-1)
+
+        # compute the phase angle in degrees
+        phase_angle = np.arccos(-(illum_inputs["incidence"] * illum_inputs["exidence"]).sum(axis=-1)) * 180 / np.pi
+
+        # initialize the illumination array
+        illum_values = np.zeros(illum_inputs.shape, dtype=np.float64)
+
+        # determine which observations are actually valid
+        visible_check = illum_inputs["visible"] & (cos_inc_angle >= 0) & (cos_emi_angle >= 0)
+
+        # compute the weighting between the lommel seeliger and the lambertian
+        beta = np.exp(-phase_angle[visible_check] / 60.)
+
+        # compute the illumination values at only the valid observations
+        illum_values[visible_check] = (self.global_albedo * illum_inputs[visible_check]["albedo"] *
+                                       ((1 - beta) * cos_inc_angle[visible_check] +
+                                        2 * beta * cos_inc_angle[visible_check] /
+                                        (cos_inc_angle[visible_check] + cos_emi_angle[visible_check])))
+
+        return illum_values
+
+    def _compute_dillum_dcosi(self, albedo: np.ndarray, beta: np.ndarray, cose_dcosi_cose2: np.ndarray) -> np.ndarray:
+        r"""
+        Compute the change in the illumination with respect to a change in the cosine of the incidence angle
+
+        Mathematically this is given by
+
+        .. math::
+
+            \frac{\partial I}{\partial \cos(i)} =\alpha_0\alpha(1-\beta+2\beta\frac{\cos{e}}{(\cos{i}+\cos{e})^2})
+
+        where :math:`\cos(i)` is the cosine of the incidence angle, :math:`\cos(e)` is the cosine of the exidence angle,
+        and all else is as defined before.
+
+        :param albedo: The albedo values as a numpy array of doubles
+        :param beta: The beta parameter as a numpy array of doubles
+        :param cose_dcosi_cose2: The cosine of the exidence angle divided by the square of the sum of the cosine of the
+                                 incidence angle and the cosine of the exidence angle
+        :return: the change in the illumination given a change in the cosine of the incidence angle
+        """
+        return self.global_albedo * albedo * (1 - beta + 2 * beta * cose_dcosi_cose2)
+
+    def _compute_dillum_dcose(self, albedo: np.ndarray, beta: np.ndarray, cosi_dcosi_cose2: np.ndarray) -> np.ndarray:
+        r"""
+        Compute the change in the illumination with respect to a change in the cosine of the exidence angle
+
+        Mathematically this is given by
+
+        .. math::
+
+            \frac{\partial I}{\partial \cos(e)} = -2\beta\alpha_0\alpha\frac{\cos{i}}{(\cos{i}+\cos{e})^2}
+
+        where :math:`\cos(i)` is the cosine of the incidence angle, :math:`\cos(e)` is the cosine of the exidence angle,
+        and all else is as defined before.
+
+        :param albedo: The albedo values as a numpy array of doubles
+        :param beta: The beta parameter as a numpy array of doubles
+        :param cosi_dcosi_cose2: The cosine of the incidence angle divided by the square of the sum of the cosine of the
+                                 incidence angle and the cosine of the exidence angle
+        :return: the change in the illumination given a change in the cosine of the exidence angle
+        """
+        return -2 * beta * self.global_albedo * albedo * cosi_dcosi_cose2
+
+    def _compute_dillum_dalbedo(self, cosi: np.ndarray, beta: np.ndarray, cosi_cose: np.ndarray) -> np.ndarray:
+        r"""
+        Compute the change in the illumination with respect to a change in the local albedo
+
+        Mathematically this is given by
+
+        .. math::
+
+            \frac{\partial I}{\partial \alpha} = \alpha_0\left(-(1-\beta)\mathbf{n}^T\mathbf{i} +
+            2\beta\frac{-\mathbf{n}^T\mathbf{i}}{-\mathbf{n}^T\mathbf{i}+\mathbf{n}^T\mathbf{e}}\right)
+
+        :param cosi: The cosine of the incidence angle
+        :param beta: the beta parameter
+        :param cosi_cose: the cosine of the incidence angle plus the cosine of the exidence angle
+        :return: the change int he illumination with respect to a change in the local albedo
+        """
+        beta_cosi = beta*cosi
+        return self.global_albedo * (cosi - beta_cosi + 2 * beta_cosi / cosi_cose)
+
+    def compute_photoclinometry_jacobian(self, observations: np.ndarray, rotation_to_inertial: np.ndarray,
+                                         max_inc: float = 70 * np.pi / 180,
+                                         max_emi: float = 70 * np.pi / 180,
+                                         max_phase: float = 140 * np.pi / 180,
+                                         update: bool = False,
+                                         update_weight: float = 5e-3) -> Tuple[np.ndarray, np.ndarray]:
+        r"""
+        This computes the Jacobian matrix of the change in the illumination values given a change in the surface normal
+        (represented by a change in the surface slope) and a change in the local albedo values.
+
+        Mathematically the jacobian is
+
+        .. math::
+
+            \mathbf{J}=\frac{\partial I}{\partial\left[\begin{array} {ccc} h_x & h_y & \alpha \end{array}\right]} =
+            \left[\begin{array}{ccc} \frac{\partial I}{\partial h_x} & \frac{\partial I}{\partial h_y} &
+            \frac{\partial I}{\partial\alpha} \end{array}\right]
+
+        where
+
+        .. math::
+            \frac{\partial I}{\partial h_x} = \frac{\partial I}{\partial \hat{\mathbf{n}}}
+            \frac{\partial \hat{\mathbf{n}}}{\partial\mathbf{n}}\frac{\partial \mathbf{n}}{\partial h_x} \\
+            \frac{\partial I}{\partial h_y} = \frac{\partial I}{\partial \hat{\mathbf{n}}}
+            \frac{\partial \hat{\mathbf{n}}}{\partial\mathbf{n}}\frac{\partial \mathbf{n}}{\partial h_y} \\
+            \frac{\partial I}{\partial \alpha} = \alpha_0\left(-(1-\beta)\mathbf{n}^T\mathbf{i} +
+            2\beta\frac{-\mathbf{n}^T\mathbf{i}}{-\mathbf{n}^T\mathbf{i}+\mathbf{n}^T\mathbf{e}}\right) \\
+            \frac{\partial I}{\partial \hat{\mathbf{n}}} = \frac{\partial I}{\partial \cos(i)}
+            \frac{\partial \cos(i)}{\partial\hat{\mathbf{n}}} + \frac{\partial I}{\partial \cos(e)}
+            \frac{\partial \cos(e)}{\partial\hat{\mathbf{n}}}\\
+            \frac{\partial I}{\partial \cos(i)} = \alpha_0\alpha(1-\beta+2\beta\frac{\cos{i}}{(\cos{i}+\cos{e})^2}) \\
+            \frac{\partial I}{\partial \cos(e)} = -2\beta\alpha_0\alpha\frac{\cos{i}}{(\cos{i}+\cos{e})^2} \\
+            \frac{\partial \cos(i)}{\partial \hat{\mathbf{n}}} = -\mathbf{i}^T \\
+            \frac{\partial \cos(e)}{\partial \hat{\mathbf{n}}} = \mathbf{e}^T \\
+            \frac{\partial\hat{\mathbf{n}}}{\partial\mathbf{n}} = \frac{\mathbf{n}\mathbf{n}^T-
+            \mathbf{n}^T\mathbf{n}\mathbf{I}}{(\mathbf{n}^T\mathbf{n})^{1.5}} \\
+            \frac{\partial\mathbf{n}}{\partial h_x} = \left[\begin{array}{ccc} -1 & 0 & 0\end{array}\right] \\
+            \frac{\partial\mathbf{n}}{\partial h_y} = \left[\begin{array}{ccc} 0 & -1 & 0\end{array}\right]
+
+        :math:`\cos(i)` is the cosine of the incidence angle, :math:`\cos(e)` is the cosine of the exidence angle,
+        and all else is as defined before.
+
+        :param observations: The observations as a numpy array with type :attr:`.ILLUM_DTYPE`.
+        :param rotation_to_inertial: The rotation that takes the frame the observations are expressed in into the the
+                                     local frame for the surface (usually the local east north up frame)
+        :param max_inc: the maximum incidence angle to consider valid in radians
+        :param max_emi: the maximum emission angle to consider valid in radians
+        :param max_phase: the maximum phase angle to consider valid in radians
+        :param update: A flag specifying whether to form an update Jacobian
+        :param update_weight: The weight of the prior values if doing an update
+        :return: the jacobian matrix as a n(+3)x3 array (where n is the number of observations) and a boolean array of
+                 length n specifying which rows of the jacobian matrix are valid
+        """
+
+        if update:
+            out_jac = np.zeros((observations.shape[0] + 3, 3), dtype=np.float64)
+            out_jac[[-3, -2, -1], [-3, -2, -1]] = np.sqrt(update_weight)
+
+        else:
+            out_jac = np.zeros((observations.shape[0], 3), dtype=np.float64)
+
+        # extract the vectors we need from the structured array for ease of use
+        inc = -observations['incidence']
+        exi = observations['exidence']
+        nor = observations['normal']
+        alb = observations['albedo']
+
+        # compute the cosine of the incidence and exidence angles
+        cos_inc_angle = (nor * inc).sum(axis=-1)
+        cos_emi_angle = (nor * exi).sum(axis=-1)
+
+        # compute some common terms for efficiency
+        cosi_cose = cos_emi_angle + cos_inc_angle
+        cosi_cose2 = cosi_cose**2
+        cosi_dcosi_cose2 = cos_inc_angle/cosi_cose2
+        cose_dcosi_cose2 = cos_emi_angle/cosi_cose2
+
+        # compute the phase angle
+        phase_angle = np.arccos((inc * exi).sum(axis=-1))
+
+        # compute the weighting between the lambertian and the lommel seeliger
+        beta = np.exp(-phase_angle / 1.0471975511965976)
+
+        # compute the change in the illumination with respect to a change in the cosine of the incidence angle
+        dillum_dcosi = self._compute_dillum_dcosi(alb, beta, cose_dcosi_cose2)
+
+        # compute the change in the illumination with respect to a change in the cosine of the exidence angle
+        dillum_dcose = self._compute_dillum_dcose(alb, beta, cosi_dcosi_cose2)
+
+        # compute the change in the illumination with respect to a change in the albedo
+        dillum_da = self._compute_dillum_dalbedo(cos_inc_angle, beta, cosi_cose)
+
+        # the change in the cosine of the incidence angle with respect to a change in the normal vector
+        dcosi_dnhat = inc
+        # the change in the cosine of the exidence angle with respect to a change in the normal vector
+        dcose_dnhat = exi
+
+        # the change in the unit normal vector with respect to a change in the normal vector
+        dnhat_dn = self._compute_dnhat_dn(nor)
+
+        # the change in the normal vector with respect to a change in the slope
+        dn_dhxhy = rotation_to_inertial @ _HXHYARR
+
+        # the change in the illumination with respect to a change in the slope using chain rule
+        dillum_dhxhy = ((dillum_dcosi.reshape(-1, 1) * dcosi_dnhat +
+                         dillum_dcose.reshape(-1, 1) * dcose_dnhat).reshape(-1, 1, 3) @ dnhat_dn @ dn_dhxhy).squeeze()
+
+        # initialize the boolean array for which observations are actually valid
+        valid = np.ones(out_jac.shape[0], dtype=bool)
+
+        if update:
+            # if we are doing an update step then we need to leave the last 3 rows alone
+            # check which observations are valid
+            valid[:-3] = (cos_inc_angle >= np.cos(max_inc)) & (cos_emi_angle >= np.cos(max_emi)) & \
+                    (phase_angle <= max_phase) & (cos_inc_angle > 0) & (cos_emi_angle > 0)
+            # form the jacobian matrix
+            out_jac[:-3, :2] = dillum_dhxhy.reshape(-1, 2)
+            out_jac[:-3, 2] = dillum_da.ravel()
+        else:
+            # check which observations are valid
+            valid[:] = (cos_inc_angle >= np.cos(max_inc)) & (cos_emi_angle >= np.cos(max_emi)) & \
+                    (phase_angle <= max_phase) & (cos_inc_angle > 0) & (cos_emi_angle > 0)
+            # form the jacobian matrix
+            out_jac[:, :2] = dillum_dhxhy.reshape(-1, 2)
+            out_jac[:, 2] = dillum_da.ravel()
+
+        return out_jac, valid
+
 
 
 class GaskellIllumination(IlluminationModel):
@@ -699,6 +1013,196 @@ class GaskellIllumination(IlluminationModel):
                                        (cos_inc_angle[visible_check] + cos_emi_angle[visible_check])))
 
         return illum_values
+    
+    def _compute_dillum_dcosi(self, albedo: np.ndarray, beta: np.ndarray, cose_dcosi_cose2: np.ndarray) -> np.ndarray:
+        r"""
+        Compute the change in the illumination with respect to a change in the cosine of the incidence angle
+
+        Mathematically this is given by
+
+        .. math::
+
+            \frac{\partial I}{\partial \cos(i)} =\alpha_0\alpha(1-\beta+\beta\frac{\cos{e}}{(\cos{i}+\cos{e})^2})
+
+        where :math:`\cos(i)` is the cosine of the incidence angle, :math:`\cos(e)` is the cosine of the exidence angle,
+        and all else is as defined before.
+
+        :param albedo: The albedo values as a numpy array of doubles
+        :param beta: The beta parameter as a numpy array of doubles
+        :param cose_dcosi_cose2: The cosine of the exidence angle divided by the square of the sum of the cosine of the
+                                 incidence angle and the cosine of the exidence angle
+        :return: the change in the illumination given a change in the cosine of the incidence angle
+        """
+        return self.global_albedo * albedo * (1 - beta + beta * cose_dcosi_cose2)
+
+    def _compute_dillum_dcose(self, albedo: np.ndarray, beta: np.ndarray, cosi_dcosi_cose2: np.ndarray) -> np.ndarray:
+        r"""
+        Compute the change in the illumination with respect to a change in the cosine of the exidence angle
+
+        Mathematically this is given by
+
+        .. math::
+
+            \frac{\partial I}{\partial \cos(e)} = -\beta\alpha_0\alpha\frac{\cos{i}}{(\cos{i}+\cos{e})^2}
+
+        where :math:`\cos(i)` is the cosine of the incidence angle, :math:`\cos(e)` is the cosine of the exidence angle,
+        and all else is as defined before.
+
+        :param albedo: The albedo values as a numpy array of doubles
+        :param beta: The beta parameter as a numpy array of doubles
+        :param cosi_dcosi_cose2: The cosine of the incidence angle divided by the square of the sum of the cosine of the
+                                 incidence angle and the cosine of the exidence angle
+        :return: the change in the illumination given a change in the cosine of the exidence angle
+        """
+        return - beta * self.global_albedo * albedo * cosi_dcosi_cose2
+
+    def _compute_dillum_dalbedo(self, cosi: np.ndarray, beta: np.ndarray, cosi_cose: np.ndarray) -> np.ndarray:
+        r"""
+        Compute the change in the illumination with respect to a change in the local albedo
+
+        Mathematically this is given by
+
+        .. math::
+
+            \frac{\partial I}{\partial \alpha} = \alpha_0\left(-(1-\beta)\mathbf{n}^T\mathbf{i} +
+            \beta\frac{-\mathbf{n}^T\mathbf{i}}{-\mathbf{n}^T\mathbf{i}+\mathbf{n}^T\mathbf{e}}\right)
+
+        :param cosi: The cosine of the incidence angle
+        :param beta: the beta parameter
+        :param cosi_cose: the cosine of the incidence angle plus the cosine of the exidence angle
+        :return: the change int he illumination with respect to a change in the local albedo
+        """
+        beta_cosi = beta*cosi
+        return self.global_albedo * (cosi - beta_cosi + beta_cosi / cosi_cose)
+
+    def compute_photoclinometry_jacobian(self, observations: np.ndarray, rotation_to_inertial: np.ndarray,
+                                         max_inc: float = 70 * np.pi / 180,
+                                         max_emi: float = 70 * np.pi / 180,
+                                         max_phase: float = 140 * np.pi / 180,
+                                         update: bool = False,
+                                         update_weight: float = 5e-3) -> Tuple[np.ndarray, np.ndarray]:
+        r"""
+        This computes the Jacobian matrix of the change in the illumination values given a change in the surface normal
+        (represented by a change in the surface slope) and a change in the local albedo values.
+
+        Mathematically the jacobian is
+
+        .. math::
+
+            \mathbf{J}=\frac{\partial I}{\partial\left[\begin{array} {ccc} h_x & h_y & \alpha \end{array}\right]} =
+            \left[\begin{array}{ccc} \frac{\partial I}{\partial h_x} & \frac{\partial I}{\partial h_y} &
+            \frac{\partial I}{\partial\alpha} \end{array}\right]
+
+        where
+
+        .. math::
+            \frac{\partial I}{\partial h_x} = \frac{\partial I}{\partial \hat{\mathbf{n}}}
+            \frac{\partial \hat{\mathbf{n}}}{\partial\mathbf{n}}\frac{\partial \mathbf{n}}{\partial h_x} \\
+            \frac{\partial I}{\partial h_y} = \frac{\partial I}{\partial \hat{\mathbf{n}}}
+            \frac{\partial \hat{\mathbf{n}}}{\partial\mathbf{n}}\frac{\partial \mathbf{n}}{\partial h_y} \\
+            \frac{\partial I}{\partial \alpha} = \alpha_0\left(-(1-\beta)\mathbf{n}^T\mathbf{i} +
+            \beta\frac{-\mathbf{n}^T\mathbf{i}}{-\mathbf{n}^T\mathbf{i}+\mathbf{n}^T\mathbf{e}}\right) \\
+            \frac{\partial I}{\partial \hat{\mathbf{n}}} = \frac{\partial I}{\partial \cos(i)}
+            \frac{\partial \cos(i)}{\partial\hat{\mathbf{n}}} + \frac{\partial I}{\partial \cos(e)}
+            \frac{\partial \cos(e)}{\partial\hat{\mathbf{n}}}\\
+            \frac{\partial I}{\partial \cos(i)} = \alpha_0\alpha(1-\beta+\beta\frac{\cos{i}}{(\cos{i}+\cos{e})^2}) \\
+            \frac{\partial I}{\partial \cos(e)} = -\beta\alpha_0\alpha\frac{\cos{i}}{(\cos{i}+\cos{e})^2} \\
+            \frac{\partial \cos(i)}{\partial \hat{\mathbf{n}}} = -\mathbf{i}^T \\
+            \frac{\partial \cos(e)}{\partial \hat{\mathbf{n}}} = \mathbf{e}^T \\
+            \frac{\partial\hat{\mathbf{n}}}{\partial\mathbf{n}} = \frac{\mathbf{n}\mathbf{n}^T-
+            \mathbf{n}^T\mathbf{n}\mathbf{I}}{(\mathbf{n}^T\mathbf{n})^{1.5}} \\
+            \frac{\partial\mathbf{n}}{\partial h_x} = \left[\begin{array}{ccc} -1 & 0 & 0\end{array}\right] \\
+            \frac{\partial\mathbf{n}}{\partial h_y} = \left[\begin{array}{ccc} 0 & -1 & 0\end{array}\right]
+
+        :math:`\cos(i)` is the cosine of the incidence angle, :math:`\cos(e)` is the cosine of the exidence angle,
+        and all else is as defined before.
+
+        :param observations: The observations as a numpy array with type :attr:`.ILLUM_DTYPE`.
+        :param rotation_to_inertial: The rotation that takes the frame the observations are expressed in into the the
+                                     local frame for the surface (usually the local east north up frame)
+        :param max_inc: the maximum incidence angle to consider valid in radians
+        :param max_emi: the maximum emission angle to consider valid in radians
+        :param max_phase: the maximum phase angle to consider valid in radians
+        :param update: A flag specifying whether to form an update Jacobian
+        :param update_weight: The weight of the prior values if doing an update
+        :return: the jacobian matrix as a n(+3)x3 array (where n is the number of observations) and a boolean array of
+                 length n specifying which rows of the jacobian matrix are valid
+        """
+
+        if update:
+            out_jac = np.zeros((observations.shape[0] + 3, 3), dtype=np.float64)
+            out_jac[[-3, -2, -1], [-3, -2, -1]] = np.sqrt(update_weight)
+
+        else:
+            out_jac = np.zeros((observations.shape[0], 3), dtype=np.float64)
+
+        # extract the vectors we need from the structured array for ease of use
+        inc = -observations['incidence']
+        exi = observations['exidence']
+        nor = observations['normal']
+        alb = observations['albedo']
+
+        # compute the cosine of the incidence and exidence angles
+        cos_inc_angle = (nor * inc).sum(axis=-1)
+        cos_emi_angle = (nor * exi).sum(axis=-1)
+
+        # compute some common terms for efficiency
+        cosi_cose = cos_emi_angle + cos_inc_angle
+        cosi_cose2 = cosi_cose**2
+        cosi_dcosi_cose2 = cos_inc_angle/cosi_cose2
+        cose_dcosi_cose2 = cos_emi_angle/cosi_cose2
+
+        # compute the phase angle
+        phase_angle = np.arccos((inc * exi).sum(axis=-1))
+
+        # compute the weighting between the lambertian and the lommel seeliger
+        beta = np.exp(-phase_angle / 1.0471975511965976)
+
+        # compute the change in the illumination with respect to a change in the cosine of the incidence angle
+        dillum_dcosi = self._compute_dillum_dcosi(alb, beta, cose_dcosi_cose2)
+
+        # compute the change in the illumination with respect to a change in the cosine of the exidence angle
+        dillum_dcose = self._compute_dillum_dcose(alb, beta, cosi_dcosi_cose2)
+
+        # compute the change in the illumination with respect to a change in the albedo
+        dillum_da = self._compute_dillum_dalbedo(cos_inc_angle, beta, cosi_cose)
+
+        # the change in the cosine of the incidence angle with respect to a change in the normal vector
+        dcosi_dnhat = inc
+        # the change in the cosine of the exidence angle with respect to a change in the normal vector
+        dcose_dnhat = exi
+
+        # the change in the unit normal vector with respect to a change in the normal vector
+        dnhat_dn = self._compute_dnhat_dn(nor)
+
+        # the change in the normal vector with respect to a change in the slope
+        dn_dhxhy = rotation_to_inertial @ _HXHYARR
+
+        # the change in the illumination with respect to a change in the slope using chain rule
+        dillum_dhxhy = ((dillum_dcosi.reshape(-1, 1) * dcosi_dnhat +
+                         dillum_dcose.reshape(-1, 1) * dcose_dnhat).reshape(-1, 1, 3) @ dnhat_dn @ dn_dhxhy).squeeze()
+
+        # initialize the boolean array for which observations are actually valid
+        valid = np.ones(out_jac.shape[0], dtype=bool)
+
+        if update:
+            # if we are doing an update step then we need to leave the last 3 rows alone
+            # check which observations are valid
+            valid[:-3] = (cos_inc_angle >= np.cos(max_inc)) & (cos_emi_angle >= np.cos(max_emi)) & \
+                    (phase_angle <= max_phase) & (cos_inc_angle > 0) & (cos_emi_angle > 0)
+            # form the jacobian matrix
+            out_jac[:-3, :2] = dillum_dhxhy.reshape(-1, 2)
+            out_jac[:-3, 2] = dillum_da.ravel()
+        else:
+            # check which observations are valid
+            valid[:] = (cos_inc_angle >= np.cos(max_inc)) & (cos_emi_angle >= np.cos(max_emi)) & \
+                    (phase_angle <= max_phase) & (cos_inc_angle > 0) & (cos_emi_angle > 0)
+            # form the jacobian matrix
+            out_jac[:, :2] = dillum_dhxhy.reshape(-1, 2)
+            out_jac[:, 2] = dillum_da.ravel()
+
+        return out_jac, valid
+
 
 
 class AshikhminShirleyDiffuseIllumination(IlluminationModel):
@@ -709,7 +1213,7 @@ class AshikhminShirleyDiffuseIllumination(IlluminationModel):
 
     .. math::
 
-        I = -\mathbf{n}^T\mathbf{i}(1-(1+\frac{\mathbf{n}^T\mathbf{i}}{2})^5)(1-(1-\frac{\mathbf{n}^T\mathbf{e}}{2})^5)
+        I = -\alpha\mathbf{n}^T\mathbf{i}(1-(1+\frac{\mathbf{n}^T\mathbf{i}}{2})^5)(1-(1-\frac{\mathbf{n}^T\mathbf{e}}{2})^5)
 
     where :math:`\mathbf{n}` is the
     unit normal vector, :math:`\mathbf{i}` is the unit incidence vector, :math:`\mathbf{e}` is the unit exidence vector,
@@ -740,7 +1244,184 @@ class AshikhminShirleyDiffuseIllumination(IlluminationModel):
 
         # compute the illumination using only the valid observations
         illum_values[visible_check] = (cos_inc_angle[visible_check] *
-                                       ((1 - np.power(1 - cos_inc_angle[visible_check] / 2, 5)) *
-                                        (1 - np.power(1 - cos_emi_angle[visible_check] / 2, 5))))
+                                       ((1 - (1 - cos_inc_angle[visible_check] / 2) ** 5) *
+                                        (1 - (1 - cos_emi_angle[visible_check] / 2) ** 5)))
 
-        return illum_values
+        return illum_inputs['albedo'] * illum_values
+    
+    def _compute_dillum_dcosi(self, albedo: np.ndarray, cosi: np.ndarray, cose: np.ndarray) -> np.ndarray:
+        r"""
+        Compute the change in the illumination with respect to a change in the cosine of the incidence angle
+
+        Mathematically this is given by
+
+        .. math::
+
+            \frac{\partial I}{\partial \cos(i)} =\alpha\left[\left(1-(1-\frac{\cos(i)}{2})^5\right)\left(1-(1-\frac{\cos(e)}{2})^5\right)+
+            \frac{5}{2}\cos(i)\left(1-(1-\frac{\cos(e)}{2})^5\right)\left(1-\frac{\cos(i)}{2}\right)^4\right]
+
+        where :math:`\cos(i)` is the cosine of the incidence angle, :math:`\cos(e)` is the cosine of the exidence angle,
+        and all else is as defined before.
+
+        :param albedo: The albedo values as a numpy array of doubles
+        :param cosi: The cosine of the incidence angle
+        :param cose: The cosine of the incidence angle
+        :return: the change in the illumination given a change in the cosine of the incidence angle
+        """
+        return albedo * ((1-(1-cosi/2)**5)*(1-(1-cose/2)**5)+5/2*cosi*(1-(1-cose/2)**5)*(1-cosi/2)**4)
+
+    def _compute_dillum_dcose(self, albedo: np.ndarray, cosi: np.ndarray, cose: np.ndarray) -> np.ndarray:
+        r"""
+        Compute the change in the illumination with respect to a change in the cosine of the exidence angle
+
+        Mathematically this is given by
+
+        .. math::
+
+            \frac{\partial I}{\partial \cos(e)} = \frac{5}{2}\alpha\cos(i)\left(1-(1-\frac{\cos(i)}{2})^5\right)\left(1-\frac{\cos(e)}{2}\right)^4
+
+        where :math:`\cos(i)` is the cosine of the incidence angle, :math:`\cos(e)` is the cosine of the exidence angle,
+        and all else is as defined before.
+
+        :param albedo: The albedo values as a numpy array of doubles
+        :param cosi: The cosine of the incidence angle
+        :param cose: The cosine of the incidence angle
+        :return: the change in the illumination given a change in the cosine of the exidence angle
+        """
+        return 5/2*albedo*cosi*(1-(1-cosi/2)**5)*(1-cose/2)**4
+
+    def _compute_dillum_dalbedo(self, cosi: np.ndarray, cose: np.ndarray) -> np.ndarray:
+        r"""
+        Compute the change in the illumination with respect to a change in the local albedo
+
+        Mathematically this is given by
+
+        .. math::
+
+            \frac{\partial I}{\partial \alpha} = \cos(i)\left(1-(1-\frac{\cos(i)}{2})^5\right)\left(1-(1-\frac{\cos(e)}{2})^5\right)
+
+        :param cosi: The cosine of the incidence angle
+        :param cose: The cosine of the incidence angle
+        :return: the change int he illumination with respect to a change in the local albedo
+        """
+        return cosi*(1-(1-cosi/2)**5)*(1-(1-cose/2)**5)
+
+    def compute_photoclinometry_jacobian(self, observations: np.ndarray, rotation_to_inertial: np.ndarray,
+                                         max_inc: float = 70 * np.pi / 180,
+                                         max_emi: float = 70 * np.pi / 180,
+                                         max_phase: float = 140 * np.pi / 180,
+                                         update: bool = False,
+                                         update_weight: float = 5e-3) -> Tuple[np.ndarray, np.ndarray]:
+        r"""
+        This computes the Jacobian matrix of the change in the illumination values given a change in the surface normal
+        (represented by a change in the surface slope) and a change in the local albedo values.
+
+        Mathematically the jacobian is
+
+        .. math::
+
+            \mathbf{J}=\frac{\partial I}{\partial\left[\begin{array} {ccc} h_x & h_y & \alpha \end{array}\right]} =
+            \left[\begin{array}{ccc} \frac{\partial I}{\partial h_x} & \frac{\partial I}{\partial h_y} &
+            \frac{\partial I}{\partial\alpha} \end{array}\right]
+
+        where
+
+        .. math::
+            \frac{\partial I}{\partial h_x} = \frac{\partial I}{\partial \hat{\mathbf{n}}}
+            \frac{\partial \hat{\mathbf{n}}}{\partial\mathbf{n}}\frac{\partial \mathbf{n}}{\partial h_x} \\
+            \frac{\partial I}{\partial h_y} = \frac{\partial I}{\partial \hat{\mathbf{n}}}
+            \frac{\partial \hat{\mathbf{n}}}{\partial\mathbf{n}}\frac{\partial \mathbf{n}}{\partial h_y} \\
+            \frac{\partial I}{\partial \alpha} = \cos(i)\left(1-(1-\frac{\cos(i)}{2})^5\right)\left(1-(1-\frac{\cos(e)}{2})^5\right) \\
+            \frac{\partial I}{\partial \hat{\mathbf{n}}} = \frac{\partial I}{\partial \cos(i)} 
+            \frac{\partial \cos(i)}{\partial\hat{\mathbf{n}}} + \frac{\partial I}{\partial \cos(e)}
+            \frac{\partial \cos(e)}{\partial\hat{\mathbf{n}}}\\
+            \frac{\partial I}{\partial \cos(i)} =\alpha\left[\left(1-(1-\frac{\cos(i)}{2})^5\right)\left(1-(1-\frac{\cos(e)}{2})^5\right)+
+            \frac{5}{2}\cos(i)\left(1-(1-\frac{\cos(e)}{2})^5\right)\left(1-\frac{\cos(i)}{2}\right)^4\right] \\
+            \frac{\partial I}{\partial \cos(e)} = \frac{5}{2}\alpha\cos(i)\left(1-(1-\frac{\cos(i)}{2})^5\right)\left(1-\frac{\cos(e)}{2}\right)^4 \\
+            \frac{\partial \cos(i)}{\partial \hat{\mathbf{n}}} = -\mathbf{i}^T \\
+            \frac{\partial \cos(e)}{\partial \hat{\mathbf{n}}} = \mathbf{e}^T \\
+            \frac{\partial\hat{\mathbf{n}}}{\partial\mathbf{n}} = \frac{\mathbf{n}\mathbf{n}^T-
+            \mathbf{n}^T\mathbf{n}\mathbf{I}}{(\mathbf{n}^T\mathbf{n})^{1.5}} \\
+            \frac{\partial\mathbf{n}}{\partial h_x} = \left[\begin{array}{ccc} -1 & 0 & 0\end{array}\right] \\
+            \frac{\partial\mathbf{n}}{\partial h_y} = \left[\begin{array}{ccc} 0 & -1 & 0\end{array}\right]
+
+        :math:`\cos(i)` is the cosine of the incidence angle, :math:`\cos(e)` is the cosine of the exidence angle,
+        and all else is as defined before.
+
+        :param observations: The observations as a numpy array with type :attr:`.ILLUM_DTYPE`.
+        :param rotation_to_inertial: The rotation that takes the frame the observations are expressed in into the the
+                                     local frame for the surface (usually the local east north up frame)
+        :param max_inc: the maximum incidence angle to consider valid in radians
+        :param max_emi: the maximum emission angle to consider valid in radians
+        :param max_phase: the maximum phase angle to consider valid in radians
+        :param update: A flag specifying whether to form an update Jacobian
+        :param update_weight: The weight of the prior values if doing an update
+        :return: the jacobian matrix as a n(+3)x3 array (where n is the number of observations) and a boolean array of
+                 length n specifying which rows of the jacobian matrix are valid
+        """
+
+        if update:
+            out_jac = np.zeros((observations.shape[0] + 3, 3), dtype=np.float64)
+            out_jac[[-3, -2, -1], [-3, -2, -1]] = np.sqrt(update_weight)
+
+        else:
+            out_jac = np.zeros((observations.shape[0], 3), dtype=np.float64)
+
+        # extract the vectors we need from the structured array for ease of use
+        inc = -observations['incidence']
+        exi = observations['exidence']
+        nor = observations['normal']
+        alb = observations['albedo']
+
+        # compute the cosine of the incidence and exidence angles
+        cos_inc_angle = (nor * inc).sum(axis=-1)
+        cos_emi_angle = (nor * exi).sum(axis=-1)
+
+        # compute the change in the illumination with respect to a change in the cosine of the incidence angle
+        dillum_dcosi = self._compute_dillum_dcosi(alb, cos_inc_angle, cos_emi_angle)
+
+        # compute the change in the illumination with respect to a change in the cosine of the exidence angle
+        dillum_dcose = self._compute_dillum_dcose(alb, cos_inc_angle, cos_emi_angle)
+
+        # compute the change in the illumination with respect to a change in the albedo
+        dillum_da = self._compute_dillum_dalbedo(cos_inc_angle, cos_emi_angle)
+
+        # the change in the cosine of the incidence angle with respect to a change in the normal vector
+        dcosi_dnhat = inc
+        # the change in the cosine of the exidence angle with respect to a change in the normal vector
+        dcose_dnhat = exi
+
+        # the change in the unit normal vector with respect to a change in the normal vector
+        dnhat_dn = self._compute_dnhat_dn(nor)
+
+        # the change in the normal vector with respect to a change in the slope
+        dn_dhxhy = rotation_to_inertial @ _HXHYARR
+
+        # the change in the illumination with respect to a change in the slope using chain rule
+        dillum_dhxhy = ((dillum_dcosi.reshape(-1, 1) * dcosi_dnhat +
+                         dillum_dcose.reshape(-1, 1) * dcose_dnhat).reshape(-1, 1, 3) @ dnhat_dn @ dn_dhxhy).squeeze()
+
+        # initialize the boolean array for which observations are actually valid
+        valid = np.ones(out_jac.shape[0], dtype=bool)
+        
+        # compute the phase angle
+        phase_angle = np.arccos((inc * exi).sum(axis=-1))
+
+        if update:
+            # if we are doing an update step then we need to leave the last 3 rows alone
+            # check which observations are valid
+            valid[:-3] = (cos_inc_angle >= np.cos(max_inc)) & (cos_emi_angle >= np.cos(max_emi)) & \
+                    (phase_angle <= max_phase) & (cos_inc_angle > 0) & (cos_emi_angle > 0)
+            # form the jacobian matrix
+            out_jac[:-3, :2] = dillum_dhxhy.reshape(-1, 2)
+            out_jac[:-3, 2] = dillum_da.ravel()
+        else:
+            # check which observations are valid
+            valid[:] = (cos_inc_angle >= np.cos(max_inc)) & (cos_emi_angle >= np.cos(max_emi)) & \
+                    (phase_angle <= max_phase) & (cos_inc_angle > 0) & (cos_emi_angle > 0)
+            # form the jacobian matrix
+            out_jac[:, :2] = dillum_dhxhy.reshape(-1, 2)
+            out_jac[:, 2] = dillum_da.ravel()
+
+        return out_jac, valid
+

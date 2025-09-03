@@ -1,21 +1,20 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>giant.camera_models.opencv_model &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <title>giant.camera_models.opencv_model &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+    <script src="_static/documentation_options.js?v=51b770b3"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link rel="shortcut icon" href="_static/logo.ico"/>
+    <link rel="icon" href="_static/logo.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
@@ -24,17 +23,18 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="index.html">
-    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    <img class="logo" src="_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -71,7 +71,7 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -79,8 +79,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -105,11 +105,11 @@
           <div class="body" role="main">
             
   <section id="module-giant.camera_models.opencv_model">
-<span id="giant-camera-models-opencv-model"></span><h1>giant.camera_models.opencv_model<a class="headerlink" href="#module-giant.camera_models.opencv_model" title="Permalink to this headline">¶</a></h1>
+<span id="giant-camera-models-opencv-model"></span><h1>giant.camera_models.opencv_model<a class="headerlink" href="#module-giant.camera_models.opencv_model" title="Link to this heading">¶</a></h1>
 <p>This module provides a subclass of <a class="reference internal" href="camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraModel</span></code></a> that implements the OpenCV camera model, which adds
 distortion corrections to the Pinhole model.</p>
 <section id="theory">
-<h2>Theory<a class="headerlink" href="#theory" title="Permalink to this headline">¶</a></h2>
+<h2>Theory<a class="headerlink" href="#theory" title="Link to this heading">¶</a></h2>
 <p>The OpenCV camera model is the pinhole camera model combined with a lens distortion model which projects any point
 along a ray emanating from the camera center (origin of the camera frame) to the same 2D point in an image.  Given
 some 3D point (or direction) expressed in the camera frame, <span class="math notranslate nohighlight">\(\mathbf{x}_C\)</span>, the OpenCV model is defined as</p>
@@ -134,7 +134,7 @@ the point in the image. For a more thorough description of the OpenCV camera mod
 <a class="reference download internal" download="" href="_downloads/2216ed4e261478b876a3177ae9c93ed9/cameraModels.pdf"><code class="xref download docutils literal notranslate"><span class="pre">this</span> <span class="pre">memo</span></code></a>.</p>
 </section>
 <section id="speeding-up-the-camera-model">
-<h2>Speeding up the camera model<a class="headerlink" href="#speeding-up-the-camera-model" title="Permalink to this headline">¶</a></h2>
+<h2>Speeding up the camera model<a class="headerlink" href="#speeding-up-the-camera-model" title="Link to this heading">¶</a></h2>
 <p>One of the most common functions of the camera model is to relate pixels in a camera to unit vectors in the 3D camera
 frame.  This is done extensively throughout GIANT, particularly when ray tracing.  Unfortunately, this transformation is
 iterative (there isn’t an analytic solution), which can make things a little slow, particularly when you need to do the
@@ -162,14 +162,14 @@ recommended that you <em>not precompute</em> the transformation.</p>
 <p>Whether you precompute the transformation or not, the use of the camera model should appear unchanged beyond computation
 time.</p>
 <section id="use">
-<h3>Use<a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h3>
+<h3>Use<a class="headerlink" href="#use" title="Link to this heading">¶</a></h3>
 <p>This is a concrete implementation of a <a class="reference internal" href="camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraModel</span></code></a>, therefore to use this class you simply need to initialize
 it with the proper values.  Typically these values come from either the physical dimensions of the camera, or from
 a camera calibration routine performed to refine the values using observed data (see the <a class="reference internal" href="giant.calibration.html#module-giant.calibration" title="giant.calibration"><code class="xref py py-mod docutils literal notranslate"><span class="pre">calibration</span></code></a> sub-package
 for details).  For instance, say we have a camera which has an effective focal length of 10 mm, a pix pitch of 2.2 um,
 and a detector size of 1024x1024, with radial distortion of 1e-5, -2e-7, 3e-9.  We could then create a model for this
 camera as</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">OpenCVModel</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenCVModel</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">OpenCVModel</span><span class="p">(</span><span class="n">fx</span><span class="o">=</span><span class="mi">10</span><span class="o">/</span><span class="mf">2.2e-3</span><span class="p">,</span> <span class="n">fy</span><span class="o">=</span><span class="mi">10</span><span class="o">/</span><span class="mf">2.2e-3</span><span class="p">,</span>
 <span class="gp">... </span>                    <span class="n">n_rows</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">px</span><span class="o">=</span><span class="p">(</span><span class="mi">1024</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">py</span><span class="o">=</span><span class="p">(</span><span class="mi">1024</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
 <span class="gp">... </span>                    <span class="n">k1</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">k2</span><span class="o">=-</span><span class="mf">2e-3</span><span class="p">,</span> <span class="n">k3</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">)</span>
@@ -196,17 +196,15 @@ model.</p>
 </section>
 </section>
 <p class="rubric">Classes</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="opencv_model/giant.camera_models.opencv_model.OpenCVModel.html#giant.camera_models.opencv_model.OpenCVModel" title="giant.camera_models.opencv_model.OpenCVModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OpenCVModel</span></code></a></p></td>
 <td><p>This class provides an implementation of the OpenCV camera model for projecting 3D points onto images and performing camera calibration.</p></td>
 </tr>
 </tbody>
 </table>
+<div class="toctree-wrapper compound">
+</div>
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
@@ -234,20 +232,24 @@ model.</p>
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="_sources/giant.camera_models.opencv_model.rst.txt"
-          rel="nofollow">Page source</a>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

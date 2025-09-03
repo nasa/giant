@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 r"""
@@ -108,20 +107,27 @@ or to determine the unit vector through a pixel
 """
 
 
-from typing import Tuple, Sequence, Iterable, Union, List
+from typing import Tuple, Sequence, Iterable, Union, List, cast
 
 # from warnings import warn
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 
+from numpy.typing import NDArray
+
 # the risk of XML is addressed with warnings in the save/load documentation
 import lxml.etree as etree  # nosec
 
 from giant.camera_models.camera_model import CameraModel
 from giant.rotations import rotvec_to_rotmat, skew, Rotation
-from giant._typing import ARRAY_LIKE, NONEARRAY, SCALAR_OR_ARRAY, Real, NONENUM, ARRAY_LIKE_2D
+from giant._typing import ARRAY_LIKE, NONEARRAY, SCALAR_OR_ARRAY, NONENUM, DOUBLE_ARRAY, F_SCALAR_OR_ARRAY, F_ARRAY_LIKE
 
+
+MISALIGNMENT_TYPE = DOUBLE_ARRAY | Sequence[DOUBLE_ARRAY | Sequence[float]] | Sequence[float] | None
+""""
+A type alias for the misalignment input to the PinholeModel class
+"""
 
 class PinholeModel(CameraModel):
     r"""
@@ -171,9 +177,10 @@ class PinholeModel(CameraModel):
     ============================  ======================================================================================
     """
 
-    def __init__(self, intrinsic_matrix: NONEARRAY = None, focal_length: Real = 1.,
+    def __init__(self, intrinsic_matrix: NONEARRAY = None, focal_length: float = 1.,
                  field_of_view: NONENUM = None, use_a_priori: bool = False,
-                 misalignment: NONEARRAY = None, estimation_parameters: Union[str, Sequence] = 'basic',
+                 misalignment: MISALIGNMENT_TYPE = None, 
+                 estimation_parameters: str | Sequence[str] = 'basic',
                  kx: NONENUM = None, ky: NONENUM = None, px: NONENUM = None, py: NONENUM = None, n_rows: int = 1,
                  n_cols: int = 1, temperature_coefficients: NONEARRAY = None, a1: NONENUM = None, a2: NONENUM = None,
                  a3: NONENUM = None):
@@ -201,11 +208,12 @@ class PinholeModel(CameraModel):
         :param n_cols: the number of columns in the active image array
         """
 
-        self._state_labels = ['focal_length', 'kx', 'ky', 'px', 'py', 'a1', 'a2', 'a3', 'misalignment']
+        self._state_labels = ['focal_length', 'kx', 'ky',
+                              'px', 'py', 'a1', 'a2', 'a3', 'misalignment']
         """
         A list of state labels that correspond to the attributes of this class.
         """
-
+        
         # store the element dict for indices into the state vector
         self.element_dict = {
             'basic': [0, 2],
@@ -225,7 +233,7 @@ class PinholeModel(CameraModel):
         }
 
         # set the focal length property
-        self._focal_length = None
+        self._focal_length = 1.0
         self.focal_length = focal_length
 
         # set the intrinsic matrix
@@ -272,7 +280,7 @@ class PinholeModel(CameraModel):
             self.a3 = a3
 
         # set the misalignment attribute
-        self.misalignment = np.zeros(3)
+        self.misalignment: DOUBLE_ARRAY | list[DOUBLE_ARRAY] = np.zeros(3)
         """
         Contains either a single rotation vector representing the misalignment between the specified camera frame and
         the actual camera frame, or a list of rotation vectors representing the misalignments between the specified 
@@ -283,7 +291,16 @@ class PinholeModel(CameraModel):
         """
 
         if misalignment is not None:
-            self.misalignment = misalignment
+            if isinstance(misalignment, Sequence):
+                if len(misalignment) == 3 and all(isinstance(m, (int, float)) for m in misalignment):
+                    self.misalignment = np.asanyarray(misalignment).reshape((3,))
+                else:
+                    self.misalignment = [np.asanyarray(m).reshape((3,)) for m in misalignment]
+            else:
+                if misalignment.size == 3:
+                    self.misalignment = misalignment.reshape((3,))
+                else:
+                    self.misalignment = misalignment.reshape((-1, 3))
 
         # set a flag for where to use multiple misalignments or not (set by estimation_parameters property)
         self.estimate_multiple_misalignments = False
@@ -297,7 +314,7 @@ class PinholeModel(CameraModel):
         """
 
         # set the estimation parameters attribute
-        self._estimation_parameters = None
+        self._estimation_parameters: list[str] = []
         self.estimation_parameters = estimation_parameters
 
         self._fix_misalignment = []
@@ -310,7 +327,8 @@ class PinholeModel(CameraModel):
         """
 
         # call the super init
-        super().__init__(n_rows=n_rows, n_cols=n_cols, use_a_priori=use_a_priori, field_of_view=field_of_view)
+        super().__init__(n_rows=n_rows, n_cols=n_cols,
+                         use_a_priori=use_a_priori, field_of_view=field_of_view)
 
         # store the important attributes for use in the proper functions
         # temporarily duplicate the docstring so that sphinx can pick it up
@@ -359,7 +377,7 @@ class PinholeModel(CameraModel):
                                self.a1, self.a2, self.a3)
 
     @CameraModel.state_vector.getter
-    def state_vector(self) -> List[Real]:
+    def state_vector(self) -> List[float]:
         """
         Returns the fully realized state vector according to :attr:`estimation_parameters` as a length l list.
         """
@@ -370,13 +388,14 @@ class PinholeModel(CameraModel):
                 state_vector.append(getattr(self, label))
             else:
                 if self.estimate_multiple_misalignments:
+                    assert isinstance(self.misalignment, list), "something went wrong if this fails"
                     for r in self.misalignment:
                         state_vector.extend(r)
                 else:
                     state_vector.extend(self.misalignment)
 
         return state_vector
-
+    
     def get_state_labels(self) -> List[str]:
         """
         Convert a list of estimation parameters into state label names.
@@ -394,6 +413,9 @@ class PinholeModel(CameraModel):
             if 'misalignment' not in param:
                 locs = self.element_dict[param]
                 for loc in locs:
+                    if (param == "basic") and loc >= len(self._state_labels):
+                        # this is a misalignment location we should ignore for now
+                        continue
                     olist.append(self._state_labels[loc])
 
             else:
@@ -402,7 +424,7 @@ class PinholeModel(CameraModel):
         return olist
 
     @property
-    def estimation_parameters(self) -> List[str]:
+    def estimation_parameters(self) -> list[str]:
         r"""
         A list of strings containing the parameters to estimate when performing calibration with this model.
 
@@ -456,24 +478,30 @@ class PinholeModel(CameraModel):
         return self._estimation_parameters
 
     @estimation_parameters.setter
-    def estimation_parameters(self, val: Union[str, List[str]]):
-
-        if isinstance(val, str):
-
-            self._estimation_parameters = [val.lower()]
-
-        else:
-            self._estimation_parameters = [elements.lower() for elements in val]
-
-        for elem in self._estimation_parameters:
-            if elem not in self.element_dict:
-                raise ValueError('The estimation parameters elements must be one of {}.'.format(
-                    self.element_dict.keys()) + ' You specified {}'.format(elem))
+    def estimation_parameters(self, val: Union[str, Sequence[str]]):
+        
+        self._estimation_parameters = self._validate_parameters(val)
+        
 
         if 'multiple misalignments' in self.estimation_parameters:
             self.estimate_multiple_misalignments = True
         else:
             self.estimate_multiple_misalignments = False
+            
+    def _validate_parameters(self, val: Union[str, Sequence[str]]) -> list[str]:
+        
+        if isinstance(val, str):
+            
+            val = [val.lower()]
+        else:
+            val = [v.lower() for v in val]
+
+        for elem in val:
+            if elem not in self.element_dict:
+                raise ValueError('The estimation parameters elements must be one of {}.'.format(
+                    self.element_dict.keys()) + ' You specified {}'.format(elem))
+                
+        return val
 
     @property
     def kx(self) -> float:
@@ -614,7 +642,7 @@ class PinholeModel(CameraModel):
         return self._focal_length
 
     @focal_length.setter
-    def focal_length(self, val):
+    def focal_length(self, val: float):
 
         self._focal_length = float(val)
 
@@ -652,7 +680,7 @@ class PinholeModel(CameraModel):
         return np.array([[1 / self.kx, 0, -self.px / self.kx],
                          [0, 1 / self.ky, -self.py / self.ky]])
 
-    def adjust_temperature(self, pixel_locations: ARRAY_LIKE, old_temperature: Real, new_temperature: Real) \
+    def adjust_temperature(self, pixel_locations: ARRAY_LIKE, old_temperature: float, new_temperature: float) \
             -> np.ndarray:
         """
         This method adjusts a pixel location to reflect a new image temperature.
@@ -667,9 +695,11 @@ class PinholeModel(CameraModel):
         :return: the updated pixel locations
         """
 
-        gnomic_distorted = ((self.intrinsic_matrix_inv[:, :2] @ pixel_locations).T + self.intrinsic_matrix_inv[:, 2]).T
+        gnomic_distorted = (
+            (self.intrinsic_matrix_inv[:, :2] @ pixel_locations).T + self.intrinsic_matrix_inv[:, 2]).T
 
-        temp_change_ratio = self.get_temperature_scale(new_temperature) / self.get_temperature_scale(old_temperature)
+        temp_change_ratio = self.get_temperature_scale(
+            new_temperature) / self.get_temperature_scale(old_temperature)
         new_gnomic_distorted = temp_change_ratio * gnomic_distorted
 
         return ((self.intrinsic_matrix[:, :2] @ new_gnomic_distorted).T + self.intrinsic_matrix[:, 2]).T
@@ -702,7 +732,8 @@ class PinholeModel(CameraModel):
         temperature = np.asarray(temperature)
 
         # compute the powers of the temperature
-        temp_powers = np.array([temperature, temperature ** 2, temperature ** 3])
+        temp_powers = np.array(
+            [temperature, temperature ** 2, temperature ** 3])
 
         # compute the temperature scaling
         return 1. + self.temperature_coefficients @ temp_powers
@@ -734,7 +765,7 @@ class PinholeModel(CameraModel):
 
         return np.array(pinhole_locations)
 
-    def get_projections(self, points_in_camera_frame: ARRAY_LIKE, image: int = 0, temperature: Real = 0) \
+    def get_projections(self, points_in_camera_frame: ARRAY_LIKE, image: int = 0, temperature: float = 0) \
             -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         This method computes and returns the pinhole, and pixel locations for a set of
@@ -784,25 +815,30 @@ class PinholeModel(CameraModel):
 
         # apply misalignment to the points
         if self.estimate_multiple_misalignments:
-            if np.any(self.misalignment[image]):  # optimization to avoid matrix multiplication
-                camera_points = rotvec_to_rotmat(self.misalignment[image]).squeeze() @ camera_points
+            # optimization to avoid matrix multiplication
+            if np.any(self.misalignment[image]):
+                camera_points = rotvec_to_rotmat(
+                    self.misalignment[image]).squeeze() @ camera_points
 
         else:
             if np.any(self.misalignment):  # optimization to avoid matrix multiplication
-                camera_points = rotvec_to_rotmat(self.misalignment).squeeze() @ camera_points
+                camera_points = rotvec_to_rotmat(
+                    self.misalignment).squeeze() @ camera_points
 
         # get the pinhole locations of the points
-        gnomic_locations = self.focal_length * camera_points[:2] / camera_points[2]  # type: np.ndarray
+        gnomic_locations = self.focal_length * \
+            camera_points[:2] / camera_points[2]  # type: np.ndarray
 
         # apply the temperature scaling
         gnomic_locations *= self.get_temperature_scale(temperature)
 
         # get the pixel locations of the points, need to mess with transposes due to numpy broadcasting rules
-        picture_locations = ((self.intrinsic_matrix[:, :2] @ gnomic_locations).T + self.intrinsic_matrix[:, 2]).T
+        picture_locations = (
+            (self.intrinsic_matrix[:, :2] @ gnomic_locations).T + self.intrinsic_matrix[:, 2]).T
 
         return gnomic_locations, gnomic_locations, picture_locations
 
-    def project_onto_image(self, points_in_camera_frame: ARRAY_LIKE, image: int = 0, temperature: Real = 0) \
+    def project_onto_image(self, points_in_camera_frame: ARRAY_LIKE, image: int = 0, temperature: float = 0) \
             -> np.ndarray:
         """
         This method transforms 3D points or directions expressed in the camera frame into the corresponding 2D image
@@ -837,7 +873,8 @@ class PinholeModel(CameraModel):
         :param temperature: The temperature to project the points at
         :return: A shape (2,) or shape (2, n) numpy array of image points (with units of pixels)
         """
-        _, __, picture_locations = self.get_projections(points_in_camera_frame, image=image, temperature=temperature)
+        _, __, picture_locations = self.get_projections(
+            points_in_camera_frame, image=image, temperature=temperature)
 
         return picture_locations
 
@@ -861,9 +898,12 @@ class PinholeModel(CameraModel):
         :param image: The index of the image being projected onto (only applicable with multiple misalignments)
         :return: A shape (2,) or shape (2, n) numpy array of image direction unit vectors
         """
+        
+        directions_in_camera_frame = np.asanyarray(directions_in_camera_frame)
 
         if self.estimate_multiple_misalignments:
-            if np.any(self.misalignment[image]):  # optimization to avoid matrix multiplication
+            # optimization to avoid matrix multiplication
+            if np.any(self.misalignment[image]):
                 directions_in_camera_frame = (rotvec_to_rotmat(self.misalignment[image]).squeeze() @
                                               directions_in_camera_frame)
 
@@ -876,7 +916,7 @@ class PinholeModel(CameraModel):
 
         return image_direction/np.linalg.norm(image_direction, axis=0, keepdims=True)
 
-    def compute_pixel_jacobian(self, vectors_in_camera_frame: ARRAY_LIKE, image: int = 0, temperature: Real = 0) \
+    def compute_pixel_jacobian(self, vectors_in_camera_frame: ARRAY_LIKE, image: int = 0, temperature: float = 0) \
             -> np.ndarray:
         r"""
         This method computes the Jacobian matrix :math:`\partial\mathbf{x}_P/\partial\mathbf{x}_C` where
@@ -935,7 +975,8 @@ class PinholeModel(CameraModel):
 
             # get the camera point after misalignment and shift from principle frame is applied
             if self.estimate_multiple_misalignments:
-                if np.any(self.misalignment[image]):  # optimization to avoid matrix multiplication
+                # optimization to avoid matrix multiplication
+                if np.any(self.misalignment[image]):
                     mis = rotvec_to_rotmat(self.misalignment[image]).squeeze()
                     cam_point = mis @ vector
 
@@ -953,7 +994,7 @@ class PinholeModel(CameraModel):
                     cam_point = vector
 
             # compute the radial distance from the optical axis as well as its powers
-            radius = np.linalg.norm(gnomic_location)
+            radius = float(np.linalg.norm(gnomic_location))
             radius2 = radius ** 2
             radius3 = radius * radius2
             radius4 = radius2 ** 2
@@ -967,7 +1008,8 @@ class PinholeModel(CameraModel):
                                                                              radius, radius2, radius3, radius4)
 
             # get the partial derivative of the pixel location of the point with respect to the dist gnomic location
-            dpix_ddist_gnom = self._compute_dpixel_ddistorted_gnomic(temperature=temperature)
+            dpix_ddist_gnom = self._compute_dpixel_ddistorted_gnomic(
+                temperature=temperature)
 
             # compute the partial derivative of the misaligned vector with respect to a change in the input vector
             dcam_point_dvector = mis
@@ -982,8 +1024,7 @@ class PinholeModel(CameraModel):
 
         return np.array(jacobian)
 
-    @staticmethod
-    def _compute_ddistortion_dgnomic(*args) -> np.ndarray:
+    def _compute_ddistortion_dgnomic(self, *args) -> np.ndarray:
         """
         This method computes the change in the distortion with respect to a change in the gnomic location.
 
@@ -1011,6 +1052,8 @@ class PinholeModel(CameraModel):
         :param vec_length: The amount the vector is divided by to make it a unit vector
         :return: The change in the misaligned unit vector with respect to a change in the gnomic location
         """
+        
+        gnomic_location = np.asanyarray(gnomic_location)
 
         vector_portion = np.vstack([np.eye(2) / vec_length, np.zeros((1, 2))])
         scalar_portion = np.outer(np.concatenate([gnomic_location, [self.focal_length]]),
@@ -1046,7 +1089,7 @@ class PinholeModel(CameraModel):
         return np.eye(2) - self._compute_ddistortion_dgnomic(distorted_gnomic_location,
                                                              radius, radius2, radius3, radius4)
 
-    def _compute_ddist_gnomic_dpixel(self, temperature: Real) -> np.ndarray:
+    def _compute_ddist_gnomic_dpixel(self, temperature: float) -> np.ndarray:
         r"""
         This method computes the change in the distorted gnomic location with respect to a change in the pixel location.
 
@@ -1061,7 +1104,7 @@ class PinholeModel(CameraModel):
 
         return self.intrinsic_matrix_inv[:, :2] / self.get_temperature_scale(temperature)
 
-    def compute_unit_vector_jacobian(self, pixel_locations: ARRAY_LIKE, image: int = 0, temperature: Real = 0) \
+    def compute_unit_vector_jacobian(self, pixel_locations: ARRAY_LIKE, image: int = 0, temperature: float = 0) \
             -> np.ndarray:
         r"""
         This method computes the Jacobian matrix :math:`\partial\mathbf{x}_C/\partial\mathbf{x}_P` where
@@ -1078,11 +1121,12 @@ class PinholeModel(CameraModel):
         :return: The Jacobian matrix as a nx3x2 array
         """
 
-        pixel_locations = np.array(pixel_locations)
+        pixel_locations = np.asanyarray(pixel_locations)
 
         # get the misalignment matrix
         if self.estimate_multiple_misalignments:
-            if np.any(self.misalignment[image]):  # optimization to avoid matrix multiplication
+            # optimization to avoid matrix multiplication
+            if np.any(self.misalignment[image]):
                 mis = rotvec_to_rotmat(self.misalignment[image]).squeeze()
 
             else:
@@ -1096,17 +1140,20 @@ class PinholeModel(CameraModel):
                 mis = np.eye(3)
 
         # get the distorted gnomic location
-        gnomic_distorted = ((self.intrinsic_matrix_inv[:, :2] @ pixel_locations).T + self.intrinsic_matrix_inv[:, 2]).T
+        gnomic_distorted = (
+            (self.intrinsic_matrix_inv[:, :2] @ pixel_locations).T + self.intrinsic_matrix_inv[:, 2]).T
 
         # get the gnomic location and the unit vector in the camera frame
-        gnomic_locations = self.pixels_to_gnomic(pixel_locations, temperature=temperature)
+        gnomic_locations = self.pixels_to_gnomic(
+            pixel_locations, temperature=temperature)
 
         # append the focal length
         if pixel_locations.ndim == 1:
             cam_points = np.hstack([gnomic_locations, self.focal_length])
 
         else:
-            cam_points = np.vstack([gnomic_locations, self.focal_length * np.ones((1, pixel_locations.shape[1]))])
+            cam_points = np.vstack(
+                [gnomic_locations, self.focal_length * np.ones((1, pixel_locations.shape[1]))])
 
         unit_vectors = mis.T @ cam_points
 
@@ -1130,13 +1177,15 @@ class PinholeModel(CameraModel):
             dunit_dcam_point = mis.T
 
             # compute the change in the misaligned camera direction with respect to a change in the gnomic location
-            dcam_point_dgnomic = self._compute_dcamera_point_dgnomic(gnomic_loc, vec_length)
+            dcam_point_dgnomic = self._compute_dcamera_point_dgnomic(
+                gnomic_loc, vec_length)
 
             # compute the change in the gnomic location with respect to a change in the distorted gnomic location
-            dgnom_ddist_gnom = self._compute_dgnomic_ddist_gnomic(dist_gnom_loc)
+            dgnom_ddist_gnom = self._compute_dgnomic_ddist_gnomic(gnomic_loc)
 
             # form the Jacobian rows and append to the Jacobian list
-            jacobian.append(dunit_dcam_point @ dcam_point_dgnomic @ dgnom_ddist_gnom @ dgnom_dist_dpixel)
+            jacobian.append(dunit_dcam_point @ dcam_point_dgnomic @
+                            dgnom_ddist_gnom @ dgnom_dist_dpixel)
 
         return np.array(jacobian)
 
@@ -1161,7 +1210,7 @@ class PinholeModel(CameraModel):
 
         return -skew(unit_vector_camera)
 
-    def _compute_dpixel_ddistorted_gnomic(self, temperature: Real = 0) -> np.ndarray:
+    def _compute_dpixel_ddistorted_gnomic(self, temperature: float = 0) -> np.ndarray:
         r"""
         Computes the partial derivative of the pixel location with respect to a change in the distorted gnomic location.
 
@@ -1181,7 +1230,7 @@ class PinholeModel(CameraModel):
 
         return self.get_temperature_scale(temperature) * self.intrinsic_matrix[:, :2]
 
-    def _compute_dgnomic_dcamera_point(self, unit_vector_camera: ARRAY_LIKE) -> np.ndarray:
+    def _compute_dgnomic_dcamera_point(self, unit_vector_camera: Sequence[float] | NDArray) -> np.ndarray:
         r"""
         Computes the partial derivative of the gnomic location with respect to a change in the 3D camera frame location
         after the misalignment correction is applied.
@@ -1197,12 +1246,12 @@ class PinholeModel(CameraModel):
         :param unit_vector_camera: The 3D camera frame location of the point after misalignment is applied
         :return: The partial derivative of the gnomic location with respect to a change in the 3D camera frame location
         """
-        unit_vector_camera = np.array(unit_vector_camera)
+        unit_vector_camera = np.asanyarray(unit_vector_camera)
         return self.focal_length / unit_vector_camera[2] * np.hstack([np.eye(2), -unit_vector_camera[:2].reshape(2, 1) /
                                                                       unit_vector_camera[2]])
 
     @staticmethod
-    def _compute_dgnomic_dfocal_length(unit_vector_camera: ARRAY_LIKE) -> np.ndarray:
+    def _compute_dgnomic_dfocal_length(unit_vector_camera: F_ARRAY_LIKE) -> np.ndarray:
         r"""
         Computes the partial derivative of the gnomic location with respect to a change in the focal length.
 
@@ -1217,10 +1266,11 @@ class PinholeModel(CameraModel):
         :param unit_vector_camera: the point being projected onto the image after the misalignment correction is applied
         :return: The partial derivative of the gnomic location with respect to a change in the focal length
         """
-        return np.array(unit_vector_camera[:2]) / unit_vector_camera[2]
+        unit_vector_camera = np.asanyarray(unit_vector_camera)
+        return unit_vector_camera[:2] / unit_vector_camera[2]
 
     @staticmethod
-    def _compute_dpixel_dintrinsic(gnomic_location_distorted: ARRAY_LIKE) -> np.ndarray:
+    def _compute_dpixel_dintrinsic(gnomic_location_distorted: F_ARRAY_LIKE) -> np.ndarray:
         r"""
         computes the partial derivative of the pixel location with respect to a change in one of the intrinsic matrix
         parameters given the gnomic location of the point we are computing the derivative for.
@@ -1250,7 +1300,7 @@ class PinholeModel(CameraModel):
         # compute the partial derivative of the pixel location with respect to the intrinsic matrix
         return np.array([dpix_dkx, dpix_dky, dpix_dpx, dpix_dpy]).T
 
-    def _compute_dpixel_dtemperature_coeffs(self, gnomic_location_distorted: ARRAY_LIKE, temperature: Real = 0) \
+    def _compute_dpixel_dtemperature_coeffs(self, gnomic_location_distorted: F_ARRAY_LIKE, temperature: float = 0) \
             -> np.ndarray:
         r"""
         Computes the partial derivative of the pixel coordinates with respect to a change in the temperature
@@ -1271,7 +1321,8 @@ class PinholeModel(CameraModel):
         """
 
         # compute the powers of the temperature
-        temperature_powers = [temperature, temperature*temperature, temperature*temperature*temperature]
+        temperature_powers = [temperature, temperature *
+                              temperature, temperature*temperature*temperature]
 
         # convert the gnomic location to units of pixels
         gnomic_pixels = self.intrinsic_matrix[:, :2] @ gnomic_location_distorted
@@ -1279,7 +1330,7 @@ class PinholeModel(CameraModel):
         # get the derivative
         return np.outer(gnomic_pixels, temperature_powers)
 
-    def _get_jacobian_row(self, unit_vector_camera: ARRAY_LIKE, image: int, num_images: int, temperature: Real = 0) \
+    def _get_jacobian_row(self, unit_vector_camera: ARRAY_LIKE, image: int, num_images: int, temperature: float = 0) \
             -> np.ndarray:
         r"""
         Calculates the Jacobian matrix for a single point.
@@ -1327,12 +1378,15 @@ class PinholeModel(CameraModel):
         unit_vector_camera_mis = unit_vector_camera
 
         if self.estimate_multiple_misalignments:
-            if np.any(self.misalignment[image]):  # optimization to avoid matrix multiplication
-                unit_vector_camera_mis = rotvec_to_rotmat(self.misalignment[image]).squeeze() @ unit_vector_camera
+            # optimization to avoid matrix multiplication
+            if np.any(self.misalignment[image]):
+                unit_vector_camera_mis = rotvec_to_rotmat(
+                    self.misalignment[image]).squeeze() @ unit_vector_camera
 
         else:
             if np.any(self.misalignment):  # optimization to avoid matrix multiplication
-                unit_vector_camera_mis = rotvec_to_rotmat(self.misalignment).squeeze() @ unit_vector_camera
+                unit_vector_camera_mis = rotvec_to_rotmat(
+                    self.misalignment).squeeze() @ unit_vector_camera
 
         # get the required projections for the point
         gnomic_location, _, pixel_location = self.get_projections(unit_vector_camera, image=image,
@@ -1343,13 +1397,16 @@ class PinholeModel(CameraModel):
         # --------------------------------------------------------------------------------------------------------------
 
         # get the partial derivative of the pixel location of the point with respect to the gnomic location
-        dpix_dgnom = self._compute_dpixel_ddistorted_gnomic(temperature=temperature)
+        dpix_dgnom = self._compute_dpixel_ddistorted_gnomic(
+            temperature=temperature)
 
         # compute the partial derivative of the camera location with respect to a change in the misalignment vector
-        dcam_point_dmisalignment = self._compute_dcamera_point_dmisalignment(unit_vector_camera)
+        dcam_point_dmisalignment = self._compute_dcamera_point_dmisalignment(
+            unit_vector_camera)
 
         # compute the partial derivative of the gnomic location with respect to the point in the camera frame
-        dgnom_dcam_point = self._compute_dgnomic_dcamera_point(unit_vector_camera_mis)
+        dgnom_dcam_point = self._compute_dgnomic_dcamera_point(
+            unit_vector_camera_mis)
 
         # compute the partial derivative of the pixel location with respect to the misalignment
         dpix_dmisalignment = dpix_dgnom @ dgnom_dcam_point @ dcam_point_dmisalignment
@@ -1359,7 +1416,8 @@ class PinholeModel(CameraModel):
         # --------------------------------------------------------------------------------------------------------------
 
         # compute the change in the gnomic location with respect to a change in the focal length
-        dgnom_dfocal = self._compute_dgnomic_dfocal_length(unit_vector_camera_mis)
+        dgnom_dfocal = self._compute_dgnomic_dfocal_length(
+            unit_vector_camera_mis)
 
         # compute the change in the pixel location with respect to the focal length
         dpix_dfocal = dpix_dgnom @ dgnom_dfocal
@@ -1374,12 +1432,14 @@ class PinholeModel(CameraModel):
         # get the partial derivative of the measurement with respect to the temperature coefficients
         # --------------------------------------------------------------------------------------------------------------
 
-        dpix_dtemperature = self._compute_dpixel_dtemperature_coeffs(gnomic_location, temperature=temperature)
+        dpix_dtemperature = self._compute_dpixel_dtemperature_coeffs(
+            gnomic_location, temperature=temperature)
 
         # stack everything together.
         if self.estimate_multiple_misalignments:
             jacobian_row = np.hstack([dpix_dfocal.reshape(2, 1), dpix_dintrinsic, dpix_dtemperature,
-                                      np.zeros((2, image * 3)), dpix_dmisalignment,
+                                      np.zeros((2, image * 3)
+                                               ), dpix_dmisalignment,
                                       np.zeros((2, (num_images - image - 1) * 3))])
 
         else:
@@ -1388,10 +1448,10 @@ class PinholeModel(CameraModel):
 
         return jacobian_row
 
-    def compute_jacobian(self, unit_vectors_camera: Sequence[ARRAY_LIKE_2D],
-                         temperature: SCALAR_OR_ARRAY = 0) -> np.ndarray:
+    def compute_jacobian(self, unit_vectors_in_camera_frame: Sequence[DOUBLE_ARRAY | list[list]],
+                         temperature: F_SCALAR_OR_ARRAY | Sequence[float] = 0) -> np.ndarray:
         r"""
-        Calculates the Jacobian matrix for each observation in `unit_vectors_camera` for each parameter to be estimated
+        Calculates the Jacobian matrix for each observation in `unit_vectors_in_camera_frame` for each parameter to be estimated
         as defined in the :attr:`estimation_parameters` attribute.
 
         This method works by first computing the partial derivatives for all camera parameters for each provided unit
@@ -1401,7 +1461,7 @@ class PinholeModel(CameraModel):
         will be the appropriate size and in the order specified by :attr:`estimation_parameters`.  There is one
         constraint that the misalignment (if included) must be last in :attr:`estimation_parameters`.
 
-        The `unit_vectors_camera` inputs should be formatted as a Sequence of 2d sequences.  Each inner 2D sequence
+        The `unit_vectors_in_camera_frame` inputs should be formatted as a Sequence of 2d sequences.  Each inner 2D sequence
         should be of shape :math:`3\times x`, where each row corresponds to a component of a unit vector in the camera
         frame. Each inner sequence should contain all observations from a single image, so that if there are :math:`m`
         images being considered, then the outer sequence should be length :math:`m`.  The value of :math:`x` can change
@@ -1413,48 +1473,51 @@ class PinholeModel(CameraModel):
 
         The optional `temperature` input specifies the temperature of the camera for use in estimating temperature
         dependence.  The temperature input should either be a scalar value (float or int), or a list that is the same
-        length as `unit_vectors_camera`, where each element of the list is the temperature of the camera at the time
-        of each image represented by `unit_vectors_camera`.  If the `temperature` input is a scalar, then it is assumed
-        to be the temperature value for all of the images represented in `unit_vectors_camera`.
+        length as `unit_vectors_in_camera_frame`, where each element of the list is the temperature of the camera at the time
+        of each image represented by `unit_vectors_in_camera_frame`.  If the `temperature` input is a scalar, then it is assumed
+        to be the temperature value for all of the images represented in `unit_vectors_in_camera_frame`.
 
-        :param unit_vectors_camera: The points/directions in the camera frame that the jacobian matrix is to be computed
+        :param unit_vectors_in_camera_frame: The points/directions in the camera frame that the jacobian matrix is to be computed
                                     for.  For multiple images, this should be a list of 2D unit vectors where each
                                     element of the list corresponds to a new image.
         :param temperature: A single temperature for all images or a list of temperatures the same length of
-                            `unit_vectors_camera` containing the temperature of the camera at the time each image was
+                            `unit_vectors_in_camera_frame` containing the temperature of the camera at the time each image was
                             captured
         :return: The Jacobian matrix evaluated for each observation
         """
 
         # get the number of images being considered
-        number_images = len(unit_vectors_camera)
+        number_images = len(unit_vectors_in_camera_frame)
 
         # initialize the Jacobian list
         jacobian = []
 
         # put the temperature into the correct format
-        if not isinstance(temperature, Iterable):
-            temperature = [temperature] * len(unit_vectors_camera)
+        if not isinstance(temperature, (Sequence, np.ndarray)):
+            temperature = [float(temperature)] * len(unit_vectors_in_camera_frame)
 
         # walk through the observations for each image
-        for ind, vecs in enumerate(unit_vectors_camera):
+        for ind, vecs in enumerate(unit_vectors_in_camera_frame):
             # walk through the observations in the current image
             vecs = np.asarray(vecs)
 
             for vec in vecs.T:
                 # get the full Jacobian row for the current observation
-                jac_row = self._get_jacobian_row(vec.T, ind, number_images, temperature=temperature[ind])
+                jac_row = self._get_jacobian_row(
+                    vec.T, ind, number_images, temperature=temperature[ind])
 
                 jacobian.append(jac_row)
 
         # remove un-needed columns from the Jacobian matrix and turn into ndarray
-        jacobian = self._remove_unused_misalignment(np.concatenate(jacobian, axis=0), unit_vectors_camera)
+        jacobian = self._remove_unused_misalignment(
+            np.concatenate(jacobian, axis=0), unit_vectors_in_camera_frame)
         jacobian = self._remove_jacobian_columns(jacobian)
 
         # append the identity matrix if we are solving for an update to our model, and not an entirely new independent
         # model
         if self.use_a_priori:
-            jacobian = np.pad(jacobian, [(0, jacobian.shape[1]), (0, 0)], 'constant', constant_values=0)
+            jacobian = np.pad(
+                jacobian, [(0, jacobian.shape[1]), (0, 0)], 'constant', constant_values=0)
             jacobian[-jacobian.shape[1]:, -jacobian.shape[1]:] = np.eye(jacobian.shape[1])
 
         return jacobian
@@ -1483,7 +1546,7 @@ class PinholeModel(CameraModel):
         # reform the Jacobian matrix into a ndarray
         return np.concatenate(jac_list, axis=1)
 
-    def _remove_unused_misalignment(self, jacobian: np.ndarray, vecs: Iterable[ARRAY_LIKE_2D]) -> np.ndarray:
+    def _remove_unused_misalignment(self, jacobian: np.ndarray, vecs: Iterable[DOUBLE_ARRAY | list[list]]) -> np.ndarray:
         """
         This method is used to remove unused misalignment columns from the Jacobian matrix when arbitrary images
         are not included in the calibration
@@ -1505,15 +1568,18 @@ class PinholeModel(CameraModel):
 
             self._fix_misalignment = []
 
-            local_jac_list = [jacobian[:, :getattr(self.element_dict['multiple misalignments'], 'start')]]
+            local_jac_list = [jacobian[:, :getattr(
+                self.element_dict['multiple misalignments'], 'start')]]
 
-            misalignment_cols = jacobian[:, self.element_dict['multiple misalignments']]
+            misalignment_cols = jacobian[:,
+                                         self.element_dict['multiple misalignments']]
 
             for ind, ivecs in enumerate(vecs):
 
                 if len(ivecs[0]) > 0:
 
-                    local_jac_list.append(misalignment_cols[:, 3 * ind:3 * ind + 3])
+                    local_jac_list.append(
+                        misalignment_cols[:, 3 * ind:3 * ind + 3])
 
                     self._fix_misalignment.append(False)
 
@@ -1525,7 +1591,7 @@ class PinholeModel(CameraModel):
         else:
             return jacobian
 
-    def _fix_update_vector(self, update_vec: ARRAY_LIKE, parameters: ARRAY_LIKE) -> ARRAY_LIKE:
+    def _fix_update_vector(self, update_vec: DOUBLE_ARRAY, parameters: list[int] | NDArray[np.integer]) -> DOUBLE_ARRAY:
         """
         This method is used to fix the update vector when arbitrary images are not included in the calibration and
         multiple misalignments are being estimated.
@@ -1544,11 +1610,12 @@ class PinholeModel(CameraModel):
 
         if self.estimate_multiple_misalignments and np.any(self._fix_misalignment):
 
-            parameters = list(parameters)
+            lparameters = list(parameters) # type: ignore
 
-            start = parameters.index(self.element_dict['multiple misalignments'].start)
+            start = lparameters.index(
+                self.element_dict['multiple misalignments'].start)
 
-            misalignment_update = list(update_vec[start:].flatten())
+            misalignment_update = list(update_vec[start:].ravel())
 
             fixed = []
             fixed.extend(update_vec[:start])
@@ -1565,12 +1632,12 @@ class PinholeModel(CameraModel):
 
                     misalignment_update = misalignment_update[3:]
 
-            return fixed
+            return np.array(fixed, dtype=np.float64)
 
         else:
             return update_vec
 
-    def apply_update(self, update_vec: ARRAY_LIKE):
+    def apply_update(self, update_vec: F_ARRAY_LIKE ):
         r"""
         This method takes in a delta update to the camera parameters (:math:`\Delta\mathbf{c}`) and applies the update
         to the current instance in place.
@@ -1592,9 +1659,9 @@ class PinholeModel(CameraModel):
         jacobian_parameters = np.hstack([getattr(self.element_dict[element], 'start', self.element_dict[element])
                                          for element in self.estimation_parameters])
 
+        update_vec = np.asanyarray(update_vec, dtype=np.float64).ravel()
+        
         update_vec = self._fix_update_vector(update_vec, jacobian_parameters)
-
-        update_vec = np.asarray(update_vec).flatten()
 
         for ind, parameter in enumerate(jacobian_parameters):
 
@@ -1624,7 +1691,8 @@ class PinholeModel(CameraModel):
 
             elif parameter == 8 or parameter == '8:':
 
-                misalignment_updates = update_vec[ind:].reshape(3, -1, order='F')
+                misalignment_updates = update_vec[ind:].reshape(
+                    3, -1, order='F')
 
                 if self.estimate_multiple_misalignments:
                     self.misalignment = [(Rotation(update.T) * Rotation(self.misalignment[ind])).vector
@@ -1632,13 +1700,14 @@ class PinholeModel(CameraModel):
 
                 else:
                     self.misalignment = (
-                            Rotation(misalignment_updates) * Rotation(self.misalignment)
+                        Rotation(misalignment_updates) *
+                        Rotation(self.misalignment)
                     ).vector
 
                 break
 
     def prepare_interp(self, pixel_bounds: int = 100, temperature_bounds: Tuple[int, int] = (-50, 50),
-                       temperature_step: Real = 5):
+                       temperature_step: float = 5):
         """
         This method prepares a SciPy RegularGridInterpolator for converting pixels into undistorted gnomic locations.
 
@@ -1666,20 +1735,22 @@ class PinholeModel(CameraModel):
         cols, rows = np.meshgrid(col_labels, row_labels)
         pix = np.vstack([cols.ravel(), rows.ravel()])
         if np.any(self.temperature_coefficients != 0):
-            temperature_labels = np.arange(temperature_bounds[0], temperature_bounds[1], temperature_step)
+            temperature_labels = np.arange(
+                temperature_bounds[0], temperature_bounds[1], temperature_step)
 
             results = []
             for temp in temperature_labels:
-                results.append(self.pixels_to_gnomic(pix, temperature=temp))
+                results.append(self.pixels_to_gnomic(pix, temperature=float(temp)))
 
             results = np.array(results)
 
             self._interp = RegularGridInterpolator((rows[:, 0], cols[0], temperature_labels), results,
-                                                   bounds_error=False, fill_value=None)
+                                                   bounds_error=False, fill_value=None) # type: ignore
         else:
-            self._interp = RegularGridInterpolator((rows[:, 0], cols[0]), self.pixels_to_gnomic(pix))
+            self._interp = RegularGridInterpolator(
+                (rows[:, 0], cols[0]), self.pixels_to_gnomic(pix))
 
-    def pixels_to_gnomic_interp(self, pixels: ARRAY_LIKE, temperature: Real = 0) -> np.ndarray:
+    def pixels_to_gnomic_interp(self, pixels: F_ARRAY_LIKE, temperature: float = 0) -> np.ndarray:
         r"""
         This method takes an input in pixels and approximates the undistorted gnomic location in units of distance.
 
@@ -1692,16 +1763,18 @@ class PinholeModel(CameraModel):
         :param temperature: The temperature for perform the conversion at.
         :return: The undistorted gnomic location of the points
         """
+        pixels = np.asanyarray(pixels, dtype=np.float64)
 
         if self._interp is None:
-            raise ValueError('prepare_interp must be called before pixels_to_gnomic_interp')
+            raise ValueError(
+                'prepare_interp must be called before pixels_to_gnomic_interp')
         else:
             if np.any(self.temperature_coefficients != 0):
                 return self._interp(np.hstack([pixels[::-1].T, temperature*np.ones(pixels.shape[-1])])).T[::-1]
             else:
                 return self._interp(pixels[::-1].T).T[::-1]
 
-    def pixels_to_gnomic(self, pixels: ARRAY_LIKE, temperature: Real = 0, _allow_interp: bool = False) -> np.ndarray:
+    def pixels_to_gnomic(self, pixels: Sequence[float] | NDArray, temperature: float = 0, _allow_interp: bool = False) -> np.ndarray:
         r"""
         This method takes an input in pixels and computes the undistorted gnomic location in units of distance.
 
@@ -1741,7 +1814,8 @@ class PinholeModel(CameraModel):
 
         # get the distorted gnomic location of the points by multiplying by the inverse camera matrix and dividing by
         # the temperature scale
-        gnomic_distorted = ((self.intrinsic_matrix_inv[:, :2] @ pixels).T + self.intrinsic_matrix_inv[:, 2]).T
+        gnomic_distorted = (
+            (self.intrinsic_matrix_inv[:, :2] @ pixels).T + self.intrinsic_matrix_inv[:, 2]).T
 
         gnomic_distorted /= self.get_temperature_scale(temperature)
 
@@ -1764,7 +1838,7 @@ class PinholeModel(CameraModel):
         # return the new gnomic location
         return gnomic_guess
 
-    def undistort_pixels(self, pixels: ARRAY_LIKE, temperature: Real = 0, allow_interp: bool = True) -> np.ndarray:
+    def undistort_pixels(self, pixels: F_ARRAY_LIKE, temperature: float = 0, allow_interp: bool = True) -> np.ndarray:
         """
         This method computes undistorted pixel locations (gnomic/pinhole locations) for given distorted
         pixel locations according to the current model.
@@ -1784,7 +1858,8 @@ class PinholeModel(CameraModel):
         """
 
         # get the undistorted gnomic location
-        gnomic = self.pixels_to_gnomic(pixels, temperature=temperature, _allow_interp=allow_interp)
+        gnomic = self.pixels_to_gnomic(
+            pixels, temperature=temperature, _allow_interp=allow_interp)
 
         # scale by the temperature
         gnomic *= self.get_temperature_scale(temperature)
@@ -1792,7 +1867,7 @@ class PinholeModel(CameraModel):
         # put back into pixel space using the intrinsic matrix
         return ((self.intrinsic_matrix[:, :2] @ gnomic).T + self.intrinsic_matrix[:, 2]).T
 
-    def pixels_to_unit(self, pixels: ARRAY_LIKE, image: int = 0, temperature: Real = 0,
+    def pixels_to_unit(self, pixels: F_ARRAY_LIKE, temperature: float = 0, image: int = 0, 
                        allow_interp: bool = True) -> np.ndarray:
         r"""
         This method converts pixel image locations to unit vectors expressed in the camera frame.
@@ -1823,28 +1898,33 @@ class PinholeModel(CameraModel):
         pixels = np.array(pixels)
 
         # get the undistorted gnomic locations
-        gnomic_locs = self.pixels_to_gnomic(pixels, temperature=temperature, _allow_interp=allow_interp)
+        gnomic_locs = self.pixels_to_gnomic(
+            pixels, temperature=temperature, _allow_interp=allow_interp)
 
         # append the focal length
         if pixels.ndim == 1:
             los_vectors = np.hstack([gnomic_locs, self.focal_length])
 
         else:
-            los_vectors = np.vstack([gnomic_locs, self.focal_length * np.ones((1, pixels.shape[1]))])
+            los_vectors = np.vstack(
+                [gnomic_locs, self.focal_length * np.ones((1, pixels.shape[1]))])
 
         # apply misalignment to the unit vectors
         if self.estimate_multiple_misalignments:
-            if np.any(self.misalignment[image]):  # optimization to avoid matrix multiplication
-                los_vectors = rotvec_to_rotmat(self.misalignment[image]).squeeze().T @ los_vectors
+            # optimization to avoid matrix multiplication
+            if np.any(self.misalignment[image]):
+                los_vectors = rotvec_to_rotmat(
+                    self.misalignment[image]).squeeze().T @ los_vectors
 
         else:
             if np.any(self.misalignment):  # optimization to avoid matrix multiplication
-                los_vectors = rotvec_to_rotmat(self.misalignment).squeeze().T @ los_vectors
+                los_vectors = rotvec_to_rotmat(
+                    self.misalignment).squeeze().T @ los_vectors
 
         # convert to unit vector and return
         return los_vectors / np.linalg.norm(los_vectors, axis=0, keepdims=True)
 
-    def distort_pixels(self, pixels: ARRAY_LIKE, temperature: Real = 0):
+    def distort_pixels(self, pixels: Sequence[float] | NDArray, temperature: float = 0) -> DOUBLE_ARRAY:
         """
         A method that takes gnomic pixel locations in units of pixels and applies the appropriate distortion to them.
 
@@ -1866,7 +1946,8 @@ class PinholeModel(CameraModel):
         temp_scale = self.get_temperature_scale(temperature)
 
         # get the gnomic location using the inverse intrinsic matrix and temperature scale
-        gnomic = ((self.intrinsic_matrix_inv[:, :2] @ pixels).T + self.intrinsic_matrix_inv[:, 2]).T
+        gnomic = (
+            (self.intrinsic_matrix_inv[:, :2] @ pixels).T + self.intrinsic_matrix_inv[:, 2]).T
 
         gnomic /= temp_scale
 
@@ -1889,7 +1970,7 @@ class PinholeModel(CameraModel):
         """
 
         # store a copy of self as it currently is
-        copy_of_self = self.copy()
+        copy_of_self = cast(PinholeModel, self.copy())
 
         # if we don't want to include the misalignment in the save file then set
         # estimation parameters to only include a single misalignment
@@ -1918,7 +1999,8 @@ class PinholeModel(CameraModel):
         This method reset the misalignment terms to all be zero (no misalignment).
         """
         if self.estimate_multiple_misalignments:
-            new_misalignment = [np.zeros(3, dtype=np.float64) for _ in self.misalignment]
+            new_misalignment = [np.zeros(3, dtype=np.float64)
+                                for _ in self.misalignment]
         else:
             new_misalignment = np.zeros(3, dtype=np.float64)
 
@@ -1937,3 +2019,62 @@ class PinholeModel(CameraModel):
             return Rotation(self.misalignment[image])
         else:
             return Rotation(self.misalignment)
+            
+    def check_in_fov(self, vectors: Sequence[Sequence[float] | float] | NDArray, image: int = 0, temperature: float = 0) -> NDArray[np.bool]:
+        """
+        Determines if any points in the array are within the field of view of the camera.
+
+        :param vectors: Vectors to check if they are in the field of view of the camera expressed as a shape (3, n) array in the camera frame.  
+        :param image: The index of the image being projected onto (only applicable with multiple misalignments)
+        :param temperature: The temperature of the camera to use for the projection
+        :return: A boolean array the same length as the number of columns of vectors. False by default, True if the point is in the FOV.
+        """
+
+        vectors = np.asanyarray(vectors)
+        pixels = self.project_onto_image(vectors, image=image, temperature=temperature)
+
+        in_fov = (pixels[0] >= 0) & (pixels[1] >= 0) & \
+                 (pixels[0] <= self.n_cols) & (pixels[1] <= self.n_rows)
+
+        # the camera models break down at extremes so also spot check the angular FOV
+        angles = (np.arccos(np.array([[0, 0, 1]]) @ vectors[:, in_fov] / np.linalg.norm(vectors[:, in_fov],
+                                                                                         axis=0,
+                                                                                         keepdims=True)) *
+                  180 / np.pi).ravel()
+        if self.field_of_view == 0:
+            # get the FOV computed
+            self.compute_field_of_view(temperature=temperature)
+            
+        in_fov[in_fov] = angles < 1.25 * self.field_of_view
+
+        return in_fov
+       
+        
+class CircularPinholeModel(PinholeModel):
+    """
+    This class overrides the :class:`.PinholeModel` to reimplement the :meth:`.check_in_fov` method to only check the angle between the 
+    boresight and the target vectors.
+    """
+    def check_in_fov(self, vectors: ARRAY_LIKE, image: int = 0, temperature: float = 0) -> np.ndarray:
+        """
+        Determines if any points in the array are within the field of view of the camera.
+        
+        :param vectors: Vectors to check if they are in the field of view of the camera expressed as a shape (3, n) array in the camera frame.  
+        :param image: ignored
+        :param temperature: used to compute the field of view if the field of view is not specified
+        :return: A boolean array the same length as the number of columns of vectors. False by default, True if the point is in the FOV.
+        """
+        # the camera models break down at extremes so also spot check the angular FOV
+        angles = (np.arccos(np.array([[0, 0, 1]]) @ vectors / np.linalg.norm(vectors,
+                                                                             axis=0,
+                                                                             keepdims=True)) *
+                  180 / np.pi).ravel()
+        if self.field_of_view == 0:
+            # get the FOV computed
+            self.compute_field_of_view(temperature=temperature)
+            
+        in_fov = angles < 1.0 * self.field_of_view
+
+        return in_fov
+            
+

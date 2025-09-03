@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 """
@@ -50,8 +49,23 @@ you can get to from :mod:`.relative_opnav.estimators`.
 
 from giant.relative_opnav.relnav_class import RelativeOpNav
 
-from giant.relative_opnav.estimators.cross_correlation import XCorrCenterFinding
-from giant.relative_opnav.estimators.unresolved import UnresolvedCenterFinding
-from giant.relative_opnav.estimators.ellipse_matching import EllipseMatching
+from giant.relative_opnav.estimators.cross_correlation import XCorrCenterFinding, XCorrCenterFindingOptions
+from giant.relative_opnav.estimators.unresolved import UnresolvedCenterFinding, UnresolvedCenterFindingOptions
+from giant.relative_opnav.estimators.moment_algorithm import MomentAlgorithm, MomentAlgorithmOptions
+from giant.relative_opnav.estimators.ellipse_matching import EllipseMatching, EllipseMatchingOptions
+from giant.relative_opnav.estimators.limb_matching import LimbMatching, LimbMatchingOptions
+from giant.relative_opnav.estimators.constraint_matching import ConstraintMatching, ConstraintMatchingOptions
+from giant.relative_opnav.estimators.sfn.sfn_class import SurfaceFeatureNavigation, SurfaceFeatureNavigationOptions
+from giant.relative_opnav.estimators.sfn.surface_features import SurfaceFeature, FeatureCatalog, VisibleFeatureFinder, VisibleFeatureFinderOptions
 
-__all__ = ['RelativeOpNav', 'XCorrCenterFinding', 'EllipseMatching', 'UnresolvedCenterFinding']
+__all__ = ['RelativeOpNav', 
+           'XCorrCenterFinding', 'XCorrCenterFindingOptions', 
+           'EllipseMatching', 'EllipseMatchingOptions',
+           'UnresolvedCenterFinding', 'UnresolvedCenterFindingOptions', 
+           'ConstraintMatching', 'ConstraintMatchingOptions',
+           'MomentAlgorithm', 'MomentAlgorithmOptions',
+           'LimbMatching', 'LimbMatchingOptions',
+           'SurfaceFeatureNavigation', 'SurfaceFeatureNavigationOptions',
+           'SurfaceFeature', 'FeatureCatalog',
+           'VisibleFeatureFinder', 'VisibleFeatureFinderOptions'
+           ]

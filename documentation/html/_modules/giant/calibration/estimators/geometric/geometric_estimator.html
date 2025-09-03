@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.calibration.estimators.geometric.geometric_estimator &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../../../index.html">
+    <img class="logo" src="../../../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  <li><a href="../geometric.html">giant.calibration.estimators.geometric</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.calibration.estimators.geometric.geometric_estimator</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">runtime_checkable</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">CameraModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DOUBLE_ARRAY</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttributeEqualityComparison</span><span class="p">,</span> <span class="n">AttributePrinting</span><span class="p">,</span> <span class="n">UserOptionConfigured</span>   
+
+
+<span class="n">ModelT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;ModelT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">CameraModel</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Type variable bound to CameraModel for type safety</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GeometricEstimatorOptions">
+<a class="viewcode-back" href="../../../../../calibration/estimators/geometric/giant.calibration.estimators.geometric.geometric_estimator.GeometricEstimatorOptions.html#giant.calibration.estimators.geometric.geometric_estimator.GeometricEstimatorOptions">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GeometricEstimatorOptions</span><span class="p">(</span><span class="n">UserOptions</span><span class="p">):</span>
+    
+    <span class="n">weighted_estimation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A boolean flag specifying whether to do weighted estimation.</span>
+
+<span class="sd">    If set to ``True``, the estimator should use the provided measurement weights in :attr:`measurement_covariance`</span>
+<span class="sd">    during the estimation process.  If set to ``False``, then no measurement weights should be considered.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">a_priori_model_covariance</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A square numpy array containing the covariance matrix for the a priori estimate of the state vector.</span>
+
+<span class="sd">    This is only considered if :attr:`weighted_estimation` is set to ``True`` and if</span>
+<span class="sd">    :attr:`.CameraModel.use_a_priori` is set to ``True``, otherwise it is ignored.  If both are set to ``True`` then</span>
+<span class="sd">    this should be set to a square, full rank, lxl numpy array where ``l=len(model.state_vector)`` containing the</span>
+<span class="sd">    covariance matrix for the a priori state vector.  The order of the parameters in the state vector can be</span>
+<span class="sd">    determined from :meth:`.CameraModel.get_state_labels`.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="GeometricEstimator">
+<a class="viewcode-back" href="../../../../../calibration/estimators/geometric/giant.calibration.estimators.geometric.geometric_estimator.GeometricEstimator.html#giant.calibration.estimators.geometric.geometric_estimator.GeometricEstimator">[docs]</a>
+<span class="nd">@runtime_checkable</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GeometricEstimator</span><span class="p">(</span><span class="n">Protocol</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">ModelT</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This protocol class serves as the template for implementing a class for doing geometric camera model estimation in</span>
+<span class="sd">    GIANT.</span>
+
+<span class="sd">    Camera model estimation in GIANT is primarily handled by the :class:`.Calibration` class, which does the steps of</span>
+<span class="sd">    extracting observed stars in an image, pairing the observed stars with a star catalog, and then passing the</span>
+<span class="sd">    observed star-catalog star pairs to a subclass of this protocol-class, which estimates an update to the camera model</span>
+<span class="sd">    in place (the input camera model is modified, not a copy).  In order for this to work, this protocol defines the minimum</span>
+<span class="sd">    required interfaces that the :class:`.Calibration` class expects for an estimator.</span>
+
+<span class="sd">    The required interface that the :class:`.Calibration` class expects consists of a few readable/writeable properties,</span>
+<span class="sd">    and a couple of standard methods, as defined below.  Beyond that the implementation is left to the user.</span>
+
+<span class="sd">    If you are just doing a typical calibration, then you probably need not worry about this protocol and instead can use one</span>
+<span class="sd">    of the 2 concrete classes defined in this package, which work well in nearly all cases.  If you do have a need to</span>
+<span class="sd">    implement your own estimator, then you should implement all the requirements in the protocol, and study the concrete </span>
+<span class="sd">    classes from this subpackage for an example of what needs to be done.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">weighted_estimation</span><span class="p">:</span> <span class="nb">bool</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A boolean flag specifying whether to do weighted estimation.</span>
+
+<span class="sd">    If set to ``True``, the estimator should use the provided measurement weights in :attr:`measurement_covariance`</span>
+<span class="sd">    during the estimation process.  If set to ``False``, then no measurement weights should be considered.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">a_priori_model_covariance</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A square numpy array containing the covariance matrix for the a priori estimate of the state vector.</span>
+
+<span class="sd">    This is only considered if :attr:`weighted_estimation` is set to ``True`` and if</span>
+<span class="sd">    :attr:`.CameraModel.use_a_priori` is set to ``True``, otherwise it is ignored.  If both are set to ``True`` then</span>
+<span class="sd">    this should be set to a square, full rank, lxl numpy array where ``l=len(model.state_vector)`` containing the</span>
+<span class="sd">    covariance matrix for the a priori state vector.  The order of the parameters in the state vector can be</span>
+<span class="sd">    determined from :meth:`.CameraModel.get_state_labels`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">ModelT</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">GeometricEstimatorOptions</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelT</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The camera model that is being estimated.</span>
+
+<span class="sd">        Typically this should be a subclass of :class:`.CameraModel`.</span>
+
+<span class="sd">        This should be a read/write property</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+    <span class="nd">@model</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">ModelT</span><span class="p">):</span>  <span class="c1"># model must be writeable</span>
+        <span class="o">...</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">successful</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A boolean flag indicating whether the fit was successful or not.</span>
+
+<span class="sd">        If the fit was successful this should return ``True``, and ``False`` if otherwise.</span>
+
+<span class="sd">        This should be a read-only property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">measurement_covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="n">DOUBLE_ARRAY</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A square numpy array containing the covariance matrix for the measurements.</span>
+
+<span class="sd">        If :attr:`weighted_estimation` is set to ``True`` then this property will contain the measurement covariance</span>
+<span class="sd">        matrix as a square, full rank, numpy array.  If :attr:`weighted_estimation` is set to ``False`` then this</span>
+<span class="sd">        property may be ``None`` and should be ignored.</span>
+
+<span class="sd">        This should be a read/write property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+    <span class="nd">@measurement_covariance</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">measurement_covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="n">DOUBLE_ARRAY</span><span class="p">]):</span>  <span class="c1"># measurement_covariance must be writeable</span>
+        <span class="o">...</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">measurements</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A 2xn numpy array of the observed pixel locations for stars across all images</span>
+
+<span class="sd">        Each column of this array will correspond to the same column of the :attr:`camera_frame_directions` concatenated</span>
+<span class="sd">        down the last axis. (That is ``measurements[:, i] &lt;-&gt; np.concatenate(camera_frame_directions, axis=-1)[:, i]``)</span>
+
+<span class="sd">        This will always be set before a call to :meth:`estimate`.</span>
+
+<span class="sd">        This should be a read/write property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+    <span class="nd">@measurements</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">measurements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span><span class="p">):</span>  <span class="c1"># measurements must be writeable</span>
+        <span class="o">...</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">camera_frame_directions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A length m list of unit vectors in the camera frame as numpy arrays for m images corresponding to the</span>
+<span class="sd">        :attr:`measurements` attribute.</span>
+
+<span class="sd">        Each element of this list corresponds to a unique image that is being considered for estimation and the</span>
+<span class="sd">        subsequent element in the :attr:`temperatures` list. Each column of this concatenated array will correspond to</span>
+<span class="sd">        the same column of the :attr:`measurements` array. (That is</span>
+<span class="sd">        ``np.concatenate(camera_frame_directions, axis=-1)[:, i] &lt;-&gt; measurements[:, i]``).</span>
+
+<span class="sd">        Any images for which no stars were identified (due to any number of reasons) will have a list of empty arrays in</span>
+<span class="sd">        the corresponding element of this list (that is ``camera_frame_directions[i] == [[], [], []]`` where ``i`` is an</span>
+<span class="sd">        image with no measurements identified).  These will be automatically dropped by numpy&#39;s concatenate, but are</span>
+<span class="sd">        included to notify the user which temperatures to use.</span>
+
+<span class="sd">        This will always be set before a call to :meth:`estimate`.</span>
+
+<span class="sd">        This should be a read/write property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+    <span class="nd">@camera_frame_directions</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">camera_frame_directions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">]]):</span>  <span class="c1"># camera_frame_directions must be writeable</span>
+        <span class="o">...</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">temperatures</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A length m list of temperatures of the camera for each image being considered in estimation.</span>
+
+<span class="sd">        Each element of this list corresponds to a unique image that is being considered for estimation and the</span>
+<span class="sd">        subsequent element in the :attr:`camera_frame_directions` list.</span>
+
+<span class="sd">        This will always be set before a call to :meth:`estimate` (although sometimes it may be a list of all zeros if</span>
+<span class="sd">        temperature data is not available for the camera).</span>
+
+<span class="sd">        This should be a read/write property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+    <span class="nd">@temperatures</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">temperatures</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>  <span class="c1"># temperatures must be writeable</span>
+        <span class="o">...</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">postfit_covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The post-fit state covariance matrix, taking into account the measurement covariance matrix (if applicable).</span>
+
+<span class="sd">        This returns the post-fit state covariance matrix after a call to :meth:`estimate`.  The covariance matrix will</span>
+<span class="sd">        be in the order according to :attr:`~.CameraModel.estimation_parameters` and if :attr:`weighted_estimation` is</span>
+<span class="sd">        ``True`` will return the state covariance matrix taking into account the measurement covariance matrix.  If</span>
+<span class="sd">        :attr:`weighted_estimation` is ``False``, then this will return the post-fit state covariance matrix assuming no</span>
+<span class="sd">        measurement weighting (that is a measurement covariance matrix of the identity matrix).  If :meth:`estimate`</span>
+<span class="sd">        has not been called yet then this will return ``None``</span>
+
+<span class="sd">        This is a read only property</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">postfit_residuals</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The post-fit observed-computed measurement residuals as a 2xn numpy array.</span>
+
+<span class="sd">        This returns the post-fit observed minus computed measurement residuals after a call to :meth:`estimate`.  If</span>
+<span class="sd">        :meth:`estimate` has not been called yet then this will return ``None``.</span>
+
+<span class="sd">        This is a read only property</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimates an updated camera model that better transforms the camera frame directions into pixel locations to</span>
+<span class="sd">        minimize the residuals between the observed and the predicted star locations.</span>
+
+<span class="sd">        Typically, upon successful completion, the updated camera model is stored in the :attr:`model` attribute, the</span>
+<span class="sd">        :attr:`successful` should return ``True``, and :attr:`postfit_residuals` and :attr:`postfit_covariance` should</span>
+<span class="sd">        both be not None.  If estimation is unsuccessful, then :attr:`successful` should be set to ``False`` and</span>
+<span class="sd">        everything else will be ignored so you can do whatever you want with it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method resets all of the data attributes to their default values to prepare for another estimation.</span>
+
+<span class="sd">        This should reset</span>
+
+<span class="sd">        * :attr:`successful`</span>
+<span class="sd">        * :attr:`measurement_covariance`</span>
+<span class="sd">        * :attr:`measurements`</span>
+<span class="sd">        * :attr:`camera_frame_directions`</span>
+<span class="sd">        * :attr:`temperatures`</span>
+<span class="sd">        * :attr:`postfit_covariance`</span>
+<span class="sd">        * :attr:`postfit_residuals`</span>
+
+<span class="sd">        to their default values (typically ``None``) to ensure that data from one estimation doesn&#39;t get mixed with data</span>
+<span class="sd">        from a subsequent estimation.  You may also choose to reset some other attributes depending on the</span>
+<span class="sd">        implementation of the estimator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span>
+        
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method resets all the setting back to their original values as specified at instance creation.</span>
+<span class="sd">        </span>
+<span class="sd">        Generally this is provided for you through the :class:`.UserOptionConfigured` mixin class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span></div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GeometricEstimatorBC</span><span class="p">(</span><span class="n">UserOptionConfigured</span><span class="p">[</span><span class="n">GeometricEstimatorOptions</span><span class="p">],</span> <span class="n">GeometricEstimatorOptions</span><span class="p">,</span> <span class="n">AttributeEqualityComparison</span><span class="p">,</span> <span class="n">AttributePrinting</span><span class="p">,</span> <span class="n">GeometricEstimator</span><span class="p">[</span><span class="n">ModelT</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This base class is used to make it easy to make a GeometricEstimator class using other beneficial mixin classes from GIANT.</span>
+<span class="sd">    </span>
+<span class="sd">    Generally, therefore, custom classes should inherit from this, and not GeometricEstimator directly, though that&#39;s not strictly necessary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

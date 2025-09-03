@@ -1,20 +1,19 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Performing Optical Navigation &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <title>Performing Optical Navigation &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="copyright" title="Copyright" href="../copyright.html" />
@@ -23,17 +22,18 @@
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../index.html">
-    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -68,7 +68,7 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -76,8 +76,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -102,7 +102,7 @@
           <div class="body" role="main">
             
   <section id="performing-optical-navigation">
-<h1>Performing Optical Navigation<a class="headerlink" href="#performing-optical-navigation" title="Permalink to this headline">¶</a></h1>
+<h1>Performing Optical Navigation<a class="headerlink" href="#performing-optical-navigation" title="Link to this heading">¶</a></h1>
 <p>With our camera calibration complete, we can now use GIANT to do some relative navigation!  For this, we will process
 OpNav images taken during Dawn’s approach to the asteroid Vesta.  These images were taken in sets of 40 for each OpNav
 window, alternating between long and short exposure lengths.  The long exposure images are used to refine the attitude
@@ -111,61 +111,61 @@ relative navigation with respect to Vesta.</p>
 <p>To begin doing OpNav, create a script called <code class="docutils literal notranslate"><span class="pre">opnav.py</span></code> in the <code class="docutils literal notranslate"><span class="pre">scripts</span></code> directory and open it with your favorite
 text editor.</p>
 <section id="initial-imports">
-<h2>Initial Imports<a class="headerlink" href="#initial-imports" title="Permalink to this headline">¶</a></h2>
+<h2>Initial Imports<a class="headerlink" href="#initial-imports" title="Link to this heading">¶</a></h2>
 <p>As with the previous two scripts, we need to start off with importing the modules and packages we will need.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># a utility for retrieving a list of files using glob patterns</span>
-<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
 
 <span class="c1"># the warning utility for filtering annoying warnings</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
 <span class="c1"># a utility for generating plots</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
 <span class="c1"># the Framing Camera object we defined before</span>
-<span class="kn">from</span> <span class="nn">dawn_giant</span> <span class="kn">import</span> <span class="n">DawnFCCamera</span><span class="p">,</span> <span class="n">fc2_attitude</span><span class="p">,</span> \
+<span class="kn">from</span><span class="w"> </span><span class="nn">dawn_giant</span><span class="w"> </span><span class="kn">import</span> <span class="n">DawnFCCamera</span><span class="p">,</span> <span class="n">fc2_attitude</span><span class="p">,</span> \
     <span class="n">vesta_attitude</span><span class="p">,</span> <span class="n">vesta_position</span><span class="p">,</span> <span class="n">sun_orientation</span><span class="p">,</span> <span class="n">sun_position</span>
 
 <span class="c1"># the function to load the camera model</span>
-<span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">load</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">load</span>
 
 <span class="c1"># The class we will use to perform the stellar opnav</span>
-<span class="kn">from</span> <span class="nn">giant.stellar_opnav.stellar_class</span> <span class="kn">import</span> <span class="n">StellarOpNav</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.stellar_opnav.stellar_class</span><span class="w"> </span><span class="kn">import</span> <span class="n">StellarOpNav</span><span class="p">,</span> <span class="n">StellarOpNavOptions</span>
 
 <span class="c1"># tool for visualizing the results of our star identification</span>
-<span class="kn">from</span> <span class="nn">giant.stellar_opnav.visualizer</span> <span class="kn">import</span> <span class="n">show_id_results</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.stellar_opnav.visualizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">show_id_results</span>
 
-<span class="c1"># the star catalogue we will use for our &quot;truth&quot; star locations</span>
-<span class="kn">from</span> <span class="nn">giant.catalogues.giant_catalogue</span> <span class="kn">import</span> <span class="n">GIANTCatalogue</span>
+<span class="c1"># the star catalog we will use for our &quot;truth&quot; star locations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.catalogs.gaia</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gaia</span><span class="p">,</span> <span class="n">DEFAULT_CAT_FILE</span>
 
 <span class="c1"># the class we will use to perform the relative navigation</span>
-<span class="kn">from</span> <span class="nn">giant.relative_opnav.relnav_class</span> <span class="kn">import</span> <span class="n">RelativeOpNav</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.relative_opnav.relnav_class</span><span class="w"> </span><span class="kn">import</span> <span class="n">RelativeOpNav</span>
+
+<span class="c1"># options for the relative navigation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.relative_opnav</span><span class="w"> </span><span class="kn">import</span> <span class="n">XCorrCenterFindingOptions</span>
 
 <span class="c1"># the point spread function for the camera</span>
-<span class="kn">from</span> <span class="nn">giant.point_spread_functions.gaussians</span> <span class="kn">import</span> <span class="n">Gaussian</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.point_spread_functions.gaussians</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gaussian</span>
 
 <span class="c1"># the scene we will use to describe how things are related spatially</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.scene</span> <span class="kn">import</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">SceneObject</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">SceneObject</span>
 
 <span class="c1"># The shape object we will use for the sun</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.shapes</span> <span class="kn">import</span> <span class="n">Point</span>
-
-<span class="c1"># the illumination function we will use to predict the image of our model</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.illumination</span> <span class="kn">import</span> <span class="n">McEwenIllumination</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.shapes</span><span class="w"> </span><span class="kn">import</span> <span class="n">Point</span>
 
 <span class="c1"># some utilities from giant for visualizing the relative opnav results</span>
-<span class="kn">from</span> <span class="nn">giant.relative_opnav.visualizer</span> <span class="kn">import</span> <span class="n">limb_summary_gif</span><span class="p">,</span> <span class="n">template_summary_gif</span><span class="p">,</span> <span class="n">show_center_finding_residuals</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.relative_opnav.visualizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">limb_summary_gif</span><span class="p">,</span> <span class="n">template_summary_gif</span><span class="p">,</span> <span class="n">show_center_finding_residuals</span>
 
 <span class="c1"># A module to provide access to the NAIF Spice routines</span>
-<span class="kn">import</span> <span class="nn">spiceypy</span> <span class="k">as</span> <span class="nn">spice</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">spiceypy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">spice</span>
 
 <span class="c1"># python standard library serialization tool</span>
-<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 </pre></div>
 </div>
 </section>
 <section id="loading-the-data">
-<h2>Loading the Data<a class="headerlink" href="#loading-the-data" title="Permalink to this headline">¶</a></h2>
+<h2>Loading the Data<a class="headerlink" href="#loading-the-data" title="Link to this heading">¶</a></h2>
 <p>With the imports out of the way, we now need to load our meta kernel, our images, and our camera model that we solved
 for in the calibration script and define the function that represents the point spread function for our camera.
 The loading is  done using basic utilities from external libraries plus the <a class="reference internal" href="../camera_model/giant.camera_models.camera_model.load.html#giant.camera_models.camera_model.load" title="giant.camera_models.camera_model.load"><code class="xref py py-func docutils literal notranslate"><span class="pre">load()</span></code></a>
@@ -174,8 +174,7 @@ with some specified settings.  These settings are camera dependent and are usual
 campaign.  For now, we’ll just use a rough guess for the PSF.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="c1"># filter some annoying warnings</span>
-    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
-    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">RuntimeWarning</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;overflow encountered&quot;</span><span class="p">)</span>
 
     <span class="c1"># furnish the meta kernel so we have all of the a priori state information</span>
     <span class="n">spice</span><span class="o">.</span><span class="n">furnsh</span><span class="p">(</span><span class="s1">&#39;./meta_kernel.tm&#39;</span><span class="p">)</span>
@@ -192,7 +191,7 @@ campaign.  For now, we’ll just use a rough guess for the PSF.</p>
 </div>
 </section>
 <section id="loading-the-images-and-creating-the-camera-instance">
-<h2>Loading the Images and Creating the Camera Instance<a class="headerlink" href="#loading-the-images-and-creating-the-camera-instance" title="Permalink to this headline">¶</a></h2>
+<h2>Loading the Images and Creating the Camera Instance<a class="headerlink" href="#loading-the-images-and-creating-the-camera-instance" title="Link to this heading">¶</a></h2>
 <p>Now we can ask GIANT to load all of our images and create our camera instance.  This is simply done by initializing our
 <code class="docutils literal notranslate"><span class="pre">DawnFCCamera</span></code> class as we did in the calibration script.  The only difference now is that we also provide our PSF to
 the camera initializer so that GIANT knows about it.</p>
@@ -203,7 +202,7 @@ the camera initializer so that GIANT knows about it.</p>
 </div>
 </section>
 <section id="estimating-the-rotation-using-star-images">
-<h2>Estimating the Rotation Using Star Images<a class="headerlink" href="#estimating-the-rotation-using-star-images" title="Permalink to this headline">¶</a></h2>
+<h2>Estimating the Rotation Using Star Images<a class="headerlink" href="#estimating-the-rotation-using-star-images" title="Link to this heading">¶</a></h2>
 <p>With our camera object created, we can now start estimating the attitude in the long-exposure images using star
 observations.  This is extremely similar to how we perform camera calibration, but we use the <a class="reference internal" href="../stellar_opnav/stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html#giant.stellar_opnav.stellar_class.StellarOpNav" title="giant.stellar_opnav.stellar_class.StellarOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">StellarOpNav</span></code></a>
 class instead and we only estimate the attitude, not the calibration.  Plus, we only want to look for stars in long
@@ -212,7 +211,10 @@ of the <a class="reference internal" href="../stellar_opnav/stellar_class/giant.
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># do the stellar opnav to correct the attitude</span>
 <span class="c1"># build the stellar opnav object, which is very similar to the calibration object but without the ability to do</span>
 <span class="c1"># calibration.</span>
-<span class="n">sopnav</span> <span class="o">=</span> <span class="n">StellarOpNav</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="n">star_id_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;catalogue&#39;</span><span class="p">:</span> <span class="n">GIANTCatalogue</span><span class="p">()})</span>
+<span class="n">sopnav_options</span> <span class="o">=</span> <span class="n">StellarOpNavOptions</span><span class="p">()</span>
+<span class="c1"># sopnav_options.star_id_options.catalog = Gaia(catalog_file=DEFAULT_CAT_FILE)  # if you built the local catalog, then uncomment this line and comment the next one</span>
+<span class="n">sopnav_options</span><span class="o">.</span><span class="n">star_id_options</span><span class="o">.</span><span class="n">catalog</span> <span class="o">=</span> <span class="n">Gaia</span><span class="p">()</span>
+<span class="n">sopnav</span> <span class="o">=</span> <span class="n">StellarOpNav</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">sopnav_options</span><span class="p">)</span>
 
 <span class="c1"># ensure only the long exposure images are on</span>
 <span class="n">sopnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">only_long_on</span><span class="p">()</span>
@@ -220,7 +222,7 @@ of the <a class="reference internal" href="../stellar_opnav/stellar_class/giant.
 <span class="c1"># set the parameters to get a successful star identification</span>
 <span class="c1"># we only need to estimate the attitude here so we can be fairly conservative</span>
 <span class="n">sopnav</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_magnitude</span> <span class="o">=</span> <span class="mf">8.0</span>
-<span class="n">sopnav</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">poi_threshold</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">sopnav</span><span class="o">.</span><span class="n">point_of_interest_finder</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">sopnav</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="mi">40</span>
 <span class="n">sopnav</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">ransac_tolerance</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">sopnav</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_combos</span> <span class="o">=</span> <span class="mi">1000</span>
@@ -237,11 +239,11 @@ of the <a class="reference internal" href="../stellar_opnav/stellar_class/giant.
 <p>If you run the script and save it you should see the id result plots appear (there will be a lot of them) and should see
 good results and post-fit residuals around 0.1 pixels in standard deviation.  You can mess around with the various star
 identification and image processing parameters if you want or you can just leave them and move on.  When you’re ready to
-move on then comment out the line with the <a class="reference internal" href="../stellar_opnav/visualizer/giant.stellar_opnav.visualizer.show_id_results.html#giant.stellar_opnav.visualizer.show_id_results" title="giant.stellar_opnav.visualizer.show_id_results"><code class="xref py py-func docutils literal notranslate"><span class="pre">show_id_results()</span></code></a> function so that it doesn’t pop up every time we run
+move on then comment out the line with the <a class="reference internal" href="../stellar_opnav/visualizers/show_id_results/giant.stellar_opnav.visualizers.show_id_results.show_id_results.html#giant.stellar_opnav.visualizers.show_id_results.show_id_results" title="giant.stellar_opnav.visualizers.show_id_results.show_id_results"><code class="xref py py-func docutils literal notranslate"><span class="pre">show_id_results()</span></code></a> function so that it doesn’t pop up every time we run
 the script.</p>
 </section>
 <section id="updating-the-short-exposure-image-rotation">
-<h2>Updating the Short Exposure Image Rotation<a class="headerlink" href="#updating-the-short-exposure-image-rotation" title="Permalink to this headline">¶</a></h2>
+<h2>Updating the Short Exposure Image Rotation<a class="headerlink" href="#updating-the-short-exposure-image-rotation" title="Link to this heading">¶</a></h2>
 <p>With the long exposure image attitudes corrected, we now want to use this information to update our short-exposure image
 attitudes.  This is done in 2 steps.  First, we turn on the only the short exposure images using the
 <a class="reference internal" href="../camera/giant.camera.Camera.only_short_on.html#giant.camera.Camera.only_short_on" title="giant.camera.Camera.only_short_on"><code class="xref py py-meth docutils literal notranslate"><span class="pre">only_short_on()</span></code></a> method.  Then, we call the <a class="reference internal" href="../camera/giant.camera.Camera.update_short_attitude.html#giant.camera.Camera.update_short_attitude" title="giant.camera.Camera.update_short_attitude"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_short_attitude()</span></code></a> method which
@@ -250,12 +252,15 @@ propagates the solved for attitudes in the long-exposure images to the following
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># now, we need to turn on the short exposure images, and use the updated attitude from the long exposure images to</span>
 <span class="c1"># update the attitude for the short exposure images</span>
 <span class="n">sopnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">only_short_on</span><span class="p">()</span>
-<span class="n">sopnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">update_short_attitude</span><span class="p">()</span>
+<span class="n">sopnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">update_short_attitude</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;propagate&#39;</span><span class="p">)</span>
+
+<span class="c1"># close the cartalog in case we opened it</span>
+<span class="n">sopnav_options</span><span class="o">.</span><span class="n">star_id_options</span><span class="o">.</span><span class="n">catalog</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
 <section id="defining-the-opnav-scene">
-<h2>Defining the OpNav Scene<a class="headerlink" href="#defining-the-opnav-scene" title="Permalink to this headline">¶</a></h2>
+<h2>Defining the OpNav Scene<a class="headerlink" href="#defining-the-opnav-scene" title="Link to this heading">¶</a></h2>
 <p>Now that we have updated the attitude for the short-exposure images we need to define the OpNav scene.  The OpNav scene
 tells GIANT what objects to expect in the images, as well as their relative position and orientation with respect to
 each other.  For the DAWN approach to Vesta, we only have 3 objects we need to worry about in our scene: (1) the camera,
@@ -277,7 +282,7 @@ class essentially wraps the shape model with functions that define its position 
 time, along with a name that GIANT can use to distinguish the object.  In this case, the position and orientation
 functions we will use are wrappers to spice functions that we defined in our <code class="docutils literal notranslate"><span class="pre">dawn_giant</span></code> module before.  The position
 function returns the positions of Vesta with respect to the Solar System Bary Center in the inertial frame.  The
-orientation function returns the rotation from the Vesta fixed frame to the inertial frame as an <a class="reference internal" href="../rotations/giant.rotations.Rotation.html#giant.rotations.Rotation" title="giant.rotations.Rotation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rotation</span></code></a>
+orientation function returns the rotation from the Vesta fixed frame to the inertial frame as an <a class="reference internal" href="../rotations/rotation/giant.rotations.rotation.Rotation.html#giant.rotations.rotation.Rotation" title="giant.rotations.rotation.Rotation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rotation</span></code></a>
 object, which GIANT uses to rotate the shape model so that the correct side of the asteroid is viewed.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># we need to make this into a SceneObject, which essentially allows us to wrap the object with functions that</span>
 <span class="c1"># give the state of the object at any given time</span>
@@ -302,7 +307,7 @@ in the same scene, therefore we wrap the Vesta object in a list.  The sun become
 </div>
 </section>
 <section id="creating-the-relnav-instance-and-extracting-the-observables">
-<h2>Creating the RelNav Instance and extracting the observables<a class="headerlink" href="#creating-the-relnav-instance-and-extracting-the-observables" title="Permalink to this headline">¶</a></h2>
+<h2>Creating the RelNav Instance and extracting the observables<a class="headerlink" href="#creating-the-relnav-instance-and-extracting-the-observables" title="Link to this heading">¶</a></h2>
 <p>With the scene defined we can now create our <a class="reference internal" href="../relative_opnav/relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> instance.  The <a class="reference internal" href="../relative_opnav/relnav_class/giant.relative_opnav.relnav_class.RelativeOpNav.html#giant.relative_opnav.relnav_class.RelativeOpNav" title="giant.relative_opnav.relnav_class.RelativeOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code></a> class
 behaves very similarly to the <a class="reference internal" href="../stellar_opnav/stellar_class/giant.stellar_opnav.stellar_class.StellarOpNav.html#giant.stellar_opnav.stellar_class.StellarOpNav" title="giant.stellar_opnav.stellar_class.StellarOpNav"><code class="xref py py-class docutils literal notranslate"><span class="pre">StellarOpNav</span></code></a> and <a class="reference internal" href="../calibration/calibration_class/giant.calibration.calibration_class.Calibration.html#giant.calibration.calibration_class.Calibration" title="giant.calibration.calibration_class.Calibration"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calibration</span></code></a> classes, but exposes methods and settings
 for performing Relative Navigation instead of Stellar Navigation and Calibration.</p>
@@ -312,28 +317,22 @@ RelNav class (these can also be set as attributes after initialization as with t
 <a class="reference internal" href="../calibration/calibration_class/giant.calibration.calibration_class.Calibration.html#giant.calibration.calibration_class.Calibration" title="giant.calibration.calibration_class.Calibration"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calibration</span></code></a> classes).</p>
 <p>The Vesta approach OpNavs only include images where Vesta is resolved (&gt; 5 pixels in apparent diameter) thus we will
 only be using cross-correlation and only need to worry about settings for the <a class="reference internal" href="../relative_opnav/estimators/cross_correlation/giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding.html#giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding" title="giant.relative_opnav.estimators.cross_correlation.XCorrCenterFinding"><code class="xref py py-class docutils literal notranslate"><span class="pre">XCorrCenterFinding</span></code></a> class.
-In particular, we only really care about the <code class="docutils literal notranslate"><span class="pre">grid_size</span></code> and <code class="docutils literal notranslate"><span class="pre">denoise_image</span></code> settings.  The <code class="docutils literal notranslate"><span class="pre">grid_size</span></code> setting
+In particular, we only really care about the <code class="docutils literal notranslate"><span class="pre">grid_size</span></code> and <code class="docutils literal notranslate"><span class="pre">search_region</span></code> settings.  The <code class="docutils literal notranslate"><span class="pre">grid_size</span></code> setting
 specifies the number of rays we want to use to estimate the brightness in each pixel.  GIANT always assumes a square
 grid and this number specifies the length of the sides.  Therefore, if you specify a grid-size of 9, then you will use a
 9x9 grid of rays for each pixel (which quickly adds up to a lot of rays).  Because the body gets pretty large for our
 last day of OpNavs we are going to process, we’ll only use a <code class="docutils literal notranslate"><span class="pre">grid_size</span></code> of 3 pixels, which creates a 3x3 grid of rays
-for each pixel.  The <code class="docutils literal notranslate"><span class="pre">denoise_image</span></code> flag specifies whether we want to attempt to decrease the noise in the image
-using a Gaussian Smoothing technique.  Whether you set this flag to true or not depends on how noisey the images are.
-In general though, it is good to set this to <code class="docutils literal notranslate"><span class="pre">True</span></code>.  We can also use the <code class="docutils literal notranslate"><span class="pre">search_region</span></code> setting to restrict how
-many pixels around the predicted location we should look for the correlation peak.  This can be useful for images where
-the target is smaller in the field of view to ensure that we don’t get any false positives due to noise.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">brdf</span></code> keyword argument to the <code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code> class specifies the function that will convert viewing
-geometry (observation vector, illumination vector, surface normal, surface albedo) into a brightness value.  GIANT has
-a number of BRDFs available in the <a class="reference internal" href="../ray_tracer/giant.ray_tracer.illumination.html#module-giant.ray_tracer.illumination" title="giant.ray_tracer.illumination"><code class="xref py py-mod docutils literal notranslate"><span class="pre">illumination</span></code></a> sub-module and in this case we’ll use the familiar
-<a class="reference internal" href="../ray_tracer/illumination/giant.ray_tracer.illumination.McEwenIllumination.html#giant.ray_tracer.illumination.McEwenIllumination" title="giant.ray_tracer.illumination.McEwenIllumination"><code class="xref py py-class docutils literal notranslate"><span class="pre">McEwenIllumination</span></code></a> BRDF.</p>
+for each pixel.  The <code class="docutils literal notranslate"><span class="pre">search_region</span></code> setting restricts how many pixels around the predicted location we should look for
+the correlation peak.  This can be useful for images where the target is smaller in the field of view to ensure that we
+don’t get any false positives due to noise.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">save_templates</span></code> keyword argument to the <code class="xref py py-class docutils literal notranslate"><span class="pre">RelativeOpNav</span></code> class specifies that we want to save off the intermediate
+templates used in cross correlation for later analysis.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># define the RelativeOpNav instance</span>
 <span class="c1"># define the settings for the portions of Relnav</span>
-<span class="n">xcorr_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;grid_size&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;denoise_image&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-                <span class="s1">&#39;search_region&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">}</span>
+<span class="n">xcorr_options</span> <span class="o">=</span> <span class="n">XCorrCenterFindingOptions</span><span class="p">(</span><span class="n">grid_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">search_region</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
 
 <span class="n">relnav</span> <span class="o">=</span> <span class="n">RelativeOpNav</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="n">opnav_scene</span><span class="p">,</span>
-                       <span class="n">xcorr_kwargs</span><span class="o">=</span><span class="n">xcorr_kwargs</span><span class="p">,</span>
-                       <span class="n">brdf</span><span class="o">=</span><span class="n">McEwenIllumination</span><span class="p">(),</span>
+                       <span class="n">cross_correlation_options</span><span class="o">=</span><span class="n">xcorr_options</span><span class="p">,</span>
                        <span class="n">save_templates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -350,10 +349,10 @@ methods.</p>
 </pre></div>
 </div>
 <p>And that is it, we’ve used GIANT to extract center-of-figure observables from real images of Dawn’s approach to
-Vesta.  We can examine our results using the visualization functions we imported from GIANT.  <code class="xref py py-func docutils literal notranslate"><span class="pre">limb_summary_gif()</span></code>
-creates a GIF showing the alignment of the limbs in each image after identifying the body, <code class="xref py py-func docutils literal notranslate"><span class="pre">template_summary_gif()</span></code>
+Vesta.  We can examine our results using the visualization functions we imported from GIANT.  <a class="reference internal" href="../relative_opnav/visualizers/giant.relative_opnav.visualizers.limb_summary_gif.html#giant.relative_opnav.visualizers.limb_summary_gif" title="giant.relative_opnav.visualizers.limb_summary_gif"><code class="xref py py-func docutils literal notranslate"><span class="pre">limb_summary_gif()</span></code></a>
+creates a GIF showing the alignment of the limbs in each image after identifying the body, <a class="reference internal" href="../relative_opnav/visualizers/giant.relative_opnav.visualizers.template_summary_gif.html#giant.relative_opnav.visualizers.template_summary_gif" title="giant.relative_opnav.visualizers.template_summary_gif"><code class="xref py py-func docutils literal notranslate"><span class="pre">template_summary_gif()</span></code></a>
 creates a GIF showing the actual image of the target and the predicted image of the target for each image and each
-target, and <code class="xref py py-func docutils literal notranslate"><span class="pre">show_center_finding_residuals()</span></code> shows the observed-computed center finding resiudals in pixels.</p>
+target, and <a class="reference internal" href="../relative_opnav/visualizers/giant.relative_opnav.visualizers.show_center_finding_residuals.html#giant.relative_opnav.visualizers.show_center_finding_residuals" title="giant.relative_opnav.visualizers.show_center_finding_residuals"><code class="xref py py-func docutils literal notranslate"><span class="pre">show_center_finding_residuals()</span></code></a> shows the observed-computed center finding resiudals in pixels.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># show the results</span>
 <span class="n">limb_summary_gif</span><span class="p">(</span><span class="n">relnav</span><span class="p">)</span>
 <span class="n">template_summary_gif</span><span class="p">(</span><span class="n">relnav</span><span class="p">)</span>
@@ -361,70 +360,64 @@ target, and <code class="xref py py-func docutils literal notranslate"><span cla
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If you receive an error about <code class="docutils literal notranslate"><span class="pre">TypeError:</span> <span class="pre">'NoneType'</span> <span class="pre">object</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">callable</span></code> then you likely
-need to update matplotlib by doing <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">matplotlib</span></code></p>
-</div>
 <p>You can finish now, or you can try playing around with images from other OpNav days.</p>
 </section>
 <section id="the-complete-opnav-script">
-<h2>The Complete OpNav Script<a class="headerlink" href="#the-complete-opnav-script" title="Permalink to this headline">¶</a></h2>
+<h2>The Complete OpNav Script<a class="headerlink" href="#the-complete-opnav-script" title="Link to this heading">¶</a></h2>
 <p>For your convenience, the complete <code class="docutils literal notranslate"><span class="pre">opnav.py</span></code> script is presented here.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># a utility for retrieving a list of files using glob patterns</span>
-<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
 
 <span class="c1"># the warning utility for filtering annoying warnings</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
 <span class="c1"># a utility for generating plots</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
 <span class="c1"># the Framing Camera object we defined before</span>
-<span class="kn">from</span> <span class="nn">dawn_giant</span> <span class="kn">import</span> <span class="n">DawnFCCamera</span><span class="p">,</span> <span class="n">fc2_attitude</span><span class="p">,</span> \
+<span class="kn">from</span><span class="w"> </span><span class="nn">dawn_giant</span><span class="w"> </span><span class="kn">import</span> <span class="n">DawnFCCamera</span><span class="p">,</span> <span class="n">fc2_attitude</span><span class="p">,</span> \
     <span class="n">vesta_attitude</span><span class="p">,</span> <span class="n">vesta_position</span><span class="p">,</span> <span class="n">sun_orientation</span><span class="p">,</span> <span class="n">sun_position</span>
 
 <span class="c1"># the function to load the camera model</span>
-<span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">load</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">load</span>
 
 <span class="c1"># The class we will use to perform the stellar opnav</span>
-<span class="kn">from</span> <span class="nn">giant.stellar_opnav.stellar_class</span> <span class="kn">import</span> <span class="n">StellarOpNav</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.stellar_opnav.stellar_class</span><span class="w"> </span><span class="kn">import</span> <span class="n">StellarOpNav</span><span class="p">,</span> <span class="n">StellarOpNavOptions</span>
 
 <span class="c1"># tool for visualizing the results of our star identification</span>
-<span class="kn">from</span> <span class="nn">giant.stellar_opnav.visualizer</span> <span class="kn">import</span> <span class="n">show_id_results</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.stellar_opnav.visualizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">show_id_results</span>
 
-<span class="c1"># the star catalogue we will use for our &quot;truth&quot; star locations</span>
-<span class="kn">from</span> <span class="nn">giant.catalogues.giant_catalogue</span> <span class="kn">import</span> <span class="n">GIANTCatalogue</span>
+<span class="c1"># the star catalog we will use for our &quot;truth&quot; star locations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.catalogs.gaia</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gaia</span><span class="p">,</span> <span class="n">DEFAULT_CAT_FILE</span>
 
 <span class="c1"># the class we will use to perform the relative navigation</span>
-<span class="kn">from</span> <span class="nn">giant.relative_opnav.relnav_class</span> <span class="kn">import</span> <span class="n">RelativeOpNav</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.relative_opnav.relnav_class</span><span class="w"> </span><span class="kn">import</span> <span class="n">RelativeOpNav</span>
+
+<span class="c1"># options for the relative navigation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.relative_opnav</span><span class="w"> </span><span class="kn">import</span> <span class="n">XCorrCenterFindingOptions</span>
 
 <span class="c1"># the point spread function for the camera</span>
-<span class="kn">from</span> <span class="nn">giant.point_spread_functions.gaussians</span> <span class="kn">import</span> <span class="n">Gaussian</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.point_spread_functions.gaussians</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gaussian</span>
 
 <span class="c1"># the scene we will use to describe how things are related spatially</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.scene</span> <span class="kn">import</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">SceneObject</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">SceneObject</span>
 
 <span class="c1"># The shape object we will use for the sun</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.shapes</span> <span class="kn">import</span> <span class="n">Point</span>
-
-<span class="c1"># the illumination function we will use to predict the image of our model</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.illumination</span> <span class="kn">import</span> <span class="n">McEwenIllumination</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.shapes</span><span class="w"> </span><span class="kn">import</span> <span class="n">Point</span>
 
 <span class="c1"># some utilities from giant for visualizing the relative opnav results</span>
-<span class="kn">from</span> <span class="nn">giant.relative_opnav.visualizer</span> <span class="kn">import</span> <span class="n">limb_summary_gif</span><span class="p">,</span> <span class="n">template_summary_gif</span><span class="p">,</span> <span class="n">show_center_finding_residuals</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.relative_opnav.visualizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">limb_summary_gif</span><span class="p">,</span> <span class="n">template_summary_gif</span><span class="p">,</span> <span class="n">show_center_finding_residuals</span>
 
 <span class="c1"># A module to provide access to the NAIF Spice routines</span>
-<span class="kn">import</span> <span class="nn">spiceypy</span> <span class="k">as</span> <span class="nn">spice</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">spiceypy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">spice</span>
 
 <span class="c1"># python standard library serialization tool</span>
-<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="c1"># filter some annoying warnings</span>
-    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
-    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">RuntimeWarning</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;overflow encountered&quot;</span><span class="p">)</span>
 
     <span class="c1"># furnish the meta kernel so we have all of the a priori state information</span>
     <span class="n">spice</span><span class="o">.</span><span class="n">furnsh</span><span class="p">(</span><span class="s1">&#39;./meta_kernel.tm&#39;</span><span class="p">)</span>
@@ -445,7 +438,10 @@ need to update matplotlib by doing <code class="docutils literal notranslate"><s
     <span class="c1"># do the stellar opnav to correct the attitude</span>
     <span class="c1"># build the stellar opnav object, which is very similar to the calibration object but without the ability to do</span>
     <span class="c1"># calibration.</span>
-    <span class="n">sopnav</span> <span class="o">=</span> <span class="n">StellarOpNav</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="n">star_id_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;catalogue&#39;</span><span class="p">:</span> <span class="n">GIANTCatalogue</span><span class="p">()})</span>
+    <span class="n">sopnav_options</span> <span class="o">=</span> <span class="n">StellarOpNavOptions</span><span class="p">()</span>
+    <span class="c1"># sopnav_options.star_id_options.catalog = Gaia(catalog_file=DEFAULT_CAT_FILE)  # if you built the local catalog, then uncomment this line and comment the next one</span>
+    <span class="n">sopnav_options</span><span class="o">.</span><span class="n">star_id_options</span><span class="o">.</span><span class="n">catalog</span> <span class="o">=</span> <span class="n">Gaia</span><span class="p">()</span>
+    <span class="n">sopnav</span> <span class="o">=</span> <span class="n">StellarOpNav</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">sopnav_options</span><span class="p">)</span>
 
     <span class="c1"># ensure only the long exposure images are on</span>
     <span class="n">sopnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">only_long_on</span><span class="p">()</span>
@@ -453,7 +449,7 @@ need to update matplotlib by doing <code class="docutils literal notranslate"><s
     <span class="c1"># set the parameters to get a successful star identification</span>
     <span class="c1"># we only need to estimate the attitude here so we can be fairly conservative</span>
     <span class="n">sopnav</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_magnitude</span> <span class="o">=</span> <span class="mf">8.0</span>
-    <span class="n">sopnav</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">poi_threshold</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="n">sopnav</span><span class="o">.</span><span class="n">point_of_interest_finder</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="mi">20</span>
     <span class="n">sopnav</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="mi">40</span>
     <span class="n">sopnav</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">ransac_tolerance</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">sopnav</span><span class="o">.</span><span class="n">star_id</span><span class="o">.</span><span class="n">max_combos</span> <span class="o">=</span> <span class="mi">1000</span>
@@ -469,7 +465,10 @@ need to update matplotlib by doing <code class="docutils literal notranslate"><s
     <span class="c1"># now, we need to turn on the short exposure images, and use the updated attitude from the long exposure images to</span>
     <span class="c1"># update the attitude for the short exposure images</span>
     <span class="n">sopnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">only_short_on</span><span class="p">()</span>
-    <span class="n">sopnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">update_short_attitude</span><span class="p">()</span>
+    <span class="n">sopnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">update_short_attitude</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;propagate&#39;</span><span class="p">)</span>
+
+    <span class="c1"># close the cartalog in case we opened it</span>
+    <span class="n">sopnav_options</span><span class="o">.</span><span class="n">star_id_options</span><span class="o">.</span><span class="n">catalog</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="c1"># now we need to build our scene for the relative navigation.</span>
     <span class="c1"># begin by loading the shape model</span>
@@ -490,15 +489,11 @@ need to update matplotlib by doing <code class="docutils literal notranslate"><s
 
     <span class="c1"># define the RelativeOpNav instance</span>
     <span class="c1"># define the settings for the portions of Relnav</span>
-    <span class="n">xcorr_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;grid_size&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;denoise_image&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-                    <span class="s1">&#39;search_region&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">}</span>
+    <span class="n">xcorr_options</span> <span class="o">=</span> <span class="n">XCorrCenterFindingOptions</span><span class="p">(</span><span class="n">grid_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">search_region</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
 
     <span class="n">relnav</span> <span class="o">=</span> <span class="n">RelativeOpNav</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="n">opnav_scene</span><span class="p">,</span>
-                           <span class="n">xcorr_kwargs</span><span class="o">=</span><span class="n">xcorr_kwargs</span><span class="p">,</span>
-                           <span class="n">brdf</span><span class="o">=</span><span class="n">McEwenIllumination</span><span class="p">(),</span>
-                           <span class="n">limb_matching_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;recenter&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+                           <span class="n">cross_correlation_options</span><span class="o">=</span><span class="n">xcorr_options</span><span class="p">,</span>
                            <span class="n">save_templates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
     <span class="n">relnav</span><span class="o">.</span><span class="n">auto_estimate</span><span class="p">()</span>
 
     <span class="c1"># show the results</span>
@@ -511,7 +506,7 @@ need to update matplotlib by doing <code class="docutils literal notranslate"><s
 </section>
 </section>
 <section id="conclusion">
-<h1>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h1>
+<h1>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">¶</a></h1>
 <p>And that’s the basics of GIANT.  We successfully generated a camera model from star images and extracted
 center-of-figure observables from OpNav images for the DAWN approach to Vesta.
 There is certainly much more you can do with GIANT, but this provides a general
@@ -541,20 +536,24 @@ read through the rest of the documentation.</p>
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="../_sources/tutorial/opnav.rst.txt"
-          rel="nofollow">Page source</a>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

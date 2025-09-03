@@ -1,20 +1,19 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Initial Set-up &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <title>Initial Set-up &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="copyright" title="Copyright" href="../copyright.html" />
@@ -23,17 +22,18 @@
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../index.html">
-    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -68,7 +68,7 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -76,8 +76,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -102,7 +102,7 @@
           <div class="body" role="main">
             
   <section id="initial-set-up">
-<h1>Initial Set-up<a class="headerlink" href="#initial-set-up" title="Permalink to this headline">¶</a></h1>
+<h1>Initial Set-up<a class="headerlink" href="#initial-set-up" title="Link to this heading">¶</a></h1>
 <p>GIANT in its base form is also designed to be entirely mission agnostic.  This makes it really easy to use GIANT
 for multiple missions without ever having to change the core GIANT code.  Unfortunately this also means that GIANT
 isn’t 100% ready for use right out of the box.  Instead, we need to complete a few simple classes to tailor things to
@@ -115,72 +115,73 @@ try to set up GIANT for DAWN’s approach to Vesta.</p>
 </pre></div>
 </div>
 <section id="customizing-giant-for-dawn">
-<h2>Customizing GIANT for DAWN<a class="headerlink" href="#customizing-giant-for-dawn" title="Permalink to this headline">¶</a></h2>
+<h2>Customizing GIANT for DAWN<a class="headerlink" href="#customizing-giant-for-dawn" title="Link to this heading">¶</a></h2>
 <p>We need to define our mission specific implementation.  This involves subclassing a few of the GIANT classes to ensure
 that they work with our current mission.  The steps to do this are discussed in the following subsections.</p>
 </section>
 <section id="defining-our-imports">
-<h2>Defining Our Imports<a class="headerlink" href="#defining-our-imports" title="Permalink to this headline">¶</a></h2>
+<h2>Defining Our Imports<a class="headerlink" href="#defining-our-imports" title="Link to this heading">¶</a></h2>
 <p>The first step to creating our GIANT customization module is to import all of the modules and packages we will need.  It
 is considered good practice to do this at the top of each file, instead of spreading the imports throughout the code, so
 that is how we will build our module here.  To begin, create a new file called <cite>dawn_giant.py</cite> in the <cite>dawn_giant</cite>
 directory and open it with your favorite text editor.  Now, enter the following imports so we have everything available
 that we’ll need later.  You’ll see these things in use in a little bit so just trust us that we need them for now.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># the GIANT classes we need to customize</span>
-<span class="kn">from</span> <span class="nn">giant.image</span> <span class="kn">import</span> <span class="n">OpNavImage</span>
-<span class="kn">from</span> <span class="nn">giant.camera</span> <span class="kn">import</span> <span class="n">Camera</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpNavImage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera</span><span class="w"> </span><span class="kn">import</span> <span class="n">Camera</span>
 
 <span class="c1"># the attitude object that represents rotations in GIANT</span>
-<span class="kn">from</span> <span class="nn">giant.rotations</span> <span class="kn">import</span> <span class="n">Rotation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.rotations</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rotation</span>
 
 <span class="c1"># a GIANT module for working with spice</span>
-<span class="kn">import</span> <span class="nn">giant.utilities.spice_interface</span> <span class="k">as</span> <span class="nn">spint</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">giant.utilities.spice_interface</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">spint</span>
 
 <span class="c1"># a standard library module that lets us query and manipulate file paths</span>
-<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
 <span class="c1"># A module to provide access to the NAIF Spice routines</span>
-<span class="kn">import</span> <span class="nn">spiceypy</span> <span class="k">as</span> <span class="nn">spice</span>
-<span class="kn">from</span> <span class="nn">spiceypy.utils.support_types</span> <span class="kn">import</span> <span class="n">SpiceyError</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">spiceypy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">spice</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">spiceypy</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpiceyError</span>
 
 <span class="c1"># a standard library for representing dates and time deltas</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
 
 <span class="c1"># a library for parsing label files.</span>
-<span class="kn">import</span> <span class="nn">pvl</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pvl</span>
 </pre></div>
 </div>
 </section>
 <section id="subclassing-opnavimage">
-<h2>Subclassing OpNavImage<a class="headerlink" href="#subclassing-opnavimage" title="Permalink to this headline">¶</a></h2>
-<p>With the imports out of the way the first object we need to update is the <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage" title="giant.image.OpNavImage"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpNavImage</span></code></a> class. While its not
+<h2>Subclassing OpNavImage<a class="headerlink" href="#subclassing-opnavimage" title="Link to this heading">¶</a></h2>
+<p>With the imports out of the way the first object we need to update is the <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage" title="giant.image.OpNavImage"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpNavImage</span></code></a> class. While it’s not
 required to personalize the <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage" title="giant.image.OpNavImage"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpNavImage</span></code></a> class, it is generally a good idea because it allows you to
-automatically fill in much of the required meta data for the image at load time, and also allows you to build special
+automatically fill in much of the required metadata for the image at load time, and also allows you to build special
 loaders that can handle non-standard image formats (like raw formats directly from the spacecraft).  There are two
-different methods we can override to set these behaviours.  The first is <a class="reference internal" href="../image/giant.image.OpNavImage.load_image.html#giant.image.OpNavImage.load_image" title="giant.image.OpNavImage.load_image"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load_image()</span></code></a>.  In this method, the image
+different methods we can override to set these behaviors.  The first is <a class="reference internal" href="../image/giant.image.OpNavImage.load_image.html#giant.image.OpNavImage.load_image" title="giant.image.OpNavImage.load_image"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load_image()</span></code></a>.  In this method, the image
 data is loaded from the file and stored as a 2D numpy array.  The method expects a string to be input that represents
 the path to the file to be loaded, and the rest of GIANT expects that the loaded image data is returned as a numpy
 array.  If your image is in a basic format then you probably don’t need to worry about this (and for this tutorial, that
 is the case), but we wanted to make this possibility known to you.</p>
 <p>The next method we can override is the <a class="reference internal" href="../image/giant.image.OpNavImage.parse_data.html#giant.image.OpNavImage.parse_data" title="giant.image.OpNavImage.parse_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">parse_data()</span></code></a> method.  This method is intended to fill out all of the meta
 data from an image from the image file the image was loaded from.  In pure GIANT, this method is not implemented because
-there are an incredible number of ways to communicate meta data with an image so it would be impossible for us to
+there are an incredible number of ways to communicate metadata with an image, so it would be impossible for us to
 provide even a small subset.  Therefore, if you want this feature you need to implement it yourself.</p>
 <p>For DAWN, the images come in the standard FITS format, which GIANT can read by default, so we do not need to update the
 <a class="reference internal" href="../image/giant.image.OpNavImage.load_image.html#giant.image.OpNavImage.load_image" title="giant.image.OpNavImage.load_image"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load_image()</span></code></a> method.  However, we do need to update the <a class="reference internal" href="../image/giant.image.OpNavImage.parse_data.html#giant.image.OpNavImage.parse_data" title="giant.image.OpNavImage.parse_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">parse_data()</span></code></a> method to parse the data from the
 label files that correspond to each image.  The following code shows how to do this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DawnFCImage</span><span class="p">(</span><span class="n">OpNavImage</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">DawnFCImage</span><span class="p">(</span><span class="n">OpNavImage</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="nf">parse_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
 
         <span class="c1"># be sure the image file exists</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;we need a file to parse the data from&quot;</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">):</span>
 
             <span class="c1"># get the extension from the file</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">)</span>
 
             <span class="c1"># replace the extension from the file with LBL to find the corresponding label file</span>
-            <span class="n">lbl_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">ext</span><span class="p">,</span> <span class="s1">&#39;.LBL&#39;</span><span class="p">)</span>
+            <span class="n">lbl_file</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">ext</span><span class="p">,</span> <span class="s1">&#39;.LBL&#39;</span><span class="p">)</span>
 
             <span class="c1"># check to see if the label file exists</span>
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">lbl_file</span><span class="p">):</span>
@@ -190,28 +191,31 @@ label files that correspond to each image.  The following code shows how to do t
                     <span class="c1"># pvl treats \ as escape characters so we need to replace them</span>
                     <span class="n">data</span> <span class="o">=</span> <span class="n">pvl</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">lfile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">))</span>
 
+                    <span class="k">assert</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;we were unable to parse the label file </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lbl_file</span><span class="p">)</span>
+
                 <span class="c1"># extract the exposure time from the label and convert from ms to seconds</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;EXPOSURE_DURATION&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mi">1000</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;EXPOSURE_DURATION&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mi">1000</span> <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
 
                 <span class="c1"># set the exposure type based off of the exposure length to make handling long/short opnav sequences</span>
                 <span class="c1"># easier.  This is typically camera specific and needs to be set by an analyst</span>
+                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;we were unable to extract the exposure time from the label file </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lbl_file</span><span class="p">)</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">exposure_type</span> <span class="o">=</span> <span class="s2">&quot;long&quot;</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">exposure_type</span> <span class="o">=</span> <span class="s2">&quot;short&quot;</span>
 
                 <span class="c1"># extract the observation observation_date (middle of the exposure time of the image)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;START_TIME&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;START_TIME&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
 
                 <span class="c1"># get the temperature of the camera for this image</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;DAWN:T_LENS_BARREL&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="mf">273.15</span>  <span class="c1"># convert kelvin to celsius</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;DAWN:T_LENS_BARREL&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="mf">273.15</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue] # convert kelvin to celsius</span>
 
                 <span class="c1"># get the quaternion of the rotation from the inertial frmame to the camera frame</span>
                 <span class="c1"># store the rotation as an attitude object.  Need to move the scalar term last</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;QUATERNION&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;QUATERNION&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">])</span>
 
                 <span class="c1"># get the target</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;TARGET_NAME&quot;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;TARGET_NAME&quot;</span><span class="p">])</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">==</span> <span class="s2">&quot;N/A&quot;</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># notify that we don&#39;t have a target here</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -243,17 +247,17 @@ label files that correspond to each image.  The following code shows how to do t
                 <span class="c1"># get the position and velocity of the camera (sc) with respect to the solar system bary center</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">state</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">spice</span><span class="o">.</span><span class="n">spkezr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spacecraft</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="s1">&#39;J2000&#39;</span><span class="p">,</span> <span class="s1">&#39;NONE&#39;</span><span class="p">,</span> <span class="s2">&quot;SSB&quot;</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">state</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">state</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="c1"># pyright: ignore[reportIndexIssue]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span> <span class="c1"># pyright: ignore[reportIndexIssue]</span>
 
                 <span class="k">except</span> <span class="n">SpiceyError</span><span class="p">:</span>
 
                     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve camera position and velocity </span><span class="se">\n</span><span class="s1">&#39;</span>
-                          <span class="s1">&#39;for </span><span class="si">{0}</span><span class="s1"> at time </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_date</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()))</span>
+                        <span class="s1">&#39;for </span><span class="si">{0}</span><span class="s1"> at time </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_date</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()))</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;we can&#39;t find the label file for this image so we can&#39;t parse the data.&quot;</span>
-                                 <span class="s2">&quot;Looking for file </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lbl_file</span><span class="p">))</span>
+                                <span class="s2">&quot;Looking for file </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lbl_file</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>In the above code block, the first thing we do is extract the exposure time and type and store it in the
@@ -296,29 +300,27 @@ required. You could conceivably use whatever units you want, so long as you are 
 velocity, and shape models.</p>
 </section>
 <section id="subclassing-the-camera-class">
-<h2>Subclassing the Camera Class<a class="headerlink" href="#subclassing-the-camera-class" title="Permalink to this headline">¶</a></h2>
+<h2>Subclassing the Camera Class<a class="headerlink" href="#subclassing-the-camera-class" title="Link to this heading">¶</a></h2>
 <p>With the images themselves handled, we can turn our attention to the <a class="reference internal" href="../camera/giant.camera.Camera.html#giant.camera.Camera" title="giant.camera.Camera"><code class="xref py py-class docutils literal notranslate"><span class="pre">Camera</span></code></a> class.  The <a class="reference internal" href="../camera/giant.camera.Camera.html#giant.camera.Camera" title="giant.camera.Camera"><code class="xref py py-class docutils literal notranslate"><span class="pre">Camera</span></code></a> class
 works as a container to store all of the images we are currently processing, as well as some information about the
 camera itself, including the geometric camera model that maps points in the camera frame to points in an image.  There
 are typically two main things we need to update in the camera class.  This is the special <code class="xref py py-meth docutils literal notranslate"><span class="pre">Camera.__init__()</span></code> method
 and the <a class="reference internal" href="../camera/giant.camera.Camera.preprocessor.html#giant.camera.Camera.preprocessor" title="giant.camera.Camera.preprocessor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Camera.preprocessor()</span></code></a> method.  We set these methods for the DAWN framing cameras below</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DawnFCCamera</span><span class="p">(</span><span class="n">Camera</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">DawnFCCamera</span><span class="p">(</span><span class="n">Camera</span><span class="p">):</span>
 
     <span class="c1"># update the init function to use the new DawnFCImage class instead of the default OpNavImage class</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">images</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">spacecraft_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">frame</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parse_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">psf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">attitude_function</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">default_image_class</span><span class="o">=</span><span class="n">DawnFCImage</span><span class="p">):</span>
-
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">images</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">spacecraft_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">frame</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parse_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">psf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">attitude_function</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">default_image_class</span><span class="o">=</span><span class="n">DawnFCImage</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">images</span><span class="o">=</span><span class="n">images</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">spacecraft_name</span><span class="o">=</span><span class="n">spacecraft_name</span><span class="p">,</span>
-                         <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">,</span> <span class="n">parse_data</span><span class="o">=</span><span class="n">parse_data</span><span class="p">,</span> <span class="n">psf</span><span class="o">=</span><span class="n">psf</span><span class="p">,</span>
-                         <span class="n">attitude_function</span><span class="o">=</span><span class="n">attitude_function</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end_date</span><span class="p">,</span>
-                         <span class="n">default_image_class</span><span class="o">=</span><span class="n">default_image_class</span><span class="p">)</span>
+                        <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">,</span> <span class="n">parse_data</span><span class="o">=</span><span class="n">parse_data</span><span class="p">,</span> <span class="n">psf</span><span class="o">=</span><span class="n">psf</span><span class="p">,</span>
+                        <span class="n">attitude_function</span><span class="o">=</span><span class="n">attitude_function</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end_date</span><span class="p">,</span>
+                        <span class="n">default_image_class</span><span class="o">=</span><span class="n">default_image_class</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">preprocessor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
-
+    <span class="k">def</span><span class="w"> </span><span class="nf">preprocessor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
         <span class="c1"># here we might apply corrections to the image (like flat fields and darks) or we can extract extra</span>
         <span class="c1"># information about the image and store it as another attribute (like dark_pixels which can be used to</span>
-        <span class="c1"># compute the noise level in the image). For the DAWN framing cameras though, we don&#39;t need to do anything</span>
+        <span class="c1"># compute the noise level in the image.  For the DAWN framing cameras though, we don&#39;t need to do anything</span>
         <span class="c1"># so we just return the image unmodified.</span>
         <span class="k">return</span> <span class="n">image</span>
 </pre></div>
@@ -332,25 +334,23 @@ image corrections to remove fixed pattern noise, apply dark and flat field corre
 pixels into the <a class="reference internal" href="../image/giant.image.OpNavImage.html#giant.image.OpNavImage.dark_pixels" title="giant.image.OpNavImage.dark_pixels"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dark_pixels</span></code></a> attribute as a way to extract the noise level for each image.</p>
 </section>
 <section id="defining-functions-to-return-state-information">
-<h2>Defining Functions to Return State Information<a class="headerlink" href="#defining-functions-to-return-state-information" title="Permalink to this headline">¶</a></h2>
+<h2>Defining Functions to Return State Information<a class="headerlink" href="#defining-functions-to-return-state-information" title="Link to this heading">¶</a></h2>
 <p>One non-required thing we can due is to predefine some functions that return the state (position, velocity, attitude) of
 certain objects that we will frequently need.  Since most of this data is coming from spice, we can use the GIANT
 <a class="reference internal" href="../utilities/giant.utilities.spice_interface.html#module-giant.utilities.spice_interface" title="giant.utilities.spice_interface"><code class="xref py py-mod docutils literal notranslate"><span class="pre">spice_interface</span></code></a> module to interface with SPICE and make the functions that we need.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># convenience functions</span>
-<span class="k">def</span> <span class="nf">sun_orientation</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sun_orientation</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
     <span class="c1"># always set the sun orientation to be the identity rotation (J2000) because it doesn&#39;t actually matter</span>
-    <span class="k">return</span> <span class="n">Rotation</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">Rotation</span><span class="p">()</span>
 
 
 <span class="c1"># define a function that will return the sun position in the inertial frame wrt SSB for a datetime</span>
 <span class="n">sun_position</span> <span class="o">=</span> <span class="n">spint</span><span class="o">.</span><span class="n">SpicePosition</span><span class="p">(</span><span class="s1">&#39;SUN&#39;</span><span class="p">,</span> <span class="s1">&#39;J2000&#39;</span><span class="p">,</span> <span class="s1">&#39;NONE&#39;</span><span class="p">,</span> <span class="s1">&#39;SSB&#39;</span><span class="p">)</span>
 
-
 <span class="c1"># define a function that will return the framing camera 1 attitude with respect to inertial for an input datetime</span>
 <span class="n">fc1_attitude</span> <span class="o">=</span> <span class="n">spint</span><span class="o">.</span><span class="n">SpiceOrientation</span><span class="p">(</span><span class="s1">&#39;J2000&#39;</span><span class="p">,</span> <span class="s1">&#39;DAWN_FC1&#39;</span><span class="p">)</span>
 <span class="c1"># define a function that will return the framing camera 2 attitude with respect to inertial for an input datetime</span>
 <span class="n">fc2_attitude</span> <span class="o">=</span> <span class="n">spint</span><span class="o">.</span><span class="n">SpiceOrientation</span><span class="p">(</span><span class="s1">&#39;J2000&#39;</span><span class="p">,</span> <span class="s1">&#39;DAWN_FC2&#39;</span><span class="p">)</span>
-
 
 <span class="c1"># define a function that will return the dawn spacecraft attitude with respect to inertial for an input datetime</span>
 <span class="n">dawn_attitude</span> <span class="o">=</span> <span class="n">spint</span><span class="o">.</span><span class="n">SpiceOrientation</span><span class="p">(</span><span class="s1">&#39;J2000&#39;</span><span class="p">,</span> <span class="s1">&#39;DAWN_SPACECRAFT&#39;</span><span class="p">)</span>
@@ -358,7 +358,6 @@ certain objects that we will frequently need.  Since most of this data is coming
 <span class="n">dawn_state</span> <span class="o">=</span> <span class="n">spint</span><span class="o">.</span><span class="n">SpiceState</span><span class="p">(</span><span class="s1">&#39;DAWN&#39;</span><span class="p">,</span> <span class="s1">&#39;J2000&#39;</span><span class="p">,</span> <span class="s1">&#39;NONE&#39;</span><span class="p">,</span> <span class="s1">&#39;SSB&#39;</span><span class="p">)</span>
 <span class="c1"># define a function that will return the spacecraft position in the inertial frame wrt SSB for a datetime</span>
 <span class="n">dawn_position</span> <span class="o">=</span> <span class="n">spint</span><span class="o">.</span><span class="n">SpicePosition</span><span class="p">(</span><span class="s1">&#39;DAWN&#39;</span><span class="p">,</span> <span class="s1">&#39;J2000&#39;</span><span class="p">,</span> <span class="s1">&#39;NONE&#39;</span><span class="p">,</span> <span class="s1">&#39;SSB&#39;</span><span class="p">)</span>
-
 
 <span class="c1"># define a function that will return the vesta body fixed attitude with respect to inertial for an input datetime</span>
 <span class="c1"># GIANT needs this to be from body fixed to inertial</span>
@@ -371,80 +370,85 @@ certain objects that we will frequently need.  Since most of this data is coming
 </div>
 </section>
 <section id="installing-dawn-giant">
-<h2>Installing dawn_giant<a class="headerlink" href="#installing-dawn-giant" title="Permalink to this headline">¶</a></h2>
+<h2>Installing dawn_giant<a class="headerlink" href="#installing-dawn-giant" title="Link to this heading">¶</a></h2>
 <p>The final step in customizing GIANT is to install our <code class="docutils literal notranslate"><span class="pre">dawn_giant</span></code> module to our python path.  While this isn’t a
 required step, it makes it easier to have access to all of the work we just did from whatever directory we want, so
 it is strongly recommended.  The easiest way to perform this step is using setuptools and a setup.py file.</p>
-<p>In the <code class="docutils literal notranslate"><span class="pre">dawn_giant</span></code> directory, create a file called <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> and open it with your favorite text editor.  Then,
+<p>In the <code class="docutils literal notranslate"><span class="pre">dawn_giant</span></code> directory, create a file called <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> and open it with your favorite text editor.  Then,
 place the following code into the file</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">build</span><span class="o">-</span><span class="n">system</span><span class="p">]</span>
+<span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;setuptools&gt;=61.0&quot;</span><span class="p">]</span>
+<span class="n">build</span><span class="o">-</span><span class="n">backend</span> <span class="o">=</span> <span class="s2">&quot;setuptools.build_meta&quot;</span>
 
-<span class="n">setup</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;dawn_giant&#39;</span><span class="p">,</span>
-    <span class="n">version</span><span class="o">=</span><span class="s1">&#39;1.0&#39;</span><span class="p">,</span>
-    <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Dawn Customizations for GIANT&#39;</span><span class="p">,</span>
-    <span class="n">py_modules</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;dawn_giant&#39;</span><span class="p">],</span>
-    <span class="n">install_requires</span><span class="o">=</span><span class="p">[</span>
-         <span class="s1">&#39;giant&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;numpy&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;spiceypy&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;pvl&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;bs4&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;requests&#39;</span>
-    <span class="p">]</span>
-<span class="p">)</span>
+<span class="p">[</span><span class="n">project</span><span class="p">]</span>
+<span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;dawn_giant&quot;</span>
+<span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;1.0&quot;</span>
+<span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;Dawn Customizations for GIANT&quot;</span>
+<span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span>
+<span class="s2">&quot;giant&quot;</span><span class="p">,</span>
+<span class="s2">&quot;numpy&quot;</span><span class="p">,</span>
+<span class="s2">&quot;spiceypy&quot;</span><span class="p">,</span>
+<span class="s2">&quot;pvl&quot;</span><span class="p">,</span>
+<span class="s2">&quot;beautifulsoup4&quot;</span><span class="p">,</span>
+<span class="s2">&quot;requests&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="p">[</span><span class="n">tool</span><span class="o">.</span><span class="n">setuptools</span><span class="p">]</span>
+<span class="n">py</span><span class="o">-</span><span class="n">modules</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dawn_giant&quot;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This script simply tells python that we want to install our dawn_giant module so that it is always available.  It also
 lists the external requirements that need to be installed for this file to work.  If you’ve been following along to this
 point then most of these requirements are already installed, with the exception of <cite>pvl</cite>, which we discussed above.  The
 nice thing is, when we run the <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> script, python will install pvl for us.</p>
-<p>Now, be sure that your <code class="docutils literal notranslate"><span class="pre">giant_env</span></code> is activated and then run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">develop</span></code> from the <code class="docutils literal notranslate"><span class="pre">dawn_giant</span></code>
+<p>Now, be sure that your <code class="docutils literal notranslate"><span class="pre">giant_env</span></code> is activated and then run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span></code> from the <code class="docutils literal notranslate"><span class="pre">dawn_giant</span></code>
 directory in order to install the <code class="docutils literal notranslate"><span class="pre">dawn_giant</span></code> package.  To test this install, simply cd to any other directory,
 start an interactive python shell, and then try <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">dawn_giant</span></code>.  This should complete successfully without any
 errors.</p>
-<p>And that is it, we have successfully customized GIANT to work for the DAWN mission and now we can move on to doing some
+<p>And that is it, we have successfully customized GIANT to work for the DAWN mission, and now we can move on to doing some
 actual processing.</p>
 </section>
 <section id="the-full-dawn-giant-file">
-<h2>The Full dawn_giant File<a class="headerlink" href="#the-full-dawn-giant-file" title="Permalink to this headline">¶</a></h2>
-<p>For your convenience the full <code class="docutils literal notranslate"><span class="pre">dawn_giant.py</span></code> file is presented here</p>
+<h2>The Full dawn_giant File<a class="headerlink" href="#the-full-dawn-giant-file" title="Link to this heading">¶</a></h2>
+<p>For your convenience the full <code class="docutils literal notranslate"><span class="pre">dawn_giant.py</span></code> file is presented here.  It can also be found in the GIANT repo under the
+<code class="docutils literal notranslate"><span class="pre">examples/dawn_giant</span></code> directory.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># the GIANT classes we need to customize</span>
-<span class="kn">from</span> <span class="nn">giant.image</span> <span class="kn">import</span> <span class="n">OpNavImage</span>
-<span class="kn">from</span> <span class="nn">giant.camera</span> <span class="kn">import</span> <span class="n">Camera</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpNavImage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera</span><span class="w"> </span><span class="kn">import</span> <span class="n">Camera</span>
 
 <span class="c1"># the attitude object that represents rotations in GIANT</span>
-<span class="kn">from</span> <span class="nn">giant.rotations</span> <span class="kn">import</span> <span class="n">Rotation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.rotations</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rotation</span>
 
 <span class="c1"># a GIANT module for working with spice</span>
-<span class="kn">import</span> <span class="nn">giant.utilities.spice_interface</span> <span class="k">as</span> <span class="nn">spint</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">giant.utilities.spice_interface</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">spint</span>
 
 <span class="c1"># a standard library module that lets us query and manipulate file paths</span>
-<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
 <span class="c1"># A module to provide access to the NAIF Spice routines</span>
-<span class="kn">import</span> <span class="nn">spiceypy</span> <span class="k">as</span> <span class="nn">spice</span>
-<span class="kn">from</span> <span class="nn">spiceypy.utils.support_types</span> <span class="kn">import</span> <span class="n">SpiceyError</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">spiceypy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">spice</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">spiceypy</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpiceyError</span>
 
 <span class="c1"># a standard library for representing dates and time deltas</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
 
 <span class="c1"># a library for parsing label files.</span>
-<span class="kn">import</span> <span class="nn">pvl</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pvl</span>
 
 
-<span class="k">class</span> <span class="nc">DawnFCImage</span><span class="p">(</span><span class="n">OpNavImage</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DawnFCImage</span><span class="p">(</span><span class="n">OpNavImage</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="nf">parse_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
 
         <span class="c1"># be sure the image file exists</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;we need a file to parse the data from&quot;</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">):</span>
 
             <span class="c1"># get the extension from the file</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">)</span>
 
             <span class="c1"># replace the extension from the file with LBL to find the corresponding label file</span>
-            <span class="n">lbl_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">ext</span><span class="p">,</span> <span class="s1">&#39;.LBL&#39;</span><span class="p">)</span>
+            <span class="n">lbl_file</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">ext</span><span class="p">,</span> <span class="s1">&#39;.LBL&#39;</span><span class="p">)</span>
 
             <span class="c1"># check to see if the label file exists</span>
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">lbl_file</span><span class="p">):</span>
@@ -454,28 +458,31 @@ actual processing.</p>
                     <span class="c1"># pvl treats \ as escape characters so we need to replace them</span>
                     <span class="n">data</span> <span class="o">=</span> <span class="n">pvl</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">lfile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">))</span>
 
+                    <span class="k">assert</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;we were unable to parse the label file </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lbl_file</span><span class="p">)</span>
+
                 <span class="c1"># extract the exposure time from the label and convert from ms to seconds</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;EXPOSURE_DURATION&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mi">1000</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;EXPOSURE_DURATION&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mi">1000</span> <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
 
                 <span class="c1"># set the exposure type based off of the exposure length to make handling long/short opnav sequences</span>
                 <span class="c1"># easier.  This is typically camera specific and needs to be set by an analyst</span>
+                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;we were unable to extract the exposure time from the label file </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lbl_file</span><span class="p">)</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">exposure_type</span> <span class="o">=</span> <span class="s2">&quot;long&quot;</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">exposure_type</span> <span class="o">=</span> <span class="s2">&quot;short&quot;</span>
 
                 <span class="c1"># extract the observation observation_date (middle of the exposure time of the image)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;START_TIME&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;START_TIME&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
 
                 <span class="c1"># get the temperature of the camera for this image</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;DAWN:T_LENS_BARREL&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="mf">273.15</span>  <span class="c1"># convert kelvin to celsius</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;DAWN:T_LENS_BARREL&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="mf">273.15</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue] # convert kelvin to celsius</span>
 
                 <span class="c1"># get the quaternion of the rotation from the inertial frmame to the camera frame</span>
                 <span class="c1"># store the rotation as an attitude object.  Need to move the scalar term last</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;QUATERNION&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;QUATERNION&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">])</span>
 
                 <span class="c1"># get the target</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;TARGET_NAME&quot;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;TARGET_NAME&quot;</span><span class="p">])</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">==</span> <span class="s2">&quot;N/A&quot;</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># notify that we don&#39;t have a target here</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -507,31 +514,31 @@ actual processing.</p>
                 <span class="c1"># get the position and velocity of the camera (sc) with respect to the solar system bary center</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">state</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">spice</span><span class="o">.</span><span class="n">spkezr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spacecraft</span><span class="p">,</span> <span class="n">et</span><span class="p">,</span> <span class="s1">&#39;J2000&#39;</span><span class="p">,</span> <span class="s1">&#39;NONE&#39;</span><span class="p">,</span> <span class="s2">&quot;SSB&quot;</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">state</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">state</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="c1"># pyright: ignore[reportIndexIssue]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span> <span class="c1"># pyright: ignore[reportIndexIssue]</span>
 
                 <span class="k">except</span> <span class="n">SpiceyError</span><span class="p">:</span>
 
                     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve camera position and velocity </span><span class="se">\n</span><span class="s1">&#39;</span>
-                          <span class="s1">&#39;for </span><span class="si">{0}</span><span class="s1"> at time </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_date</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()))</span>
+                        <span class="s1">&#39;for </span><span class="si">{0}</span><span class="s1"> at time </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_date</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()))</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;we can&#39;t find the label file for this image so we can&#39;t parse the data.&quot;</span>
-                                 <span class="s2">&quot;Looking for file </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lbl_file</span><span class="p">))</span>
+                                <span class="s2">&quot;Looking for file </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lbl_file</span><span class="p">))</span>
 
 
-<span class="k">class</span> <span class="nc">DawnFCCamera</span><span class="p">(</span><span class="n">Camera</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DawnFCCamera</span><span class="p">(</span><span class="n">Camera</span><span class="p">):</span>
 
     <span class="c1"># update the init function to use the new DawnFCImage class instead of the default OpNavImage class</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">images</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">spacecraft_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">frame</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parse_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">psf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">attitude_function</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">default_image_class</span><span class="o">=</span><span class="n">DawnFCImage</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">images</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">spacecraft_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">frame</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parse_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">psf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">attitude_function</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">default_image_class</span><span class="o">=</span><span class="n">DawnFCImage</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">images</span><span class="o">=</span><span class="n">images</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">spacecraft_name</span><span class="o">=</span><span class="n">spacecraft_name</span><span class="p">,</span>
-                         <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">,</span> <span class="n">parse_data</span><span class="o">=</span><span class="n">parse_data</span><span class="p">,</span> <span class="n">psf</span><span class="o">=</span><span class="n">psf</span><span class="p">,</span>
-                         <span class="n">attitude_function</span><span class="o">=</span><span class="n">attitude_function</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end_date</span><span class="p">,</span>
-                         <span class="n">default_image_class</span><span class="o">=</span><span class="n">default_image_class</span><span class="p">)</span>
+                        <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">,</span> <span class="n">parse_data</span><span class="o">=</span><span class="n">parse_data</span><span class="p">,</span> <span class="n">psf</span><span class="o">=</span><span class="n">psf</span><span class="p">,</span>
+                        <span class="n">attitude_function</span><span class="o">=</span><span class="n">attitude_function</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end_date</span><span class="p">,</span>
+                        <span class="n">default_image_class</span><span class="o">=</span><span class="n">default_image_class</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">preprocessor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">preprocessor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
         <span class="c1"># here we might apply corrections to the image (like flat fields and darks) or we can extract extra</span>
         <span class="c1"># information about the image and store it as another attribute (like dark_pixels which can be used to</span>
         <span class="c1"># compute the noise level in the image.  For the DAWN framing cameras though, we don&#39;t need to do anything</span>
@@ -540,9 +547,9 @@ actual processing.</p>
 
 
 <span class="c1"># convenience functions</span>
-<span class="k">def</span> <span class="nf">sun_orientation</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sun_orientation</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
     <span class="c1"># always set the sun orientation to be the identity rotation (J2000) because it doesn&#39;t actually matter</span>
-    <span class="k">return</span> <span class="n">Rotation</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">Rotation</span><span class="p">()</span>
 
 
 <span class="c1"># define a function that will return the sun position in the inertial frame wrt SSB for a datetime</span>
@@ -594,20 +601,24 @@ actual processing.</p>
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="../_sources/tutorial/initial_set_up.rst.txt"
-          rel="nofollow">Page source</a>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

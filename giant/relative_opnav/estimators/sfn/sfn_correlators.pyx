@@ -1,6 +1,5 @@
 # cython: language_level=3
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 """
@@ -193,7 +192,7 @@ def sfn_correlator(image: np.ndarray, template: np.ndarray, space_mask: Optional
     if intersects is None:
         intersects = np.ones(template.shape, dtype=np.uint8)
     if space_mask is None:
-        space_mask = np.ones(image.shape, dtype=np.uint8)
+        space_mask = np.zeros(image.shape, dtype=np.uint8)
 
     cdef double[:, :] img_mview = image.astype(np.float64)
     cdef double[:, :] templ_mview = template.astype(np.float64)

@@ -1,5 +1,4 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
+
 
 
 """
@@ -46,7 +45,7 @@ Python.
 
 It will likely be rare that you directly create a :class:`.KDTree` in your scripts and software when using GIANT, since
 GIANT provides scripts that already build them for you and save the results to file, including :mod:`.ingest_shape`,
-:mod:`.tile_shape`, and :mod:`.spc_to_feature_catalogue`.  We therefore recommend that you look at these first to see
+:mod:`.tile_shape`, and :mod:`.spc_to_feature_catalog`.  We therefore recommend that you look at these first to see
 if they meet your needs.
 """
 
@@ -304,7 +303,7 @@ cdef class KDNode:
                 # the calling function will know what to do with the Nones
                 return None, None
 
-            normals = self.surface.normals  # type: np.ndarray
+            normals: np.ndarray = self.surface.normals 
 
             if self._centers is None:
                 # find the median of the vertices to use as the split point
@@ -881,7 +880,7 @@ cdef class KDTree(Surface):
         # originals
         if (self._rotation is not None) or (self._position is not None):
 
-            ray = copy.copy(ray)
+            ray = copy.deepcopy(ray)
 
         # apply any rotations so the ray are expressed in the tree frame
         if self._rotation is not None:
@@ -938,7 +937,7 @@ cdef class KDTree(Surface):
         # originals
         if (self._rotation is not None) or (self._position is not None):
 
-            rays = copy.copy(rays)
+            rays = copy.deepcopy(rays)
 
         # apply any rotations so the rays are expressed in the tree frame
         if self._rotation is not None:

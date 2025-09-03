@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.image_processing.image_flattener &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.image_processing.image_flattener</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">cast</span><span class="p">,</span> <span class="n">NamedTuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sig</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.outlier_identifier</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_outliers</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes.user_option_configured</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptionConfigured</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes.attribute_equality_comparison</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttributeEqualityComparison</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes.attribute_printing</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttributePrinting</span>
+
+
+<div class="viewcode-block" id="ImageFlattenerOut">
+<a class="viewcode-back" href="../../../image_processing/image_flattener/giant.image_processing.image_flattener.ImageFlattenerOut.html#giant.image_processing.image_flattener.ImageFlattenerOut">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ImageFlattenerOut</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="n">flattened</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The flattened image.</span>
+<span class="sd">    </span>
+<span class="sd">    The same shape as the input and with a float32 datatype.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">estimated_noise_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The estimated noise level in the image as a float (if GLOBAL flattening is used) or as a list of floats (if local flatttening is used).</span>
+<span class="sd">    </span>
+<span class="sd">    If local flattening is used, each element of this list corresponds to the same element in the slice array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">local_slices</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">,</span> <span class="nb">slice</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The slices used for local flattening and noise approximation, or `None` if GLOBAL flattening is used</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="ImageFlatteningNoiseApprox">
+<a class="viewcode-back" href="../../../image_processing/image_flattener/giant.image_processing.image_flattener.ImageFlatteningNoiseApprox.html#giant.image_processing.image_flattener.ImageFlatteningNoiseApprox">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ImageFlatteningNoiseApprox</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This enumeration provides the valid options for flattening an image and determining the noise levels when</span>
+<span class="sd">    identifying points of interest in :meth:`.ImageProcessing.find_poi_in_roi`</span>
+
+<span class="sd">    You should be sure to use one of these values when setting to the :attr:`.image_flattening_noise_approximation`</span>
+<span class="sd">    attribute of the :class:`.ImageProcessing` class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">GLOBAL</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Globally flatten the image and estimate the noise level from it.</span>
+<span class="sd">    </span>
+<span class="sd">    In this the image in flattened by subtracting a median filtered version of the image from it and a single noise </span>
+<span class="sd">    level is approximated for the entire image either through sampling or through the :attr:`.dark_pixels` of the image.</span>
+<span class="sd">    </span>
+<span class="sd">    For most OpNav cases this is sufficient and fast.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">LOCAL</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Locally flatten the image and estimate the noise levels for each local region</span>
+
+<span class="sd">    In this the image in flattened by splitting it into regions, estimating a linear background gradient in each region,</span>
+<span class="sd">    and the subtracting the estimated background gradient from the region to get the flattened region.  An individual </span>
+<span class="sd">    noise level is estimated for each of these regions through sampling.</span>
+
+<span class="sd">    This technique allows much dimmer points of interest to be extracted without overwhelming with noise, but it is </span>
+<span class="sd">    generally much slower and is unnecessary for all but detailed analyses.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+
+
+<div class="viewcode-block" id="ImageFlattenerOptions">
+<a class="viewcode-back" href="../../../image_processing/image_flattener/giant.image_processing.image_flattener.ImageFlattenerOptions.html#giant.image_processing.image_flattener.ImageFlattenerOptions">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ImageFlattenerOptions</span><span class="p">(</span><span class="n">UserOptions</span><span class="p">):</span>
+    
+    <span class="n">image_flattening_noise_approximation</span><span class="p">:</span> <span class="n">ImageFlatteningNoiseApprox</span> <span class="o">=</span> <span class="n">ImageFlatteningNoiseApprox</span><span class="o">.</span><span class="n">GLOBAL</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This specifies whether to globally flatten the image and compute a single noise level or to locally do so.</span>
+<span class="sd">    </span>
+<span class="sd">    Generally global is sufficient for star identification purposes.  If you are trying to extract very dim stars </span>
+<span class="sd">    (or particles) then you may need to use the ``&#39;LOCAL&#39;`` option, which is much better for low SNR targets but </span>
+<span class="sd">    much slower.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">local_flattening_kernel_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This specifies the half size of the kernel to use when locally flattening an image.  </span>
+<span class="sd">    </span>
+<span class="sd">    If you are using global flattening of an image this is ignored.</span>
+<span class="sd">    </span>
+<span class="sd">    The size of the kernel/region used in flattening the image will be ``2*local_flattening_kernel_size+1``.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+    
+    
+<div class="viewcode-block" id="ImageFlattener">
+<a class="viewcode-back" href="../../../image_processing/image_flattener/giant.image_processing.image_flattener.ImageFlattener.html#giant.image_processing.image_flattener.ImageFlattener">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ImageFlattener</span><span class="p">(</span><span class="n">UserOptionConfigured</span><span class="p">[</span><span class="n">ImageFlattenerOptions</span><span class="p">],</span>
+                     <span class="n">ImageFlattenerOptions</span><span class="p">,</span>
+                     <span class="n">AttributePrinting</span><span class="p">,</span>
+                     <span class="n">AttributeEqualityComparison</span><span class="p">):</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ImageFlattenerOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ImageFlattenerOptions</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+        
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_global_flat_image_and_noise</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageFlattenerOut</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method is used to sample the noise level of an image, as well as return a flattened version of the image.</span>
+
+<span class="sd">        The image is flattened by subtracting off a median filtered copy of the image from the image itself</span>
+
+<span class="sd">        The standard deviation of the noise level in the image is estimated by either calculating the standard deviation</span>
+<span class="sd">        of flattened user defined dark pixels for the image (contained in the :attr:`.OpNavImage.dark_pixels` attribute)</span>
+<span class="sd">        or by calculating the standard deviation of 2,000 randomly sampled differences between pixel pairs of the</span>
+<span class="sd">        flattened image spaced 5 rows and 5 columns apart.</span>
+
+<span class="sd">        This method is used by :meth:`locate_subpixel_poi_in_roi` in order to make the point of interest identification</span>
+<span class="sd">        easier.</span>
+
+<span class="sd">        :param image: The image to be flattened and have the noise level estimated for</span>
+<span class="sd">        :return: The flattened image and the noise level as a tuple</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># flatten the image by subtracting a median blurred copy of the image.  Using a blurring kernel of 5x5.</span>
+        <span class="n">flat_image</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-</span> <span class="n">cast</span><span class="p">(</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span> <span class="n">cv2</span><span class="o">.</span><span class="n">medianBlur</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="mi">5</span><span class="p">)))</span>
+
+        <span class="n">dark_pixels</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="s1">&#39;dark_pixels&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dark_pixels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># if there are identified dark pixels</span>
+            <span class="c1"># flatten the dark pixels using a median filter</span>
+            <span class="n">flat_dark</span> <span class="o">=</span> <span class="n">dark_pixels</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">-</span> \
+                        <span class="n">sig</span><span class="o">.</span><span class="n">medfilt</span><span class="p">(</span><span class="n">dark_pixels</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+
+            <span class="c1"># compute the standard deviation of the flattened dark pixels</span>
+            <span class="n">standard_deviation</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">flat_dark</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># otherwise, sample the image to determine the randomness</span>
+            <span class="c1"># determine the randomness of the image by sampling at 10000 randomly selected points compared with point +5</span>
+            <span class="c1"># rows and +5 cols from those points</span>
+
+            <span class="n">im_shape</span> <span class="o">=</span> <span class="n">flat_image</span><span class="o">.</span><span class="n">shape</span>
+
+            <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">im_shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">dist</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;the input image is too small...&#39;</span><span class="p">)</span>
+
+            <span class="c1"># get the total possible number of starting locations</span>
+            <span class="n">num_pix</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">im_shape</span><span class="p">)</span> <span class="o">-</span> <span class="n">dist</span><span class="p">))</span> 
+
+            <span class="c1"># sample at most 1 quarter of the available starting locations</span>
+            <span class="n">num_choice</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">num_pix</span> <span class="o">//</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2000</span><span class="p">))</span>
+
+            <span class="c1"># choose a random sample of starting locations</span>
+            <span class="n">start_rows</span><span class="p">,</span> <span class="n">start_cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">num_pix</span><span class="p">)),</span> <span class="n">num_choice</span><span class="p">,</span>
+                                                                       <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+                                                      <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">im_shape</span><span class="p">)</span> <span class="o">-</span> <span class="n">dist</span><span class="p">)</span>
+
+            <span class="c1"># get the other half of the sample</span>
+            <span class="n">next_rows</span> <span class="o">=</span> <span class="n">start_rows</span> <span class="o">+</span> <span class="n">dist</span>
+            <span class="n">next_cols</span> <span class="o">=</span> <span class="n">start_cols</span> <span class="o">+</span> <span class="n">dist</span>
+
+            <span class="c1"># compute the standard deviation of the difference between the star points and hte next points.  This</span>
+            <span class="c1"># measures the noise in the image and sets the threshold for identifiable stars.</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">flat_image</span><span class="p">[</span><span class="n">next_rows</span><span class="p">,</span> <span class="n">next_cols</span><span class="p">]</span> <span class="o">-</span> <span class="n">flat_image</span><span class="p">[</span><span class="n">start_rows</span><span class="p">,</span> <span class="n">start_cols</span><span class="p">])</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+            <span class="c1"># reject outliers from the data using MAD</span>
+            <span class="n">outliers</span> <span class="o">=</span> <span class="n">get_outliers</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+            <span class="c1"># compute the standard deviation</span>
+            <span class="n">standard_deviation</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">outliers</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ImageFlattenerOut</span><span class="p">(</span><span class="n">flat_image</span><span class="p">,</span> <span class="n">standard_deviation</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># TODO: This would probably be better as a cython function where we can do parallel processing</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_local_flat_image_and_noise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageFlattenerOut</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method flattens the image and approximates the noise over regions of the image.</span>
+
+<span class="sd">        This is not intended by the user, instead use :meth:`flatten_image_and_get_noise_level`.</span>
+
+<span class="sd">        :param image: The image which is to be flattened and have noise levels estimated for</span>
+<span class="sd">        :return: The flattened image, a list of noise values for regions of the image, and a list of tuples of slices</span>
+<span class="sd">                 describing the regions of the image</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># get the shape of the image</span>
+        <span class="n">img_shape</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="c1"># make sure that the image is double, also copy it to ensure that we don&#39;t mess up the original</span>
+        <span class="n">flat_image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># start the region center at the kernel size</span>
+        <span class="n">current_row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_flattening_kernel_size</span>
+        <span class="n">current_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_flattening_kernel_size</span>
+
+        <span class="c1"># initialize the lists for return</span>
+        <span class="n">noises</span><span class="p">,</span> <span class="n">slices</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+
+        <span class="c1"># loop rows through until we&#39;ve processed the whole image</span>
+        <span class="k">while</span> <span class="n">current_row</span> <span class="o">&lt;</span> <span class="n">img_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="c1"># get the row bounds and slice</span>
+            <span class="n">lower_row</span> <span class="o">=</span> <span class="n">current_row</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_flattening_kernel_size</span>
+            <span class="n">upper_row</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">current_row</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_flattening_kernel_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">img_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">row_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">lower_row</span><span class="p">,</span> <span class="n">upper_row</span><span class="p">)</span>
+
+            <span class="c1"># loop through columns until we&#39;ve processed the whole image</span>
+            <span class="k">while</span> <span class="n">current_col</span> <span class="o">&lt;</span> <span class="n">img_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="c1"># get the column bounds and slice</span>
+                <span class="n">lower_column</span> <span class="o">=</span> <span class="n">current_col</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_flattening_kernel_size</span>
+                <span class="n">upper_column</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">current_col</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_flattening_kernel_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">img_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">column_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">lower_column</span><span class="p">,</span> <span class="n">upper_column</span><span class="p">)</span>
+
+                <span class="c1"># get the row/column labels that we are working with</span>
+                <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[</span><span class="n">row_slice</span><span class="p">,</span> <span class="n">column_slice</span><span class="p">]</span>
+
+                <span class="c1"># get the region from the original image we are editing</span>
+                <span class="n">region</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="n">row_slice</span><span class="p">,</span> <span class="n">column_slice</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+                <span class="c1"># compute the background of the region using least squares [1, x, y] @ [A, B, C] = bg</span>
+                <span class="n">h_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">rows</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="n">cols</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">rows</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                <span class="n">background</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">h_matrix</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+                <span class="c1"># flatten the region by subtracting the linear background approximation</span>
+                <span class="n">flat_image</span><span class="p">[</span><span class="n">row_slice</span><span class="p">,</span> <span class="n">column_slice</span><span class="p">]</span> <span class="o">-=</span> <span class="p">(</span><span class="n">h_matrix</span><span class="nd">@background</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+                <span class="c1"># store the slices</span>
+                <span class="n">slices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">row_slice</span><span class="p">,</span> <span class="n">column_slice</span><span class="p">))</span>
+
+                <span class="c1"># update the current column we&#39;re centered on</span>
+                <span class="n">current_col</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_flattening_kernel_size</span> <span class="o">+</span> <span class="mi">1</span>
+
+            <span class="c1"># update the current row/column we&#39;re centered on</span>
+            <span class="n">current_row</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_flattening_kernel_size</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">current_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_flattening_kernel_size</span>
+
+        <span class="c1"># make sure we&#39;re extra flat by flattening the flat image with a median blur.</span>
+        <span class="n">flat_image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="n">flat_image</span> <span class="o">-</span> <span class="n">cv2</span><span class="o">.</span><span class="n">medianBlur</span><span class="p">(</span><span class="n">flat_image</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="mi">5</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">local_slice</span> <span class="ow">in</span> <span class="n">slices</span><span class="p">:</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="n">flat_image</span><span class="p">[</span><span class="n">local_slice</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">local_slice</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">region</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">20</span><span class="p">:</span>
+                <span class="n">selections</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">size</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">size</span><span class="o">//</span><span class="mi">2</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">selections</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+
+            <span class="n">selected_region</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">region</span><span class="p">[</span><span class="n">selections</span><span class="p">]</span>
+
+            <span class="n">outliers</span> <span class="o">=</span> <span class="n">get_outliers</span><span class="p">(</span><span class="n">selected_region</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">outliers</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">selections</span><span class="o">.</span><span class="n">size</span><span class="o">//</span><span class="mi">2</span><span class="p">:</span>
+
+                <span class="n">local_std</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">selected_region</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">local_std</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">selected_region</span><span class="p">[</span><span class="o">~</span><span class="n">outliers</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+            <span class="n">noises</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">local_std</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ImageFlattenerOut</span><span class="p">(</span><span class="n">flat_image</span><span class="p">,</span> <span class="n">noises</span><span class="p">,</span> <span class="n">slices</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ImageFlattener.__call__">
+<a class="viewcode-back" href="../../../image_processing/image_flattener/ImageFlattener.__call__.html#giant.image_processing.image_flattener.ImageFlattener.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageFlattenerOut</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method is used to sample the noise level of an image, as well as return a flattened version of the image.</span>
+
+<span class="sd">        There are 2 techniques for flattening the image.</span>
+
+<span class="sd">        In the first, ``GLOBAL`` technique: the image is flattened by subtracting off a median filtered copy of the</span>
+<span class="sd">        image from the image itself</span>
+
+<span class="sd">        The standard deviation of the noise level in the image is then estimated by either calculating the standard</span>
+<span class="sd">        deviation of flattened user defined dark pixels for the image (contained in the :attr:`.OpNavImage.dark_pixels`</span>
+<span class="sd">        attribute) or by calculating the standard deviation of 2,000 randomly sampled differences between pixel pairs of</span>
+<span class="sd">        the flattened image spaced 5 rows and 5 columns apart.</span>
+
+<span class="sd">        In the second, ``LOCAL`` technique: the image is split into regions based on :attr:`local_flattening_kernel_size`.</span>
+<span class="sd">        For each region, a linear background gradient is estimated and subtracted from the region.  The global flattened</span>
+<span class="sd">        image is then flattened further by subtracting off a median filtered copy of the flattened image.</span>
+
+<span class="sd">        The standard deviation of the noise level is then computed for each region by sampling about half of the points</span>
+<span class="sd">        in the flattened region and computing the standard deviation of the flattened intensity values.  In this case</span>
+<span class="sd">        3 values are returned, the flattened image, the list of noise values for each region, and a list of slices</span>
+<span class="sd">        defining the regions that were processed.</span>
+
+<span class="sd">        :param image: The image to be flattened and have the noise level estimated for</span>
+<span class="sd">        :return: The flattened image, the noise level(s), and a list of slices of tuples specifying the regions of </span>
+<span class="sd">                 the image the noise levels apply to (or None) as a NamedTuple.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_flattening_noise_approximation</span> <span class="o">==</span> <span class="n">ImageFlatteningNoiseApprox</span><span class="o">.</span><span class="n">GLOBAL</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_global_flat_image_and_noise</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_flat_image_and_noise</span><span class="p">(</span><span class="n">image</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

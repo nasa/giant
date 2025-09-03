@@ -8,7 +8,7 @@ from scipy.stats import chi2
 from giant.point_spread_functions import *
 
 
-np.random.seed(193339)
+rng = np.random.default_rng(193339)
 
 
 class TestGaussian(TestCase):
@@ -29,7 +29,7 @@ class TestGaussian(TestCase):
         self.expected = self.params['amplitude']*np.exp(-(dx**2/(2*self.params['sigma_x']**2) +
                                                           dy**2/(2*self.params['sigma_y']**2)))
 
-        self.noise = np.abs(np.median(self.expected)/100)*np.random.randn(*self.expected.shape)
+        self.noise = np.abs(np.median(self.expected)/100)*rng.standard_normal(self.expected.shape)
 
         self.perturbed = self.expected + self.noise
         test = self.perturbed < 0
@@ -154,7 +154,7 @@ class TestIterativeGaussian(TestGaussian):
         self.expected = self.params['amplitude']*np.exp(-(dx**2/(2*self.params['sigma_x']**2) +
                                                           dy**2/(2*self.params['sigma_y']**2)))
 
-        self.noise = np.abs(np.median(self.expected)/20)*np.random.randn(*self.expected.shape)
+        self.noise = np.abs(np.median(self.expected)/20)*rng.standard_normal(self.expected.shape)
 
         self.perturbed = self.expected + self.noise
 
@@ -184,7 +184,7 @@ class TestIterativeGaussianWBackground(TestGaussian):
                                                            dy**2/(2*self.params['sigma_y']**2))) +
                          self.params['bg_b_coef']*self.x + self.params['bg_c_coef']*self.y+self.params['bg_d_coef'])
 
-        self.noise = np.abs(np.median(self.expected)/50)*np.random.randn(*self.expected.shape)
+        self.noise = np.abs(np.median(self.expected)/50)*rng.standard_normal(self.expected.shape)
 
         self.perturbed = self.expected + self.noise
 
@@ -215,7 +215,7 @@ class TestGeneralizedGaussian(TestGaussian):
                                                           2*self.params['b_coef']*dx*dy +
                                                           self.params['c_coef']*dy**2))
 
-        self.noise = np.abs(np.median(self.expected)/100)*np.random.randn(*self.expected.shape)
+        self.noise = np.abs(np.median(self.expected)/100)*rng.standard_normal(self.expected.shape)
 
         self.perturbed = self.expected + self.noise
         test = self.perturbed < 0
@@ -248,7 +248,7 @@ class TestIterativeGeneralizedGaussian(TestGaussian):
                                                           2*self.params['b_coef']*dx*dy +
                                                           self.params['c_coef']*dy**2))
 
-        self.noise = np.abs(np.median(self.expected)/100)*np.random.randn(*self.expected.shape)
+        self.noise = np.abs(np.median(self.expected)/100)*rng.standard_normal(self.expected.shape)
 
         self.perturbed = self.expected + self.noise
         test = self.perturbed < 0
@@ -283,7 +283,7 @@ class TestIterativeGeneralizedGaussianWBackground(TestGaussian):
                                                            self.params['c_coef']*dy**2)) +
                          self.params['bg_b_coef']*self.x + self.params['bg_c_coef']*self.y + self.params['bg_d_coef'])
 
-        self.noise = np.abs(np.median(self.expected)/50)*np.random.randn(*self.expected.shape)
+        self.noise = np.abs(np.median(self.expected)/50)*rng.standard_normal(self.expected.shape)
 
         self.perturbed = self.expected + self.noise
 
@@ -294,3 +294,9 @@ class TestIterativeGeneralizedGaussianWBackground(TestGaussian):
 
         # set the sigma expected to be the one that should capture 99.9% of cases.
         self.sigma_expected = np.sqrt(chi2.ppf(0.999, len(self.state_order)))
+
+
+if __name__ == '__main__':
+    import unittest
+
+    unittest.main()

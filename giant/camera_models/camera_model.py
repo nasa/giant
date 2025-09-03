@@ -1,7 +1,3 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
-
-
 r"""
 This module provides an abstract base class (abc) for implementing GIANT camera models.
 
@@ -25,7 +21,7 @@ To implement a fully functional custom camera model for GIANT, you must implemen
 subclassing the :class:`CameraModel` class.
 
 ================================================= ======================================================================
-Method                                            Use
+Method/Attribute                                  Use
 ================================================= ======================================================================
 :meth:`~CameraModel.project_onto_image`           projects a point from the camera frame onto the image
 :meth:`~CameraModel.compute_jacobian`             returns the Jacobian matrix
@@ -45,6 +41,17 @@ Method                                            Use
 :meth:`~CameraModel.undistort_pixels`             takes a distorted pixel location and computes the corresponding
                                                   undistorted gnomic location in units of pixels
 :meth:`~CameraModel.distort_pixels`               applies the distortion model to gnomic points with units of pixels
+:meth:`~CameraModel.project_directions`           converts a direction vector expressed in the camera frame into 
+                                                  a unit direction vector expressed in units of pixels in the 
+                                                  image frame
+:attr:`~CameraModel.estimation_parameters`        a list of strings containing what parameters to estimate when doing
+                                                  geometric calibration.
+:attr:`~CameraModel.state_vector`                 an NDArray containing the elements of the camera model (corresponding 
+                                                  to the :attr:`~CameraModel.estimation_parameters`).
+:meth:`~Cameramode.get_state_labels`              converts the list of estimation parameters into human readable
+                                                  state label names (used for printing)
+:meth:`~Cameramode.check_in_fov`                  computes whether provided vectors in the camera frame fall within the
+                                                  field of view of the camera
 ================================================= ======================================================================
 
 In addition the following methods and attributes are already implemented for most cases but may need to be overridden
@@ -88,17 +95,20 @@ import warnings
 
 from enum import Enum
 
-from numbers import Real
-from typing import Tuple, Union, Optional, List
+from itertools import repeat
+
+from typing import Tuple, Union, Optional, List, Sequence, Iterable, Self
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy import interpolate as interp
 
 # apparently lxml has security vulnerabilities but adding warning to documentation to avoid
 # loading unverified files
 import lxml.etree as etree  # nosec
 
-from giant._typing import ARRAY_LIKE, SCALAR_OR_ARRAY, NONEARRAY, NONENUM, PATH
+from giant._typing import ARRAY_LIKE, SCALAR_OR_ARRAY, NONEARRAY, NONENUM, PATH, F_SCALAR_OR_ARRAY, DOUBLE_ARRAY 
+from giant.image import OpNavImage
 
 
 class ReturnShape(Enum):
@@ -215,7 +225,7 @@ class CameraModel(metaclass=ABCMeta):
         A radial field of view of the camera specified in degrees.
         
         The field of view should be set to at least the half width diagonal field of view of the camera. The field of
-        view is used when querying star catalogues.
+        view is used when querying star catalogs.
         
         The diagonal field of view is defined as
         
@@ -250,13 +260,21 @@ class CameraModel(metaclass=ABCMeta):
                 raise ValueError("The field_of_view must be convertible to a float")
 
         else:
-            try:
-                self.field_of_view = np.arccos(np.prod(self.pixels_to_unit(np.array([[0, self.n_cols],
-                                                                                     [0, self.n_rows]])),
-                                                       axis=-1).sum()) * 90/np.pi   # 90/pi because we want half angle
+            self.compute_field_of_view()
+            
+    def compute_field_of_view(self, temperature: float = 0) -> None:
+        """
+        Computes the half diagonal field of view in degrees and stores it in the field of view argument.
+        """
+        
+        try:
+            self._field_of_view = np.arccos(np.prod(self.pixels_to_unit(np.array([[0, self.n_cols],
+                                                                                    [0, self.n_rows]]),
+                                                                        temperature=temperature),
+                                                    axis=-1).sum()) * 90/np.pi   # 90/pi because we want half angle
 
-            except (ValueError, TypeError, AttributeError, IndexError):
-                self._field_of_view = 0.0
+        except (ValueError, TypeError, AttributeError, IndexError):
+            self._field_of_view = 0.0
 
     @property
     @abstractmethod
@@ -276,15 +294,22 @@ class CameraModel(metaclass=ABCMeta):
 
     @estimation_parameters.setter
     @abstractmethod
-    def estimation_parameters(self, val: List[str]):  # estimation_parameters should be writeable
+    def estimation_parameters(self, val: str | Sequence[str]):  # estimation_parameters should be writeable
         pass
 
     @property
     @abstractmethod
-    def state_vector(self) -> List[Real]:
+    def state_vector(self) -> List[float]:
         """
         Returns the fully realized state vector according to :attr:`estimation_parameters` as a length l list.
         """
+        
+    @property
+    def state_vector_length(self) -> int:
+        """
+        Returns the length of the state vector of camera parameters 
+        """
+        return len(self.state_vector)
 
     @abstractmethod
     def get_state_labels(self) -> List[str]:
@@ -301,7 +326,7 @@ class CameraModel(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def project_onto_image(self, points_in_camera_frame: ARRAY_LIKE, image: int = 0, temperature: Real = 0) \
+    def project_onto_image(self, points_in_camera_frame: ARRAY_LIKE, image: int = 0, temperature: float = 0) \
             -> np.ndarray:
         """
         This method transforms 3D points (or directions) expressed in the camera frame into the corresponding 2D image
@@ -344,9 +369,9 @@ class CameraModel(metaclass=ABCMeta):
         :return: A shape (2,) or shape (2, n) numpy array of image direction unit vectors
         """
         return np.zeros(2)
-
+ 
     @abstractmethod
-    def compute_jacobian(self, unit_vectors_in_camera_frame: ARRAY_LIKE, temperature: SCALAR_OR_ARRAY = 0) \
+    def compute_jacobian(self, unit_vectors_in_camera_frame: Sequence[DOUBLE_ARRAY | list[list]], temperature: F_SCALAR_OR_ARRAY | Sequence[float] = 0) \
             -> np.ndarray:
         r"""
         This method computes the Jacobian matrix :math:`\partial\mathbf{x}_P/\partial\mathbf{c}` where
@@ -370,7 +395,7 @@ class CameraModel(metaclass=ABCMeta):
         return np.zeros((2, 1))
 
     @abstractmethod
-    def compute_pixel_jacobian(self, vectors_in_camera_frame: ARRAY_LIKE, image: int = 0, temperature: Real = 0) \
+    def compute_pixel_jacobian(self, vectors_in_camera_frame: ARRAY_LIKE, image: int = 0, temperature: float = 0) \
             -> np.ndarray:
         r"""
         This method computes the Jacobian matrix :math:`\partial\mathbf{x}_P/\partial\mathbf{x}_C` where
@@ -390,7 +415,7 @@ class CameraModel(metaclass=ABCMeta):
         return np.zeros((1, 2, 3))
 
     @abstractmethod
-    def compute_unit_vector_jacobian(self, pixel_locations: ARRAY_LIKE, image: int = 0, temperature: Real = 0) -> \
+    def compute_unit_vector_jacobian(self, pixel_locations: ARRAY_LIKE, image: int = 0, temperature: float = 0) -> \
             np.ndarray:
         r"""
         This method computes the Jacobian matrix :math:`\partial\mathbf{x}_C/\partial\mathbf{x}_P` where
@@ -410,7 +435,7 @@ class CameraModel(metaclass=ABCMeta):
         return np.zeros((1, 2, 3))
 
     @abstractmethod
-    def apply_update(self, update_vec: ARRAY_LIKE):
+    def apply_update(self, update_vec: Sequence[float] | NDArray):
         r"""
         This method takes in a delta update to camera parameters (:math:`\Delta\mathbf{c}`) and applies the update
         to the current instance in place.
@@ -428,7 +453,7 @@ class CameraModel(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def pixels_to_unit(self, pixels: ARRAY_LIKE, temperature: Real = 0, image: int = 0) -> np.ndarray:
+    def pixels_to_unit(self, pixels: Sequence[float] | NDArray, temperature: float = 0, image: int = 0) -> np.ndarray:
         """
         This method converts pixel image locations to unit vectors expressed in the camera frame.
         
@@ -447,7 +472,7 @@ class CameraModel(metaclass=ABCMeta):
         return np.zeros(3)
 
     @abstractmethod
-    def undistort_pixels(self, pixels: ARRAY_LIKE, temperature: Real = 0) -> np.ndarray:
+    def undistort_pixels(self, pixels: Sequence[float] | NDArray, temperature: float = 0) -> np.ndarray:
         """
         This method computes undistorted pixel locations (gnomic/pinhole locations) for given distorted
         pixel locations according to the current model.
@@ -487,7 +512,7 @@ class CameraModel(metaclass=ABCMeta):
             setattr(self, attribute, getattr(model, attribute))
 
     @abstractmethod
-    def distort_pixels(self, pixels: ARRAY_LIKE) -> np.ndarray:
+    def distort_pixels(self, pixels: Sequence[float] | NDArray, temperature: float = 0) -> DOUBLE_ARRAY:
         """
         A method that takes gnomic pixel locations in units of pixels and applies the appropriate distortion to them.
 
@@ -497,8 +522,9 @@ class CameraModel(metaclass=ABCMeta):
         :return: The distorted pixel locations in units of pixels
         """
         return np.zeros(2)
+        
 
-    def distortion_map(self, shape: NONEARRAY = None, step: int = 1) \
+    def distortion_map(self, shape: None | Sequence[int] | NDArray[np.integer] = None, step: int = 1) \
             -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         This method computes the value of the distortion model across an entire image for use in creating distortion 
@@ -547,7 +573,8 @@ class CameraModel(metaclass=ABCMeta):
         # distort the pixels, calculate the distortion, and return the results
         return rows, cols, self.distort_pixels(pixels) - pixels
 
-    def undistort_image(self, image: np.ndarray, return_shape: Union[ReturnShape, str] = 'same') -> np.ndarray:
+    def undistort_image(self, image: np.ndarray | list[np.ndarray | OpNavImage] | OpNavImage, 
+                        return_shape: Union[ReturnShape, str, Iterable[ReturnShape | str]] = 'same') -> np.ndarray | list[NDArray]:
         """
         This method takes in an entire image and warps it to remove the distortion specified by the current model.
         
@@ -576,40 +603,60 @@ class CameraModel(metaclass=ABCMeta):
                   re-sampling process.  This means that the undistorted image will generally look somewhat weird around
                   the edges.
         """
+        
+        temp_image = image if not isinstance(image, list) else image[0]
 
-        row_labels = np.arange(image.shape[0])
-        col_labels = np.arange(image.shape[1])
+        row_labels = np.arange(temp_image.shape[0])
+        col_labels = np.arange(temp_image.shape[1])
 
         rows, cols = np.meshgrid(row_labels, col_labels, indexing='ij')
 
         pixel_subs = np.array([cols.flatten().tolist(), rows.flatten().tolist()])
 
-        if hasattr(image, 'temperature'):
-            # noinspection PyTypeChecker
-            undistorted_subs = self.undistort_pixels(pixel_subs, temperature=image.temperature)
-        else:
-            undistorted_subs = self.undistort_pixels(pixel_subs)
+        undistorted_subs = self.undistort_pixels(pixel_subs, temperature=getattr(temp_image, "temperature", 0.0))
 
-        # points = np.array([undistorted_subs[1, :].tolist(), undistorted_subs[0, :].tolist()]).T
         points = undistorted_subs.T
+        
+        if isinstance(image, list):
+            if isinstance(return_shape, (str, ReturnShape)):
+                return_shape = repeat(return_shape)
+            res = []
+            for im, rs in zip(image, return_shape):
 
-        if ReturnShape(return_shape) == ReturnShape.SAME:
-            new_subs = pixel_subs[::-1].T
-            shape = image.shape
+                if ReturnShape(rs) == ReturnShape.SAME:
+                    new_subs = pixel_subs[::-1].T
+                    shape = im.shape
+                else:
+                    start = np.ceil(points.min(axis=0)).astype(int)
+                    stop = np.floor(points.max(axis=0)).astype(int) + 1
+                    new_c = np.arange(start[0], stop[0])
+                    new_r = np.arange(start[1], stop[1])
+                    gridded_r, gridded_c = np.meshgrid(new_r, new_c, indexing='ij')
+
+                    new_subs = np.vstack([gridded_r.ravel(), gridded_c.ravel()])
+
+                    shape = gridded_r.shape
+
+                res.append(interp.griddata(points, im.ravel(), new_subs, fill_value=np.nan, method='linear').reshape(shape))
+            return res
         else:
-            start = np.ceil(points.min(axis=0)).astype(int)
-            stop = np.floor(points.max(axis=0)).astype(int) + 1
-            new_c = np.arange(start[0], stop[0])
-            new_r = np.arange(start[1], stop[1])
-            gridded_r, gridded_c = np.meshgrid(new_r, new_c, indexing='ij')
+            if ReturnShape(return_shape) == ReturnShape.SAME:
+                new_subs = pixel_subs[::-1].T
+                shape = image.shape
+            else:
+                start = np.ceil(points.min(axis=0)).astype(int)
+                stop = np.floor(points.max(axis=0)).astype(int) + 1
+                new_c = np.arange(start[0], stop[0])
+                new_r = np.arange(start[1], stop[1])
+                gridded_r, gridded_c = np.meshgrid(new_r, new_c, indexing='ij')
 
-            new_subs = np.vstack([gridded_r.ravel(), gridded_c.ravel()])
+                new_subs = np.vstack([gridded_r.ravel(), gridded_c.ravel()])
 
-            shape = gridded_r.shape
+                shape = gridded_r.shape
 
-        return interp.griddata(points, image.flatten(), new_subs, fill_value=np.nan, method='linear').reshape(shape)
+            return interp.griddata(points, image.ravel(), new_subs, fill_value=np.nan, method='linear').reshape(shape)
 
-    def copy(self) -> 'CameraModel':
+    def copy(self) -> Self:
         """
         Returns a deep copy of this object, breaking all references with ``self``.
         
@@ -617,8 +664,7 @@ class CameraModel(metaclass=ABCMeta):
         """
         return copy.deepcopy(self)
 
-    # noinspection PyProtectedMember
-    def to_elem(self, elem: etree._Element, **kwargs) -> etree._Element:
+    def to_elem(self, elem: etree._Element, misalignment: bool = False) -> etree._Element:
         """
         Stores this camera model in an :class:`lxml.etree.SubElement` object for storing in a GIANT xml file
 
@@ -629,6 +675,8 @@ class CameraModel(metaclass=ABCMeta):
         The user generally will not use this method and instead will use the module level :func:`save` function.
         
         :param elem: The :class:`lxml.etree.SubElement` class to store this camera model in
+        :param misalignment: whether to save the misalignment in the structure (usually you want false).  As is, this 
+                             does nothing, subclasses which implement misalignment though should make use of this flag
         :return: The :class:`lxml.etree.SubElement` for this model
         """
 
@@ -648,10 +696,8 @@ class CameraModel(metaclass=ABCMeta):
 
         return elem
 
-    # noinspection PyUnresolvedReferences
-    # noinspection PyProtectedMember
     @classmethod
-    def from_elem(cls, elem: etree._Element) -> 'CameraModel':
+    def from_elem(cls, elem: etree._Element) -> Self:
         """
         This class method is used to construct a new instance of `cls` from an :class:`etree._Element` object
 
@@ -693,7 +739,7 @@ class CameraModel(metaclass=ABCMeta):
 
         return inst
 
-    def instantaneous_field_of_view(self, temperature: Real = 0,
+    def instantaneous_field_of_view(self, temperature: float = 0,
                                     center: NONEARRAY = None,
                                     direction: NONEARRAY = None) -> np.ndarray:
         """
@@ -733,7 +779,7 @@ class CameraModel(metaclass=ABCMeta):
     def compute_ground_sample_distance(self, target_position: ARRAY_LIKE,
                                        target_normal: NONEARRAY = None,
                                        camera_step_direction: NONEARRAY = None,
-                                       temperature: Real = 0) -> SCALAR_OR_ARRAY:
+                                       temperature: float = 0) -> SCALAR_OR_ARRAY:
         r"""
         Compute the ground sample distance of the camera at the targets.
 
@@ -796,7 +842,7 @@ class CameraModel(metaclass=ABCMeta):
         theta = ifov/2
 
         # compute the interior angle between the line of sight vector and the normal vector in radians
-        gamma = np.arccos((target_normal*line_of_sight_vector).sum(axis=0))
+        gamma = np.arccos(np.clip((target_normal*line_of_sight_vector).sum(axis=0), -1, 1))
 
         # compute r times half the IFOV
         r_sin_theta = target_distance*np.sin(theta)
@@ -808,6 +854,19 @@ class CameraModel(metaclass=ABCMeta):
         gsd_long = r_sin_theta/np.sin(np.pi/2-theta-gamma)
 
         return np.abs(gsd_short+gsd_long)
+
+    @abstractmethod
+    def check_in_fov(self, vectors: Sequence[float] | NDArray, image: int = 0, temperature: float = 0) -> NDArray[np.bool]:
+        """
+        Determines if any points in the array are within the field of view of the camera.
+
+        :param vectors: Vectors to check if they are in the field of view of the camera expressed as a shape (3, n) array in the camera frame.  
+        :param image: The index of the image being projected onto (only applicable with multiple misalignments)
+        :param temperature: The temperature of the camera to use for the projection
+        :return: A boolean array the same length as the number of columns of vectors. False by default, True if the point is in the FOV.
+        """
+        ...
+    
 
 
 def save(file: PATH, name: str, model: CameraModel, group: Optional[str] = None, misalignment: bool = False):
@@ -940,4 +999,4 @@ def load(file: PATH, name: str, group: Optional[str] = None) -> CameraModel:
         return cls.from_elem(elem)
 
     else:
-        raise LookupError('The specified camera model could not be found in the file')
+        raise LookupError('The specified camera model could not be found in the file') 

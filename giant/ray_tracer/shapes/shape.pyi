@@ -1,8 +1,7 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
 
 
-from typing import Union, Optional
+
+from typing import Union, Optional, Self
 
 import numpy as np
 
@@ -18,9 +17,9 @@ class Shape:
 
     bounding_box: AxisAlignedBoundingBox
 
-    def rotate(self, rotation: Union[ARRAY_LIKE, Rotation]): ...
+    def rotate(self, rotation: Union[ARRAY_LIKE, Rotation]) -> Self: ...
 
-    def translate(self, translation: ARRAY_LIKE): ...
+    def translate(self, translation: ARRAY_LIKE) -> Self: ...
 
     def compute_intersect(self, ray: Rays) -> np.ndarray: ...
 

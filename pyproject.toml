@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=64", "wheel", "cython", "numpy", "scipy"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "giant"
+version = "2.0.0"
+description = "Goddard Image Analysis and Navigation Tool"
+readme = "README.md"
+license = "NASA-1.3"
+authors = [{ name = "Andrew Liounis", email = "andrew.j.liounis@nasa.gov" },
+           { name = "Chris Gnam", email = "crgnam@buffalo.edu"},
+           { name = "Kenneth Getzandanner", email = "kenneth.getzandanner@nasa.gov"},
+           { name = "John Pelgrift", email = "john.pelgrift@kinetx.com"},
+           { name = "Carly VeNard", email = "carly.venard@kinetx.com"},
+           { name = "Jason Russell", email = "jason.russell@kinetx.com"},
+           { name = "Vanessa Myhaver", email = "vanessa.myhaver@kinetx.com"},
+           { name = "Jeffrey Small", email = "jeffrey.small@nasa.gov"},
+           { name = "Samantha Rieger", email = "samantha.m.rieger@nasa.gov"},
+           { name = "Jacob Hikes", email = "jjhikes@gmail.com"},
+           { name = "Andrew Wolfram", email = "ajwolfram@gmail.com"}]
+dependencies = [
+  "pandas",
+  "numpy",
+  "astropy",
+  "scipy",
+  "matplotlib",
+  "lxml",
+  "cython",
+  "python-dateutil",
+  "psutil",
+  "spiceypy",
+  "dill",
+  "astroquery"
+]
+
+[project.scripts]
+ingest_shape = "giant.scripts.ingest_shape:main"
+build_catalog = "giant.scripts.build_catalog:main"
+generate_sample_data = "giant.scripts.generate_sample_data:main"
+merge_cameras = "giant.scripts.merge_cameras:main"
+shape_stats = "giant.scripts.shape_stats:main"
+spc_to_results = "giant.scripts.spc_to_results:main"
+spc_to_feature_catalog = "giant.scripts.spc_to_feature_catalog:main"
+tile_shape = "giant.scripts.tile_shape:main"
+mosaic_images = "giant.scripts.mosaic_images:_MosaicMaker.main"
+update_feature_catalog_paths = "giant.scripts.update_feature_catalog_paths:main"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+where   = ["."]
+include = ["giant*"]
+
+[tool.setuptools.package-data]
+"giant.catalogs" = ["data/*"]

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>tycho &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="Tycho2" href="tycho/giant.catalogs.tycho.Tycho2.html" />
+    <link rel="prev" title="giant.catalogs.gaia.DEFAULT_CAT_FILE" href="gaia/giant.catalogs.gaia.DEFAULT_CAT_FILE.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.catalogs.html">giant.catalogs</a><ul>
+      <li>Previous: <a href="gaia/giant.catalogs.gaia.DEFAULT_CAT_FILE.html" title="previous chapter">giant.catalogs.gaia.DEFAULT_CAT_FILE</a></li>
+      <li>Next: <a href="tycho/giant.catalogs.tycho.Tycho2.html" title="next chapter">Tycho2</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="gaia/giant.catalogs.gaia.DEFAULT_CAT_FILE.html" title="Previous document">giant.catalogs.gaia.DEFAULT_CAT_FILE</a>
+        </li>
+        <li>
+          <a href="tycho/giant.catalogs.tycho.Tycho2.html" title="Next document">Tycho2</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.catalogs.tycho">
+<span id="tycho"></span><h1>tycho<a class="headerlink" href="#module-giant.catalogs.tycho" title="Link to this heading">¶</a></h1>
+<p>This module defines the interface to the Tycho 2 star catalog.</p>
+<section id="catalog-description">
+<h2>Catalog Description<a class="headerlink" href="#catalog-description" title="Link to this heading">¶</a></h2>
+<p>The Tycho2 is a bright star catalog containing positions, proper motions, and photometry for the 2.5 million brightest
+stars in the sky based solely on observations from the Hipparcos satellite.  This corresponds to nearly complete
+coverage down to a visual magnitude magnitude of about 11.0.</p>
+<p>The Tycho 2 catalog uses a csv text file to store the stars.  It is not very efficient for querying either large or
+small numbers of stars.  It also does not include blended stars (stars that are close enough together to appear as a
+single source in an image).  If you need faster retrieval and/or blended stars then you should use the
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">giant_catalog</span></code> instead.</p>
+<p>For a more thorough description of the Tycho2 star catalog see <a class="reference external" href="https://www.cosmos.esa.int/web/hipparcos/tycho-2">https://www.cosmos.esa.int/web/hipparcos/tycho-2</a>.</p>
+</section>
+<section id="use">
+<h2>Use<a class="headerlink" href="#use" title="Link to this heading">¶</a></h2>
+<p>The Tycho 2 catalog can be used anywhere that a star catalog is required in GIANT.
+It is stored in 3 csv files plus an index csv that takes about 500 MB of disk space.  If you attempt to
+initialize the class and point it to a directory that does not contain the Tycho 2 data it will ask you if you want to
+download the catalog (note that the Tycho 2 data is not included by default so if you have not downloaded it yourself
+you will definitely need to).  If you answer yes, be aware that it may take a very long time to download.</p>
+<p>Once you have initialized the class (and downloaded the data files), then you can access the catalog as you would any
+GIANT usable catalog.  Simply call <a class="reference internal" href="tycho/tycho/giant.catalogs.tycho.Tycho2.query_catalog.html#giant.catalogs.tycho.Tycho2.query_catalog" title="giant.catalogs.tycho.Tycho2.query_catalog"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_catalog()</span></code></a> to get the GIANT records for the stars as a
+dataframe with columns according the <code class="xref py py-attr docutils literal notranslate"><span class="pre">GIANT_COLUMNS</span></code>.  This class also provides a helper method,
+<a class="reference internal" href="tycho/tycho/giant.catalogs.tycho.Tycho2.query_catalog_raw.html#giant.catalogs.tycho.Tycho2.query_catalog_raw" title="giant.catalogs.tycho.Tycho2.query_catalog_raw"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_catalog_raw()</span></code></a>, which can be used to retrieve the raw catalog entries (instead of the GIANT
+entries).</p>
+</section>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="tycho/tycho/giant.catalogs.tycho.Tycho2.html#giant.catalogs.tycho.Tycho2" title="giant.catalogs.tycho.Tycho2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tycho2</span></code></a></p></td>
+<td><p>This class provides access to the Tycho 2 star catalog.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Function</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="tycho/giant.catalogs.tycho.download_tycho.html#giant.catalogs.tycho.download_tycho" title="giant.catalogs.tycho.download_tycho"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_tycho</span></code></a></p></td>
+<td><p>This function downloads the Tycho2 catalog from vizier to the target directory.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Constants</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="tycho/giant.catalogs.tycho.TYCHO_DIR.html#giant.catalogs.tycho.TYCHO_DIR" title="giant.catalogs.tycho.TYCHO_DIR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TYCHO_DIR</span></code></a></p></td>
+<td><p>This gives the default location of the Tycho 2 catalog files.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="gaia/giant.catalogs.gaia.DEFAULT_CAT_FILE.html" title="Previous document">giant.catalogs.gaia.DEFAULT_CAT_FILE</a>
+        </li>
+        <li>
+          <a href="tycho/giant.catalogs.tycho.Tycho2.html" title="Next document">Tycho2</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

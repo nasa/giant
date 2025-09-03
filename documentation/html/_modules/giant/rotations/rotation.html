@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.rotations.rotation &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.rotations.rotation</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Self</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.rotations.core.conversions</span><span class="w"> </span><span class="kn">import</span> <span class="n">quaternion_to_euler</span><span class="p">,</span> <span class="n">rotmat_to_quaternion</span><span class="p">,</span> <span class="n">quaternion_to_rotmat</span><span class="p">,</span> <span class="n">quaternion_to_rotvec</span><span class="p">,</span> <span class="n">rotvec_to_quaternion</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.rotations.core.quaternion_math</span><span class="w"> </span><span class="kn">import</span> <span class="n">quaternion_inverse</span><span class="p">,</span> <span class="n">quaternion_multiplication</span><span class="p">,</span> <span class="n">quaternion_normalize</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">DOUBLE_ARRAY</span><span class="p">,</span> <span class="n">EULER_ORDERS</span>
+
+
+<div class="viewcode-block" id="Rotation">
+<a class="viewcode-back" href="../../../rotations/rotation/giant.rotations.rotation.Rotation.html#giant.rotations.rotation.Rotation">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Rotation</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class to represent and manipulate rotations in GIANT.</span>
+
+<span class="sd">    The :class:`Rotation` class is the main way that attitude and rotation information is communicated in GIANT.  It</span>
+<span class="sd">    provides a number of convenient features that make handling attitude data and rotations much easier.  The first of</span>
+<span class="sd">    these features is is the ability to initialize the class with a rotation vector, rotation matrix, or rotation</span>
+<span class="sd">    quaternion as described in the :ref:`Rotation Representations &lt;rotation-representation-table&gt;` table. For any case,</span>
+<span class="sd">    simply provide the constructor with your current representation of your rotation and it will interpret the type of</span>
+<span class="sd">    input (based on its shape) and store the appropriate data.</span>
+
+<span class="sd">    The next feature is property based aliases with caching and setting capabilities.  These properties allow you to</span>
+<span class="sd">    quickly get any of the 3 primary rotation representations(:attr:`quaternion`, :attr:`matrix`, :attr:`vector`),</span>
+<span class="sd">    caching the result so the conversion doesn&#39;t need to be performed every time you need the representation (but</span>
+<span class="sd">    smartly knowing when the cache needs updated because the object has been updated).  They also allow you to update</span>
+<span class="sd">    the entire object in place by directly setting to any of them.</span>
+
+<span class="sd">    The final feature is operator overloading so that rotation transformations are easy.  This means that you can do</span>
+<span class="sd">    things like::</span>
+
+<span class="sd">        &gt;&gt;&gt; from giant.rotations import Rotation</span>
+<span class="sd">        &gt;&gt;&gt; from numpy import pi</span>
+<span class="sd">        &gt;&gt;&gt; rotation_A2B = Rotation([pi, 0, 0])</span>
+<span class="sd">        &gt;&gt;&gt; rotation_B2C = Rotation([0, pi/2, 0])</span>
+<span class="sd">        &gt;&gt;&gt; rotation_A2C = rotation_B2C*rotation_A2B</span>
+<span class="sd">        &gt;&gt;&gt; rotation_A2C</span>
+<span class="sd">        Rotation(array([ 7.07106781e-01,  4.32978028e-17, -7.07106781e-01,  4.32978028e-17]))</span>
+
+<span class="sd">    In addition to the multiplication operator, the equality operator is also overloaded to check that the</span>
+<span class="sd">    quaternion representation of two objects is the same.</span>
+
+<span class="sd">    In general when a rotation needs to be expressed the :class:`Rotation` object is used in GIANT.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span> <span class="o">|</span> <span class="n">Self</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create  a new Rotation instance or return a copy of an existing one.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">Rotation</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span> <span class="o">|</span> <span class="n">Self</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the Rotation object.</span>
+<span class="sd">        </span>
+<span class="sd">        :param data: The rotation data to initialize the class with</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">Rotation</span><span class="p">):</span>
+            <span class="c1"># do nothing</span>
+            <span class="k">return</span>
+
+        <span class="c1"># initialize the attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quaternion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_matrix</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vector</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mupdate</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vupdate</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># check to see if rotation data was supplied</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># interpret the rotation data.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interp_attitude</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">quaternion</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This property stores the quaternion representation of the attitude as a numpy array.</span>
+
+<span class="sd">        It also enables setting the rotation represented for this object. When setting the rotation data for this</span>
+<span class="sd">        object, the input should have a length of 4 and be convertable to a numpy array.  It should also be of unit</span>
+<span class="sd">        length (as is required for rotation quaternions).  If the set value is not of unit length then it will be</span>
+<span class="sd">        automatically normalized before being stored and a warning will be printed.</span>
+
+<span class="sd">        In order to make the quaternion representations unique in GIANT, setting a quaternion to this property will</span>
+<span class="sd">        enforce that the scalar component is positive.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quaternion</span>
+
+    <span class="nd">@quaternion</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">quaternion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span> <span class="o">|</span> <span class="s1">&#39;Rotation&#39;</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">Rotation</span><span class="p">):</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_quaternion</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">quaternion</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The quaternion must be length 4&#39;</span><span class="p">)</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">_quaternion</span> <span class="o">=</span> <span class="n">data</span>
+            <span class="n">quaternion_normalize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_quaternion</span><span class="p">)</span>
+            
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mupdate</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vupdate</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This property stores the matrix representation of the attitude as a numpy array.</span>
+
+<span class="sd">        It also enables setting the rotation represented for this object. When setting the rotation data for this</span>
+<span class="sd">        object , the input should be an orthonormal matrix (Sequence of Sequences) of size 3x3.  When setting this</span>
+<span class="sd">        property, the :attr:`quaternion` property is automatically updated</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mupdate</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_matrix</span> <span class="o">=</span> <span class="n">quaternion_to_rotmat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_quaternion</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mupdate</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_matrix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;the matrix attribute is somehow None but _mupdate is set to false&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_matrix</span>
+
+    <span class="nd">@matrix</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quaternion</span> <span class="o">=</span> <span class="n">rotmat_to_quaternion</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mupdate</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">vector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This property stores the vector representation of the attitude as a numpy array.</span>
+
+<span class="sd">        It also enables setting the rotation represented for this object. When setting the rotation data for this</span>
+<span class="sd">        object, the input should be a length 3 rotation vector (Sequence) according to the form specified in the</span>
+<span class="sd">        :ref:`Rotation Representations &lt;rotation-representation-table&gt;`.  When setting this property, the</span>
+<span class="sd">        :attr:`quaternion` property is automatically updated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vupdate</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_vector</span> <span class="o">=</span> <span class="n">quaternion_to_rotvec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_quaternion</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_vupdate</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vector</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;the vector attribute is somehow None but _mupdate is set to false&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vector</span>
+
+    <span class="nd">@vector</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">quaternion</span> <span class="o">=</span> <span class="n">rotvec_to_quaternion</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vupdate</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">q_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is an alias to the first three elements of the quaternion array (the vector portion of the quaternion)</span>
+
+<span class="sd">        This property is read only.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quaternion</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">q_scalar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is an alias to the last element of the quaternion array (the scalar portion of the quaternion)</span>
+
+<span class="sd">        This property is read only.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quaternion</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Rotation.inv">
+<a class="viewcode-back" href="../../../rotations/rotation/giant.rotations.rotation.Rotation.inv.html#giant.rotations.rotation.Rotation.inv">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inv</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Rotation&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method returns the inverse rotation of the current instance as a new ``Rotation`` object.</span>
+
+<span class="sd">        The inverse is performed on the quaternion representation since it simply involves negating the vector</span>
+<span class="sd">        portion of the quaternion.</span>
+
+<span class="sd">        See :func:`quaternion_inverse` for more information.</span>
+
+<span class="sd">        :return: The inverse rotation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">quaternion_inverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quaternion</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Rotation.interp_attitude">
+<a class="viewcode-back" href="../../../rotations/rotation/giant.rotations.rotation.Rotation.interp_attitude.html#giant.rotations.rotation.Rotation.interp_attitude">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">interp_attitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span> <span class="o">|</span> <span class="s1">&#39;Rotation&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method interprets attitude data based on its shape and type.</span>
+
+<span class="sd">        If the type of the input is an :class:`Rotation` object then the current instance is overwritten with the data</span>
+<span class="sd">        from the :class:`Rotation` object.  If the type is a sequence then the data is interpreted by size.  If the</span>
+<span class="sd">        total size of the Sequence is 4 then the data is presumed to be a quaternion.  If the total size of the sequence</span>
+<span class="sd">        is 3 then the data is presumed to be a rotation vector.  If the total size of the sequence is 9 then the data</span>
+<span class="sd">        is presumed to be a rotation matrix.</span>
+
+<span class="sd">        :raises ValueError: If the size of the input data is not 3, 4, or 9</span>
+<span class="sd">        :param data: The rotation data to be interpreted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">Rotation</span><span class="p">):</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">quaternion</span> <span class="o">=</span> <span class="n">data</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="c1"># Ensure the data is in a numpy array</span>
+            <span class="n">numpy_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">numpy_data</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">quaternion</span> <span class="o">=</span> <span class="n">numpy_data</span>
+
+            <span class="k">elif</span> <span class="n">numpy_data</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">vector</span> <span class="o">=</span> <span class="n">numpy_data</span>
+
+            <span class="k">elif</span> <span class="n">numpy_data</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">matrix</span> <span class="o">=</span> <span class="n">numpy_data</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The specified rotation data cannot be interpreted.&#39;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+
+        <span class="c1"># check that other is a rotation object, if not make it into one</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Rotation</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">other</span> <span class="o">=</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="c1"># if we&#39;re here then other isn&#39;t a representation of rotation that GIANT understands</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># check that the quaternions are the same</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_quaternion</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">quaternion</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s1">&#39;Rotation&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Rotation&#39;</span><span class="p">:</span>
+
+        <span class="c1"># use quaternion multiplication</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Rotation</span><span class="p">):</span>
+
+            <span class="k">return</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">quaternion_multiplication</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quaternion</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">quaternion</span><span class="p">))</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;Rotation(</span><span class="si">{0!r}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quaternion</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quaternion</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Rotation.rotate">
+<a class="viewcode-back" href="../../../rotations/rotation/giant.rotations.rotation.Rotation.rotate.html#giant.rotations.rotation.Rotation.rotate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span> <span class="o">|</span> <span class="s1">&#39;Rotation&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs a left inplace rotation by other.</span>
+
+<span class="sd">        Using this method overwrites the data stored in self with self rotated by other.  That is</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \\mathbf{q}_s = \\mathbf{q}_o\\otimes\\mathbf{q}_s</span>
+
+<span class="sd">        where :math:`\\mathbf{q}_s` is the attitude quaternion representation of self, :math:`\\mathbf{q}_o` is the</span>
+<span class="sd">        attitude quaternion representation of other, and :math:`\\otimes` indicates non-hamiltonian multiplication.</span>
+
+<span class="sd">        See the :func:`quaternion_multiplication` function for more information.</span>
+
+<span class="sd">        :param other: The data to rotate self with</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">quaternion</span> <span class="o">=</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="Rotation.copy">
+<a class="viewcode-back" href="../../../rotations/rotation/giant.rotations.rotation.Rotation.copy.html#giant.rotations.rotation.Rotation.copy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Rotation&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a deep copy of self.</span>
+
+<span class="sd">        :return: A deep copy of self breaking all mutability</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="Rotation.as_euler_angles">
+<a class="viewcode-back" href="../../../rotations/rotation/giant.rotations.rotation.Rotation.as_euler_angles.html#giant.rotations.rotation.Rotation.as_euler_angles">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_euler_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="n">EULER_ORDERS</span> <span class="o">=</span> <span class="s1">&#39;xyz&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the rotation represent as euler angles in the requested order.</span>
+<span class="sd">        </span>
+<span class="sd">        :param order: The order of the angles</span>
+<span class="sd">        :returns: The angles as a tuple of 3 floats.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">quaternion_to_euler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quaternion</span><span class="p">,</span> <span class="n">order</span><span class="p">))</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

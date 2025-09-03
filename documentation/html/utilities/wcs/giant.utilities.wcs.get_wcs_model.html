@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>get_wcs_model &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="giant.scripts" href="../../giant.scripts.html" />
+    <link rel="prev" title="get_wcs_orientation" href="giant.utilities.wcs.get_wcs_orientation.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.utilities.html">giant.utilities</a><ul>
+  <li><a href="../giant.utilities.wcs.html">giant.utilities.wcs</a><ul>
+      <li>Previous: <a href="giant.utilities.wcs.get_wcs_orientation.html" title="previous chapter">get_wcs_orientation</a></li>
+      <li>Next: <a href="../../giant.scripts.html" title="next chapter">giant.scripts</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.utilities.wcs.get_wcs_orientation.html" title="Previous document">get_wcs_orientation</a>
+        </li>
+        <li>
+          <a href="../../giant.scripts.html" title="Next document">giant.scripts</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="get-wcs-model">
+<h1>get_wcs_model<a class="headerlink" href="#get-wcs-model" title="Link to this heading">¶</a></h1>
+<p>:mod:<a href="#id1"><span class="problematic" id="id2">`</span></a>giant.utilities.wcs</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="giant.utilities.wcs.get_wcs_model">
+<span class="sig-prename descclassname"><span class="pre">giant.utilities.wcs.</span></span><span class="sig-name descname"><span class="pre">get_wcs_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_model_guess</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_world_to_camera</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/utilities/wcs.html#get_wcs_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.utilities.wcs.get_wcs_model" title="Link to this definition">¶</a></dt>
+<dd><p>This function creates a giant <span class="xref std std-ref">.CameraModel</span> that mimics the input WCS object.</p>
+<p>We do this by doing a recalibration using the output of the WCS model to feed as an input into the calibration process.
+Essentially, we sample across the detector, use the WCS to convert each sample into a unit vector in the world frame,
+rotate the unit vectors in the world frame into the camera frame, and then do the calibration process using these vectors 
+and the original pixels.  The sampling is done in a grid between (0, 0) and (camera_model_guess.n_cols, camera_model_guess.n_rows)
+with a step size of sample_step.</p>
+<p>The camera_model_guess should be a subclass instance of the <span class="xref std std-ref">.CameraModel</span> class for the camera model you would like to use
+which is seeded with an initial guess (that at least can do a projection to a meaningful value, even if its wrong).  Additionally,
+this instance should have the <span class="xref std std-ref">.CameraModel.estimation_parameters</span> set correctly for what parameters you would like estimated.
+The same rules apply as for a normal calibration.</p>
+<p>If you have already extracted the rotation between the world and camera frame from the wcs object you can provide it in the
+optional rotation_world_to_camera frame, otherwise it will be extracted from the WCS using the <span class="xref std std-ref">get_wcs_orientation</span> function 
+from this module assuming the boresight pixel is the center of the image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<em>WCS</em>) – The WCS to fit the model to</p></li>
+<li><p><strong>camera_model_guess</strong> (<a class="reference internal" href="../../camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><em>CameraModel</em></a>) – the initial guess for the camera model/type of camera model to be extracted</p></li>
+<li><p><strong>sample_step</strong> (<em>int</em>) – the number of pixels between each sample</p></li>
+<li><p><strong>rotation_world_to_camera</strong> (<a class="reference internal" href="../../rotations/rotation/giant.rotations.rotation.Rotation.html#giant.rotations.rotation.Rotation" title="giant.rotations.rotation.Rotation"><em>Rotation</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="../../camera_model/giant.camera_models.camera_model.CameraModel.html#giant.camera_models.camera_model.CameraModel" title="giant.camera_models.camera_model.CameraModel"><em>CameraModel</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.utilities.wcs.get_wcs_orientation.html" title="Previous document">get_wcs_orientation</a>
+        </li>
+        <li>
+          <a href="../../giant.scripts.html" title="Next document">giant.scripts</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

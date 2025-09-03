@@ -1,7 +1,3 @@
-# Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space
-# Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.
-
-
 """
 This module provides utility functions and classes for quickly creating callable objects to NAIF spice functions as well
 as a function to convert a datetime object to spice ephemeris time without using spice itself.
@@ -32,11 +28,6 @@ Or, if we use this interface we could do something like the following:
     >>> moon_pos_earth = spint.SpicePosition("Moon", "J2000", "LT+S", "Earth")
     >>> pos = moon_pos_earth(observation_date)
 
-The 2 functions in the prefered interface, :func:`leap_seconds` and :func:`datetime_to_et` are useful time operations
-that are available whether spice is being used or not.  The :func:`leap_seconds` function inputs a datetime object and
-outputs the number of leap seconds that occurred between the input observation_date and the J2000 epoch.  The
-:func:`datetime_to_et` function converts and input datetime object into its corresponding ephemeris time.
-
 The next group of functions are not prefered and also are only available when
 `spiceypy <https://spiceypy.readthedocs.io/en/master/>`_ is part of the current python installation and you have loaded
 the apropriate data.  These functions create callable objects (actually partial function objects)
@@ -66,99 +57,19 @@ function work with only a datetime object input, making this module extremely us
 
 import datetime
 from functools import partial
-from typing import Callable, Union, Tuple
+from typing import Callable, Tuple, cast
 
 import numpy as np
 import pandas as pd
 
-from ..rotations import Rotation
+from giant.rotations import Rotation
+from giant._typing import DatetimeLike
 
 
-HAS_SPICE: bool = False
-"""
-This flag specifies whether spiceypy is available in the current python environment
-"""
+import spiceypy as spice
 
 
-try:
-    import spiceypy as spice
-
-    HAS_SPICE = True
-
-except ImportError:
-
-    spice = ''
-
-
-J2000_EPOCH = datetime.datetime(2000, 1, 1, 12, 0, 0)
-"""
-The UTC Epoch for spice ephemeris time
-"""
-
-
-# info from naif0012.tls -- list of leap_seconds since 1972 as datetime objects
-LEAP_SECONDS_LIST = np.array([datetime.datetime(1972, 1, 1, 0, 0),  # -23
-                              datetime.datetime(1972, 7, 1, 0, 0),  # -22
-                              datetime.datetime(1973, 1, 1, 0, 0),  # -21
-                              datetime.datetime(1974, 1, 1, 0, 0),  # -20
-                              datetime.datetime(1975, 1, 1, 0, 0),  # -19
-                              datetime.datetime(1976, 1, 1, 0, 0),  # -18
-                              datetime.datetime(1977, 1, 1, 0, 0),  # -17
-                              datetime.datetime(1978, 1, 1, 0, 0),  # -16
-                              datetime.datetime(1979, 1, 1, 0, 0),  # -15
-                              datetime.datetime(1980, 1, 1, 0, 0),  # -14
-                              datetime.datetime(1981, 7, 1, 0, 0),  # -13
-                              datetime.datetime(1982, 7, 1, 0, 0),  # -12
-                              datetime.datetime(1983, 7, 1, 0, 0),  # -11
-                              datetime.datetime(1985, 7, 1, 0, 0),  # -10
-                              datetime.datetime(1988, 1, 1, 0, 0),  # -9
-                              datetime.datetime(1990, 1, 1, 0, 0),  # -8
-                              datetime.datetime(1991, 1, 1, 0, 0),  # -7
-                              datetime.datetime(1992, 7, 1, 0, 0),  # -6
-                              datetime.datetime(1993, 7, 1, 0, 0),  # -5
-                              datetime.datetime(1994, 7, 1, 0, 0),  # -4
-                              datetime.datetime(1996, 1, 1, 0, 0),  # -3
-                              datetime.datetime(1997, 7, 1, 0, 0),  # -2
-                              datetime.datetime(1999, 1, 1, 0, 0),  # -1
-                              # J2000 epoch                            32 past TAI
-                              datetime.datetime(2006, 1, 1, 0, 0),  # +1
-                              datetime.datetime(2009, 1, 1, 0, 0),  # +2
-                              datetime.datetime(2012, 7, 1, 0, 0),  # +3
-                              datetime.datetime(2015, 7, 1, 0, 0),  # +4
-                              datetime.datetime(2017, 1, 1, 0, 0)  # +5
-                              ], 'datetime64[us]')
-"""
-A numpy datetime64 array of leap seconds taken from naif0012.tls
-"""
-
-
-# constants take from naif0012.tls
-_DELTA_T_A = 32.184
-_K_CONST = 1.657e-3
-_EB_CONST = 1.671e-2
-_MEAN_ANOM_START = 6.239996
-_MEAN_ANOM_VELO = 1.99096871e-7
-
-
-def leap_seconds(date: datetime.datetime) -> int:
-    """
-    This function returns the number of leap seconds between observation_date and January 1, 12:00:00.000 (TDB).
-
-    For dates before the epoch, leap seconds are returned as negative integers.  For dates after the epoch
-    leap seconds are returned as positive integers.
-
-    :param date: a python datetime object
-    :return: The number of leap seconds between the input observation_date and the epoch
-    """
-
-    positive_leaps = ((date >= LEAP_SECONDS_LIST) & (J2000_EPOCH < LEAP_SECONDS_LIST)).sum()
-
-    negative_leaps = ((date <= LEAP_SECONDS_LIST) & (J2000_EPOCH > LEAP_SECONDS_LIST)).sum()
-
-    return positive_leaps - negative_leaps
-
-
-def datetime_to_et(date: Union[datetime.datetime, np.datetime64, pd.DatetimeIndex]) -> float:
+def datetime_to_et(date: DatetimeLike | np.datetime64) -> float:
     """
     This function converts a python datetime object to ephemeris time correcting for leap seconds
 
@@ -171,30 +82,10 @@ def datetime_to_et(date: Union[datetime.datetime, np.datetime64, pd.DatetimeInde
     :return: The ephemeris time corresponding to observation_date for use in the spice system
     """
 
-    if not HAS_SPICE:
-
-        leapsecs = leap_seconds(date)
-
-        delta_at = 32 + leapsecs
-
-        time_since_j2000 = (date - J2000_EPOCH).total_seconds() + leapsecs
-
-        mean_anom = _MEAN_ANOM_START + _MEAN_ANOM_VELO * time_since_j2000
-
-        eccentricity = mean_anom + _EB_CONST * np.sin(mean_anom)
-
-        et_m_tai = _DELTA_T_A + _K_CONST * np.sin(eccentricity)
-
-        delta_et = et_m_tai + delta_at
-
-        return delta_et + (date - J2000_EPOCH).total_seconds()
-
+    if isinstance(date, np.datetime64):
+        return cast(float, spice.datetime2et(cast(datetime.datetime, date.astype(datetime.datetime))))
     else:
-
-        try:
-            return spice.str2et(date.isoformat())
-        except AttributeError:
-            return spice.str2et(date.astype(datetime.datetime).isoformat())
+        return cast(float, spice.datetime2et(cast(datetime.datetime, date)))        
 
 
 def _move_et_end_and_drop_lt(func: Callable, targ: str, ref: str, abcorr: str, obs: str, et: float) -> np.ndarray:
@@ -239,7 +130,7 @@ def create_callable_position(target: str, frame: str, corrections: str, observer
              input
     """
 
-    if HAS_SPICE:
+    if spice is not None:
 
         return partial(_move_et_end_and_drop_lt, spice.spkpos, target, frame, corrections, observer)
 
@@ -273,7 +164,7 @@ def create_callable_state(target: str, frame: str, corrections: str, observer: s
              input
     """
 
-    if HAS_SPICE:
+    if spice is not None:
 
         return partial(_move_et_end_and_drop_lt, spice.spkezr, target, frame, corrections, observer)
 
@@ -324,7 +215,7 @@ def create_callable_orientation(from_frame: str, to_frame: str) -> Callable:
     :return: A partial function wrapper around the spiceypy.pxform function which only requires the et input
     """
 
-    if HAS_SPICE:
+    if spice is not None:
 
         return _rotation_to_attitude(partial(spice.pxform, from_frame, to_frame))
 
@@ -353,12 +244,11 @@ def et_callable_to_datetime_callable(func: Callable) -> Callable:
     :return: An object which accepts a datetime object inplace of an et float
     """
 
-    def datetime_callable(date: datetime.datetime):
+    def datetime_callable(date: DatetimeLike):
         """
         This function returns a callable object which accepts a python datetime object instead of an et float.
 
         :param date: A python datetime object to be used to call the function
-        :type date: datetime.datetime
         :return: The result of func(datetime_to_et(observation_date)) which is generally a numpy array containing either
                  the position or state of an object
         """
@@ -432,7 +322,7 @@ class SpicePosition:
         """
 
 
-    def __call__(self, date: datetime.datetime) -> np.ndarray:
+    def __call__(self, date: DatetimeLike) -> np.ndarray:
         """
         Make the call to spkpos given the stored settings at the input date returning the position vector in kilometers.
 
@@ -451,8 +341,8 @@ class SpicePosition:
         """
 
         return spice.spkpos(self.target, datetime_to_et(date), self.reference_frame, self.corrections, self.observer)[0]
-
-    def light_time(self, date: datetime.datetime) -> float:
+    
+    def light_time(self, date: DatetimeLike) -> float:
         """
         Make the call to spkpos given the stored settings at the input date returning only the light time in TDB
         seconds.
@@ -470,9 +360,9 @@ class SpicePosition:
         :return: The one way light time between the observer and the target in TDB seconds.
         """
 
-        return spice.spkpos(self.target, datetime_to_et(date), self.reference_frame, self.corrections, self.observer)[1]
+        return cast(float, spice.spkpos(self.target, datetime_to_et(date), self.reference_frame, self.corrections, self.observer)[1])
 
-    def position_light_time(self, date: datetime.datetime) -> Tuple[np.ndarray, float]:
+    def position_light_time(self, date: DatetimeLike) -> Tuple[np.ndarray, float]:
         """
         Make the call to spkpos given the stored settings at the input date returning both the position vector in
         kilometers and the light time in TDB
@@ -491,7 +381,7 @@ class SpicePosition:
                  target in TDB seconds as a tuple.
         """
 
-        return spice.spkpos(self.target, datetime_to_et(date), self.reference_frame, self.corrections, self.observer)
+        return cast(tuple[np.ndarray, float], spice.spkpos(self.target, datetime_to_et(date), self.reference_frame, self.corrections, self.observer))
 
 
 class SpiceState:
@@ -557,7 +447,7 @@ class SpiceState:
         ``OBS`` input for spkezr.
         """
 
-    def __call__(self, date: datetime.datetime) -> np.ndarray:
+    def __call__(self, date: DatetimeLike) -> np.ndarray:
         """
         Make the call to spkezr given the stored settings at the input date returning the state vector
         (position, velocity) in kilometers and kilometers per second respectively.
@@ -576,9 +466,9 @@ class SpiceState:
                  corrections :attr:`corrections` at ``date``
         """
 
-        return spice.spkpos(self.target, datetime_to_et(date), self.reference_frame, self.corrections, self.observer)[0]
+        return cast(np.ndarray, spice.spkezr(self.target, datetime_to_et(date), self.reference_frame, self.corrections, self.observer)[0])
 
-    def light_time(self, date: datetime.datetime) -> float:
+    def light_time(self, date: DatetimeLike) -> float:
         """
         Make the call to spkezr given the stored settings at the input date returning only the light time in TDB
         seconds.
@@ -596,9 +486,9 @@ class SpiceState:
         :return: The one way light time between the observer and the target in TDB seconds.
         """
 
-        return spice.spkezr(self.target, datetime_to_et(date), self.reference_frame, self.corrections, self.observer)[1]
+        return cast(float, spice.spkezr(self.target, datetime_to_et(date), self.reference_frame, self.corrections, self.observer)[1])
 
-    def position_light_time(self, date: datetime.datetime) -> Tuple[np.ndarray, float]:
+    def position_light_time(self, date: DatetimeLike) -> Tuple[np.ndarray, float]:
         """
         Make the call to spkezr given the stored settings at the input date returning both the state vector in
         kilometers and kilometers per second and the light time in TDB seconds.
@@ -616,7 +506,7 @@ class SpiceState:
                  the observer and the target in TDB seconds as a tuple.
         """
 
-        return spice.spkezr(self.target, datetime_to_et(date), self.reference_frame, self.corrections, self.observer)
+        return cast(tuple[np.ndarray, float], spice.spkezr(self.target, datetime_to_et(date), self.reference_frame, self.corrections, self.observer))
 
 
 class SpiceOrientation:
@@ -656,7 +546,7 @@ class SpiceOrientation:
         ``TO`` input for pxform.
         """
 
-    def __call__(self, date: datetime.datetime) -> np.ndarray:
+    def __call__(self, date: DatetimeLike) -> Rotation:
         """
         Make the call to pxform given the stored settings at the input date returning the rotation as a
         :class:`.Rotation` object.
@@ -670,7 +560,7 @@ class SpiceOrientation:
         where :func:`.datetime_to_et` converts a datetime object into ephemeris (TDB) seconds since the J2000 epoch.
 
         :param date: The date we are querying spice at as a datetime object
-        :return: The rotation from :attr:`from_frame` to :attr:`to_fram` at time ``date`` as a :class:`.Rotation`.
+        :return: The rotation from :attr:`from_frame` to :attr:`to_frame` at time ``date`` as a :class:`.Rotation`.
         """
 
         return Rotation(spice.pxform(self.from_frame, self.to_frame, datetime_to_et(date)))

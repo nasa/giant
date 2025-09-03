@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>tile_shape &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="License" href="../license.html" />
+    <link rel="prev" title="tile_shape" href="giant.scripts.tile_shape.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.scripts.html">giant.scripts</a><ul>
+      <li>Previous: <a href="giant.scripts.tile_shape.html" title="previous chapter">tile_shape</a></li>
+      <li>Next: <a href="../license.html" title="next chapter">License</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.scripts.tile_shape.html" title="Previous document">tile_shape</a>
+        </li>
+        <li>
+          <a href="../license.html" title="Next document">License</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="tile-shape">
+<h1>tile_shape<a class="headerlink" href="#tile-shape" title="Link to this heading">¶</a></h1>
+<p><a class="reference internal" href="#module-giant.scripts.tile_shape" title="giant.scripts.tile_shape"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.scripts.tile_shape</span></code></a>:</p>
+<p id="module-giant.scripts.tile_shape">Tile a shape model into SurfaceFeatures in a FeatureCatalog.</p>
+<p>This script tiles an existing shape model in a GIANT format (<a class="reference internal" href="../ray_tracer/giant.ray_tracer.shapes.html#module-giant.ray_tracer.shapes" title="giant.ray_tracer.shapes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">shapes</span></code></a>, <a class="reference internal" href="../ray_tracer/giant.ray_tracer.kdtree.html#module-giant.ray_tracer.kdtree" title="giant.ray_tracer.kdtree"><code class="xref py py-mod docutils literal notranslate"><span class="pre">kdtree</span></code></a>, <code class="xref py py-mod docutils literal notranslate"><span class="pre">surface_feature</span></code>,
+etc) into a <code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureCatalgoue</span></code> of <code class="xref py py-class docutils literal notranslate"><span class="pre">SurfaceFeatures</span></code>.  The features are sampled uniformly from the
+existing shape as square grids with a specified size and ground sample distance. Multiple GSDs can be requested in a
+single run.  The resulting features can also optionally be exported to OBJs or SPC Maplets/Landmarks.</p>
+<p>Typically this script will be used in 2 ways.  First, if there is a global high resolution of model of the target being
+observed (such as from LiDAR data) then this script can be used to tile the high resolution model into features with
+varying ground sample distances for direct use in <a class="reference internal" href="../relative_opnav/estimators/giant.relative_opnav.estimators.sfn.html#module-giant.relative_opnav.estimators.sfn" title="giant.relative_opnav.estimators.sfn"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sfn</span></code></a> or SPC.  Second, this script may be used when building a
+shape model using only optical data.  After constructing an initial low resolution shape model using limbs, this script
+can then be used to tile the low reduction model into initial features that will subsequently be refined through SPC or
+other shape modelling techniques.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>For large number of features or when starting with a high-resolution shape model this script can take a long time to
+run.  Therefore we encourage you to use nohup to allow it to complete unhindered.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This script load/saves some results from/to python pickle files.  Pickle files can be used to execute arbitrary
+code, so you should never open one from an untrusted source.</p>
+</div>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
+<p><p>Generate a feature catalog for Surface Feature Navigation (SFN) containing by tiling a global shape model</p>
+</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">tile_shape</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span> <span class="n">FEATURE_OUTPUT</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">CATALOG_OUTPUT</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">s32</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">p</span><span class="p">]</span>
+                  <span class="p">[</span><span class="o">-</span><span class="n">o</span> <span class="n">OBJS</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">g</span> <span class="n">GSDS</span> <span class="p">[</span><span class="n">GSDS</span> <span class="o">...</span><span class="p">]]</span> <span class="p">[</span><span class="o">-</span><span class="n">s</span> <span class="n">SIZE</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">r</span> <span class="n">SHAPE_RADIUS</span><span class="p">]</span>
+                  <span class="p">[</span><span class="o">-</span><span class="n">v</span> <span class="n">OVERLAP</span><span class="p">]</span>
+                  <span class="n">shape</span>
+</pre></div>
+</div>
+<section id="giant.scripts.tile_shape-_get_parser-positional-arguments">
+<h3>Positional Arguments<a class="headerlink" href="#giant.scripts.tile_shape-_get_parser-positional-arguments" title="Link to this heading">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>shape</kbd></dt>
+<dd><p>path to the shape file directory</p>
+</dd>
+</dl>
+</section>
+<section id="giant.scripts.tile_shape-_get_parser-named-arguments">
+<h3>Named Arguments<a class="headerlink" href="#giant.scripts.tile_shape-_get_parser-named-arguments" title="Link to this heading">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>-f, --feature_output</kbd></dt>
+<dd><p>The directory to save the feature results to</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">'./features'</span></code></p>
+</dd>
+<dt><kbd>-c, --catalog_output</kbd></dt>
+<dd><p>The directory to save the feature results to</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">'./feature_catalog.pickle'</span></code></p>
+</dd>
+<dt><kbd>-s32, --single_precision</kbd></dt>
+<dd><p>use single precision for triangles triangles</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>-p, --spc</kbd></dt>
+<dd><p>Make spc stuff</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>-o, --objs</kbd></dt>
+<dd><p>directory to output objs for each feature to this location (leave none to not make objs)</p>
+</dd>
+<dt><kbd>-g, --gsds</kbd></dt>
+<dd><p>The gsds to build features at in meters</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">[1.5,</span> <span class="pre">1,</span> <span class="pre">0.75,</span> <span class="pre">0.35,</span> <span class="pre">0.15]</span></code></p>
+</dd>
+<dt><kbd>-s, --size</kbd></dt>
+<dd><p>The size of each side of a feature</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">201</span></code></p>
+</dd>
+<dt><kbd>-r, --shape_radius</kbd></dt>
+<dd><p>The average radius of the shape in meters.  Used to determine the number of tiles to make.</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">250</span></code></p>
+</dd>
+<dt><kbd>-v, --overlap</kbd></dt>
+<dd><p>The minimum overlap between each tile as a faction in  [0, 1).  0 indicates no minimum overlap (default) and 1 would indicate full overlap though that is not possible</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">0</span></code></p>
+</dd>
+</dl>
+</section>
+<p><p>WARNING: This script loads/saves some results from/to python pickle files.  Pickle files can be used to execute arbitrary code, so you should never open one from an untrusted source.</p>
+</p>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.scripts.tile_shape.html" title="Previous document">tile_shape</a>
+        </li>
+        <li>
+          <a href="../license.html" title="Next document">License</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

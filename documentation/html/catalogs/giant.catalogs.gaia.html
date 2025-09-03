@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>gaia &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="Gaia" href="gaia/giant.catalogs.gaia.Gaia.html" />
+    <link rel="prev" title="giant.catalogs.meta_catalog.GIANT_TYPES" href="meta_catalog/giant.catalogs.meta_catalog.GIANT_TYPES.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.catalogs.html">giant.catalogs</a><ul>
+      <li>Previous: <a href="meta_catalog/giant.catalogs.meta_catalog.GIANT_TYPES.html" title="previous chapter">giant.catalogs.meta_catalog.GIANT_TYPES</a></li>
+      <li>Next: <a href="gaia/giant.catalogs.gaia.Gaia.html" title="next chapter">Gaia</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="meta_catalog/giant.catalogs.meta_catalog.GIANT_TYPES.html" title="Previous document">giant.catalogs.meta_catalog.GIANT_TYPES</a>
+        </li>
+        <li>
+          <a href="gaia/giant.catalogs.gaia.Gaia.html" title="Next document">Gaia</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.catalogs.gaia">
+<span id="gaia"></span><h1>gaia<a class="headerlink" href="#module-giant.catalogs.gaia" title="Link to this heading">¶</a></h1>
+<p>This module defines the interface to the GAIA star catalog.</p>
+<section id="catalog-description">
+<h2>Catalog Description<a class="headerlink" href="#catalog-description" title="Link to this heading">¶</a></h2>
+<p>The GAIA is a (nearly) complete sky survey of over 1.8 billion stars with 1.46 billion including proper motion
+solutions.  It is generally very accurate for both positions and magnitudes and is mostly complete between magnitudes
+3 and 20.</p>
+<p>To access the GAIA catalog, GIANT uses the astroquery TAP+ interface
+(<a class="reference external" href="https://astroquery.readthedocs.io/en/latest/gaia/gaia.html">https://astroquery.readthedocs.io/en/latest/gaia/gaia.html</a>) to retrieve the information from the web.  Since the
+catalog is still in development this is the best way to ensure you have the most current solutions.  Alternatively,
+if you need more speed or are working in an environment where you cannot access the web, you can use the function
+<a class="reference internal" href="gaia/giant.catalogs.gaia.build_catalog.html#giant.catalogs.gaia.build_catalog" title="giant.catalogs.gaia.build_catalog"><code class="xref py py-func docutils literal notranslate"><span class="pre">build_catalog()</span></code></a> to download a subset of the catalog to a local HDF5 file and then point the class to this file.</p>
+</section>
+<section id="use">
+<h2>Use<a class="headerlink" href="#use" title="Link to this heading">¶</a></h2>
+<p>The GAIA catalog can be used anywhere that a star catalog is required in GIANT.
+It is stored on the internet in a TAP+ service which allows querying the results and returning them to the machine.
+Since the GAIA catalog is still being revised as more data becomes available, GIANT by default queries to this service
+rather than having a local copy of the catalog (also the catalog is huge!!!).  As mentioned previously, if this
+doesn’t work for you for whatever reason, you can use the <a class="reference internal" href="gaia/giant.catalogs.gaia.build_catalog.html#giant.catalogs.gaia.build_catalog" title="giant.catalogs.gaia.build_catalog"><code class="xref py py-func docutils literal notranslate"><span class="pre">build_catalog()</span></code></a> function to download a local copy of
+the catalog in GIANT format and then provide the <code class="docutils literal notranslate"><span class="pre">catalog_file</span></code> argument to the class constructor to use this rather
+than live queries.</p>
+<p>Once you have initialized the class, then you can access the catalog as you would any
+GIANT usable catalog.  Simply call <code class="xref py py-meth docutils literal notranslate"><span class="pre">query_catalog()</span></code> to get the GIANT records for the stars as a
+DataFrame with columns according the <code class="xref py py-attr docutils literal notranslate"><span class="pre">GIANT_COLUMNS</span></code>.</p>
+<p>Note that the epoch for the astrometry solutions in the GAIA catalog changes with each new release.  GIANT tracks
+these for you and handles them appropriately, but be aware of this if you are using the catalog data directly.  Also
+note that since in GIANT we primarily care about stars for attitude/calibration purposes, we filter out stars from the
+GAIA catalog which have questionable solutions or for which there is missing data. If you need access to everything in
+the catalog consider the astroquery api discussed previously. For more information about the GAIA catalog refer to
+<a class="reference external" href="https://www.cosmos.esa.int/web/gaia-users/archive">https://www.cosmos.esa.int/web/gaia-users/archive</a>.</p>
+</section>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="gaia/giant.catalogs.gaia.Gaia.html#giant.catalogs.gaia.Gaia" title="giant.catalogs.gaia.Gaia"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Gaia</span></code></a></p></td>
+<td><p>This class provides access to the GAIA star catalog.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Function</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="gaia/giant.catalogs.gaia.blend_stars.html#giant.catalogs.gaia.blend_stars" title="giant.catalogs.gaia.blend_stars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blend_stars</span></code></a></p></td>
+<td><p>Blends groups of stars together into a single &quot;apparent&quot; star as viewed by a camera.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="gaia/giant.catalogs.gaia.build_catalog.html#giant.catalogs.gaia.build_catalog" title="giant.catalogs.gaia.build_catalog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_catalog</span></code></a></p></td>
+<td><p>Build a local GIANT catalog:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="gaia/giant.catalogs.gaia.find_star_pairs.html#giant.catalogs.gaia.find_star_pairs" title="giant.catalogs.gaia.find_star_pairs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_star_pairs</span></code></a></p></td>
+<td><p>This identifies possible star pairs based on separation angle.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Constants</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="gaia/giant.catalogs.gaia.GAIA_DR.html#giant.catalogs.gaia.GAIA_DR" title="giant.catalogs.gaia.GAIA_DR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GAIA_DR</span></code></a></p></td>
+<td><p>This specifies the GAIA data release to use when querying the TAP+ service.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="gaia/giant.catalogs.gaia.DEFAULT_CAT_FILE.html#giant.catalogs.gaia.DEFAULT_CAT_FILE" title="giant.catalogs.gaia.DEFAULT_CAT_FILE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEFAULT_CAT_FILE</span></code></a></p></td>
+<td><p>This specifies the default location of the HDF5 database file that contains the data for this catalog.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="meta_catalog/giant.catalogs.meta_catalog.GIANT_TYPES.html" title="Previous document">giant.catalogs.meta_catalog.GIANT_TYPES</a>
+        </li>
+        <li>
+          <a href="gaia/giant.catalogs.gaia.Gaia.html" title="Next document">Gaia</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

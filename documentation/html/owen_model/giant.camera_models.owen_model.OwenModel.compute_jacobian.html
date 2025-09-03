@@ -1,21 +1,20 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>OwenModel.compute_jacobian &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/doctools.js"></script>
+    <title>OwenModel.compute_jacobian &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="copyright" title="Copyright" href="../copyright.html" />
@@ -24,17 +23,18 @@
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../index.html">
-    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -75,7 +75,7 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -83,8 +83,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -109,12 +109,12 @@
           <div class="body" role="main">
             
   <section id="owenmodel-compute-jacobian">
-<h1>OwenModel.compute_jacobian<a class="headerlink" href="#owenmodel-compute-jacobian" title="Permalink to this headline">¶</a></h1>
+<h1>OwenModel.compute_jacobian<a class="headerlink" href="#owenmodel-compute-jacobian" title="Link to this heading">¶</a></h1>
 <p><a class="reference internal" href="../giant.camera_models.owen_model.html#module-giant.camera_models.owen_model" title="giant.camera_models.owen_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.camera_models.owen_model</span></code></a>:</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="giant.camera_models.owen_model.OwenModel.compute_jacobian">
-<span class="sig-prename descclassname"><span class="pre">OwenModel.</span></span><span class="sig-name descname"><span class="pre">compute_jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit_vectors_camera</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.compute_jacobian" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates the Jacobian matrix for each observation in <cite>unit_vectors_camera</cite> for each parameter to be estimated
+<span class="sig-prename descclassname"><span class="pre">OwenModel.</span></span><span class="sig-name descname"><span class="pre">compute_jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit_vectors_in_camera_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giant.camera_models.owen_model.OwenModel.compute_jacobian" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the Jacobian matrix for each observation in <cite>unit_vectors_in_camera_frame</cite> for each parameter to be estimated
 as defined in the <a class="reference internal" href="giant.camera_models.owen_model.OwenModel.html#giant.camera_models.owen_model.OwenModel.estimation_parameters" title="giant.camera_models.owen_model.OwenModel.estimation_parameters"><code class="xref py py-attr docutils literal notranslate"><span class="pre">estimation_parameters</span></code></a> attribute.</p>
 <p>This method works by first computing the partial derivatives for all camera parameters for each provided unit
 vector. It then concatenates the rows into the Jacobian matrix and removes any columns of parameters that
@@ -122,7 +122,7 @@ are not specified in the <a class="reference internal" href="giant.camera_models
 of the <a class="reference internal" href="giant.camera_models.owen_model.OwenModel.html#giant.camera_models.owen_model.OwenModel.estimation_parameters" title="giant.camera_models.owen_model.OwenModel.estimation_parameters"><code class="xref py py-attr docutils literal notranslate"><span class="pre">estimation_parameters</span></code></a> attribute. The resulting Jacobian
 will be the appropriate size and in the order specified by <a class="reference internal" href="giant.camera_models.owen_model.OwenModel.html#giant.camera_models.owen_model.OwenModel.estimation_parameters" title="giant.camera_models.owen_model.OwenModel.estimation_parameters"><code class="xref py py-attr docutils literal notranslate"><span class="pre">estimation_parameters</span></code></a>.  There is one
 constraint that the misalignment (if included) must be last in <a class="reference internal" href="giant.camera_models.owen_model.OwenModel.html#giant.camera_models.owen_model.OwenModel.estimation_parameters" title="giant.camera_models.owen_model.OwenModel.estimation_parameters"><code class="xref py py-attr docutils literal notranslate"><span class="pre">estimation_parameters</span></code></a>.</p>
-<p>The <cite>unit_vectors_camera</cite> inputs should be formatted as a Sequence of 2d sequences.  Each inner 2D sequence
+<p>The <cite>unit_vectors_in_camera_frame</cite> inputs should be formatted as a Sequence of 2d sequences.  Each inner 2D sequence
 should be of shape <span class="math notranslate nohighlight">\(3\times x\)</span>, where each row corresponds to a component of a unit vector in the camera
 frame. Each inner sequence should contain all observations from a single image, so that if there are <span class="math notranslate nohighlight">\(m\)</span>
 images being considered, then the outer sequence should be length <span class="math notranslate nohighlight">\(m\)</span>.  The value of <span class="math notranslate nohighlight">\(x\)</span> can change
@@ -132,31 +132,31 @@ correspond to the order of the image observations in the outer sequence.</p>
 this Jacobian if you are solving for an update to your camera model, and not a new one entirely.</p>
 <p>The optional <cite>temperature</cite> input specifies the temperature of the camera for use in estimating temperature
 dependence.  The temperature input should either be a scalar value (float or int), or a list that is the same
-length as <cite>unit_vectors_camera</cite>, where each element of the list is the temperature of the camera at the time
-of each image represented by <cite>unit_vectors_camera</cite>.  If the <cite>temperature</cite> input is a scalar, then it is assumed
-to be the temperature value for all of the images represented in <cite>unit_vectors_camera</cite>.</p>
+length as <cite>unit_vectors_in_camera_frame</cite>, where each element of the list is the temperature of the camera at the time
+of each image represented by <cite>unit_vectors_in_camera_frame</cite>.  If the <cite>temperature</cite> input is a scalar, then it is assumed
+to be the temperature value for all of the images represented in <cite>unit_vectors_in_camera_frame</cite>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>unit_vectors_camera</strong> (<em>Sequence</em><em>[</em><em>Union</em><em>[</em><em>Sequence</em><em>[</em><em>Sequence</em><em>]</em><em>, </em><em>numpy.ndarray</em><em>]</em><em>]</em>) – The points/directions in the camera frame that the jacobian matrix is to be computed
+<li><p><strong>unit_vectors_in_camera_frame</strong> (<em>Sequence</em><em>[</em><em>ndarray</em><em>[</em><em>tuple</em><em>[</em><em>Any</em><em>, </em><em>...</em><em>]</em><em>, </em><em>dtype</em><em>[</em><em>float64</em><em>]</em><em>] </em><em>| </em><em>list</em><em>[</em><em>list</em><em>]</em><em>]</em>) – The points/directions in the camera frame that the jacobian matrix is to be computed
 for.  For multiple images, this should be a list of 2D unit vectors where each
 element of the list corresponds to a new image.</p></li>
-<li><p><strong>temperature</strong> (<em>Union</em><em>[</em><em>Sequence</em><em>, </em><em>numpy.ndarray</em><em>, </em><em>numbers.Real</em><em>]</em>) – A single temperature for all images or a list of temperatures the same length of
-<cite>unit_vectors_camera</cite> containing the temperature of the camera at the time each image was
+<li><p><strong>temperature</strong> (<em>float</em><em> | </em><em>ndarray</em><em>[</em><em>tuple</em><em>[</em><em>Any</em><em>, </em><em>...</em><em>]</em><em>, </em><em>dtype</em><em>[</em><em>float64</em><em>]</em><em>] </em><em>| </em><em>Sequence</em><em>[</em><em>float</em><em>]</em>) – A single temperature for all images or a list of temperatures the same length of
+<cite>unit_vectors_in_camera_frame</cite> containing the temperature of the camera at the time each image was
 captured</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The Jacobian matrix evaluated for each observation</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>numpy.ndarray</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>ndarray</em></p>
 </dd>
 </dl>
 </dd></dl>
 
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">OwenModel</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">OwenModel</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">OwenModel</span><span class="p">(</span><span class="n">kx</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">ky</span><span class="o">=</span><span class="mi">4000</span><span class="p">,</span> <span class="n">px</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">py</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">a1</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">a2</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>                  <span class="n">misalignment</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">1e-12</span><span class="p">,</span> <span class="o">-</span><span class="mf">2e-14</span><span class="p">,</span> <span class="mf">3e-10</span><span class="p">],</span> <span class="p">[</span><span class="mf">2e-15</span><span class="p">,</span> <span class="mf">1e-13</span><span class="p">,</span> <span class="mf">3e-10</span><span class="p">]],</span>
 <span class="gp">&gt;&gt;&gt; </span>                  <span class="n">estimation_parameters</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;multiple misalignments&#39;</span><span class="p">])</span>
@@ -266,20 +266,24 @@ length in units of distance, and
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="../_sources/owen_model/giant.camera_models.owen_model.OwenModel.compute_jacobian.rst.txt"
-          rel="nofollow">Page source</a>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

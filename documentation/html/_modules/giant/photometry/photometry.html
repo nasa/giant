@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.photometry.photometry &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.photometry.photometry</h1><div class="highlight"><pre>
+<span></span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides photometric modelling for calculations in GIANT.</span>
+
+<span class="sd">Description</span>
+<span class="sd">-----------</span>
+
+<span class="sd">In GIANT, a Photometry object is used to describe the photometric attributes of a target. These attributes are:</span>
+<span class="sd">    - whether the target is resolved</span>
+<span class="sd">    - apparent magnitude of the target</span>
+<span class="sd">    - I over F of the target</span>
+<span class="sd">    - DNrate of the target </span>
+<span class="sd">    - SNR of the target</span>
+<span class="sd">    </span>
+<span class="sd">The PhotometricCameraModel object is used to define camera parameters specifically used for photometry and planning.</span>
+
+<span class="sd">Use</span>
+<span class="sd">---</span>
+
+<span class="sd">To use the Photometry class in GIANT you simply create :class:`.SceneObject` instances for any targets and the light source for</span>
+<span class="sd">your scene (currently only a single light source is allowed).  You then create a :class:`.Scene` around these objects and input this</span>
+<span class="sd">scene into the photometry class along with the associated PhotometryCameraModel. </span>
+
+<span class="sd">    ***Note: If using this class outside the ObservationPlanner class, the scene must be defined in the camera frame.</span>
+
+<span class="sd">This then gives you the ability to determine the photometry of the target bodies relative to the camera frame. This determines</span>
+<span class="sd">if a target is resolved, dnrate, and Signal-to-Noise ratio. </span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera_models.camera_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">CameraModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scene</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.photometry.magnitude</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhaseMagnitudeModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.photometry.scattered_light_class</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScatteredLight</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.photometry.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">au</span>
+
+
+<div class="viewcode-block" id="PhotometricCameraModel">
+<a class="viewcode-back" href="../../../photometry/photometry/giant.photometry.photometry.PhotometricCameraModel.html#giant.photometry.photometry.PhotometricCameraModel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PhotometricCameraModel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class is used to set parameters for a Photometric Camera </span>
+<span class="sd">    </span>
+<span class="sd">    Required inputs are used to estimate and plan photometric targeting with the camera. Additional parameters can be set to define the camera model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gain</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">transfer_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                 <span class="n">standard_mag</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">bin_mode</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">resolved_rows_threshold</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">dn_readnoise</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dn_rate_standard</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dark_current</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                 <span class="n">psf_factor</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">camera_model</span><span class="p">:</span> <span class="n">CameraModel</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">max_exposure</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2e5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param gain: A float representing the camera gain in dn</span>
+<span class="sd">        :param transfer_time: A float representing the camera transfer time in seconds</span>
+<span class="sd">        :param standard_mag: standard magnitude</span>
+<span class="sd">        :param bin_mode: bin mode of camera</span>
+<span class="sd">        :param coadd_num: coadded images </span>
+<span class="sd">        :param resolved_rows_threshold: number of pixel rows to define a target as resolved</span>
+<span class="sd">        :param dn_readnoise: background dn from the camera noise</span>
+<span class="sd">        :param dark_current: a float representing the dark current </span>
+<span class="sd">        :param dn_rate_standard: DN/s for I/F = 1 at 1AU</span>
+<span class="sd">        :param psf_factor: factor for the point spread function</span>
+<span class="sd">        :param camera_model: giant camera model</span>
+<span class="sd">        :param name: a name for the camera model</span>
+<span class="sd">        :param max_exposure: the maximum exposure time the camera can manage in seconds</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain</span> <span class="o">=</span> <span class="n">gain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transfer_time</span> <span class="o">=</span> <span class="n">transfer_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">standard_mag</span> <span class="o">=</span> <span class="n">standard_mag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resolved_rows_threshold</span> <span class="o">=</span> <span class="n">resolved_rows_threshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bin_mode</span> <span class="o">=</span> <span class="n">bin_mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resolved_rows_threshold</span> <span class="o">=</span> <span class="n">resolved_rows_threshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dn_readnoise</span> <span class="o">=</span> <span class="n">dn_readnoise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dn_rate_standard</span> <span class="o">=</span> <span class="n">dn_rate_standard</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dark_current</span> <span class="o">=</span> <span class="n">dark_current</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">psf_factor</span> <span class="o">=</span> <span class="n">psf_factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">camera_model</span> <span class="o">=</span> <span class="n">camera_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_exposure</span> <span class="o">=</span> <span class="n">max_exposure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dnrate_dark</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        DN Rate due to dark current of the camera</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dark_current</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain</span></div>
+
+
+
+<div class="viewcode-block" id="Photometry">
+<a class="viewcode-back" href="../../../photometry/photometry/giant.photometry.photometry.Photometry.html#giant.photometry.photometry.Photometry">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Photometry</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is most useful when you would like to determine the required photometry inputs for opnavs given</span>
+<span class="sd">    a certain date. In addition to the Scene methods, this class contains calculations for iof, dnrate, </span>
+<span class="sd">    snr, etc. This class can also determine target pariapse given an estimated time and move the scene </span>
+<span class="sd">    to that time, as well as determine if the target is resolved during the scene. </span>
+
+<span class="sd">    This is also useful because it can calculate the apparent location of objects in the scene (if they have the</span>
+<span class="sd">    :attr:`.position_function` and :attr:`.orientation_function` attributes defined) while applying corrections for</span>
+<span class="sd">    light time and stellar aberration.  This can be done for all objects in a scene using method :meth:`update` or for</span>
+<span class="sd">    individual object using :meth:`calculate_apparent_position`.  Any objects that do not define the mentioned</span>
+<span class="sd">    attributes will likely not be placed correctly in the scene when using these methods and thus warnings will be</span>
+<span class="sd">    printed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span>
+                 <span class="n">photometric_camera_model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PhotometricCameraModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">scattered_light</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ScatteredLight</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param scene: Scene containing at least one target and lighting object </span>
+<span class="sd">        :param photometric_camera_model: PhotometricCameraModel object</span>
+<span class="sd">        :param scattered_light: scatteredLight object used to define how scattered light is handled. If none provided, </span>
+<span class="sd">                            scattered light is not taken into account</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span> <span class="o">=</span> <span class="n">scene</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Scene containing at least one target and lighting object </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span> <span class="o">=</span> <span class="n">photometric_camera_model</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Photometric Camera model object used to define constants of the camera</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scattered_light</span> <span class="o">=</span> <span class="n">scattered_light</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        scatteredLight object used to define how scattered light is handled</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># preallocate the magnitude and I/f parameter to save magnitude per target object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mag</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="kc">None</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">))]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i_over_f</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="kc">None</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">))]</span>
+
+<div class="viewcode-block" id="Photometry.sea_angle">
+<a class="viewcode-back" href="../../../photometry/photometry/giant.photometry.photometry.Photometry.sea_angle.html#giant.photometry.photometry.Photometry.sea_angle">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sea_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method computes the solar elongation angle defined as the angle between the :attr:`light_obj`, </span>
+<span class="sd">        the observer and the target at ``target_index``.</span>
+
+<span class="sd">        The sea_angle is define as the interior angle between the vector from light object to the observer</span>
+<span class="sd">        and the vector from the target to the observer.  The SEA angle is computed as the angular separation </span>
+<span class="sd">        of these two vectors in radians.</span>
+
+<span class="sd">        This method assumes that the scene has already been put in the observer frame,</span>
+<span class="sd">        that is, the observer is located at the origin and the :attr:`light_obj` and the target</span>
+<span class="sd">        are also defined with respect to that origin.</span>
+
+<span class="sd">        The SEA will always be between 0 and :math:`\pi` radians (0-180 degrees) TODO: CHECK IF TRUE</span>
+
+<span class="sd">        :param target_index: the index into the :attr:`target_objs` list for which to compute the SEA angle for</span>
+<span class="sd">        :return: the SEA angle in radians</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="n">vsep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">position</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="n">target_index</span><span class="p">]</span><span class="o">.</span><span class="n">position</span><span class="p">))</span> <span class="o">/</span>
+                         <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">position</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+                             <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="n">target_index</span><span class="p">]</span><span class="o">.</span><span class="n">position</span><span class="p">))))</span>
+        <span class="k">return</span> <span class="n">vsep</span></div>
+
+
+<div class="viewcode-block" id="Photometry.resolved">
+<a class="viewcode-back" href="../../../photometry/photometry/giant.photometry.photometry.Photometry.resolved.html#giant.photometry.photometry.Photometry.resolved">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolved</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">photometric_camera_model</span><span class="p">:</span> <span class="n">PhotometricCameraModel</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method determines if the the target at ``target_index`` is resolved by the camera.</span>
+
+<span class="sd">        Whether a target is resolved is determined by the apparent diameter and position of the the target</span>
+<span class="sd">        at ``target_index`` and the resolution of the camera.</span>
+
+<span class="sd">        This method requires that a PhotometricCameraModel has been set as the :param:`photometric_camera_model` in </span>
+<span class="sd">        the scene, or one is provided when calling :meth:`resolved`. </span>
+
+<span class="sd">        :param target_index: the index into the :attr:`target_objs` list for which to compute the SEA angle for</span>
+<span class="sd">        :param photometric_camera_model: PhotometricCameraModel used to determine if target is resolved</span>
+<span class="sd">        :return: Boolean True/False for resolved/unresolved respectively</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">photometric_camera_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># override camera_model with new input</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span> <span class="o">=</span> <span class="n">photometric_camera_model</span>
+            
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;the photometric camera model has not been provided&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="n">target_index</span><span class="p">]</span><span class="o">.</span><span class="n">get_apparent_diameter</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span><span class="o">.</span><span class="n">camera_model</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span><span class="o">.</span><span class="n">resolved_rows_threshold</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fraction_rows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">photometric_camera_model</span><span class="p">:</span> <span class="n">PhotometricCameraModel</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method determines what fraction of rows the target covers in the FOV.</span>
+
+<span class="sd">        This parameter is only used internally for resolved targets</span>
+
+<span class="sd">        This method assumes that a PhotometricCameraModel has been set as the :param:`photometric_camera_model` in </span>
+<span class="sd">        the scene, or one is provided when calling :meth:`resolved`. </span>
+
+<span class="sd">        :param target_index: the index into the :attr:`target_objs` list for which to compute the SEA angle for</span>
+<span class="sd">        :param photometric_camera_model: PhotometricCameraModel used to determine if target is resolved</span>
+<span class="sd">        :return: float representing the fraction of camera FOV covered by the target</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">photometric_camera_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># override camera_model with new input</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span> <span class="o">=</span> <span class="n">photometric_camera_model</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;the photometric camera model has not been provided&#39;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="n">target_index</span><span class="p">]</span><span class="o">.</span><span class="n">get_apparent_diameter</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span><span class="o">.</span><span class="n">camera_model</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span><span class="o">.</span><span class="n">camera_model</span><span class="o">.</span><span class="n">n_rows</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span><span class="o">.</span><span class="n">bin_mode</span>
+
+<div class="viewcode-block" id="Photometry.apparent_mag">
+<a class="viewcode-back" href="../../../photometry/photometry/giant.photometry.photometry.Photometry.apparent_mag.html#giant.photometry.photometry.Photometry.apparent_mag">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apparent_mag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">magnitude_model</span><span class="p">:</span> <span class="n">PhaseMagnitudeModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method determines the apparent magnitude of the the target at ``target_index`` given the </span>
+<span class="sd">        position during the scene.</span>
+
+<span class="sd">        The magnitude is based on an input PhaseMagnitudeModel Class that calculates the magnitude of </span>
+<span class="sd">        the target at ``target_index`` based on the current phase angle at the scene, in radians.</span>
+<span class="sd">         </span>
+<span class="sd">        It is up to the user to determine the proper magnitude model to used based on if the target is resolved or</span>
+<span class="sd">        unresolved.</span>
+
+<span class="sd">        :param target_index: the index into the :attr:`target_objs` list for which to compute the phase angle for</span>
+<span class="sd">        :param magnitude_model: magnitude_model used to determine apparent magnitude of target</span>
+<span class="sd">        :return: apparent magnitude of target. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">magnitude_model</span><span class="o">.</span><span class="n">magnitude_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="n">target_index</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mag</span><span class="p">[</span><span class="n">target_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span>
+        <span class="k">return</span> <span class="n">m</span></div>
+
+
+<div class="viewcode-block" id="Photometry.iof">
+<a class="viewcode-back" href="../../../photometry/photometry/giant.photometry.photometry.Photometry.iof.html#giant.photometry.photometry.Photometry.iof">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">iof</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">luminosity_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">,</span> <span class="s1">&#39;Photometry&#39;</span><span class="p">],</span> <span class="nb">float</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method determines the Luminosity I/F of the the target at ``target_index`` given the </span>
+<span class="sd">        position during the scene.</span>
+
+<span class="sd">        The I/F is based on a provided luminosity_function that calculates the I/F of  the target at ``target_index``</span>
+<span class="sd">        based on the current phase angle of the target in the scene, in radians. The luminosity_function can be </span>
+<span class="sd">        dependent on other attributes of the :obj:`PhotometricScene`</span>
+<span class="sd">        </span>
+<span class="sd">        Additional kwargs can be input as key word arguments to the luminosity function. </span>
+
+<span class="sd">        :param target_index: the index into the :attr:`target_objs` list for which to compute the SEA angle for</span>
+<span class="sd">        :param luminosity_function: Luminosity function used to determine IoverF of target</span>
+<span class="sd">        :param kwargs: passed to the luminosity function</span>
+<span class="sd">        :return: I/F</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">i_over_f</span> <span class="o">=</span> <span class="n">luminosity_function</span><span class="p">(</span><span class="n">target_index</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i_over_f</span><span class="p">[</span><span class="n">target_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">i_over_f</span>  <span class="c1"># unitless</span>
+        <span class="k">return</span> <span class="n">i_over_f</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_dnrate_unresolved</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method determines the DN rate of the the target at ``target_index`` given its magnitude </span>
+<span class="sd">        and parameters of the photometric camera. </span>
+
+<span class="sd">        This calculation for DN rate should only be used for unresolved targets, the :meth:`dn_rate` method will </span>
+<span class="sd">        take this into account before calculating DN rate. This calculates the peak signal from the target.</span>
+<span class="sd">        </span>
+<span class="sd">        This method requires that the magnitude of the target has already been calculated using :meth:`apparent_mag`</span>
+<span class="sd">        and that the :attr:`.photometric_camera_model` is not None.</span>
+
+<span class="sd">        :param target_index: the index into the :attr:`target_objs` list for which to compute the magnitude for</span>
+<span class="sd">        :return: DN rate of target in DN/s. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">use_mag</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mag</span><span class="p">[</span><span class="n">target_index</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="n">rate</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span><span class="o">.</span><span class="n">standard_mag</span> <span class="o">-</span> <span class="n">use_mag</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.5</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span><span class="o">.</span><span class="n">psf_factor</span>
+        <span class="k">return</span> <span class="n">rate</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_dnrate_resolved</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method determines the DN rate of the the target at ``target_index`` given its I/F and </span>
+<span class="sd">        and parameters of the photometric camera. </span>
+
+<span class="sd">        This calculation for DN rate should only be used for resolved targets, the :meth:`dn_rate` method will </span>
+<span class="sd">        take this into account before calculating DN rate.</span>
+<span class="sd">        </span>
+<span class="sd">        This method requires that the I/F of the target has already been calculated using :meth:`apparent_mag`</span>
+<span class="sd">        and that the :attr:`.photometric_camera_model` is not None.</span>
+
+<span class="sd">        :param target_index: the index into the :attr:`target_objs` list for which to compute the magnitude for</span>
+<span class="sd">        :return: DN rate of target in dn/s</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">use_iof</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">i_over_f</span><span class="p">[</span><span class="n">target_index</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="n">targ_sun_distance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="n">target_index</span><span class="p">]</span><span class="o">.</span><span class="n">position</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">position</span><span class="p">))</span>
+        <span class="n">rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span><span class="o">.</span><span class="n">dn_rate_standard</span> <span class="o">*</span> <span class="p">(</span>
+                    <span class="n">use_iof</span> <span class="o">/</span> <span class="p">(</span><span class="n">au</span><span class="p">(</span><span class="n">targ_sun_distance</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>  <span class="c1"># scaling DNrate at 1AU</span>
+        <span class="k">return</span> <span class="n">rate</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_dnrate_transfer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method determines the DN rate of the the target at ``target_index`` based on the fraction of rows </span>
+<span class="sd">        the target is covering in the camera FOV. </span>
+
+<span class="sd">        This calculation for DN rate should only be used for resolved targets, the :meth:`dn_rate` method will </span>
+<span class="sd">        take this into account before calculating DN rate.</span>
+<span class="sd">        </span>
+<span class="sd">        This method requires that the I/F of the target has already been calculated using :meth:`iof`</span>
+<span class="sd">        and that the :attr:`.photometric_camera_model` is not None.</span>
+
+<span class="sd">        :param target_index: the index into the :attr:`target_objs` list for which to compute the magnitude for</span>
+<span class="sd">        :return: DN rate of target in dn/s</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dnrate_resolved</span><span class="p">(</span><span class="n">target_index</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fraction_rows</span><span class="p">(</span><span class="n">target_index</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Photometry.dnrate">
+<a class="viewcode-back" href="../../../photometry/photometry/giant.photometry.photometry.Photometry.dnrate.html#giant.photometry.photometry.Photometry.dnrate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dnrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method determines the DN rate of the the target at ``target_index`` and determines which model </span>
+<span class="sd">        to used based on if the requested target is resolved</span>
+
+<span class="sd">        This method assumes that the magnitude of the target has already been calculated using :meth:`iof`</span>
+
+<span class="sd">        :param target_index: the index into the :attr:`target_objs` list for which to compute the magnitude for</span>
+<span class="sd">        :return: DN rate of target in dn/s. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolved</span><span class="p">(</span><span class="n">target_index</span><span class="p">):</span>
+            <span class="n">dnrate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dnrate_unresolved</span><span class="p">(</span><span class="n">target_index</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dnrate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dnrate_resolved</span><span class="p">(</span><span class="n">target_index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dnrate</span></div>
+
+
+<div class="viewcode-block" id="Photometry.snr">
+<a class="viewcode-back" href="../../../photometry/photometry/giant.photometry.photometry.Photometry.snr.html#giant.photometry.photometry.Photometry.snr">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">snr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">exposure_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">coadded_images</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method determines the Signal to Noise Ratio of the the target at ``target_index`` based on the input exposure time.</span>
+<span class="sd">        </span>
+<span class="sd">        This method requires that the magnitude of the target has already been calculated using :meth:`apparent_mag`</span>
+<span class="sd">        and that the </span>
+
+<span class="sd">        :param target_index: the index into the :attr:`target_objs` list for which to compute the magnitude for</span>
+<span class="sd">        :param exposure_time: the exposure time of the camera in seconds</span>
+<span class="sd">        :param coadded_images: the number of coadded images </span>
+<span class="sd">        :return: SNR</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># calculate the DN from the target </span>
+        <span class="n">target_dn</span> <span class="o">=</span> <span class="n">exposure_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dnrate</span><span class="p">(</span><span class="n">target_index</span><span class="p">)</span>
+        
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="c1"># calculate the dn from the camera transfer time and point spread function</span>
+        <span class="n">transfer_dn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dnrate_transfer</span><span class="p">(</span>
+            <span class="n">target_index</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span><span class="o">.</span><span class="n">transfer_time</span> <span class="o">*</span> <span class="n">coadded_images</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolved</span><span class="p">(</span>
+            <span class="n">target_index</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+
+        <span class="c1"># determine the background dn </span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scattered_light</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dn_background</span> <span class="o">=</span> <span class="p">(</span><span class="n">exposure_time</span> <span class="o">*</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span><span class="o">.</span><span class="n">dnrate_dark</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">scattered_light</span><span class="o">.</span><span class="n">dnrate</span><span class="p">(</span><span class="n">target_index</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
+                                                                                                <span class="n">dn_rate_standard</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span><span class="o">.</span><span class="n">dn_rate_standard</span><span class="p">)))</span> <span class="o">+</span> <span class="n">transfer_dn</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dn_background</span> <span class="o">=</span> <span class="p">(</span><span class="n">exposure_time</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span><span class="o">.</span><span class="n">dnrate_dark</span><span class="p">))</span> <span class="o">+</span> <span class="n">transfer_dn</span>
+        <span class="n">dn_total_nonstochastic</span> <span class="o">=</span> <span class="n">target_dn</span> <span class="o">+</span> <span class="n">dn_background</span>
+        <span class="n">dn_shotnoise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dn_total_nonstochastic</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span><span class="o">.</span><span class="n">gain</span><span class="p">)</span>
+        <span class="n">dn_total_noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dn_shotnoise</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">photometric_camera_model</span><span class="o">.</span><span class="n">dn_readnoise</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">target_dn</span> <span class="o">/</span> <span class="n">dn_total_noise</span></div>
+</div>
+
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>
