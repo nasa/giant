@@ -12,8 +12,13 @@ giant.camera_models.opencv_model
 
 .. autosummary::
     :nosignatures:
-    :toctree: opencv_model
 
     OpenCVModel
+
+.. toctree::
+   :hidden:
+   :glob:
+
+   opencv_model/*
 
 |

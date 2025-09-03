@@ -16,6 +16,8 @@ giant.camera_models
     brown_model
     opencv_model
     owen_model
+    fisheye_model
+    split_camera
 
 .. rubric:: Classes
 
@@ -27,6 +29,8 @@ giant.camera_models
     ~brown_model.BrownModel
     ~opencv_model.OpenCVModel
     ~owen_model.OwenModel
+    ~fisheye_model.FisheyeModel
+    ~split_camera.SplitCamera
     ~camera_model.ReturnShape
 
 .. rubric:: Functions
@@ -45,5 +49,7 @@ giant.camera_models
    giant.camera_models.brown_model
    giant.camera_models.owen_model
    giant.camera_models.opencv_model
+   giant.camera_models.fisheye_model
+   giant.camera_models.split_camera
 
 |

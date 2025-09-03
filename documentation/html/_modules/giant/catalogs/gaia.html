@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.catalogs.gaia &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.catalogs.gaia</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module defines the interface to the GAIA star catalog.</span>
+
+<span class="sd">Catalog Description</span>
+<span class="sd">=====================</span>
+
+<span class="sd">The GAIA is a (nearly) complete sky survey of over 1.8 billion stars with 1.46 billion including proper motion</span>
+<span class="sd">solutions.  It is generally very accurate for both positions and magnitudes and is mostly complete between magnitudes</span>
+<span class="sd">3 and 20.</span>
+
+<span class="sd">To access the GAIA catalog, GIANT uses the astroquery TAP+ interface</span>
+<span class="sd">(https://astroquery.readthedocs.io/en/latest/gaia/gaia.html) to retrieve the information from the web.  Since the</span>
+<span class="sd">catalog is still in development this is the best way to ensure you have the most current solutions.  Alternatively,</span>
+<span class="sd">if you need more speed or are working in an environment where you cannot access the web, you can use the function</span>
+<span class="sd">:func:`.build_catalog` to download a subset of the catalog to a local HDF5 file and then point the class to this file.</span>
+
+<span class="sd">Use</span>
+<span class="sd">===</span>
+
+<span class="sd">The GAIA catalog can be used anywhere that a star catalog is required in GIANT.</span>
+<span class="sd">It is stored on the internet in a TAP+ service which allows querying the results and returning them to the machine.</span>
+<span class="sd">Since the GAIA catalog is still being revised as more data becomes available, GIANT by default queries to this service</span>
+<span class="sd">rather than having a local copy of the catalog (also the catalog is huge!!!).  As mentioned previously, if this</span>
+<span class="sd">doesn&#39;t work for you for whatever reason, you can use the :func:`.build_catalog` function to download a local copy of</span>
+<span class="sd">the catalog in GIANT format and then provide the ``catalog_file`` argument to the class constructor to use this rather</span>
+<span class="sd">than live queries.</span>
+
+<span class="sd">Once you have initialized the class, then you can access the catalog as you would any</span>
+<span class="sd">GIANT usable catalog.  Simply call :meth:`~.GAIA.query_catalog` to get the GIANT records for the stars as a</span>
+<span class="sd">DataFrame with columns according the :attr:`GIANT_COLUMNS`.</span>
+
+<span class="sd">Note that the epoch for the astrometry solutions in the GAIA catalog changes with each new release.  GIANT tracks</span>
+<span class="sd">these for you and handles them appropriately, but be aware of this if you are using the catalog data directly.  Also</span>
+<span class="sd">note that since in GIANT we primarily care about stars for attitude/calibration purposes, we filter out stars from the</span>
+<span class="sd">GAIA catalog which have questionable solutions or for which there is missing data. If you need access to everything in</span>
+<span class="sd">the catalog consider the astroquery api discussed previously. For more information about the GAIA catalog refer to</span>
+<span class="sd">https://www.cosmos.esa.int/web/gaia-users/archive.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">redirect_stdout</span><span class="p">,</span> <span class="n">redirect_stderr</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">repeat</span><span class="p">,</span> <span class="n">starmap</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">astroquery.gaia</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gaia</span> <span class="k">as</span> <span class="n">QGaia</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial</span><span class="w"> </span><span class="kn">import</span> <span class="n">KDTree</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.catalogs.meta_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">GIANT_COLUMNS</span><span class="p">,</span> <span class="n">GIANT_TYPES</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.catalogs.meta_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catalog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.catalogs.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">DEG2MAS</span><span class="p">,</span> <span class="n">PARSEC2KM</span><span class="p">,</span> <span class="n">AVG_STAR_DIST</span><span class="p">,</span> <span class="n">DEG2RAD</span><span class="p">,</span>
+                                        <span class="n">apply_proper_motion</span><span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.spherical_coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">radec_to_unit</span><span class="p">,</span> <span class="n">radec_distance</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">PATH</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">DOUBLE_ARRAY</span>
+
+<span class="c1"># specify which gaia cols correspond to which GIANT_COLUMNS</span>
+<span class="c1"># noinspection SpellCheckingInspection</span>
+<span class="n">_GAIA_COLS</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ra&#39;</span><span class="p">,</span> <span class="s1">&#39;dec&#39;</span><span class="p">,</span> <span class="s1">&#39;parallax&#39;</span><span class="p">,</span> <span class="s1">&#39;pmra&#39;</span><span class="p">,</span> <span class="s1">&#39;pmdec&#39;</span><span class="p">,</span> <span class="s1">&#39;phot_g_mean_mag&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;ra_error&#39;</span><span class="p">,</span> <span class="s1">&#39;dec_error&#39;</span><span class="p">,</span> <span class="s1">&#39;parallax_error&#39;</span><span class="p">,</span> <span class="s1">&#39;pmra_error&#39;</span><span class="p">,</span> <span class="s1">&#39;pmdec_error&#39;</span><span class="p">,</span> <span class="s1">&#39;ref_epoch&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;designation&#39;</span><span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This specifies the names of the GAIA columns that are required in converting the a GIANT star record</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># specify the mapping of GAIA columns to GIANT columns</span>
+<span class="n">_GAIA_TO_GIANT</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">_GAIA_COLS</span><span class="p">,</span> <span class="n">GIANT_COLUMNS</span><span class="p">))</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This specifies the mapping of the GAIA column names to the GIANT star record column names</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># specify the default GAIA data release to use</span>
+<span class="n">GAIA_DR</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;gaiadr3&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This specifies the GAIA data release to use when querying the TAP+ service.  Typically this should look like gaiaxxxx</span>
+<span class="sd">where xxxx is replaced with the data release string (ie dr2, edr3, etc).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># Gaia DR3 has a maximum number of 3 million rows that can be returned for anonymous users</span>
+<span class="n">_GAIA_MAX_ROWS</span> <span class="o">=</span> <span class="mi">3_000_000</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This specifies the maximum number of rows that will be returned when querying GAIA DR3 using the TAP+ service.</span>
+<span class="sd">The query will find all matching rows but truncate the return data to just the first 3 million rows. This limit </span>
+<span class="sd">only applies to anonymous users, but we can work around it by splitting out queries into chunks so that no query </span>
+<span class="sd">exceeds this limit.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># Default path and file name for local downloaded HDF5 database</span>
+<span class="n">DEFAULT_CAT_FILE</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s1">&#39;data&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="s1">&#39;giant_cat.hdf5&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This specifies the default location of the HDF5 database file that contains the data for this catalog.</span>
+
+<span class="sd">This is stored as Path object.  It defaults to a file called &quot;giant_cat.hdf5&quot; in a &quot;data&quot; directory in the same directory </span>
+<span class="sd">containing this file. If you wish to use a different catalog, typically you should simply provide a key</span>
+<span class="sd">word argument to the class constructor instead of modifying this module attribute.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="Gaia">
+<a class="viewcode-back" href="../../../catalogs/gaia/giant.catalogs.gaia.Gaia.html#giant.catalogs.gaia.Gaia">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Gaia</span><span class="p">(</span><span class="n">Catalog</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class provides access to the GAIA star catalog.</span>
+
+<span class="sd">    This class is a fully functional catalog for GIANT and can be used anywhere that GIANT expects a star catalog.</span>
+<span class="sd">    As such, it implements the :attr:`.include_proper_motion` to turn proper motion on or off as well as the method</span>
+<span class="sd">    :meth:`.query_catalog`, which is how stars are queried into the GIANT format.</span>
+
+<span class="sd">    To use this class simply initialize it, specifying either the data release to use or pointing it to the file of</span>
+<span class="sd">    the stored catalog (see :func:`.build_catalog` for details).  Once the class is initialized,</span>
+<span class="sd">    you can query stars from it using :meth:`.query_catalog` which will return a DataFrame of the star records with</span>
+<span class="sd">    :attr:`GIANT_COLUMNS` columns.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_release</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">GAIA_DR</span><span class="p">,</span> <span class="n">catalog_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PATH</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">include_proper_motion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param data_release: The identifier for the data release to use.  Typically this is of the form gaiaxxxx where</span>
+<span class="sd">                             xxxx is like dr2, edr3, etc.</span>
+<span class="sd">        :param catalog_file: A path to the stored catalog in a HDF5 file.  If this is set to ``None`` then the</span>
+<span class="sd">                               data will be downloaded through the TAP+ service (requiring an internet connection).</span>
+<span class="sd">        :param include_proper_motion: A boolean flag specifying whether to apply proper motion when retrieving the stars</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">include_proper_motion</span><span class="o">=</span><span class="n">include_proper_motion</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_release</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data_release</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This specifies which data release of the GAIA catalog to use when querying the TAP+ service.</span>
+<span class="sd">        </span>
+<span class="sd">        Typically this is of the form gaiaxxxx where xxxx is like dr2, edr3, etc. </span>
+<span class="sd">        </span>
+<span class="sd">        If :attr:`.catalog_file` is not ``None`` then this is ignored.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_release_formatted</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Gaia </span><span class="si">{</span><span class="n">data_release</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;gaia&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This represents the GAIA data release formatted as a string for uniformity in print statements.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="n">catalog_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">catalog_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">catalog_file</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">catalog_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;We could not find the GAIA HDF5 file at the specified location. &#39;</span>
+                      <span class="s1">&#39;Falling back to use the TAP+ online service.&#39;</span><span class="p">)</span>
+
+                <span class="n">catalog_file</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">catalog_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PATH</span><span class="p">]</span> <span class="o">=</span> <span class="n">catalog_file</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The path to the HDF5 file containing the subset of the catalog needed for GIANT.</span>
+<span class="sd">        </span>
+<span class="sd">        If ``None`` then the TAP+ online service will be used instead</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_catalog_store</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The open HDFStore if we are using a local copy of the catalog</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalog_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_catalog_store</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">catalog_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Catalog file not found: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">catalog_file</span><span class="si">}</span><span class="s2">.  Will use the TAP+ online service instead.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Gaia.close">
+<a class="viewcode-back" href="../../../catalogs/gaia/gaia/giant.catalogs.gaia.Gaia.close.html#giant.catalogs.gaia.Gaia.close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This closes the HDFStore if we are using a local copy of the catalog if it was open.</span>
+<span class="sd">        </span>
+<span class="sd">        If you were using the TAP+ online service then this does nothing and is still safe to call.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_catalog_store</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_catalog_store</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_catalog_store</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Gaia.query_catalog">
+<a class="viewcode-back" href="../../../catalogs/gaia/giant.catalogs.gaia.query_catalog.html#giant.catalogs.gaia.Gaia.query_catalog">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">query_catalog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">min_ra</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">max_ra</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">360.</span><span class="p">,</span>
+                        <span class="n">min_dec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">90.</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">90.</span><span class="p">,</span> <span class="n">min_mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">4.</span><span class="p">,</span> <span class="n">max_mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">14.</span><span class="p">,</span>
+                        <span class="n">search_center</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">DOUBLE_ARRAY</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">search_radius</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">new_epoch</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">datetime</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method queries stars from the catalog that meet specified constraints and returns them as a DataFrame</span>
+<span class="sd">        with columns of :attr:`GIANT_COLUMNS`.</span>
+
+<span class="sd">        Stars can either be queried by ID directly or by right ascension/declination/magnitude. You CANNOT filter using</span>
+<span class="sd">        both with this method.  If :attr:`.include_proper_motion` is ``True`` then this will shift the stars to the new</span>
+<span class="sd">        epoch input by the user (``new_epoch``) using proper motion.</span>
+
+<span class="sd">        :param ids: A sequence of star ids to retrieve from the catalog.  The ids are given by the index of the</span>
+<span class="sd">                    returned data frame (the designation column from the actual catalog) and should be</span>
+<span class="sd">                    input as an iterable that yields either integers or strings in an appropriate format</span>
+<span class="sd">        :param min_ra: The minimum ra bound to query stars from in degrees</span>
+<span class="sd">        :param max_ra: The maximum ra bound to query stars from in degrees</span>
+<span class="sd">        :param min_dec: The minimum declination to query stars from in degrees</span>
+<span class="sd">        :param max_dec: The maximum declination to query stars from in degrees</span>
+<span class="sd">        :param min_mag: The minimum magnitude to query stars from.  Recall that magnitude is inverse (so lower</span>
+<span class="sd">                        magnitude is a dimmer star)</span>
+<span class="sd">        :param max_mag: The maximum magnitude to query stars from.  Recall that magnitude is inverse (so higher</span>
+<span class="sd">                        magnitude is a dimmer star)</span>
+<span class="sd">        :param search_center: The center of a search cone as a ra/dec pair.</span>
+<span class="sd">        :param search_radius: The radius about the center of the search cone</span>
+<span class="sd">        :param new_epoch: The epoch to translate the stars to using proper motion if :attr:`.include_proper_motion` is</span>
+<span class="sd">                          turned on</span>
+<span class="sd">        :return: A pandas DataFrame with columns :attr:`GIANT_COLUMNS`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># we can only query by ids or by other attributes, not both</span>
+        <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">giant_records</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_from_ids</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">column_subset</span><span class="o">=</span><span class="n">_GAIA_COLS</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">giant_records</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_all_with_criteria</span><span class="p">(</span><span class="n">min_ra</span><span class="o">=</span><span class="n">min_ra</span><span class="p">,</span> <span class="n">max_ra</span><span class="o">=</span><span class="n">max_ra</span><span class="p">,</span>
+                                                        <span class="n">min_dec</span><span class="o">=</span><span class="n">min_dec</span><span class="p">,</span> <span class="n">max_dec</span><span class="o">=</span><span class="n">max_dec</span><span class="p">,</span>
+                                                        <span class="n">min_mag</span><span class="o">=</span><span class="n">min_mag</span><span class="p">,</span> <span class="n">max_mag</span><span class="o">=</span><span class="n">max_mag</span><span class="p">,</span>
+                                                        <span class="n">search_center</span><span class="o">=</span><span class="n">search_center</span><span class="p">,</span>
+                                                        <span class="n">search_radius</span><span class="o">=</span><span class="n">search_radius</span><span class="p">,</span>
+                                                        <span class="n">column_subset</span><span class="o">=</span><span class="n">_GAIA_COLS</span><span class="p">)</span>
+
+        <span class="c1"># apply proper motion to the giant catalog query if requested based on the new epoch</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_proper_motion</span> <span class="ow">and</span> <span class="p">(</span><span class="n">new_epoch</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">apply_proper_motion</span><span class="p">(</span><span class="n">giant_records</span><span class="p">,</span> <span class="n">new_epoch</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">giant_records</span></div>
+
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_from_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">],</span> <span class="n">column_subset</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This returns a DataFrame containing the records for each star requested by ``ids``.</span>
+
+<span class="sd">        ``ids`` should be iterable with each element being a string giving the &quot;designation&quot;</span>
+<span class="sd">        for the star as formatted in the GAIA catalog.  This is typically of the form </span>
+<span class="sd">        &quot;Gaia DR3 1234567890123456789&quot;.  The ``ids`` can also be provided as integer values.</span>
+
+<span class="sd">        In general, the user should not interact with this method and instead should use :meth:`.query_catalog`.</span>
+<span class="sd">        </span>
+<span class="sd">        :param ids: A sequence of star ids to retrieve from the catalog.  The ids can be given as strings or integers.</span>
+<span class="sd">        :param column_subset: The subset of columns to retrieve from the TAP+ service (not applicable to the local</span>
+<span class="sd">                              copy).  If ``None`` then all columns are returned which can take a long time</span>
+<span class="sd">        :return: A pandas DataFrame formatted according to the GIANT catalog format</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># remove any duplicate IDs</span>
+        <span class="n">ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">ids</span><span class="p">))</span>
+        
+        <span class="c1"># No local copy of the catalog, so we need to query the TAP+ web service</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalog_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            
+            <span class="c1"># restrict the number of stars that can be queried at once to avoid</span>
+            <span class="c1"># truncated results from astroquery</span>
+            <span class="n">star_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">star_count</span> <span class="o">&gt;</span> <span class="n">_GAIA_MAX_ROWS</span><span class="p">:</span>
+                <span class="c1"># determine how many chunks the query will be split into</span>
+                <span class="n">num_chunks</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">star_count</span> <span class="o">//</span> <span class="n">_GAIA_MAX_ROWS</span>
+                
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;More than </span><span class="si">{</span><span class="n">_GAIA_MAX_ROWS</span><span class="si">:</span><span class="s1">,</span><span class="si">}</span><span class="s1"> stars match this query (found </span><span class="si">{</span><span class="n">star_count</span><span class="si">:</span><span class="s1">,</span><span class="si">}</span><span class="s1"> stars).</span><span class="se">\n</span><span class="s1">&#39;</span>
+                      <span class="sa">f</span><span class="s1">&#39;Breaking the query up into </span><span class="si">{</span><span class="n">num_chunks</span><span class="si">}</span><span class="s1"> chunks &#39;</span>
+                      <span class="sa">f</span><span class="s1">&#39;of </span><span class="si">{</span><span class="n">_GAIA_MAX_ROWS</span><span class="si">:</span><span class="s1">,</span><span class="si">}</span><span class="s1"> IDs to stay within limit.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                
+                <span class="n">dataframes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">star_count</span><span class="p">,</span> <span class="n">_GAIA_MAX_ROWS</span><span class="p">):</span>
+                    <span class="c1"># split up the IDs into chunks of up to 3 million IDs</span>
+                    <span class="n">ids_partition</span> <span class="o">=</span> <span class="n">ids</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">_GAIA_MAX_ROWS</span><span class="p">]</span>
+                    
+                    <span class="c1"># let the user know how many chunks are left so they can gauge progress</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="si">{</span><span class="n">num_chunks</span><span class="si">}</span><span class="s1"> chunks left&#39;</span><span class="p">)</span>
+                    <span class="n">num_chunks</span> <span class="o">-=</span> <span class="mi">1</span>
+                    
+                    <span class="c1"># recursive call to _get_from_ids using the appropriate chunk of IDs</span>
+                    <span class="c1"># recursion depth will never exceed 1</span>
+                    <span class="n">dataframes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_from_ids</span><span class="p">(</span><span class="n">ids_partition</span><span class="p">,</span> <span class="n">column_subset</span><span class="o">=</span><span class="n">column_subset</span><span class="p">))</span>
+                
+                <span class="c1"># merge together results from all subqueries into a single pandas DataFrame</span>
+                <span class="c1"># (could crash here if attempting to hold more data than the system memory can support)</span>
+                <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dataframes</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">column_subset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># if no column subset is specified, query all columns</span>
+                <span class="n">column_subset_query</span> <span class="o">=</span> <span class="s1">&#39;*&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># format the column subset into a string for the query</span>
+                <span class="n">column_subset_query</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">column_subset</span><span class="p">)</span>
+            
+            <span class="c1"># format the IDs into a string for the query allowing for the input IDs to be integers or strings</span>
+            <span class="n">gaia_ids</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_release_formatted</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">star_id</span><span class="p">)</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="k">for</span> <span class="n">star_id</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">]</span>
+            <span class="n">ids_query</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gaia_ids</span><span class="p">)</span>
+            
+            <span class="c1"># format the query to get the stars with the given IDs</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SELECT </span><span class="si">{</span><span class="n">column_subset_query</span><span class="si">}</span><span class="s1"> &#39;</span>
+                     <span class="sa">f</span><span class="s1">&#39;FROM </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_release</span><span class="si">}</span><span class="s1">.gaia_source &#39;</span>
+                     <span class="sa">f</span><span class="s1">&#39;WHERE designation IN (</span><span class="si">{</span><span class="n">ids_query</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+
+            <span class="c1"># query the TAP+ web service for the stars with the given IDs</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Querying online </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_release_formatted</span><span class="si">}</span><span class="s1"> catalog...&#39;</span><span class="p">)</span>
+            <span class="n">gaia_records</span> <span class="o">=</span> <span class="n">QGaia</span><span class="o">.</span><span class="n">launch_job_async</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">get_results</span><span class="p">()</span>
+            <span class="k">assert</span> <span class="n">gaia_records</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;something went wrong with TAP+ query&quot;</span>
+
+            <span class="c1"># convert the GAIA results to a pandas DataFrame before converting to the GIANT format</span>
+            <span class="n">giant_records</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_to_giant_catalog</span><span class="p">(</span><span class="n">gaia_records</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">())</span>
+           
+            <span class="k">return</span> <span class="n">giant_records</span>
+            
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># format the IDs into a list for the query allowing for the input IDs to be integers or strings</span>
+            <span class="n">giant_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">star_id</span><span class="p">)</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">star_id</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">]</span>
+            
+            <span class="c1"># query the local copy of the catalog for the stars with the given IDs</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_catalog_store</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Catalog store should not be none at this point&quot;</span>
+            <span class="n">giant_records</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_catalog_store</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;stars&#39;</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;index = </span><span class="si">{</span><span class="n">giant_ids</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="n">giant_records</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_all_with_criteria</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_ra</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">max_ra</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">360.</span><span class="p">,</span>
+                               <span class="n">min_dec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">90.</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">90.</span><span class="p">,</span>
+                               <span class="n">min_mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">4.</span><span class="p">,</span> <span class="n">max_mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">14.</span><span class="p">,</span>
+                               <span class="n">search_center</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">DOUBLE_ARRAY</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                               <span class="n">search_radius</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                               <span class="n">column_subset</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                               <span class="n">closed_lower_bound</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                               <span class="n">progress_bar</span><span class="p">:</span> <span class="n">tqdm</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function gets all stars meeting the criteria from the catalog, yielding the results as a pandas DataFrame.</span>
+
+<span class="sd">        In general, the user should not interact with this method and instead should use :meth:`.query_catalog`.</span>
+
+<span class="sd">        :param min_ra: The minimum ra bound to query stars from in degrees</span>
+<span class="sd">        :param max_ra: The maximum ra bound to query stars from in degrees</span>
+<span class="sd">        :param min_dec: The minimum declination to query stars from in degrees</span>
+<span class="sd">        :param max_dec: The maximum declination to query stars from in degrees</span>
+<span class="sd">        :param min_mag: The minimum G band magnitude to query stars from.  Recall that magnitude is inverse</span>
+<span class="sd">                        (so lower magnitude is a dimmer star)</span>
+<span class="sd">        :param max_mag: The maximum G band magnitude to query stars from.  Recall that magnitude is inverse</span>
+<span class="sd">                        (so higher magnitude is a dimmer star)</span>
+<span class="sd">        :param search_center: The center of a search cone as a ra/dec pair.</span>
+<span class="sd">        :param search_radius: The radius about the center of the search cone</span>
+<span class="sd">        :param column_subset: The subset of columns to retrieve from the TAP+ service (not applicable to the</span>
+<span class="sd">                              local copy).  If ``None`` then all columns are returned which can take a long time</span>
+<span class="sd">        :param closed_lower_bound: Flag used when partitioning gaia queries by magnitude ranges so that the </span>
+<span class="sd">                                   ranges do not overlap.  ``True`` signals that the lower bound inequality is </span>
+<span class="sd">                                   ``&lt;=``, and ``False`` signals that the lower bound inequality is ``&lt;``.</span>
+<span class="sd">        :param progress_bar: A tqdm progress bar object used to update with the status of the query.</span>
+<span class="sd">        :return: A pandas DataFrame formatted according to the GIANT catalog format</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># make sure everything is a float (a) to validate input and (b) to protect against sql injection attacks</span>
+        <span class="n">min_ra</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">min_ra</span><span class="p">)</span>
+        <span class="n">max_ra</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_ra</span><span class="p">)</span>
+        <span class="n">min_dec</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">min_dec</span><span class="p">)</span>
+        <span class="n">max_dec</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_dec</span><span class="p">)</span>
+        <span class="n">min_mag</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">min_mag</span><span class="p">)</span>
+        <span class="n">max_mag</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_mag</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalog_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># redirect all print statements through this function so that they</span>
+            <span class="c1"># won&#39;t disrupt the progress bar if one is provided</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">print_func</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">progress_bar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">progress_bar</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+                    <span class="n">progress_bar</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+            
+            <span class="k">if</span> <span class="n">column_subset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># if no column subset is specified, query all columns</span>
+                <span class="n">column_subset_query</span> <span class="o">=</span> <span class="s1">&#39;*&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># format the column subset into a string for the query</span>
+                <span class="n">column_subset_query</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">column_subset</span><span class="p">)</span>
+            
+            <span class="c1"># format the query to count the stars matching the given criteria</span>
+            <span class="n">count_query</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SELECT COUNT(*) &#39;</span>
+                           <span class="sa">f</span><span class="s1">&#39;FROM </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_release</span><span class="si">}</span><span class="s1">.gaia_source &#39;</span><span class="p">)</span>
+            
+            <span class="c1"># format the query to get the stars matching the given criteria</span>
+            <span class="n">data_query</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SELECT </span><span class="si">{</span><span class="n">column_subset_query</span><span class="si">}</span><span class="s1"> &#39;</span>
+                          <span class="sa">f</span><span class="s1">&#39;FROM </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_release</span><span class="si">}</span><span class="s1">.gaia_source &#39;</span><span class="p">)</span>
+            
+            <span class="c1"># determine whether the lower bound should be inclusive or exclusive for</span>
+            <span class="c1"># appropriate queries and print statements</span>
+            <span class="k">if</span> <span class="n">closed_lower_bound</span><span class="p">:</span>
+                <span class="n">lower_bound</span> <span class="o">=</span> <span class="s1">&#39;=&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lower_bound</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            
+            <span class="c1"># conditional clause to match the given criteria to be applied to both the count and data queries</span>
+            <span class="n">where</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;WHERE ra &gt;= </span><span class="si">{</span><span class="n">min_ra</span><span class="si">}</span><span class="s1"> AND ra &lt;= </span><span class="si">{</span><span class="n">max_ra</span><span class="si">}</span><span class="s1"> AND dec &gt;= </span><span class="si">{</span><span class="n">min_dec</span><span class="si">}</span><span class="s1"> AND dec &lt;= </span><span class="si">{</span><span class="n">max_dec</span><span class="si">}</span><span class="s1"> &#39;</span>
+                     <span class="sa">f</span><span class="s1">&#39;AND phot_g_mean_mag &gt;</span><span class="si">{</span><span class="n">lower_bound</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">min_mag</span><span class="si">}</span><span class="s1"> AND phot_g_mean_mag &lt;= </span><span class="si">{</span><span class="n">max_mag</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            
+            <span class="c1"># add conditional clause to match the given search cone if applicable</span>
+            <span class="k">if</span> <span class="n">search_center</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">search_radius</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">where</span> <span class="o">+=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot; AND 1 = CONTAINS(POINT(&#39;ICRS&#39;, ra, dec), &quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;CIRCLE(&#39;ICRS&#39;, </span><span class="si">{</span><span class="n">search_center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">search_center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">search_radius</span><span class="si">}</span><span class="s2">))&quot;</span><span class="p">)</span>
+            
+            <span class="n">print_func</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">min_mag</span><span class="si">}</span><span class="s1"> &lt;</span><span class="si">{</span><span class="n">lower_bound</span><span class="si">}</span><span class="s1"> G magnitude &lt;= </span><span class="si">{</span><span class="n">max_mag</span><span class="si">}</span><span class="s1">:&#39;</span><span class="p">)</span>
+            
+            <span class="c1"># quick lookup for how many stars will match the given query conditionals</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">QGaia</span><span class="o">.</span><span class="n">launch_job</span><span class="p">(</span><span class="n">count_query</span> <span class="o">+</span> <span class="n">where</span><span class="p">)</span><span class="o">.</span><span class="n">get_results</span><span class="p">()</span>
+            <span class="k">assert</span> <span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;something went wrong with the TAP+ query&quot;</span>
+            <span class="n">star_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># type: ignore</span>
+            
+            <span class="c1"># restrict the number of stars that can be queried at once to avoid</span>
+            <span class="c1"># truncated results from astroquery</span>
+            <span class="k">if</span> <span class="n">star_count</span> <span class="o">&gt;</span> <span class="n">_GAIA_MAX_ROWS</span><span class="p">:</span>
+                <span class="n">print_func</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">More than </span><span class="si">{</span><span class="n">_GAIA_MAX_ROWS</span><span class="si">}</span><span class="s1"> stars match this query.</span><span class="se">\n</span><span class="s1">&#39;</span>
+                           <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">Breaking the query up into chunks of G magnitude to stay within the limit.&#39;</span><span class="p">)</span>
+                
+                <span class="n">dataframes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                
+                <span class="c1"># split up queries into chunks of equal magnitude range so that subsequent queries will</span>
+                <span class="c1"># return 2 million stars assuming uniform distribution of stars across G magnitudes</span>
+                <span class="c1"># (it&#39;s not uniform, but the simplification buys some time before exceeding the 3 million limit)</span>
+                <span class="n">number_steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">star_count</span> <span class="o">/</span> <span class="p">((</span><span class="mf">2.</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span> <span class="o">*</span> <span class="n">_GAIA_MAX_ROWS</span><span class="p">))</span>
+                <span class="n">mag_steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">min_mag</span><span class="p">,</span> <span class="n">max_mag</span><span class="p">,</span> <span class="n">number_steps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_steps</span><span class="p">):</span>
+                    <span class="n">current_min_mag</span> <span class="o">=</span> <span class="n">mag_steps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">current_max_mag</span> <span class="o">=</span> <span class="n">mag_steps</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                    
+                    <span class="c1"># only the first query in a series of chunks can have an inclusive lower bound</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">closed_lower_bound</span> <span class="o">=</span> <span class="kc">False</span>
+                    
+                    <span class="c1"># recursive call to _get_all_with_criteria in chunks of G magnitude ranges</span>
+                    <span class="c1"># (should not hit max recursion depth of 1000 before dataframes variable is</span>
+                    <span class="c1"># holding more data than the system memory can support)</span>
+                    <span class="n">dataframes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_all_with_criteria</span><span class="p">(</span><span class="n">min_ra</span><span class="o">=</span><span class="n">min_ra</span><span class="p">,</span> <span class="n">max_ra</span><span class="o">=</span><span class="n">max_ra</span><span class="p">,</span>
+                                                                  <span class="n">min_dec</span><span class="o">=</span><span class="n">min_dec</span><span class="p">,</span> <span class="n">max_dec</span><span class="o">=</span><span class="n">max_dec</span><span class="p">,</span>
+                                                                  <span class="n">min_mag</span><span class="o">=</span><span class="n">current_min_mag</span><span class="p">,</span> <span class="n">max_mag</span><span class="o">=</span><span class="n">current_max_mag</span><span class="p">,</span>
+                                                                  <span class="n">search_center</span><span class="o">=</span><span class="n">search_center</span><span class="p">,</span>
+                                                                  <span class="n">search_radius</span><span class="o">=</span><span class="n">search_radius</span><span class="p">,</span>
+                                                                  <span class="n">column_subset</span><span class="o">=</span><span class="n">column_subset</span><span class="p">,</span>
+                                                                  <span class="n">closed_lower_bound</span><span class="o">=</span><span class="n">closed_lower_bound</span><span class="p">,</span>
+                                                                  <span class="n">progress_bar</span><span class="o">=</span><span class="n">progress_bar</span><span class="p">))</span>
+                
+                <span class="c1"># merge together results from all subqueries into a single pandas DataFrame</span>
+                <span class="c1"># (could crash here if attempting to hold more data than the system memory can support)</span>
+                <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dataframes</span><span class="p">)</span>
+            
+            <span class="n">print_func</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">Querying online </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_release_formatted</span><span class="si">}</span><span class="s1"> catalog...</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            
+            <span class="c1"># Redirect Gaia TAP+ logging output to custom print_func so progress bar won&#39;t be disrupted</span>
+            <span class="n">buffer</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+            <span class="k">with</span> <span class="n">redirect_stdout</span><span class="p">(</span><span class="n">buffer</span><span class="p">),</span> <span class="n">redirect_stderr</span><span class="p">(</span><span class="n">buffer</span><span class="p">):</span>
+                <span class="c1"># query the TAP+ web service for the stars matching the given criteria</span>
+                <span class="n">gaia_records</span> <span class="o">=</span> <span class="n">QGaia</span><span class="o">.</span><span class="n">launch_job_async</span><span class="p">(</span><span class="n">data_query</span> <span class="o">+</span> <span class="n">where</span><span class="p">)</span><span class="o">.</span><span class="n">get_results</span><span class="p">()</span>
+            <span class="n">print_func</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[F</span><span class="se">\t</span><span class="si">{</span><span class="n">buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="c1"># \033[F moves cursor up one line</span>
+            
+            <span class="k">assert</span> <span class="n">gaia_records</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;something went wrong with the TAP+ query&quot;</span>
+            
+            <span class="c1"># convert the GAIA results to a pandas DataFrame before converting to the GIANT format</span>
+            <span class="n">giant_records</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_to_giant_catalog</span><span class="p">(</span><span class="n">gaia_records</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">())</span>
+           
+            <span class="k">return</span> <span class="n">giant_records</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># determine what the rectangular bounds should look like for the search center/radius</span>
+            <span class="k">if</span> <span class="n">search_center</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">search_radius</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">min_ra</span> <span class="o">=</span> <span class="n">search_center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">search_radius</span>
+                <span class="n">max_ra</span> <span class="o">=</span> <span class="n">search_center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">search_radius</span>
+
+                <span class="n">min_dec</span> <span class="o">=</span> <span class="n">search_center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">search_radius</span>
+                <span class="n">max_dec</span> <span class="o">=</span> <span class="n">search_center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">search_radius</span>
+
+            <span class="c1"># adjust for if we are at a corner case</span>
+            <span class="k">if</span> <span class="n">min_dec</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">90</span><span class="p">:</span>
+                <span class="n">min_dec</span> <span class="o">=</span> <span class="o">-</span><span class="mi">90</span>
+                <span class="n">min_ra</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">max_ra</span> <span class="o">=</span> <span class="mi">360</span>
+
+            <span class="k">elif</span> <span class="n">max_dec</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">:</span>
+                <span class="n">max_dec</span> <span class="o">=</span> <span class="mi">90</span>
+                <span class="n">min_ra</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">max_ra</span> <span class="o">=</span> <span class="mi">360</span>
+
+            <span class="c1"># in this rare case we just take everything</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">min_ra</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">max_ra</span> <span class="o">&gt;</span> <span class="mi">360</span><span class="p">):</span>
+                <span class="n">min_ra</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">max_ra</span> <span class="o">=</span> <span class="mi">360</span>
+
+            <span class="c1"># determine what the query should look like based on the rectangular bounds</span>
+            <span class="k">if</span> <span class="n">min_ra</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;((ra &gt;= </span><span class="si">{</span><span class="n">min_ra</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">360</span><span class="si">}</span><span class="s1"> &amp; ra &lt;= </span><span class="si">{</span><span class="mi">360</span><span class="si">}</span><span class="s1">) | (ra &gt;= </span><span class="si">{</span><span class="mi">0</span><span class="si">}</span><span class="s1"> &amp; ra &lt;= </span><span class="si">{</span><span class="n">max_ra</span><span class="si">}</span><span class="s1">)) &#39;</span>
+                         <span class="sa">f</span><span class="s1">&#39;&amp; dec &gt;= </span><span class="si">{</span><span class="n">min_dec</span><span class="si">}</span><span class="s1"> &amp; dec &lt;= </span><span class="si">{</span><span class="n">max_dec</span><span class="si">}</span><span class="s1"> &#39;</span>
+                         <span class="sa">f</span><span class="s1">&#39;&amp; mag &gt;= </span><span class="si">{</span><span class="n">min_mag</span><span class="si">}</span><span class="s1"> &amp; mag &lt;= </span><span class="si">{</span><span class="n">max_mag</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">max_ra</span> <span class="o">&gt;</span> <span class="mi">360</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;((ra &gt;= </span><span class="si">{</span><span class="n">min_ra</span><span class="si">}</span><span class="s1"> &amp; ra &lt;= </span><span class="si">{</span><span class="mi">360</span><span class="si">}</span><span class="s1">) | (ra &gt;= </span><span class="si">{</span><span class="mi">0</span><span class="si">}</span><span class="s1"> &amp; ra &lt;= </span><span class="si">{</span><span class="n">max_ra</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">360</span><span class="si">}</span><span class="s1">)) &#39;</span>
+                         <span class="sa">f</span><span class="s1">&#39;&amp; dec &gt;= </span><span class="si">{</span><span class="n">min_dec</span><span class="si">}</span><span class="s1"> &amp; dec &lt;= </span><span class="si">{</span><span class="n">max_dec</span><span class="si">}</span><span class="s1"> &#39;</span>
+                         <span class="sa">f</span><span class="s1">&#39;&amp; mag &gt;= </span><span class="si">{</span><span class="n">min_mag</span><span class="si">}</span><span class="s1"> &amp; mag &lt;= </span><span class="si">{</span><span class="n">max_mag</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;ra &gt;= </span><span class="si">{</span><span class="n">min_ra</span><span class="si">}</span><span class="s1"> &amp; ra &lt;= </span><span class="si">{</span><span class="n">max_ra</span><span class="si">}</span><span class="s1"> &#39;</span>
+                         <span class="sa">f</span><span class="s1">&#39;&amp; dec &gt;= </span><span class="si">{</span><span class="n">min_dec</span><span class="si">}</span><span class="s1"> &amp; dec &lt;= </span><span class="si">{</span><span class="n">max_dec</span><span class="si">}</span><span class="s1"> &#39;</span>
+                         <span class="sa">f</span><span class="s1">&#39;&amp; mag &gt;= </span><span class="si">{</span><span class="n">min_mag</span><span class="si">}</span><span class="s1"> &amp; mag &lt;= </span><span class="si">{</span><span class="n">max_mag</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+            <span class="c1"># query the local copy of the catalog for the stars matching the given criteria</span>
+            <span class="c1"># noinspection PyTypeChecker</span>
+            <span class="n">giant_records</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_catalog_store</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;stars&#39;</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="n">query</span><span class="p">)</span> <span class="c1"># type: ignore</span>
+
+            <span class="c1"># now do the float radial search if it is needed</span>
+            <span class="k">if</span> <span class="n">search_center</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">search_radius</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">giant_records</span> <span class="o">=</span> <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">radec_distance</span><span class="p">(</span><span class="n">giant_records</span><span class="o">.</span><span class="n">ra</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">,</span>
+                                                                 <span class="n">giant_records</span><span class="o">.</span><span class="n">dec</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">,</span>
+                                                                 <span class="n">search_center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">,</span>
+                                                                 <span class="n">search_center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">)</span>
+                                                  <span class="o">&lt;=</span> <span class="p">(</span><span class="n">search_radius</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">)]</span> <span class="c1"># type: ignore</span>
+            
+            <span class="k">return</span> <span class="n">giant_records</span>
+
+<div class="viewcode-block" id="Gaia.convert_to_giant_catalog">
+<a class="viewcode-back" href="../../../catalogs/gaia/gaia/giant.catalogs.gaia.Gaia.convert_to_giant_catalog.html#giant.catalogs.gaia.Gaia.convert_to_giant_catalog">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">convert_to_giant_catalog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gaia_records</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method converts records in the catalog format into records in the GIANT format.</span>
+
+<span class="sd">        This is done by renaming columns and converting units.</span>
+
+<span class="sd">        :param gaia_records: The GAIA records from the TAP+ service as a pandas DataFrame</span>
+<span class="sd">        :return: The GIANT records as a pandas DataFrame</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># prep the gaia data frame (set the full index)</span>
+        <span class="n">gaia_records</span> <span class="o">=</span> <span class="n">gaia_records</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_release</span><span class="p">)</span>
+        
+        <span class="c1"># change index (designation column) from &quot;Gaia DR3 {ID}&quot; to be just</span>
+        <span class="c1"># the ID as an integer type, allowing for faster indexing</span>
+        <span class="n">gaia_records</span> <span class="o">=</span> <span class="n">gaia_records</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;designation&#39;</span><span class="p">)</span>
+        <span class="n">gaia_records</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">gaia_records</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">designation</span><span class="p">:</span>
+                                                    <span class="nb">int</span><span class="p">(</span><span class="n">designation</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">gaia_records</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;IDs&#39;</span>
+
+        <span class="c1"># don&#39;t want the designation label from _GAIA_COLS since that was the index</span>
+        <span class="n">giant_records</span> <span class="o">=</span> <span class="n">gaia_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">_GAIA_COLS</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+        
+        <span class="c1"># rename the columns to match the GIANT format</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">_GAIA_TO_GIANT</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="c1"># convert the columns to the appropriate date types for the GIANT catalog</span>
+        <span class="n">giant_records</span> <span class="o">=</span> <span class="n">giant_records</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">GIANT_TYPES</span><span class="p">)</span>
+
+        <span class="c1"># convert to giant units</span>
+        <span class="n">giant_records</span><span class="p">[</span><span class="s1">&#39;distance_sigma&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">giant_records</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>  <span class="c1"># convert parallax std to distance std</span>
+        <span class="n">giant_records</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="mi">1000</span>  <span class="c1"># MAS to arcsecond</span>
+        <span class="n">giant_records</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">**=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># parallax to distance (arcsecond to parsec)</span>
+        <span class="n">giant_records</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">*=</span> <span class="n">PARSEC2KM</span>  <span class="c1"># parsec to kilometers</span>
+        <span class="n">giant_records</span><span class="p">[</span><span class="s1">&#39;ra_sigma&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">DEG2MAS</span>  <span class="c1"># to deg</span>
+        <span class="n">giant_records</span><span class="p">[</span><span class="s1">&#39;dec_sigma&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">DEG2MAS</span>  <span class="c1"># to deg</span>
+        <span class="n">giant_records</span><span class="p">[</span><span class="s1">&#39;ra_proper_motion&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">DEG2MAS</span>  <span class="c1"># MAS/YR to DEG/YR</span>
+        <span class="n">giant_records</span><span class="p">[</span><span class="s1">&#39;dec_proper_motion&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">DEG2MAS</span>  <span class="c1"># MAS/YR to DEG/YR</span>
+        <span class="n">giant_records</span><span class="p">[</span><span class="s1">&#39;ra_pm_sigma&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">DEG2MAS</span>  <span class="c1"># MAS/YR to DEG/YR</span>
+        <span class="n">giant_records</span><span class="p">[</span><span class="s1">&#39;dec_pm_sigma&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">DEG2MAS</span>  <span class="c1"># MAS/YR to DEG/YR</span>
+        <span class="n">giant_records</span><span class="p">[</span><span class="s1">&#39;distance_sigma&#39;</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">PARSEC2KM</span>  <span class="c1"># convert to km</span>
+
+        <span class="c1"># fix for stars with no parallax --  The distance standard deviation seems wrong for these</span>
+        <span class="n">default_distance_error</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">/</span> <span class="p">(</span><span class="n">AVG_STAR_DIST</span> <span class="o">/</span> <span class="n">PARSEC2KM</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">PARSEC2KM</span> <span class="o">*</span> <span class="mi">1000</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">fillna</span><span class="p">({</span><span class="s1">&#39;distance_sigma&#39;</span><span class="p">:</span> <span class="n">default_distance_error</span><span class="p">,</span> <span class="s1">&#39;distance&#39;</span><span class="p">:</span> <span class="n">AVG_STAR_DIST</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># fix for stars with no proper motion</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">fillna</span><span class="p">({</span><span class="s1">&#39;ra_proper_motion&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;dec_proper_motion&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                              <span class="s1">&#39;ra_pm_sigma&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s1">&#39;dec_pm_sigma&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># fix for stars where the parallax is invalid</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">giant_records</span><span class="o">.</span><span class="n">distance</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AVG_STAR_DIST</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">giant_records</span><span class="o">.</span><span class="n">distance</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;distance_sigma&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_distance_error</span>
+
+        <span class="k">return</span> <span class="n">giant_records</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_download_gaia</span><span class="p">(</span><span class="n">save_location</span><span class="p">:</span> <span class="n">PATH</span><span class="p">,</span> <span class="n">max_mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">14.</span><span class="p">,</span> <span class="n">gaia_instance</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Gaia</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function downloads a portion of the GAIA catalog to an HDF5 table file for faster/offline access.</span>
+
+<span class="sd">    To use this function requires an active internet connection as the GAIA source information will be downloaded using</span>
+<span class="sd">    the TAP+ interface through the ``astroquery`` module.  It may also take up a lot of storage space on your computer</span>
+<span class="sd">    depending on what magnitude you request.</span>
+
+<span class="sd">    This function will download all of the stars from the GAIA catalog up to the specified ``max_mag``</span>
+<span class="sd">    (corresponding to the G band pass) and store them in an HDF5 file at the requested ``save_location``.</span>
+<span class="sd">    Only columns required to generate GIANT star records will be downloaded and stored in the file, so don&#39;t use this</span>
+<span class="sd">    if you need other columns for your analysis.</span>
+
+<span class="sd">    This will work in chunks of magnitude (starting with a chunk size of 2 from -4 up to the requested ``max_mag``</span>
+<span class="sd">    and using smaller chunks as the catalog density increases with larger magnitudes) to ensure that the</span>
+<span class="sd">    queries are efficient and that the max number of rows for a GAIA TAP+ query is not exceeded</span>
+<span class="sd">    (indicated by ``_GAIA_MAX_ROWS``) by a query since this will result in a truncated result with missing stars.</span>
+<span class="sd">    Even then, this will likely take a while to run.</span>
+
+<span class="sd">    Once you have downloaded the GAIA catalog, you can create a new instance of the :class:`.Gaia` class, providing</span>
+<span class="sd">    the path to the file you specified for this function (``save_location``) to the key word argument ``catalog_file``</span>
+
+<span class="sd">    :param save_location: The location to save the file to as a path like object.  Usually this should end in .h5 or .hdf5</span>
+<span class="sd">    :param max_mag: The maximum G magnitude to query from the catalog</span>
+<span class="sd">    :param gaia_instance: An initialized :class:`.Gaia` object to use to do the querying</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># open the HDF5 store file for writing the catalog to</span>
+    <span class="n">catalog_store</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span><span class="n">save_location</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">gaia_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">gaia_instance</span> <span class="o">=</span> <span class="n">Gaia</span><span class="p">()</span>
+
+    <span class="c1"># if we don&#39;t have a local copy of the catalog, we need to build one using astroquery</span>
+    <span class="k">if</span> <span class="n">gaia_instance</span><span class="o">.</span><span class="n">_catalog_store</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># query to count the total number of stars that will be downloaded to track progress</span>
+        <span class="n">total_count_query</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SELECT COUNT(*) &#39;</span>
+                             <span class="sa">f</span><span class="s1">&#39;FROM </span><span class="si">{</span><span class="n">gaia_instance</span><span class="o">.</span><span class="n">data_release</span><span class="si">}</span><span class="s1">.gaia_source &#39;</span>
+                             <span class="sa">f</span><span class="s1">&#39;WHERE phot_g_mean_mag &lt;= </span><span class="si">{</span><span class="n">max_mag</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        
+        <span class="n">qres</span> <span class="o">=</span> <span class="n">QGaia</span><span class="o">.</span><span class="n">launch_job</span><span class="p">(</span><span class="n">total_count_query</span><span class="p">)</span><span class="o">.</span><span class="n">get_results</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">qres</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;something went wrong with the TAP+ query&quot;</span>
+        <span class="n">total_star_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">qres</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># type: ignore</span>
+        
+        <span class="c1"># build a progress bar to track the download progress, updating after each</span>
+        <span class="c1"># query is completed</span>
+        <span class="n">progress_bar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">total_star_count</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Downloading stars with mag &lt;= </span><span class="si">{</span><span class="n">max_mag</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                            <span class="n">unit</span><span class="o">=</span><span class="s1">&#39; stars&#39;</span><span class="p">,</span> <span class="n">leave</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dynamic_ncols</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="n">mag_step</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">current_min_mag</span> <span class="o">=</span> <span class="o">-</span><span class="mf">4.</span> <span class="c1"># Gaia DR3 minimum magnitude is 1.73</span>
+        <span class="n">current_max_mag</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">current_min_mag</span> <span class="o">+</span> <span class="n">mag_step</span><span class="p">,</span> <span class="n">max_mag</span><span class="p">)</span>
+    
+        <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">closed_lower_bound</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">lower_bound</span> <span class="o">=</span> <span class="s1">&#39;=&#39;</span>
+        <span class="k">while</span> <span class="n">current_min_mag</span> <span class="o">&lt;</span> <span class="n">max_mag</span><span class="p">:</span>
+            <span class="c1"># extract the number of stars that would be returned from the next query</span>
+            <span class="c1"># (will need to rescale magnitude range if the count exceeds the 3 million limit)</span>
+            <span class="n">count_query</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SELECT COUNT(*) &#39;</span>
+                           <span class="sa">f</span><span class="s1">&#39;FROM </span><span class="si">{</span><span class="n">gaia_instance</span><span class="o">.</span><span class="n">data_release</span><span class="si">}</span><span class="s1">.gaia_source &#39;</span>
+                           <span class="sa">f</span><span class="s1">&#39;WHERE phot_g_mean_mag &gt;</span><span class="si">{</span><span class="n">lower_bound</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">current_min_mag</span><span class="si">}</span><span class="s1"> &#39;</span>
+                           <span class="sa">f</span><span class="s1">&#39;AND phot_g_mean_mag &lt;= </span><span class="si">{</span><span class="n">current_max_mag</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">lqres</span> <span class="o">=</span> <span class="n">QGaia</span><span class="o">.</span><span class="n">launch_job</span><span class="p">(</span><span class="n">count_query</span><span class="p">)</span><span class="o">.</span><span class="n">get_results</span><span class="p">()</span>
+            <span class="k">assert</span> <span class="n">lqres</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;something went wrong with the TAP+ query&quot;</span>
+            <span class="n">star_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">lqres</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># type: ignore</span>
+            
+            <span class="k">if</span> <span class="n">star_count</span> <span class="o">&gt;</span> <span class="n">_GAIA_MAX_ROWS</span><span class="p">:</span>
+                <span class="c1"># split up queries into chunks of equal magnitude range so that subsequent queries will</span>
+                <span class="c1"># return 2 million stars assuming uniform distribution of stars across G magnitudes</span>
+                <span class="c1"># (it&#39;s not uniform, but the simplification buys some time before exceeding the 3 million limit)</span>
+                <span class="n">mag_step</span> <span class="o">*=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">_GAIA_MAX_ROWS</span> <span class="o">/</span> <span class="n">star_count</span><span class="p">)</span>
+                <span class="n">current_max_mag</span> <span class="o">=</span> <span class="n">current_min_mag</span> <span class="o">+</span> <span class="n">mag_step</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># query the TAP+ web service for all the stars with the given magnitude range</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">giant_records</span> <span class="o">=</span> <span class="n">gaia_instance</span><span class="o">.</span><span class="n">_get_all_with_criteria</span><span class="p">(</span><span class="n">min_mag</span><span class="o">=</span><span class="n">current_min_mag</span><span class="p">,</span>
+                                                                 <span class="n">max_mag</span><span class="o">=</span><span class="n">current_max_mag</span><span class="p">,</span>
+                                                                 <span class="n">column_subset</span><span class="o">=</span><span class="n">_GAIA_COLS</span><span class="p">,</span>
+                                                                 <span class="n">closed_lower_bound</span><span class="o">=</span><span class="n">closed_lower_bound</span><span class="p">,</span>
+                                                                 <span class="n">progress_bar</span><span class="o">=</span><span class="n">progress_bar</span><span class="p">)</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            
+            <span class="n">progress_bar</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">Query took </span><span class="si">{</span><span class="p">(</span><span class="n">stop</span><span class="o">-</span><span class="n">start</span><span class="p">)</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> seconds to retrieve </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">giant_records</span><span class="p">)</span><span class="si">:</span><span class="s1">,</span><span class="si">}</span><span class="s1"> stars</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+            <span class="c1"># only the first query will have an inclusive lower bound</span>
+            <span class="k">if</span> <span class="n">closed_lower_bound</span><span class="p">:</span>
+                <span class="n">closed_lower_bound</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">lower_bound</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            
+            <span class="c1"># write the queried stars to the HDF5 store, marking mag, ra, and dec as indexable columns</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">giant_records</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="n">giant_records</span><span class="o">.</span><span class="n">to_hdf</span><span class="p">(</span><span class="n">catalog_store</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;stars&#39;</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="ow">not</span><span class="p">(</span><span class="n">first</span><span class="p">),</span>
+                                     <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;table&#39;</span><span class="p">,</span> <span class="n">data_columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;mag&#39;</span><span class="p">,</span> <span class="s1">&#39;ra&#39;</span><span class="p">,</span> <span class="s1">&#39;dec&#39;</span><span class="p">])</span>
+                <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+            
+            <span class="c1"># increment progress bar by the number of stars retrieved</span>
+            <span class="n">progress_bar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">giant_records</span><span class="p">))</span>
+            
+            <span class="c1"># update the magnitude range for the next query</span>
+            <span class="n">current_min_mag</span> <span class="o">=</span> <span class="n">current_max_mag</span>
+            <span class="n">current_max_mag</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">current_min_mag</span> <span class="o">+</span> <span class="n">mag_step</span><span class="p">,</span> <span class="n">max_mag</span><span class="p">)</span>
+        
+        <span class="n">progress_bar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># we already have a gaia instance with a local catalog to pull our stars from</span>
+        <span class="c1"># this will be much faster than using astroquery to download the stars from scratch</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;mag &lt;= </span><span class="si">{</span><span class="n">max_mag</span><span class="si">}</span><span class="s1">&#39;</span>
+        
+        <span class="c1"># ignore stars with negative indices since that indicates they are not</span>
+        <span class="c1"># from GAIA and are instead created by star blending</span>
+        <span class="n">query_filtered</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s1"> &amp; index &gt;= 0&#39;</span>
+        
+        <span class="c1"># query to count the total number of stars that will be extracted to track progress</span>
+        <span class="n">total_star_count</span> <span class="o">=</span> <span class="n">gaia_instance</span><span class="o">.</span><span class="n">_catalog_store</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;stars&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;mag&#39;</span><span class="p">],</span> <span class="n">where</span><span class="o">=</span><span class="n">query_filtered</span><span class="p">)</span><span class="o">.</span><span class="n">size</span>
+        
+        <span class="c1"># build a progress bar to track the extraction progress, updating after</span>
+        <span class="c1"># each chunk is completed</span>
+        <span class="n">progress_bar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">total_star_count</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Extracting stars with </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39; stars&#39;</span><span class="p">,</span> <span class="n">leave</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dynamic_ncols</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        
+        <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># get all stars from pre-defined GAIA catalog under max_mag limit</span>
+        <span class="c1"># and store them in a new GAIA catalog. Limit chunk size to 3 million since</span>
+        <span class="c1"># that would represent approx. 500 MB in memory as a pandas DataFrame</span>
+        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">gaia_instance</span><span class="o">.</span><span class="n">_catalog_store</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;stars&#39;</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="n">query_filtered</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="mi">3_000_000</span><span class="p">):</span>
+            <span class="c1"># write the queried stars to the HDF5 store, marking mag, ra, and dec as indexable columns</span>
+            <span class="n">chunk</span><span class="o">.</span><span class="n">to_hdf</span><span class="p">(</span><span class="n">catalog_store</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;stars&#39;</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="ow">not</span><span class="p">(</span><span class="n">first</span><span class="p">),</span>
+                         <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;table&#39;</span><span class="p">,</span> <span class="n">data_columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;mag&#39;</span><span class="p">,</span> <span class="s1">&#39;ra&#39;</span><span class="p">,</span> <span class="s1">&#39;dec&#39;</span><span class="p">])</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+            
+            <span class="c1"># increment progress bar by the number of stars retrieved</span>
+            <span class="n">progress_bar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">))</span>
+        
+        <span class="n">progress_bar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">catalog_store</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="build_catalog">
+<a class="viewcode-back" href="../../../catalogs/gaia/giant.catalogs.gaia.build_catalog.html#giant.catalogs.gaia.build_catalog">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_catalog</span><span class="p">(</span><span class="n">catalog_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PATH</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">giant_catalog_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PATH</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">limiting_magnitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">14.</span><span class="p">,</span> <span class="n">blending_magnitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">8.</span><span class="p">,</span>
+                    <span class="n">limiting_separation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.04</span><span class="p">,</span> <span class="n">number_of_stars</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build a local GIANT catalog:</span>
+<span class="sd">        a) from the GAIA database for faster query times</span>
+<span class="sd">        b) from a local GIANT catalog for different star blending options</span>
+
+<span class="sd">    This function can be used to build a new GIANT catalog (or overwrite an old one) from the GAIA star</span>
+<span class="sd">    catalog.  Typically a user will not use this directly and instead will use the command line utility</span>
+<span class="sd">    :mod:`~.scripts.build_catalog`.</span>
+
+<span class="sd">    If you want to use this function, you can adjust how (and where) the catalog is built by adjusting the</span>
+<span class="sd">    arguments.  Note that this will require downloading the GAIA catalog (if it isn&#39;t already available).</span>
+<span class="sd">    In addition, building the catalog can take a long time, so you will want to have a period</span>
+<span class="sd">    where you can leave this run for a while without interruption to ensure that the catalog is built successfully and</span>
+<span class="sd">    not corrupted.</span>
+
+<span class="sd">    :param catalog_file: The file to save the giant catalog database to</span>
+<span class="sd">    :param giant_catalog_file: The filepath containing a pre-built local giant catalog from which</span>
+<span class="sd">                                 to build the new giant catalog from.</span>
+<span class="sd">    :param limiting_magnitude: The maximum magnitude to include in the catalog</span>
+<span class="sd">    :param blending_magnitude: The magnitude of the blended star for it to be included as a blended star in the</span>
+<span class="sd">                               catalog.</span>
+<span class="sd">    :param limiting_separation: The maximum separation between stars for them to be considered for blending in degrees.</span>
+<span class="sd">                                Typically this should be set to around the IFOV on the detector you are considering.</span>
+<span class="sd">    :param number_of_stars: The maximum number of stars that can be blended together in any group.  To turn off star</span>
+<span class="sd">                            blending, set this to 0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># use the default GIANT catalog file path if none is provided</span>
+    <span class="k">if</span> <span class="n">catalog_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">catalog_file</span> <span class="o">=</span> <span class="n">DEFAULT_CAT_FILE</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">catalog_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">catalog_file</span><span class="p">)</span>
+
+    <span class="c1"># ensure the parent directory for the new database file exists</span>
+    <span class="n">catalog_file</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">catalog_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="c1"># if the file already exists, ask the user if they want to rename</span>
+        <span class="c1"># the old file, otherwise overwrite the old file</span>
+        <span class="n">user_response</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">WARNING: GIANT catalog file already exists at:</span><span class="se">\n</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">catalog_file</span><span class="p">)</span><span class="si">}</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+                              <span class="sa">f</span><span class="s1">&#39;Would you like to rename this file so that you will have an old &#39;</span>
+                              <span class="sa">f</span><span class="s1">&#39;version you can go back to?</span><span class="se">\n</span><span class="s1">(y/n)? &#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">user_response</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;n&#39;</span><span class="p">:</span>
+            <span class="n">catalog_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">base</span><span class="p">,</span> <span class="n">extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">catalog_file</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">catalog_file</span><span class="p">)</span>
+            <span class="n">timestamp_dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+            <span class="n">old_catalog_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">timestamp_dt</span><span class="si">:</span><span class="s1">%d%b%YT%H_%M_%S</span><span class="si">}{</span><span class="n">extension</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="n">catalog_file</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">old_catalog_file</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">renamed: </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">catalog_file</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1">     to: </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">old_catalog_file</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># determine the magnitude to query from the catalog</span>
+    <span class="k">if</span> <span class="n">number_of_stars</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">query_mag</span> <span class="o">=</span> <span class="n">limiting_magnitude</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">blend_mag</span> <span class="o">=</span> <span class="n">blending_magnitude</span> <span class="o">+</span> <span class="p">(</span><span class="mf">2.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">number_of_stars</span><span class="p">))</span>
+        <span class="n">query_mag</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">limiting_magnitude</span><span class="p">,</span> <span class="n">blend_mag</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Query mag &lt;= </span><span class="si">{</span><span class="n">query_mag</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># set up the Gaia instance to query the catalog</span>
+    <span class="k">if</span> <span class="n">giant_catalog_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">gaia_instance</span> <span class="o">=</span> <span class="n">Gaia</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Creating database from </span><span class="si">{</span><span class="n">gaia_instance</span><span class="o">.</span><span class="n">data_release_formatted</span><span class="si">}</span><span class="s1"> &#39;</span>
+              <span class="sa">f</span><span class="s1">&#39;using astroquery to download. This might take a while...</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">gaia_instance</span> <span class="o">=</span> <span class="n">Gaia</span><span class="p">(</span><span class="n">catalog_file</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">giant_catalog_file</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Creating database from local file:</span><span class="se">\n</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">giant_catalog_file</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        
+    <span class="c1"># download/extract the Gaia stars to the new catalog_file</span>
+    <span class="n">_download_gaia</span><span class="p">(</span><span class="n">catalog_file</span><span class="p">,</span> <span class="n">max_mag</span><span class="o">=</span><span class="n">query_mag</span><span class="p">,</span> <span class="n">gaia_instance</span><span class="o">=</span><span class="n">gaia_instance</span><span class="p">)</span>
+    
+    <span class="c1"># check if we are allowed to blend stars</span>
+    <span class="k">if</span> <span class="n">number_of_stars</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># use newly created catalog_file as a basis for star blending</span>
+        <span class="n">gaia_instance</span> <span class="o">=</span> <span class="n">Gaia</span><span class="p">(</span><span class="n">catalog_file</span><span class="o">=</span><span class="n">catalog_file</span><span class="p">)</span>
+        
+        <span class="c1"># WARNING: This line will attempt to loads entire giant catalog into memory as a pandas DataFrame.</span>
+        <span class="c1"># This could cause the program to crash or significant slowdowns if using a large enough catalog</span>
+        <span class="n">gaia_records</span> <span class="o">=</span> <span class="n">gaia_instance</span><span class="o">.</span><span class="n">query_catalog</span><span class="p">(</span><span class="n">max_mag</span><span class="o">=</span><span class="n">query_mag</span><span class="p">)</span>
+        
+        <span class="c1"># pair the stars based on distance</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">finding close star pairs&#39;</span><span class="p">)</span>
+        <span class="n">pairs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">=</span> <span class="n">find_star_pairs</span><span class="p">(</span><span class="n">gaia_records</span><span class="p">,</span> <span class="n">limiting_separation</span><span class="p">)</span>
+
+        <span class="c1"># get rid of the old DataFrame for memory reasons</span>
+        <span class="k">del</span> <span class="n">gaia_records</span>
+
+        <span class="c1"># blend the stars together</span>
+        <span class="n">combined_stars</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">blend_stars</span><span class="p">(</span><span class="n">pairs</span><span class="p">,</span> <span class="n">gaia_instance</span><span class="p">,</span> <span class="n">limiting_magnitude</span><span class="p">)</span>
+
+        <span class="c1"># close the read-only file IO for the catalog file so we can append to it</span>
+        <span class="k">assert</span> <span class="n">gaia_instance</span><span class="o">.</span><span class="n">_catalog_store</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;should never be None at this point&quot;</span>
+        <span class="n">gaia_instance</span><span class="o">.</span><span class="n">_catalog_store</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        
+        <span class="c1"># reopen the file in read/write mode (allows appending to the file), which</span>
+        <span class="c1"># is more secure than letting gaia_instance use a read &amp; write-capable file IO</span>
+        <span class="n">catalog_store</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span><span class="n">catalog_file</span><span class="p">,</span> <span class="s1">&#39;r+&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># append new combined stars to the database, marking mag, ra, and dec as indexable columns</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;adding blended stars to database&#39;</span><span class="p">)</span>
+        <span class="n">combined_stars</span><span class="o">.</span><span class="n">to_hdf</span><span class="p">(</span><span class="n">catalog_store</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;stars&#39;</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                              <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;table&#39;</span><span class="p">,</span> <span class="n">data_columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;mag&#39;</span><span class="p">,</span> <span class="s1">&#39;ra&#39;</span><span class="p">,</span> <span class="s1">&#39;dec&#39;</span><span class="p">])</span>
+        
+        <span class="c1"># manually closing catalog file IO is safer than letting it close on its own</span>
+        <span class="n">catalog_store</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_repair</span><span class="p">(</span><span class="n">star_records</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pairs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This helper function combines multiple pairs of stars and gets rid of duplicates</span>
+
+<span class="sd">    Don&#39;t use this yourself.</span>
+
+<span class="sd">    :param star_records: The DataFrame of star records</span>
+<span class="sd">    :param pairs: The DataFrame specifying groups of stars</span>
+<span class="sd">    :return: The pandas Series specifying groups of stars after correcting the groupings</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get the unique right hand sides</span>
+    <span class="n">unique_others</span> <span class="o">=</span> <span class="n">pairs</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+
+    <span class="n">paired_dict</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">=</span> <span class="n">pairs</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+    <span class="n">removes</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="c1"># use a tqdm progress bar to let the user know how many star pairs are being</span>
+    <span class="c1"># condensed and to give them an idea of how long it will take</span>
+    <span class="k">for</span> <span class="n">primary</span><span class="p">,</span> <span class="n">others</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">paired_dict</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>
+                                <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Condensing star pairs&#39;</span><span class="p">,</span>
+                                <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">paired_dict</span><span class="p">)):</span>
+        <span class="n">sets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">starts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># look for where primary is also paired to another star</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">primary</span> <span class="ow">in</span> <span class="n">unique_others</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">primary</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">removes</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">local_primary</span><span class="p">,</span> <span class="n">local_others</span> <span class="ow">in</span> <span class="n">paired_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">local_primary</span> <span class="o">==</span> <span class="n">primary</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">elif</span> <span class="n">primary</span> <span class="ow">in</span> <span class="n">local_others</span><span class="p">:</span>
+                    <span class="c1"># if the others is a subset of the first group we don&#39;t need to do anything</span>
+                    <span class="k">if</span> <span class="n">others</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">local_others</span><span class="p">):</span>
+                        <span class="c1"># should we also remove local_primary here?</span>
+                        <span class="k">continue</span>
+                    <span class="c1"># otherwise store them for use</span>
+                    <span class="n">sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">local_others</span><span class="p">)</span>
+                    <span class="n">starts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">local_primary</span><span class="p">)</span>
+            <span class="c1"># if anything needs modified</span>
+            <span class="k">if</span> <span class="n">starts</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">local_primary</span><span class="p">,</span> <span class="n">local_others</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">sets</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">starts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="c1"># keep which ever has the higher magnitude on the left hand side and discard the other</span>
+                        <span class="k">if</span> <span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">local_primary</span><span class="p">,</span> <span class="s1">&#39;mag&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">primary</span><span class="p">,</span> <span class="s1">&#39;mag&#39;</span><span class="p">]:</span>  <span class="c1"># type: ignore</span>
+                            <span class="n">local_others</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">others</span><span class="p">)</span>
+                            <span class="n">removes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">primary</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">others</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">local_others</span><span class="p">)</span>
+                            <span class="n">removes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">local_primary</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># keep the brightest magnitude</span>
+                        <span class="n">best</span> <span class="o">=</span> <span class="n">primary</span>
+                        <span class="n">best_mag</span> <span class="o">=</span> <span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">primary</span><span class="p">,</span> <span class="s1">&#39;mag&#39;</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
+                        <span class="n">best_set</span> <span class="o">=</span> <span class="n">others</span>
+                        <span class="k">for</span> <span class="n">o</span><span class="p">,</span> <span class="n">ls</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">sets</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">best_mag</span> <span class="o">&gt;</span> <span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;mag&#39;</span><span class="p">]:</span>  <span class="c1"># type: ignore</span>
+                                <span class="n">best_mag</span> <span class="o">=</span> <span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;mag&#39;</span><span class="p">]</span>
+                                <span class="n">best</span> <span class="o">=</span> <span class="n">o</span>
+                                <span class="n">best_set</span> <span class="o">=</span> <span class="n">ls</span>
+                        <span class="c1"># get rid of whichever aren&#39;t the brightest and feed it</span>
+                        <span class="k">if</span> <span class="n">best</span> <span class="o">!=</span> <span class="n">primary</span><span class="p">:</span>
+                            <span class="n">removes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">primary</span><span class="p">)</span>
+                            <span class="n">best_set</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">others</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">local_local_primary</span><span class="p">,</span> <span class="n">local_local_others</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">sets</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">local_local_primary</span> <span class="o">==</span> <span class="n">best</span><span class="p">:</span>
+                                <span class="k">continue</span>
+                            <span class="n">best_set</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">local_local_others</span><span class="p">)</span>
+                            <span class="n">removes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">local_local_primary</span><span class="p">)</span>
+
+    <span class="c1"># get rid of the bad ones</span>
+    <span class="n">unique_pairs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">=</span> <span class="n">paired_dict</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">removes</span><span class="p">)</span>
+    
+    <span class="c1"># let the user know how many unique star pairs were found</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">unique_pairs</span><span class="p">)</span><span class="si">}</span><span class="s1"> unique star pairs&#39;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">unique_pairs</span>
+
+<div class="viewcode-block" id="find_star_pairs">
+<a class="viewcode-back" href="../../../catalogs/gaia/giant.catalogs.gaia.find_star_pairs.html#giant.catalogs.gaia.find_star_pairs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_star_pairs</span><span class="p">(</span><span class="n">star_records</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">max_separation</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This identifies possible star pairs based on separation angle.</span>
+
+<span class="sd">    Stars are paired if their max separation is less that the input ``max_separation`` in degrees. This is done by</span>
+<span class="sd">    creating unit vectors for all of the stars and then doing a pair query using a KDTree.  The pairs are sorted based</span>
+<span class="sd">    on magnitude so that the first star in each pair is brighter.</span>
+
+<span class="sd">    The result of this function will be a DataFrame where the first column &quot;a&quot; is the primary star and the second column</span>
+<span class="sd">    &quot;b&quot; is a set of stars that should be combined with &quot;a&quot;.</span>
+
+<span class="sd">    Generally this is not used directly by the user.  Instead see :func:`build_catalog` or script</span>
+<span class="sd">    :mod:`~.scripts.build_catalog`.</span>
+
+<span class="sd">    :param star_records: The DataFrame containing the stars that are to be paired</span>
+<span class="sd">    :param max_separation: The maximum separation in degrees between stars for them to be paired</span>
+<span class="sd">    :return: A pandas Series specifying stars to pair together.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># get the unit vectors</span>
+    <span class="n">units</span> <span class="o">=</span> <span class="n">radec_to_unit</span><span class="p">(</span><span class="n">star_records</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">,</span> <span class="n">star_records</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># build the kdtree</span>
+    <span class="c1"># noinspection PyArgumentList</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">KDTree</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="n">compact_nodes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">balanced_tree</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># find the pairs.  Tell pycharm to stop complaining because numpy/scipy don&#39;t document right</span>
+    <span class="c1"># noinspection PyArgumentList,PyUnresolvedReferences</span>
+    <span class="n">pairs</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">query_pairs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">max_separation</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">360</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">output_type</span><span class="o">=</span><span class="s1">&#39;ndarray&#39;</span><span class="p">)</span>
+
+    <span class="c1"># get the pairs</span>
+    <span class="n">pairs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">star_records</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()[</span><span class="n">pairs</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">])</span>
+
+    <span class="c1"># sort the pairs on magnitude</span>
+    <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="o">.</span><span class="n">itertuples</span><span class="p">():</span>
+
+        <span class="k">if</span> <span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pair</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="s1">&#39;mag&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pair</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="s1">&#39;mag&#39;</span><span class="p">]:</span>  <span class="c1"># type: ignore</span>
+            <span class="n">pairs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pair</span><span class="o">.</span><span class="n">Index</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">b</span>
+            <span class="n">pairs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pair</span><span class="o">.</span><span class="n">Index</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">a</span>
+
+    <span class="c1"># let the user know how many star pairs were found</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pairs</span><span class="p">)</span><span class="si">}</span><span class="s1"> total star pairs</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># condense pairs so that stars aren&#39;t in multiple pairs</span>
+    <span class="k">return</span> <span class="n">_repair</span><span class="p">(</span><span class="n">star_records</span><span class="p">,</span> <span class="n">pairs</span><span class="p">)</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_blend_stars</span><span class="p">(</span><span class="n">star_group</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">gaia_instance</span><span class="p">:</span> <span class="n">Gaia</span><span class="p">,</span> <span class="n">limiting_mag</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                 <span class="n">reference_mag</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This helper function computes a blended star from the input star indices.</span>
+
+<span class="sd">    This function queries the star records from the database for memory reasons (so that we can use multiprocessing).</span>
+
+<span class="sd">    The stars are blended into a single record with a combined magnitude, right ascension, declination, and proper</span>
+<span class="sd">    motion (distance is not considered).  This is based off of an internal note on blending stars that Sean Semper sent.</span>
+
+<span class="sd">    :param star_group: The group of stars to be blended</span>
+<span class="sd">    :param gaia_instance: An initialized :class:`.Gaia` object to use to query the stars in a group by ID</span>
+<span class="sd">    :param limiting_mag: The magnitude that the blended stars must reach for them to be included</span>
+<span class="sd">    :param reference_mag: The reference magnitude to use when blending the stars.</span>
+<span class="sd">    :return: A series with the blended star, or ``None`` if the limiting magnitude wasn&#39;t met</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># extract the primary star and the other stars&#39; IDs from the input star_group</span>
+    <span class="n">primary_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">star_group</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">other_ids</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">star_group</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># get all the IDs that we will need to query</span>
+    <span class="n">star_ids</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">other_ids</span><span class="o">.</span><span class="n">union</span><span class="p">({</span><span class="n">primary_id</span><span class="p">})</span>
+    <span class="n">star_records</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">gaia_instance</span><span class="o">.</span><span class="n">query_catalog</span><span class="p">(</span><span class="n">ids</span><span class="o">=</span><span class="n">star_ids</span><span class="p">)</span>
+
+    <span class="c1"># get the primary star from the DataFrame</span>
+    <span class="n">primary_star</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">=</span> <span class="n">star_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">primary_id</span><span class="p">]</span> <span class="c1"># type: ignore</span>
+    <span class="c1"># get the rest of the stars from the DataFrame</span>
+    <span class="n">other_stars</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">star_records</span><span class="p">[</span><span class="n">star_records</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">other_ids</span><span class="p">)]</span>
+
+    <span class="c1"># compute the weights for each star</span>
+    <span class="n">primary_weight</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="mf">0.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">primary_star</span><span class="o">.</span><span class="n">mag</span> <span class="o">-</span> <span class="n">reference_mag</span><span class="p">)))</span>
+    <span class="n">other_weights</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="mf">0.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">other_stars</span><span class="o">.</span><span class="n">mag</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span> <span class="o">-</span> <span class="n">reference_mag</span><span class="p">)))</span>
+
+    <span class="c1"># compute the combined magnitude</span>
+    <span class="n">combined_mag</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">((</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.4</span> <span class="o">*</span> <span class="n">primary_star</span><span class="o">.</span><span class="n">mag</span><span class="p">)</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.4</span> <span class="o">*</span> <span class="n">other_stars</span><span class="o">.</span><span class="n">mag</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()))</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+
+    <span class="c1"># if the blended star is too dim stop here</span>
+    <span class="k">if</span> <span class="n">combined_mag</span> <span class="o">&gt;</span> <span class="n">limiting_mag</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    
+    <span class="c1"># get the brightest star among the other_stars</span>
+    <span class="n">brightest_other</span> <span class="o">=</span> <span class="n">other_stars</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">other_stars</span><span class="o">.</span><span class="n">mag</span><span class="o">.</span><span class="n">idxmin</span><span class="p">()]</span>
+    
+    <span class="c1"># determine the reference declination from the brightest star</span>
+    <span class="k">if</span> <span class="n">primary_star</span><span class="o">.</span><span class="n">mag</span> <span class="o">&lt;=</span> <span class="n">brightest_other</span><span class="o">.</span><span class="n">mag</span><span class="p">:</span>
+        <span class="n">ref_dec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">primary_star</span><span class="o">.</span><span class="n">dec</span><span class="o">*</span><span class="n">DEG2RAD</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># I think this is dead code since _repair() already ensures that</span>
+        <span class="c1"># the primary star is the brightest star from its group</span>
+        <span class="n">ref_dec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">brightest_other</span><span class="o">.</span><span class="n">dec</span><span class="o">*</span><span class="n">DEG2RAD</span><span class="p">)</span>
+
+    <span class="c1"># use the primary star Series as a basis for the blended star</span>
+    <span class="n">combined_star</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">=</span> <span class="n">primary_star</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="c1"># set the blended magnitude</span>
+    <span class="n">combined_star</span><span class="o">.</span><span class="n">mag</span> <span class="o">=</span> <span class="n">combined_mag</span>
+    
+    <span class="c1"># update the star ID to be negative</span>
+    <span class="n">combined_star</span><span class="o">.</span><span class="n">name</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span> <span class="c1"># type: ignore</span>
+
+    <span class="c1"># compute the combined position</span>
+    <span class="n">denominator</span> <span class="o">=</span> <span class="n">primary_weight</span> <span class="o">+</span> <span class="n">other_weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">combined_star</span><span class="o">.</span><span class="n">ra</span> <span class="o">=</span> <span class="p">(</span><span class="n">primary_weight</span> <span class="o">*</span> <span class="n">primary_star</span><span class="o">.</span><span class="n">ra</span> <span class="o">+</span>
+                        <span class="p">(</span><span class="n">other_weights</span> <span class="o">*</span> <span class="n">other_stars</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">/</span> <span class="n">denominator</span>
+    <span class="n">combined_star</span><span class="o">.</span><span class="n">dec</span> <span class="o">=</span> <span class="p">(</span><span class="n">primary_weight</span> <span class="o">*</span> <span class="n">primary_star</span><span class="o">.</span><span class="n">dec</span> <span class="o">+</span>
+                         <span class="p">(</span><span class="n">other_weights</span> <span class="o">*</span> <span class="n">other_stars</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">/</span> <span class="n">denominator</span>
+    <span class="n">combined_star</span><span class="o">.</span><span class="n">ra_proper_motion</span> <span class="o">=</span> <span class="p">(</span><span class="n">primary_weight</span> <span class="o">*</span> <span class="n">primary_star</span><span class="o">.</span><span class="n">ra_proper_motion</span> <span class="o">+</span>
+                                      <span class="p">(</span><span class="n">other_weights</span> <span class="o">*</span> <span class="n">other_stars</span><span class="o">.</span><span class="n">ra_proper_motion</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">/</span> <span class="n">denominator</span>
+    <span class="n">combined_star</span><span class="o">.</span><span class="n">dec_proper_motion</span> <span class="o">=</span> <span class="p">(</span><span class="n">primary_weight</span> <span class="o">*</span> <span class="n">primary_star</span><span class="o">.</span><span class="n">dec_proper_motion</span> <span class="o">+</span>
+                                       <span class="p">(</span><span class="n">other_weights</span> <span class="o">*</span> <span class="n">other_stars</span><span class="o">.</span><span class="n">dec_proper_motion</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">/</span> <span class="n">denominator</span>
+
+    <span class="k">return</span> <span class="n">combined_star</span>
+
+<div class="viewcode-block" id="blend_stars">
+<a class="viewcode-back" href="../../../catalogs/gaia/giant.catalogs.gaia.blend_stars.html#giant.catalogs.gaia.blend_stars">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">blend_stars</span><span class="p">(</span><span class="n">star_groups</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">gaia_instance</span><span class="p">:</span> <span class="n">Gaia</span><span class="p">,</span> <span class="n">limiting_mag</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                <span class="n">reference_mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4.</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Blends groups of stars together into a single &quot;apparent&quot; star as viewed by a camera.</span>
+
+<span class="sd">    Star magnitude, right ascension, declination, and proper motion are all blended in the final product.  The blending</span>
+<span class="sd">    is based off of an internal memo by Sean Semper.</span>
+
+<span class="sd">    The star_groups input should provide 2 columns, the first column &quot;a&quot; should provide the primary (brightest) star in each</span>
+<span class="sd">    group.  The second column &quot;b&quot; should provide a set of all of the stars that are to be blended to each other and &quot;a&quot;.</span>
+<span class="sd">    This is what is returned by :func:`find_star_pairs`.  This function uses the database to retrieve the individual</span>
+<span class="sd">    star records for memory purposes.</span>
+
+<span class="sd">    The blended star is given an ID that is the negative of the brightest star in the group.  The blended stars are</span>
+<span class="sd">    returned as a pandas DataFrame.</span>
+
+<span class="sd">    Typically this is not used directly by the user.  Instead see :func:`build_catalog` or script</span>
+<span class="sd">    :mod:`.scripts.build_catalog`.</span>
+
+<span class="sd">    :param star_groups: The pandas Series specifying the groups of stars to blend</span>
+<span class="sd">    :param gaia_instance: An initialized :class:`.Gaia` object to use to query the stars in a group by ID</span>
+<span class="sd">    :param limiting_mag: The limiting magnitude that blended stars must achieve for them to be included</span>
+<span class="sd">    :param reference_mag: The reference magnitude to use when blending the stars</span>
+<span class="sd">    :return: The DataFrame of the blended apparent stars</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># get the number of groups we need to blend for reporting and progress tracking</span>
+    <span class="n">number_of_groups</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">star_groups</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">number_of_groups</span><span class="si">}</span><span class="s1"> stars to blend</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="c1"># combine the stars.  Perhaps can use multiprocessing for this</span>
+    <span class="n">combined_stars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">starmap</span><span class="p">(</span><span class="n">_blend_stars</span><span class="p">,</span>
+                                  <span class="nb">zip</span><span class="p">(</span><span class="n">star_groups</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>
+                                      <span class="n">repeat</span><span class="p">(</span><span class="n">gaia_instance</span><span class="p">),</span>
+                                      <span class="n">repeat</span><span class="p">(</span><span class="n">limiting_mag</span><span class="p">),</span>
+                                      <span class="n">repeat</span><span class="p">(</span><span class="n">reference_mag</span><span class="p">))),</span>
+                               <span class="n">total</span><span class="o">=</span><span class="n">number_of_groups</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Blending Stars&#39;</span><span class="p">))</span>
+
+    <span class="c1"># return the DataFrame by concatenating the individual blended Series as</span>
+    <span class="c1"># columns, and then transposing and converting to the GIANT data types.</span>
+    <span class="c1"># This will ignore Nones returned when the combined brightness is below the limiting_mag</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">combined_stars</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">GIANT_TYPES</span><span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

@@ -53,5 +53,8 @@
     ~IterativeGaussian.generate_kernel
     ~IterativeGaussian.normalize_amplitude
     ~IterativeGaussian.update_state
+    ~IterativeGaussian.volume
+    ~IterativeGaussian.shift_centroid
+    ~IterativeGaussian.compare
 
 |

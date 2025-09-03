@@ -5,7 +5,7 @@
 
 .. autoclass:: PointSpreadFunction
     :no-members:
-    :members: save_residuals, centroid, residual_rss, residual_std, covariance
+    :members: save_residuals, centroid, residual_rss, residual_mean, residual_std, covariance
 
 
 .. rubric:: Summary of Methods
@@ -19,5 +19,8 @@
     ~PointSpreadFunction.apply_1d
     ~PointSpreadFunction.evaluate
     ~PointSpreadFunction.generate_kernel
+    ~PointSpreadFunction.volume
+    ~PointSpreadFunction.compare
+    ~PointSpreadFunction.shift_centroid
 
 |

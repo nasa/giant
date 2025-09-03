@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>FisheyeModel.project_onto_image &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="FisheyeModel.compute_jacobian" href="giant.camera_models.fisheye_model.FisheyeModel.compute_jacobian.html" />
+    <link rel="prev" title="FisheyeModel" href="giant.camera_models.fisheye_model.FisheyeModel.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.camera_models.html">giant.camera_models</a><ul>
+  <li><a href="../giant.camera_models.fisheye_model.html">giant.camera_models.fisheye_model</a><ul>
+  <li><a href="giant.camera_models.fisheye_model.FisheyeModel.html">FisheyeModel</a><ul>
+      <li>Previous: <a href="giant.camera_models.fisheye_model.FisheyeModel.html" title="previous chapter">FisheyeModel</a></li>
+      <li>Next: <a href="giant.camera_models.fisheye_model.FisheyeModel.compute_jacobian.html" title="next chapter">FisheyeModel.compute_jacobian</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.camera_models.fisheye_model.FisheyeModel.html" title="Previous document">FisheyeModel</a>
+        </li>
+        <li>
+          <a href="giant.camera_models.fisheye_model.FisheyeModel.compute_jacobian.html" title="Next document">FisheyeModel.compute_jacobian</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="fisheyemodel-project-onto-image">
+<h1>FisheyeModel.project_onto_image<a class="headerlink" href="#fisheyemodel-project-onto-image" title="Link to this heading">¶</a></h1>
+<p><a class="reference internal" href="../giant.camera_models.fisheye_model.html#module-giant.camera_models.fisheye_model" title="giant.camera_models.fisheye_model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.camera_models.fisheye_model</span></code></a>:</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.camera_models.fisheye_model.FisheyeModel.project_onto_image">
+<span class="sig-prename descclassname"><span class="pre">FisheyeModel.</span></span><span class="sig-name descname"><span class="pre">project_onto_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points_in_camera_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/giant/camera_models/fisheye_model.html#FisheyeModel.project_onto_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.camera_models.fisheye_model.FisheyeModel.project_onto_image" title="Link to this definition">¶</a></dt>
+<dd><p>This method transforms 3D points or directions expressed in the camera frame into the corresponding 2D image
+locations.</p>
+<p>The points input should be either 1 or 2 dimensional, with the first axis being length 3 (each point
+(direction) in the camera frame is specified as a column).</p>
+<p>The optional <code class="docutils literal notranslate"><span class="pre">image</span></code> key word argument specifies the index of the image you are projecting onto (this only
+applies if you have a separate misalignment for each image)</p>
+<p>The optional temperature input specifies the temperature to perform the projection at.  This is only import when
+your focal length is dependent on temperature and you have entered or calibrated for the temperature dependency
+coefficients.</p>
+<dl>
+<dt>You can specify the directions to be input as either a shape (3,) or shape (3, n) array::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Fisheye</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">Fisheye</span><span class="p">(</span><span class="n">kx</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">ky</span><span class="o">=</span><span class="mi">4000</span><span class="p">,</span> <span class="n">px</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">py</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">a1</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">a2</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                    <span class="n">misalignment</span><span class="o">=</span><span class="p">[[</span><span class="mf">1e-12</span><span class="p">,</span> <span class="o">-</span><span class="mf">2e-14</span><span class="p">,</span> <span class="mf">3e-10</span><span class="p">],</span> <span class="p">[</span><span class="mf">2e-15</span><span class="p">,</span> <span class="mf">1e-13</span><span class="p">,</span> <span class="mf">3e-10</span><span class="p">]],</span>
+<span class="gp">&gt;&gt;&gt; </span>                    <span class="n">estimation_parameters</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;multiple misalignments&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">12000</span><span class="p">])</span>
+<span class="go">array([ 500.25      ,  500.66666667])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">12000</span><span class="p">,</span> <span class="mi">13000</span><span class="p">,</span> <span class="mi">9000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">]],</span> <span class="n">image</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">array([[ 500.25      ,  500.46153846,  501.        ,  502.4       ],</span>
+<span class="go">       [ 500.66666667,  501.53846154,  502.66666667,  505.6       ]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">12000</span><span class="p">,</span> <span class="mi">13000</span><span class="p">,</span> <span class="mi">9000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">]],</span> <span class="n">temperature</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">array([[ 499.49999775,  499.07691892,  497.999991  ,  495.1999784 ],</span>
+<span class="go">       [ 498.66666066,  496.92306307,  494.66664266,  488.79994959]])</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points_in_camera_frame</strong> (<em>Buffer</em><em> | </em><em>_SupportsArray</em><em>[</em><em>dtype</em><em>[</em><em>Any</em><em>]</em><em>] </em><em>| </em><em>_NestedSequence</em><em>[</em><em>_SupportsArray</em><em>[</em><em>dtype</em><em>[</em><em>Any</em><em>]</em><em>]</em><em>] </em><em>| </em><em>complex</em><em> | </em><em>bytes</em><em> | </em><em>str</em><em> | </em><em>_NestedSequence</em><em>[</em><em>complex</em><em> | </em><em>bytes</em><em> | </em><em>str</em><em>]</em>) – a shape (3,) or shape (3, n) array of points to project</p></li>
+<li><p><strong>image</strong> (<em>int</em>) – The index of the image being projected onto (only applicable with multiple misalignments)</p></li>
+<li><p><strong>temperature</strong> (<em>float</em>) – The temperature to project the points at</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A shape (2,) or shape (2, n) numpy array of image points (with units of pixels)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>ndarray</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.camera_models.fisheye_model.FisheyeModel.html" title="Previous document">FisheyeModel</a>
+        </li>
+        <li>
+          <a href="giant.camera_models.fisheye_model.FisheyeModel.compute_jacobian.html" title="Next document">FisheyeModel.compute_jacobian</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

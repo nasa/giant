@@ -18,7 +18,7 @@ McEwenIllumination
    :toctree:
 
    ~McEwenIllumination.compute_photoclinometry_jacobian
-   ~McEwenIllumination.numeric_derivative
+   ~McEwenIllumination.compute_photoclinometry_jacobian_numeric
    
 
 

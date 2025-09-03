@@ -14,14 +14,9 @@
     :nosignatures:
     :toctree: surface_features
 
-    FeatureCatalogue
+    FeatureCatalog
     SurfaceFeature
     VisibleFeatureFinder
     VisibleFeatureFinderOptions
-    
-
-
-
-
 
 |

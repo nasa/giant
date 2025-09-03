@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>FeatureMatcher &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="featurematcher">
+<h1>FeatureMatcher<a class="headerlink" href="#featurematcher" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.image_processing.feature_matchers.FeatureMatcher">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">giant.image_processing.feature_matchers.</span></span><span class="sig-name descname"><span class="pre">FeatureMatcher</span></span><a class="reference internal" href="../../_modules/giant/image_processing/feature_matchers/feature_matcher.html#FeatureMatcher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.image_processing.feature_matchers.FeatureMatcher" title="Link to this definition">¶</a></dt>
+<dd><p>Abstract base class for any image matching process.</p>
+<p>This provides a generalized, high-level interface. The only requirement
+for a concrete implementation is to define a <cite>match_images</cite> method that
+takes two images and returns the coordinates of matching points.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.image_processing.feature_matchers.FeatureMatcher.match_images">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">match_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/image_processing/feature_matchers/feature_matcher.html#FeatureMatcher.match_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.image_processing.feature_matchers.FeatureMatcher.match_images" title="Link to this definition">¶</a></dt>
+<dd><p>Finds and returns correspondences between two images.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image1</strong> (<em>ndarray</em><em>[</em><em>tuple</em><em>[</em><em>Any</em><em>, </em><em>...</em><em>]</em><em>, </em><em>dtype</em><em>[</em><em>_ScalarT</em><em>]</em><em>]</em>) – The first image to match (NumPy array).</p></li>
+<li><p><strong>image2</strong> (<em>ndarray</em><em>[</em><em>tuple</em><em>[</em><em>Any</em><em>, </em><em>...</em><em>]</em><em>, </em><em>dtype</em><em>[</em><em>_ScalarT</em><em>]</em><em>]</em>) – The second image to match (NumPy array).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A NumPy array of matched keypoint locations with a shape of (N, 2, 2),
+where N is the number of matches. Each element is structured as
+[[x1, y1], [x2, y2]], representing the coordinates from
+image 1 and image 2, respectively.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>ndarray</em>[tuple[<em>Any</em>, …], <em>dtype</em>[<em>float64</em>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

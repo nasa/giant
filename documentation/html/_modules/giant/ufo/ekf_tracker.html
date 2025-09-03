@@ -1,36 +1,36 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>giant.ufo.ekf_tracker &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <title>giant.ufo.ekf_tracker &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="copyright" title="Copyright" href="../../../copyright.html" />
    
   <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../../../index.html">
-    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -63,7 +63,7 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
@@ -71,8 +71,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -89,8 +89,7 @@
           <div class="body" role="main">
             
   <h1>Source code for giant.ufo.ekf_tracker</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
-<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
+<span></span>
 
 
 <span class="sd">&quot;&quot;&quot;</span>
@@ -119,41 +118,44 @@
 <span class="sd">this class directly.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
-<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span><span class="p">,</span> <span class="n">copy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span><span class="p">,</span> <span class="n">copy</span>
 
-<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Process</span><span class="p">,</span> <span class="n">cpu_count</span><span class="p">,</span> <span class="n">Array</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Process</span><span class="p">,</span> <span class="n">cpu_count</span><span class="p">,</span> <span class="n">Array</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">multiprocessing.sharedctypes</span><span class="w"> </span><span class="kn">import</span> <span class="n">SynchronizedArray</span>
 
-<span class="kn">from</span> <span class="nn">tempfile</span> <span class="kn">import</span> <span class="n">TemporaryFile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tempfile</span><span class="w"> </span><span class="kn">import</span> <span class="n">TemporaryFile</span>
 
-<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span><span class="p">,</span> <span class="n">sleep</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">time</span><span class="p">,</span> <span class="n">sleep</span>
 
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<span class="kn">from</span> <span class="nn">queue</span> <span class="kn">import</span> <span class="n">Empty</span><span class="p">,</span> <span class="n">Full</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">queue</span><span class="w"> </span><span class="kn">import</span> <span class="n">Empty</span><span class="p">,</span> <span class="n">Full</span>
 
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
 
 <span class="c1"># no real risk hear because the pickle files are created by this script itself</span>
-<span class="kn">import</span> <span class="nn">pickle</span>  <span class="c1"># nosec</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>  <span class="c1"># nosec</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Hashable</span><span class="p">,</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Hashable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">cast</span>
 
-<span class="kn">from</span> <span class="nn">scipy.spatial.kdtree</span> <span class="kn">import</span> <span class="n">KDTree</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileIO</span><span class="p">,</span> <span class="n">BufferedRandom</span>
 
-<span class="kn">import</span> <span class="nn">spiceypy</span> <span class="k">as</span> <span class="nn">spice</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial</span><span class="w"> </span><span class="kn">import</span> <span class="n">KDTree</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">giant.image</span> <span class="kn">import</span> <span class="n">OpNavImage</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.scene</span> <span class="kn">import</span> <span class="n">Scene</span>
-<span class="kn">from</span> <span class="nn">giant.camera</span> <span class="kn">import</span> <span class="n">Camera</span>
-<span class="kn">from</span> <span class="nn">giant.ufo.extended_kalman_filter</span> <span class="kn">import</span> <span class="n">ExtendedKalmanFilter</span><span class="p">,</span> <span class="n">STATE_INITIALIZER_TYPE</span>
-<span class="kn">from</span> <span class="nn">giant.ufo.measurements</span> <span class="kn">import</span> <span class="n">OpticalBearingMeasurement</span>
-<span class="kn">from</span> <span class="nn">giant.ufo.dynamics</span> <span class="kn">import</span> <span class="n">Dynamics</span>
-<span class="kn">from</span> <span class="nn">giant.ufo.clearable_queue</span> <span class="kn">import</span> <span class="n">ClearableQueue</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">spiceypy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">spice</span>
 
-<span class="kn">from</span> <span class="nn">giant._typing</span> <span class="kn">import</span> <span class="n">Real</span><span class="p">,</span> <span class="n">PATH</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpNavImage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scene</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera</span><span class="w"> </span><span class="kn">import</span> <span class="n">Camera</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ufo.extended_kalman_filter</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExtendedKalmanFilter</span><span class="p">,</span> <span class="n">STATE_INITIALIZER_TYPE</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ufo.measurements</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpticalBearingMeasurement</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ufo.dynamics</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dynamics</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ufo.clearable_queue</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClearableQueue</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">PATH</span>
 
 
 <span class="n">_LOGGER</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -168,8 +170,8 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<span class="k">def</span> <span class="nf">_pickle_generator</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">TemporaryFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">ExtendedKalmanFilter</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_pickle_generator</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">FileIO</span> <span class="o">|</span> <span class="n">BufferedRandom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">ExtendedKalmanFilter</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Simple generator to work through the pickled objects in a file</span>
 <span class="sd">    :param file: the file object to work on</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -182,8 +184,10 @@
             <span class="k">break</span>
 
 
-<div class="viewcode-block" id="Tracker"><a class="viewcode-back" href="../../../ufo/ekf_tracker/giant.ufo.ekf_tracker.Tracker.html#giant.ufo.ekf_tracker.Tracker">[docs]</a><span class="k">class</span> <span class="nc">Tracker</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Tracker">
+<a class="viewcode-back" href="../../../ufo/ekf_tracker/giant.ufo.ekf_tracker.Tracker.html#giant.ufo.ekf_tracker.Tracker">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Tracker</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class provides an interface for autonomously tracking UFOs through subsequent images in time.</span>
 
 <span class="sd">    There are 2 main components to this tracker.  The first is the use of EKFs to follow most of the possible paths</span>
@@ -204,13 +208,13 @@
 <span class="sd">    particles.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span>
                  <span class="n">dynamics</span><span class="p">:</span> <span class="n">Dynamics</span><span class="p">,</span>
                  <span class="n">state_initializer</span><span class="p">:</span> <span class="n">STATE_INITIALIZER_TYPE</span><span class="p">,</span>
-                 <span class="n">search_distance_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ExtendedKalmanFilter</span><span class="p">],</span> <span class="n">Real</span><span class="p">],</span>
+                 <span class="n">search_distance_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ExtendedKalmanFilter</span><span class="p">],</span> <span class="nb">float</span><span class="p">],</span>
                  <span class="n">observation_trees</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">KDTree</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">observation_ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">initial_euclidean_threshold</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
+                 <span class="n">observation_ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Hashable</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">initial_euclidean_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
                  <span class="n">measurement_covariance</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">maximum_image_timedelta</span><span class="p">:</span> <span class="n">timedelta</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
                  <span class="n">maximum_paths_per_image</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
@@ -221,11 +225,11 @@
                  <span class="n">expected_convergence_number</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
                  <span class="n">reduced_paths_forward_per_image</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
                  <span class="n">minimum_number_of_measurements</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
-                 <span class="n">maximum_residual_standard_deviation</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+                 <span class="n">maximum_residual_standard_deviation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
                  <span class="n">maximum_time_outs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
-                 <span class="n">maximum_tracking_time_per_image</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">3600</span><span class="p">,</span>
+                 <span class="n">maximum_tracking_time_per_image</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">3600</span><span class="p">,</span>
                  <span class="n">kernels_to_load</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param camera: The :class:`.Camera` containing the images to process and the camera model</span>
 <span class="sd">        :param scene: The :class:`.Scene` describing the location of the central body with respect to the camera.</span>
 <span class="sd">        :param dynamics: The dynamics model to use in the EKF for propagating the state from one time to another</span>
@@ -274,27 +278,27 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span> <span class="o">=</span> <span class="n">camera</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The :class:`.Camera` containing the images to process and the camera model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span> <span class="o">=</span> <span class="n">scene</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The :class:`.Scene` describing the location of the central body with respect to the camera.</span>
 <span class="sd">        </span>
 <span class="sd">        The central body should be the first &quot;target&quot; in the scene.  It doesn&#39;t need to have a shape associated with it</span>
 <span class="sd">        (it can be a ``Point`` object) and in fact is encouraged not to (to avoid large memory overhead)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">observation_trees</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">KDTree</span><span class="p">]]</span> <span class="o">=</span> <span class="n">observation_trees</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_trees</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">KDTree</span><span class="p">]]</span> <span class="o">=</span> <span class="n">observation_trees</span> <span class="k">if</span> <span class="n">observation_trees</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A list of KDTrees built on the observed UFO locations.</span>
 <span class="sd">        </span>
 <span class="sd">        If any elements are ``None`` then it is assumed that no detections exist for that image.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">observation_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Hashable</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">observation_ids</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Hashable</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">observation_ids</span> <span class="k">if</span> <span class="n">observation_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A list of the ids for each observation contained in the trees.</span>
 <span class="sd">        </span>
 <span class="sd">        These should be unique ``Hashable`` objects like ints or strings, not mutable like lists/arrays/dictionaries.</span>
@@ -302,58 +306,58 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">processes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Process</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A List of Processes that are working</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">confirmed_particles</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A set of particles that have been assigned to a track already</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="p">:</span> <span class="n">Dynamics</span> <span class="o">=</span> <span class="n">dynamics</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The dynamics model to use to propagate the states from one time to another.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">measurement_covariance</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="n">measurement_covariance</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The 2x2 measurement covariance matrix (or ``None`` to use the identify matrix) with units of pixels squared.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">state_initializer</span><span class="p">:</span> <span class="n">STATE_INITIALIZER_TYPE</span> <span class="o">=</span> <span class="n">state_initializer</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The state initializer callable to use to initialize the state vector given the initial measurement and the type</span>
 <span class="sd">        of the state vector to be initialized</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">maximum_image_timedelta</span><span class="p">:</span> <span class="n">timedelta</span> <span class="o">=</span> <span class="n">maximum_image_timedelta</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The maximum separation in time between images for them to be paired subsequently </span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">initial_euclidean_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">initial_euclidean_threshold</span><span class="p">)</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The threshold in pixels for points to be paired from the first image to a subsequent image</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">maximum_paths_per_image</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">maximum_paths_per_image</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The maximum number of pairs from one image to the next for a single possible particle</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">maximum_paths_total</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">maximum_paths_total</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The maximum number of pairs from one image to all images for a single particle</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">maximum_forward_images</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">maximum_forward_images</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The maximum number of images to pair with</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">maximum_track_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">maximum_track_length</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The maximum length of a track to consider before terminating.  </span>
 <span class="sd">        </span>
 <span class="sd">        the length of a track is defined as the number of measurements that it has ingested.</span>
@@ -362,14 +366,14 @@
 <span class="sd">        tracked and can take up a lot of memory.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">search_distance_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ExtendedKalmanFilter</span><span class="p">],</span> <span class="n">Real</span><span class="p">]</span> <span class="o">=</span> <span class="n">search_distance_function</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">search_distance_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ExtendedKalmanFilter</span><span class="p">],</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">search_distance_function</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A function which returns what the search distance should be in pixels when trying to match the current EKF to </span>
 <span class="sd">        new images.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">maximum_mahalanobis_distance_squared</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">maximum_mahalanobis_distance_squared</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This specifies the maximum Mahalanobis distance squared for a potential detection to be paired to a track</span>
 <span class="sd">        </span>
 <span class="sd">        The Mahalanobis distance is roughly equivalent to the sigma normalized error between the predicted and observed </span>
@@ -378,48 +382,48 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">expected_convergence_number</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">expected_convergence_number</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This specifies the number of measurements at which it is expected the filter will have mostly converged and we </span>
 <span class="sd">        should become more selective with which paths forward we follow.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reduced_paths_forward_per_image</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">reduced_paths_forward_per_image</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This specifies the reduced number of paths forward we should follow once the filter should be converged.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">minimum_number_of_measurements</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">minimum_number_of_measurements</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The minimum number of measurements for an EKF to be considered a track.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">maximum_residual_standard_deviation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">maximum_residual_standard_deviation</span><span class="p">)</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The maximum post-fit standard deviation of the residuals in an EKF for it to be considered a valid fit</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">maximum_time_outs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">maximum_time_outs</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The maximum number of time outs in a row before we stop trying to process an image</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">maximum_tracking_time_per_image</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">maximum_tracking_time_per_image</span><span class="p">)</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The maximum amount of time to attempt tracking in an image in seconds.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_ekfs_to_process</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ClearableQueue</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A Queue used to specify what ekfs need to be processed</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_working</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Array</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_working</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SynchronizedArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A shared array of boolean values specifying whether each processor is actively working</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ClearableQueue</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A Queue used to communicate the results for the processes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -427,43 +431,45 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_output</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ClearableQueue</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_working</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Array</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_working</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SynchronizedArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_processes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Process</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A List of Processes that are working on smoothing</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">confirmed_filters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ExtendedKalmanFilter</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This list stores the confirmed EKFs</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">confirmed_standard_deviations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This list stores the standard deviation of the post-fit residuals of the confirmed EKFs</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_respawns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A counter for the number of times we have respawned our processes</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_smoothing_respawns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A counter for the number of times we have respawned our smoothing processes</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">kernels_to_load</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">kernels_to_load</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The spice kernels to load in each subprocess.  </span>
 <span class="sd">        </span>
 <span class="sd">        This is required if you are using spice because the kernel pool does not subsist across processes.  It should </span>
 <span class="sd">        either be ``None`` if you&#39;re not using spice or a list of strings if you are.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Tracker.find_initial_pairs"><a class="viewcode-back" href="../../../ufo/ekf_tracker/giant.ufo.ekf_tracker.Tracker.find_initial_pairs.html#giant.ufo.ekf_tracker.Tracker.find_initial_pairs">[docs]</a>    <span class="k">def</span> <span class="nf">find_initial_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Tracker.find_initial_pairs">
+<a class="viewcode-back" href="../../../ufo/ekf_tracker/giant.ufo.ekf_tracker.Tracker.find_initial_pairs.html#giant.ufo.ekf_tracker.Tracker.find_initial_pairs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_initial_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method finds the initial pairs for the input image.</span>
 
 <span class="sd">        This is done by identifying all observations in subsequent images within a specified number of pixels of the</span>
@@ -480,16 +486,19 @@
         <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Processing image </span><span class="si">{</span><span class="n">image_ind</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="c1"># get the detections and ids</span>
-        <span class="n">detections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_trees</span><span class="p">[</span><span class="n">image_ind</span><span class="p">]</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_trees</span><span class="p">[</span><span class="n">image_ind</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">otree</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_trees</span><span class="p">[</span><span class="n">image_ind</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">detections</span> <span class="o">=</span> <span class="n">otree</span><span class="o">.</span><span class="n">data</span> 
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">detections</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">detection_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_ids</span><span class="p">[</span><span class="n">image_ind</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="n">detections</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">detections</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">detection_ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">_LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No detections for </span><span class="si">{</span><span class="n">image_ind</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
             <span class="k">return</span>
 
         <span class="c1"># initialize a list to store the ekfs in</span>
-        <span class="n">filters</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">filters</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ExtendedKalmanFilter</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c1"># update the scene to the current time</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
@@ -579,7 +588,8 @@
                     <span class="c1">#     predicted_kdtree.data[predicted_index], self.initial_euclidean_threshold / 2</span>
                     <span class="c1"># )</span>
 
-                    <span class="n">sorted_pairs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observation_trees</span><span class="p">[</span><span class="n">next_image_index</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">pairs</span><span class="p">]</span> <span class="o">-</span>
+                    <span class="k">assert</span> <span class="p">(</span><span class="n">tree</span><span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_trees</span><span class="p">[</span><span class="n">next_image_index</span><span class="p">])</span>  <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="n">sorted_pairs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">pairs</span><span class="p">]</span> <span class="o">-</span>
                                                              <span class="n">predicted_kdtree</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">predicted_index</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">pairs</span><span class="p">))</span>
 
                     <span class="n">pairs</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">sorted_pairs</span><span class="p">)[:</span><span class="bp">self</span><span class="o">.</span><span class="n">maximum_paths_per_image</span><span class="p">]]</span>
@@ -589,7 +599,8 @@
                 <span class="n">valid_pairs</span> <span class="o">=</span> <span class="kc">True</span>
 
                 <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_ids</span><span class="p">[</span><span class="n">next_image_index</span><span class="p">][</span><span class="n">pair</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">confirmed_particles</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="p">(</span><span class="n">next_observation_id</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_ids</span><span class="p">[</span><span class="n">next_image_index</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="k">if</span> <span class="n">next_observation_id</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">confirmed_particles</span><span class="p">:</span>
                         <span class="c1"># skip particles we have already tracked</span>
                         <span class="k">continue</span>
 
@@ -597,13 +608,13 @@
                     <span class="n">new_ekf</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">ekf</span><span class="p">)</span>
 
                     <span class="c1"># get rid of the state initializer because it isn&#39;t needed anymore and makes problems with pickling</span>
-                    <span class="n">new_ekf</span><span class="o">.</span><span class="n">state_initializer</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="n">new_ekf</span><span class="o">.</span><span class="n">state_initializer</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
 
                     <span class="c1"># do the measurement update</span>
-                    <span class="n">new_measurement</span> <span class="o">=</span> <span class="n">OpticalBearingMeasurement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observation_trees</span><span class="p">[</span><span class="n">next_image_index</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">pair</span><span class="p">],</span>
+                    <span class="n">new_measurement</span> <span class="o">=</span> <span class="n">OpticalBearingMeasurement</span><span class="p">(</span><span class="n">cast</span><span class="p">(</span><span class="n">KDTree</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_trees</span><span class="p">[</span><span class="n">next_image_index</span><span class="p">])</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">pair</span><span class="p">],</span>
                                                                 <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">next_image</span><span class="p">,</span> <span class="n">next_camera_state</span><span class="p">,</span>
                                                                 <span class="bp">self</span><span class="o">.</span><span class="n">measurement_covariance</span><span class="p">,</span>
-                                                                <span class="n">identity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">observation_ids</span><span class="p">[</span><span class="n">next_image_index</span><span class="p">][</span><span class="n">pair</span><span class="p">])</span>
+                                                                <span class="n">identity</span><span class="o">=</span><span class="n">next_observation_id</span><span class="p">[</span><span class="n">pair</span><span class="p">])</span>
 
                     <span class="n">state_update</span> <span class="o">=</span> <span class="n">new_ekf</span><span class="o">.</span><span class="n">process_measurement</span><span class="p">(</span>
                         <span class="n">new_measurement</span><span class="p">,</span> <span class="n">pre_update_state</span><span class="o">=</span><span class="n">predicted_states</span><span class="p">[</span><span class="n">predicted_index</span><span class="p">],</span>
@@ -613,7 +624,7 @@
                     <span class="k">if</span> <span class="n">state_update</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Failed to propagate EKF </span><span class="si">{</span><span class="n">new_ekf</span><span class="o">.</span><span class="n">identity</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-
+                        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ekfs_to_process</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_ekfs_to_process</span><span class="o">.</span><span class="n">put_retry</span><span class="p">(</span><span class="n">new_ekf</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">valid_pairs</span><span class="p">:</span>
@@ -623,8 +634,9 @@
             <span class="k">if</span> <span class="n">number_of_linked_images</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_forward_images</span><span class="p">:</span>
                 <span class="k">break</span></div>
 
-    <span class="k">def</span> <span class="nf">_initialize_tracking_workers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_tracking_workers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method sets up the processes and queues for working on data in parallel for initial tracking.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -637,21 +649,24 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">processes</span> <span class="o">=</span> <span class="p">[</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_follow</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;EKF Follower </span><span class="si">{</span><span class="n">pid</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
                           <span class="k">for</span> <span class="n">pid</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cpu_count</span><span class="p">())]</span>
 
-    <span class="k">def</span> <span class="nf">_reset_tracking_workers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reset_tracking_workers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method resets the Pool of workers, respawning any that have died and clears the queues/the work array</span>
 <span class="sd">        for tracking workers</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_respawns</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ekfs_to_process</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ekfs_to_process</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ekfs_to_process</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
         <span class="c1"># fix any dead processes</span>
         <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">process</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">processes</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_working</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_working</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_working</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">process</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
                 <span class="n">process</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -660,8 +675,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">processes</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_follow</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">ind</span><span class="p">,),</span>
                                           <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;EKF Follower </span><span class="si">{</span><span class="n">ind</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_respawns</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_tear_down_tracking_workers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_tear_down_tracking_workers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method terminates the pool of workers and the queues used to communicate with them</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -674,11 +689,13 @@
                 <span class="k">continue</span>
             <span class="n">process</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ekfs_to_process</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ekfs_to_process</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ekfs_to_process</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_initialize_smoothing_workers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_smoothing_workers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method sets up the processes and queues for working on data in parallel for initial tracking.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -691,28 +708,32 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_processes</span> <span class="o">=</span> <span class="p">[</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_smooth</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">pid</span><span class="p">,),</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Smoother </span><span class="si">{</span><span class="n">pid</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
                                     <span class="k">for</span> <span class="n">pid</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cpu_count</span><span class="p">())]</span>
 
-    <span class="k">def</span> <span class="nf">_reset_smoothing_workers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reset_smoothing_workers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method resets the Pool of workers, respawning any that have died and clears the queues/the work array</span>
 <span class="sd">        for smoothing workers</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_smoothing_respawns</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_input</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_input</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_input</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_output</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_output</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_output</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
         <span class="c1"># fix any dead processes</span>
-        <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">process</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">smoothing_processes</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_working</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="n">process</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
-            <span class="n">process</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_processes</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_smooth</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">ind</span><span class="p">,),</span>
-                                                    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Smoother </span><span class="si">{</span><span class="n">ind</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_smoothing_respawns</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_processes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">process</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">smoothing_processes</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_working</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_working</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">process</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+                <span class="n">process</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_processes</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_smooth</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">ind</span><span class="p">,),</span>
+                                                        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Smoother </span><span class="si">{</span><span class="n">ind</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_smoothing_respawns</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_tear_down_smoothing_workers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_tear_down_smoothing_workers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method terminates the pool of workers and the queues used to communicate with them</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -725,11 +746,13 @@
                 <span class="k">continue</span>
             <span class="n">process</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ekfs_to_process</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_results</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ekfs_to_process</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ekfs_to_process</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_follow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_follow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method retrieves an EKF from the queue and follows it to completion</span>
 
 <span class="sd">        This is used as the target for the Processes that are created.</span>
@@ -756,7 +779,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_working</span><span class="p">[</span><span class="n">process_number</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="k">if</span> <span class="kc">True</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_working</span><span class="p">:</span>
                     <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;QUEUE was empty for process </span><span class="si">{</span><span class="n">process_number</span><span class="si">}</span><span class="s1"> but another process is still working.&#39;</span>
-                                  <span class="sa">f</span><span class="s1">&#39;Process status: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_working</span><span class="p">))</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                                  <span class="sa">f</span><span class="s1">&#39;Process status: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_working</span><span class="p">))</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="c1"># pyright: ignore[reportArgumentType]</span>
                     <span class="k">continue</span>
 
                 <span class="k">else</span><span class="p">:</span>
@@ -817,7 +840,7 @@
                 <span class="c1"># the state failed to propagate</span>
                 <span class="k">if</span> <span class="n">predicted_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">continue</span>
-
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">predicted_pixels</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
                 <span class="c1"># get the innovation matrix</span>
                 <span class="n">last_measurement</span> <span class="o">=</span> <span class="n">ekf</span><span class="o">.</span><span class="n">measurement_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">measurement_jacobian</span> <span class="o">=</span> <span class="n">last_measurement</span><span class="o">.</span><span class="n">compute_jacobian</span><span class="p">(</span><span class="n">predicted_state</span><span class="p">)</span>
@@ -831,23 +854,24 @@
                     <span class="n">information_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">innovation_covariance</span><span class="p">)</span>
 
                 <span class="c1"># query the tree to get the potential next points using the search distance</span>
-                <span class="n">pairs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_trees</span><span class="p">[</span><span class="n">next_image_index</span><span class="p">]</span><span class="o">.</span><span class="n">query_ball_point</span><span class="p">(</span><span class="n">predicted_pixels</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
-                                                                                  <span class="n">search_distance</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="p">(</span><span class="n">next_tree</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_trees</span><span class="p">[</span><span class="n">next_image_index</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="n">pairs</span> <span class="o">=</span> <span class="n">next_tree</span><span class="o">.</span><span class="n">query_ball_point</span><span class="p">(</span><span class="n">predicted_pixels</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">search_distance</span><span class="p">)</span>
 
                 <span class="c1"># loop through and filter out paths that are already taken and don&#39;t meet the mahalanobis distance</span>
 
                 <span class="c1"># create these lists to store pairs that require more consideration</span>
                 <span class="n">keep_pairs</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="n">keep_mahalanobis_distances</span> <span class="o">=</span> <span class="p">[]</span>
+                
+                <span class="k">assert</span> <span class="p">(</span><span class="n">next_observation_ids</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_ids</span><span class="p">[</span><span class="n">next_image_index</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
                 <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_ids</span><span class="p">[</span><span class="n">next_image_index</span><span class="p">][</span><span class="n">pair</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">confirmed_particles</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">next_observation_ids</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">confirmed_particles</span><span class="p">:</span>
                         <span class="c1"># skip if we&#39;ve already used this particle</span>
                         <span class="k">continue</span>
 
                     <span class="c1"># compute the mahalanobis distance</span>
-                    <span class="n">pixel_separation</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observation_trees</span><span class="p">[</span><span class="n">next_image_index</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">-</span>
-                                        <span class="n">predicted_pixels</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+                    <span class="n">pixel_separation</span> <span class="o">=</span> <span class="p">(</span><span class="n">next_tree</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">-</span> <span class="n">predicted_pixels</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
 
                     <span class="n">mahalanobis_distance_squared</span> <span class="o">=</span> <span class="n">pixel_separation</span> <span class="o">@</span> <span class="n">information_matrix</span> <span class="o">@</span> <span class="n">pixel_separation</span>
 
@@ -883,10 +907,10 @@
                     <span class="n">new_ekf</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">ekf</span><span class="p">)</span>
 
                     <span class="c1"># make a measurement for this pair</span>
-                    <span class="n">new_measurement</span> <span class="o">=</span> <span class="n">OpticalBearingMeasurement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observation_trees</span><span class="p">[</span><span class="n">next_image_index</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">pair</span><span class="p">],</span>
+                    <span class="n">new_measurement</span> <span class="o">=</span> <span class="n">OpticalBearingMeasurement</span><span class="p">(</span><span class="n">next_tree</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">pair</span><span class="p">],</span>
                                                                 <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">next_image</span><span class="p">,</span> <span class="n">next_camera_state</span><span class="p">,</span>
                                                                 <span class="bp">self</span><span class="o">.</span><span class="n">measurement_covariance</span><span class="p">,</span>
-                                                                <span class="n">identity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">observation_ids</span><span class="p">[</span><span class="n">next_image_index</span><span class="p">][</span><span class="n">pair</span><span class="p">])</span>
+                                                                <span class="n">identity</span><span class="o">=</span><span class="n">next_observation_ids</span><span class="p">[</span><span class="n">pair</span><span class="p">])</span>
 
                     <span class="c1"># perform a measurement update using this path</span>
                     <span class="n">new_ekf</span><span class="o">.</span><span class="n">process_measurement</span><span class="p">(</span><span class="n">new_measurement</span><span class="p">,</span> <span class="n">predicted_state</span><span class="p">,</span> <span class="n">predicted_pixels</span><span class="p">)</span>
@@ -917,8 +941,8 @@
 
         <span class="n">spice</span><span class="o">.</span><span class="n">kclear</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_smooth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_smooth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method retrieves an EKF from the queue and smooths it.</span>
 
 <span class="sd">        The smoothed EKF is then placed into the output queue</span>
@@ -944,9 +968,12 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">incoming</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ExtendedKalmanFilter</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_input</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">incoming</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">incoming</span> <span class="o">==</span> <span class="s2">&quot;END&quot;</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_working</span><span class="p">[</span><span class="n">process_number</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_output</span><span class="o">.</span><span class="n">put_retry</span><span class="p">(</span><span class="s1">&#39;DONE&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">incoming</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">incoming</span> <span class="o">==</span> <span class="s2">&quot;END&quot;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_working</span><span class="p">[</span><span class="n">process_number</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_output</span><span class="o">.</span><span class="n">put_retry</span><span class="p">(</span><span class="s1">&#39;DONE&#39;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received </span><span class="si">{</span><span class="n">incoming</span><span class="si">}</span><span class="s2"> which is not expected&quot;</span><span class="p">)</span>
 
                     <span class="k">break</span>
 
@@ -962,7 +989,7 @@
                 <span class="n">num_time_out</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="k">if</span> <span class="kc">True</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_working</span><span class="p">:</span>
                     <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;QUEUE was empty for process </span><span class="si">{</span><span class="n">process_number</span><span class="si">}</span><span class="s1"> but another process is still working.&#39;</span>
-                                  <span class="sa">f</span><span class="s1">&#39;Process status: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_working</span><span class="p">))</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                                  <span class="sa">f</span><span class="s1">&#39;Process status: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_working</span><span class="p">))</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="c1"># pyright: ignore[reportArgumentType]</span>
                     <span class="k">continue</span>
 
                 <span class="k">elif</span> <span class="n">num_time_out</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_time_outs</span><span class="p">:</span>
@@ -991,8 +1018,10 @@
 
         <span class="n">spice</span><span class="o">.</span><span class="n">kclear</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Tracker.filter_ekfs"><a class="viewcode-back" href="../../../ufo/ekf_tracker/giant.ufo.ekf_tracker.Tracker.filter_ekfs.html#giant.ufo.ekf_tracker.Tracker.filter_ekfs">[docs]</a>    <span class="k">def</span> <span class="nf">filter_ekfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ekfs_to_filter</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">ExtendedKalmanFilter</span><span class="p">],</span> <span class="n">number_of_ekfs</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Tracker.filter_ekfs">
+<a class="viewcode-back" href="../../../ufo/ekf_tracker/giant.ufo.ekf_tracker.Tracker.filter_ekfs.html#giant.ufo.ekf_tracker.Tracker.filter_ekfs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">filter_ekfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ekfs_to_filter</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">ExtendedKalmanFilter</span><span class="p">],</span> <span class="n">number_of_ekfs</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method does backwards smoothing on each EKF and figures out which are actually valid</span>
 
 <span class="sd">        :param ekfs_to_filter: The list of EKFs to filter</span>
@@ -1005,10 +1034,10 @@
 
         <span class="n">smoothed_ekfs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">ExtendedKalmanFilter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">number_of_ekfs</span>
 
-        <span class="n">processes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Process</span><span class="p">]]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processes</span>
-        <span class="n">smooth_process</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Process</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_processes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">processes</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_processes</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">processes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Process</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processes</span>
+        <span class="n">smooth_process</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Process</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_processes</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_processes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_processes</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">smooth_process</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
@@ -1016,13 +1045,15 @@
                 <span class="k">pass</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">processes</span> <span class="o">=</span> <span class="n">processes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_processes</span> <span class="o">=</span> <span class="n">smooth_process</span>
+        
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_input</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_output</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
         <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">ekf</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ekfs_to_filter</span><span class="p">):</span>
 
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ekf</span><span class="o">.</span><span class="n">measurement_history</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_number_of_measurements</span><span class="p">:</span>
                 <span class="n">removes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
                 <span class="k">continue</span>
-
+            
             <span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_input</span><span class="o">.</span><span class="n">put_retry</span><span class="p">((</span><span class="n">ind</span><span class="p">,</span> <span class="n">ekf</span><span class="p">))</span>
 
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cpu_count</span><span class="p">()):</span>
@@ -1038,10 +1069,13 @@
                 <span class="c1"># reset the counter</span>
                 <span class="n">number_timed_out</span> <span class="o">=</span> <span class="mi">0</span>
 
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">result</span> <span class="o">==</span> <span class="s1">&#39;DONE&#39;</span><span class="p">):</span>
-                    <span class="n">number_not_done</span> <span class="o">-=</span> <span class="mi">1</span>
-                    <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">number_not_done</span><span class="si">}</span><span class="s1"> processes still smoothing.  Approximately &#39;</span>
-                                 <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_input</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span><span class="si">}</span><span class="s1"> things still to do&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">result</span> <span class="o">==</span> <span class="s1">&#39;DONE&#39;</span><span class="p">):</span>
+                        <span class="n">number_not_done</span> <span class="o">-=</span> <span class="mi">1</span>
+                        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">number_not_done</span><span class="si">}</span><span class="s1"> processes still smoothing.  Approximately &#39;</span>
+                                    <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_smoothing_input</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span><span class="si">}</span><span class="s1"> things still to do&#39;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span> 
+                        <span class="n">_LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;received an unexpected </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
                 <span class="k">elif</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
                     <span class="c1"># compute and store the standard deviation and mean</span>
@@ -1085,6 +1119,7 @@
                 <span class="k">continue</span>
 
             <span class="c1"># store the set of the measurement ids</span>
+            <span class="k">assert</span> <span class="n">ekf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
             <span class="n">id_sets</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">meas</span><span class="o">.</span><span class="n">identity</span> <span class="k">for</span> <span class="n">meas</span> <span class="ow">in</span> <span class="n">ekf</span><span class="o">.</span><span class="n">measurement_history</span><span class="p">})</span>
 
         <span class="k">for</span> <span class="n">rm</span> <span class="ow">in</span> <span class="n">removes</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
@@ -1130,6 +1165,7 @@
         <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">ekf</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">smoothed_ekfs</span><span class="p">):</span>
 
             <span class="c1"># get the initial particle in this track</span>
+            <span class="k">assert</span> <span class="n">ekf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
             <span class="n">start_id</span> <span class="o">=</span> <span class="n">ekf</span><span class="o">.</span><span class="n">measurement_history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">identity</span>
 
             <span class="c1"># see if we&#39;ve considered other tracks that contain this particle already</span>
@@ -1169,8 +1205,11 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">confirmed_standard_deviations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">std</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">confirmed_particles</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">id_sets</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="Tracker.track"><a class="viewcode-back" href="../../../ufo/ekf_tracker/giant.ufo.ekf_tracker.Tracker.track.html#giant.ufo.ekf_tracker.Tracker.track">[docs]</a>    <span class="k">def</span> <span class="nf">track</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Tracker.track">
+<a class="viewcode-back" href="../../../ufo/ekf_tracker/giant.ufo.ekf_tracker.Tracker.track.html#giant.ufo.ekf_tracker.Tracker.track">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">track</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method tracks particles from image to image using the EKF.</span>
 
 <span class="sd">        This works by finding initial pairs for each image and then following those tracks to termination. It also</span>
@@ -1200,7 +1239,7 @@
             <span class="c1"># start the process of tracking along these initial pairs</span>
             <span class="n">processes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Process</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processes</span>
             <span class="n">smooth_process</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_processes</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">processes</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">processes</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_processes</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">for</span> <span class="n">process</span> <span class="ow">in</span> <span class="n">processes</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
@@ -1217,6 +1256,8 @@
 
             <span class="n">number_to_complete</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">processes</span><span class="p">)</span>
             <span class="n">number_timed_out</span> <span class="o">=</span> <span class="mi">0</span>
+            
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
             <span class="k">with</span> <span class="n">TemporaryFile</span><span class="p">(</span><span class="s1">&#39;wb+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ekfs_to_smooth</span><span class="p">:</span>
 
@@ -1284,8 +1325,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_tear_down_smoothing_workers</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tear_down_tracking_workers</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Tracker.save_results"><a class="viewcode-back" href="../../../ufo/ekf_tracker/giant.ufo.ekf_tracker.Tracker.save_results.html#giant.ufo.ekf_tracker.Tracker.save_results">[docs]</a>    <span class="k">def</span> <span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">PATH</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Tracker.save_results">
+<a class="viewcode-back" href="../../../ufo/ekf_tracker/giant.ufo.ekf_tracker.Tracker.save_results.html#giant.ufo.ekf_tracker.Tracker.save_results">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">PATH</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method saves the final ekfs to a csv file.</span>
 
 <span class="sd">        The files in the csv file are</span>
@@ -1331,7 +1375,9 @@
                                                  <span class="n">initial_state</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
                                                  <span class="o">*</span><span class="n">initial_state</span><span class="o">.</span><span class="n">position</span><span class="p">,</span>
                                                  <span class="o">*</span><span class="n">initial_state</span><span class="o">.</span><span class="n">velocity</span><span class="p">,</span>
-                                                 <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">meas</span><span class="o">.</span><span class="n">identity</span><span class="p">)</span> <span class="k">for</span> <span class="n">meas</span> <span class="ow">in</span> <span class="n">ekf</span><span class="o">.</span><span class="n">measurement_history</span><span class="p">)))</span></div></div>
+                                                 <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">meas</span><span class="o">.</span><span class="n">identity</span><span class="p">)</span> <span class="k">for</span> <span class="n">meas</span> <span class="ow">in</span> <span class="n">ekf</span><span class="o">.</span><span class="n">measurement_history</span><span class="p">)))</span></div>
+</div>
+
 </pre></div>
 
           </div>
@@ -1347,17 +1393,24 @@
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

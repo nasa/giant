@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.image_processing.image_segmenter &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.image_processing.image_segmenter</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NamedTuple</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image_processing.otsu</span><span class="w"> </span><span class="kn">import</span> <span class="n">otsu</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes.user_option_configured</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptionConfigured</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes.attribute_equality_comparison</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttributeEqualityComparison</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes.attribute_printing</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttributePrinting</span>
+
+
+<div class="viewcode-block" id="ImageSegmenterOut">
+<a class="viewcode-back" href="../../../image_processing/image_segmenter/giant.image_processing.image_segmenter.ImageSegmenterOut.html#giant.image_processing.image_segmenter.ImageSegmenterOut">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ImageSegmenterOut</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="n">labeled_image</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An image with labeled foreground objects (&gt;=0) of the same shape as the input and dtype np.int32</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">foreground_image</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A boolean array the same shape as the input with 0 in the background pixels and 1 in the foreground pixels</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">stats</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The stats vector returned from opencv&#39;s connectectedComponentsWithStats as a nx5 array.</span>
+<span class="sd">    </span>
+<span class="sd">    The columns are [left x coordinate, top y coordinate, width, height, area] in pixels.</span>
+<span class="sd">    </span>
+<span class="sd">    It is best to access the appropriate column using `cv2.CC_STAT_LEFT`, `cv2.CC_STAT_TOP`, `cv2.CC_STAT_WIDTH`, </span>
+<span class="sd">    `cv2.CC_STAT_HEIGHT`, or `cv2.CC_STAT_AREA` in case opencv ever changes the order.</span>
+<span class="sd">    </span>
+<span class="sd">    Each row corresponds to the object number in the labeled image</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">centroids</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The unweighted centroids of each blob in the image as a nx2 array (x, y) in pixels.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="ImageSegmenterOptions">
+<a class="viewcode-back" href="../../../image_processing/image_segmenter/giant.image_processing.image_segmenter.ImageSegmenterOptions.html#giant.image_processing.image_segmenter.ImageSegmenterOptions">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ImageSegmenterOptions</span><span class="p">(</span><span class="n">UserOptions</span><span class="p">):</span>
+    <span class="n">otsu_levels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This sets the number of levels to attempt to segment the histogram into for Otsu based multi level thresholding.</span>
+<span class="sd">    </span>
+<span class="sd">    See the :func:`.otsu` function for more details.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">minimum_segment_area</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This sets the minimum area for a segment to be considered not noise.</span>
+<span class="sd">    </span>
+<span class="sd">    Segments with areas less than this are discarded as noise spikes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">minimum_segment_dn</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">200</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The minimum that the average DN for a segment must be for it to not be discarded as the background.</span>
+
+<span class="sd">    Segments with average DNs less than this are discarded as the background</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+    
+
+<div class="viewcode-block" id="ImageSegmenter">
+<a class="viewcode-back" href="../../../image_processing/image_segmenter/giant.image_processing.image_segmenter.ImageSegmenter.html#giant.image_processing.image_segmenter.ImageSegmenter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ImageSegmenter</span><span class="p">(</span><span class="n">UserOptionConfigured</span><span class="p">[</span><span class="n">ImageSegmenterOptions</span><span class="p">],</span> 
+                     <span class="n">ImageSegmenterOptions</span><span class="p">,</span> 
+                     <span class="n">AttributePrinting</span><span class="p">,</span> 
+                     <span class="n">AttributeEqualityComparison</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class segments images into foreground and background objects using a multi-level Otsu thresholding approach.</span>
+
+<span class="sd">    It is configured using the :class:`ImageSegmenterOptions` dataclass, which specifies parameters such as the number</span>
+<span class="sd">    of Otsu levels, minimum segment area, and minimum segment DN.</span>
+
+<span class="sd">    The main functionality is provided by the :meth:`__call__` method, which takes an input image and returns</span>
+<span class="sd">    a :class:`ImageSegmenterOut` named tuple containing the segmentation results.</span>
+<span class="sd">    </span>
+<span class="sd">    Example usage::</span>
+<span class="sd">        segmenter = ImageSegmenter()</span>
+<span class="sd">        segment_results = segmenter(image)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ImageSegmenterOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param options: the options configuring the image segmenter. If `None`, defaults will be used</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ImageSegmenterOptions</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="ImageSegmenter.__call__">
+<a class="viewcode-back" href="../../../image_processing/image_segmenter/ImageSegmenter.__call__.html#giant.image_processing.image_segmenter.ImageSegmenter.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageSegmenterOut</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method attempts to segment images into foreground/background objects.</span>
+
+<span class="sd">        The objects are segmented by</span>
+<span class="sd">        #. Performing a multi-level Otsu threshold on the image</span>
+<span class="sd">        #. Choosing all but the bottom level from Otsu as likely foreground.</span>
+<span class="sd">        #. Performing connected components on all the likely foreground objects</span>
+<span class="sd">        #. Rejecting connected objects where the DN is less than the :attr:`minimum_segment_dn`</span>
+<span class="sd">        #. Rejecting connected objects where the area is less than the :attr:`minimum_segment_area`</span>
+
+<span class="sd">        The resulting objects are returned as a label matrix, where values &gt;=1 indicate a pixel containing a foreground</span>
+<span class="sd">        object (values of 0 are the background object). In addition, the statistics about the foreground objects are</span>
+<span class="sd">        returned.</span>
+
+<span class="sd">        :param image: The image to attempt to segment</span>
+<span class="sd">        :return: A named tuple containing the label array, a boolean array specifying foreground objects, </span>
+<span class="sd">                 a stats array about the labels in order, and the centroids of the segments</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># threshold the image</span>
+        <span class="n">levels</span><span class="p">,</span> <span class="n">thresholded</span> <span class="o">=</span> <span class="n">otsu</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">otsu_levels</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">levels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_segment_dn</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;warning, the minimum Otsu level is greater than the minimum segment DN. This could indicate that &#39;</span>
+                  <span class="sa">f</span><span class="s1">&#39;there is an issue with your settings.</span><span class="se">\n\t</span><span class="s1">minimum_segment_dn = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">minimum_segment_dn</span><span class="si">}</span><span class="se">\n\t</span><span class="s1">&#39;</span>
+                  <span class="sa">f</span><span class="s1">&#39;otsu_level = </span><span class="si">{</span><span class="n">levels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">foreground_image</span> <span class="o">=</span> <span class="p">(</span><span class="n">thresholded</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">labeled</span><span class="p">,</span> <span class="n">stats</span><span class="p">,</span> <span class="n">centroids</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">connectedComponentsWithStats</span><span class="p">(</span><span class="n">foreground_image</span><span class="p">)</span>
+
+        <span class="n">out_labeled</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">labeled</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+        <span class="n">out_stats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">out_centroids</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">stored_ind</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">sorted_labs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">stats</span><span class="p">[:,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">CC_STAT_AREA</span><span class="p">])</span>  <span class="c1"># sort the labels by size</span>
+
+        <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">sorted_labs</span><span class="p">:</span>
+
+            <span class="n">stat</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+            <span class="n">centroid</span> <span class="o">=</span> <span class="n">centroids</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">stat</span><span class="p">[</span><span class="n">cv2</span><span class="o">.</span><span class="n">CC_STAT_AREA</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_segment_area</span><span class="p">:</span>
+                <span class="k">break</span>  <span class="c1"># since we are going in reverse size order if we get here we&#39;re done</span>
+
+            <span class="n">boolean_label</span> <span class="o">=</span> <span class="n">labeled</span> <span class="o">==</span> <span class="n">ind</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">image</span><span class="p">[</span><span class="n">boolean_label</span><span class="p">])</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_segment_dn</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">out_labeled</span><span class="p">[</span><span class="n">boolean_label</span><span class="p">]</span> <span class="o">=</span> <span class="n">stored_ind</span>
+            <span class="n">out_stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stat</span><span class="p">)</span>
+            <span class="n">out_centroids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">centroid</span><span class="p">)</span>
+            <span class="n">stored_ind</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">ImageSegmenterOut</span><span class="p">(</span><span class="n">out_labeled</span><span class="p">,</span> <span class="n">foreground_image</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">out_stats</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">out_centroids</span><span class="p">))</span></div>
+</div>
+
+
+    
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

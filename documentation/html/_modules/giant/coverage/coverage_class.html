@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.coverage.coverage_class &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.coverage.coverage_class</h1><div class="highlight"><pre>
+<span></span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides the capability to perform coverage analysis for</span>
+<span class="sd">remote sensing instruments given a notional ConOps.</span>
+
+<span class="sd">Description</span>
+<span class="sd">-----------</span>
+
+<span class="sd">The coverage analysis works by taking the observation plan and then at each &quot;imaging&quot;</span>
+<span class="sd">epoch in the observation plan, computing which facets of the shape model fall within</span>
+<span class="sd">the field of view of the instrument (and optionally are illuminated by the sun).</span>
+
+<span class="sd">This information is then stored, per image, per facet, and can then be queried to</span>
+<span class="sd">check what percentage of the surface was observed according to some constraints.</span>
+<span class="sd">Additionally, for SPC coverage, we can then take the information from the visibility</span>
+<span class="sd">check, and use it to compute the shape from shading dilutions of precision (DOP) for each</span>
+<span class="sd">facet, to get an idea of how good the coverage is for building shape models using SPC.</span>
+
+<span class="sd">Use</span>
+<span class="sd">---</span>
+
+<span class="sd">## Preparation</span>
+<span class="sd">To run coverage analysis we need to prepare the shape model.</span>
+<span class="sd">This is done in 2 simple steps.</span>
+
+<span class="sd">1. Ingest the shape model you wish to use for coverage analysis into the GIANT</span>
+<span class="sd">   format using the `ingest_shape` command line utility provided by GIANT</span>
+<span class="sd">2. run `python prepare_shape.py -t /path/to/kdtree.pickle -o /path/to/output.pickle`</span>
+<span class="sd">   to precompute necessary information about the shape model for coverage analysis.</span>
+<span class="sd">   (Depending on the size of the shape model, this can take a while to run, but</span>
+<span class="sd">   only needs to be run once for shape model)</span>
+
+<span class="sd">We also need to define our observation ConOps.</span>
+<span class="sd">This is more detailed but roughly works through the following:</span>
+
+<span class="sd">1. Provide trajectory information (usually through the form of NAIF SPICE SPK files</span>
+<span class="sd">   but could also be done through a csv file or similar)</span>
+<span class="sd">2. Provide pointing information (this can be done most simply through NAIF SPICE CK</span>
+<span class="sd">   files, or can be done programmatically by defining a python function which takes</span>
+<span class="sd">   in a `datetime` object and outputs a `giant.rotations.Rotation` object defining</span>
+<span class="sd">   the rotation from the inertial frame to the &quot;camera frame&quot; or through a csv file)</span>
+<span class="sd">3. Provide an imaging cadence. This can be done most simply from a file</span>
+<span class="sd">   (like a list of image times or a csv file) or can be done programmatically</span>
+
+<span class="sd">## Running the analysis</span>
+<span class="sd">To get results for visibility and DOP, you will need to have a model for a camera,</span>
+<span class="sd">and write a script to be able to create a :class:`.Coverage` instance.</span>
+
+<span class="sd">Once initialized, you can run :meth:`.Coverage.compute_visibility` to get visibility</span>
+<span class="sd">results, and then you can run :meth:`.Coverage.compute_dop` to get DOP results.</span>
+
+<span class="sd">## Interpreting the results</span>
+<span class="sd">The results for visibility (and optionally DOP) can be saved to numpy files as</span>
+<span class="sd">dictionaries (or in some cases pickle files) that can later be used for plotting.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_context</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.lib.recfunctions</span><span class="w"> </span><span class="kn">import</span> <span class="n">append_fields</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">CameraModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.illumination</span><span class="w"> </span><span class="kn">import</span> <span class="n">IlluminationModel</span><span class="p">,</span> <span class="n">ILLUM_DTYPE</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.kdtree</span><span class="w"> </span><span class="kn">import</span> <span class="n">KDTree</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.rays</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rays</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scene</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_block</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.coverage.utilities.dop_computations</span><span class="w"> </span><span class="kn">import</span> <span class="n">DOPComputations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.coverage.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">JACOBIAN_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span>
+
+
+<div class="viewcode-block" id="Coverage">
+<a class="viewcode-back" href="../../../coverage/coverage_class/giant.coverage.coverage_class.Coverage.html#giant.coverage.coverage_class.Coverage">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Coverage</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class provides coverage analysis capabilities for remote sensing instruments given</span>
+<span class="sd">    an observation plan. It works by taking the observation plan and then at each &#39;imaging&#39;</span>
+<span class="sd">    epoch in the observation plan, computing which facets of the shape model fall within the</span>
+<span class="sd">    field of view of the instrument (and optionally are illuminated by the sun). This</span>
+<span class="sd">    information is then stored, per image, per facet, and can then be queried to check what</span>
+<span class="sd">    percentage of the surface was observed according to some constraints. Additionally, for</span>
+<span class="sd">    SPC coverage, we can then take the information from the visibility check, and use it to</span>
+<span class="sd">    compute the shape from shading dilutions of precision (DOP) for each facet, to get an</span>
+<span class="sd">    idea of how good the coverage is for building shape models using stereophotoclinometry</span>
+<span class="sd">    (SPC).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">imaging_times</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">datetime</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">datetime</span><span class="p">]]],</span>
+                 <span class="n">brdf</span><span class="p">:</span> <span class="n">IlluminationModel</span><span class="p">,</span> <span class="n">camera_model</span><span class="p">:</span> <span class="n">CameraModel</span><span class="p">,</span> <span class="n">camera_position_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+                 <span class="n">camera_orientation_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">sun_position_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+                 <span class="n">ignore_indices</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">]]</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">topography_variations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">labels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param scene: A :class:`Scene` containing the target body to be analyzed. Only the</span>
+<span class="sd">                      first target in the scene will be used and any others will be ignored.</span>
+<span class="sd">                      The target must have a shape with facets and vertices (usually a </span>
+<span class="sd">                      KDTree or Triangles type).</span>
+<span class="sd">        :param imaging_times: A list of datetimes for each observation. If using labels, each label would</span>
+<span class="sd">                              have its own list of datetimes in this list</span>
+<span class="sd">        :param brdf: An :class:`IlluminationModel` representing a BRDF used to compute the jacobian matrix of the</span>
+<span class="sd">                          change in the illumination values given a change in the surface normal and/or albedo</span>
+<span class="sd">        :param camera_model: A :class:`CameraModel` instance</span>
+<span class="sd">        :param camera_position_function: A callable function that returns the location of the camera relative to the</span>
+<span class="sd">                                         target in target body-fixed frame</span>
+<span class="sd">        :param camera_orientation_function: A callable function that rotates the target body-fixed frame to the camera frame</span>
+<span class="sd">        :param sun_position_function: A callable function that returns the location of the sun relative to the</span>
+<span class="sd">                                      target in target body-fixed frame</span>
+<span class="sd">        :param ignore_indices: An optional Sequence of sequence of indices to ignore from the shape model for each vertex on the target body&#39;s surface. </span>
+<span class="sd">                               generally this should be a list of list of ints where each element of the outer list correspond to a vertex of the shape</span>
+<span class="sd">                               model and the inner list contains all triangles that triangle contributes to to ensure that the vertex is not self shadowed.</span>
+<span class="sd">                               This can be gotten from :func:`.prepare_shape`</span>
+<span class="sd">        :param topography_variations: An optional meshgrid of azimuth and elevation values representing permutations of</span>
+<span class="sd">                                      surface normal vectors to search through for correlation with observation data</span>
+<span class="sd">        :param labels: An optional list of string labels to assign to different lists of image times</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span> <span class="o">=</span> <span class="n">scene</span>
+        <span class="n">target_shape</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target_shape</span><span class="p">,</span> <span class="n">KDTree</span><span class="p">):</span>
+            <span class="n">target_shape</span> <span class="o">=</span> <span class="n">target_shape</span><span class="o">.</span><span class="n">surface</span>
+        
+        <span class="n">vecs</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">target_shape</span><span class="p">,</span> <span class="s2">&quot;vertices&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">facets</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">target_shape</span><span class="p">,</span> <span class="s2">&quot;facets&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">targetvecs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">targetfacets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s1">&#39;Target shape must be a type that includes vertices and facets (usually a KDTree or Triangle type)&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">targetvecs</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">=</span> <span class="n">vecs</span> <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">targetfacets</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">]</span> <span class="o">=</span> <span class="n">facets</span> <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vec_viewed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targetvecs</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">camera_model</span> <span class="o">=</span> <span class="n">camera_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">camera_position_function</span> <span class="o">=</span> <span class="n">camera_position_function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">camera_orientation_function</span> <span class="o">=</span> <span class="n">camera_orientation_function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">imaging_times</span> <span class="o">=</span> <span class="n">imaging_times</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sun_position_function</span> <span class="o">=</span> <span class="n">sun_position_function</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">visibility</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">albedo_dop</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DOP_TYPE</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">DOP_TYPE</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_terrain_dop</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DOP_TYPE</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">DOP_TYPE</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_terrain_dop</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DOP_TYPE</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">DOP_TYPE</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_dop</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DOP_TYPE</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">DOP_TYPE</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dop_jacobians</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">JACOBIAN_TYPE</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">JACOBIAN_TYPE</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_count</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignore_indices</span> <span class="o">=</span> <span class="n">ignore_indices</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">brdf</span> <span class="o">=</span> <span class="n">brdf</span>
+
+        <span class="k">if</span> <span class="n">topography_variations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">topography_variations</span> <span class="o">=</span> <span class="n">topography_variations</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">az_grid</span><span class="p">,</span> <span class="n">elev_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                                             <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">topography_variations</span> <span class="o">=</span> <span class="p">(</span><span class="n">az_grid</span><span class="p">,</span> <span class="n">elev_grid</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">facet_visibility</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">facet_gsds</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gsds</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">altitudes</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">facet_altitudes</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Coverage.reduce_visibility_to_facet">
+<a class="viewcode-back" href="../../../coverage/coverage_class/giant.coverage.coverage_class.Coverage.reduce_visibility_to_facet.html#giant.coverage.coverage_class.Coverage.reduce_visibility_to_facet">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reduce_visibility_to_facet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">do_gsds</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method serves to convert the visibility matrix of all surface vertices at all image times</span>
+<span class="sd">        to a visibility matrix of all surface facets at all image times based on how each facet is</span>
+<span class="sd">        characterized by the surface vertices.</span>
+<span class="sd">        </span>
+<span class="sd">        It will also compute the altitude for each facet at each observations.</span>
+<span class="sd">        </span>
+<span class="sd">        These computations are saved as :attr:`.facet_visibility`, :attr:`.facet_altitudes`,</span>
+<span class="sd">        and :attr:`.facet_gsds` attributes of the :class:`.Coverage` instance,</span>
+<span class="sd">        and nothing is returned.</span>
+<span class="sd">        </span>
+<span class="sd">        :param do_gsds: An optional flag to compute and save the ground sample distance to each facet</span>
+<span class="sd">                        for every observation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">visibility</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;you must call compute_visibility prior to this method&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">altitudes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;you must call compute_visibility prior to this method&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;beginning reduction to faceted visibility&#39;</span><span class="p">)</span>
+
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">facet_visibility</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">visibility</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targetfacets</span><span class="p">)),</span>
+                                         <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">visibility</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">facet_altitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">visibility</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targetfacets</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">facet_altitudes</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;facet visibility allocated in </span><span class="si">{}</span><span class="s1"> seconds&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">))</span>
+
+        <span class="n">image_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">visibility</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">facet</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targetfacets</span><span class="p">),</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targetfacets</span><span class="p">),</span>
+                               <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;reducing facets&#39;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39; facets&#39;</span><span class="p">,</span> <span class="n">dynamic_ncols</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">bvis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">visibility</span><span class="p">[:,</span> <span class="n">facet</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">facet_visibility</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">bvis</span><span class="p">[</span><span class="n">image_list</span><span class="p">,</span> <span class="n">bvis</span><span class="p">[</span><span class="s1">&#39;visible&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">facet_altitudes</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">altitudes</span><span class="p">[:,</span> <span class="n">facet</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;reduction to faceted visibility done&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">do_gsds</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">gsds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;you must call compute_visibility with compute_gsd set to True prior to this method&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">facet_gsds</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">lab</span><span class="p">,</span> <span class="n">gsd</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gsds</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">agsd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gsd</span><span class="p">)[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">targetfacets</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">facet_gsds</span><span class="p">[</span><span class="n">lab</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">agsd</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Coverage.compute_visibility">
+<a class="viewcode-back" href="../../../coverage/coverage_class/giant.coverage.coverage_class.Coverage.compute_visibility.html#giant.coverage.coverage_class.Coverage.compute_visibility">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_visibility</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_fov</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">compute_gsd</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                           <span class="n">check_shadows</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method serves to determine which facets and vertices on the target body&#39;s surface</span>
+<span class="sd">        are visible for each observation. In doing these computations, it will also evaluate the</span>
+<span class="sd">        surface normal unit vector, illumination incidence and exidence unit vectors, and the albedo</span>
+<span class="sd">        for each facet/vertex at each observation.</span>
+<span class="sd">        </span>
+<span class="sd">        These computations are saved as :attr:`.visibility`, :attr:`.altitudes`,</span>
+<span class="sd">        and :attr:`.gsds` attributes of the :class:`.Coverage` instance,</span>
+<span class="sd">        and nothing is returned.</span>
+<span class="sd">        </span>
+<span class="sd">        :param check_fov: An optional flag to consider whether facets/vertices are within the field of view of</span>
+<span class="sd">                          the camera, and if they are not, it will filter out those observations of that facet/vertex</span>
+<span class="sd">        :param compute_gsd: An optional flag to compute and save the ground sample distance to each facet and vertex</span>
+<span class="sd">                            for every observation</span>
+<span class="sd">        :param check_shadows: An optional flag to consider whether facets/vertices are shadowed, and if so to filter</span>
+<span class="sd">                              out those observations of that facet/vertex</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rays</span> <span class="o">=</span> <span class="n">Rays</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targetvecs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targetvecs</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">ignore</span><span class="o">=</span><span class="n">to_block</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ignore_indices</span><span class="p">))</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rays</span> <span class="o">=</span> <span class="n">Rays</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targetvecs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targetvecs</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+        <span class="n">visibility</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">gsds</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">alts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nimages</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">imaging_times</span><span class="p">)</span>
+            <span class="n">gsds</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">image_time</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">imaging_times</span><span class="p">),</span>
+                                        <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">imaging_times</span><span class="p">),</span>
+                                        <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;processing images&#39;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39; images&#39;</span><span class="p">,</span>
+                                        <span class="n">dynamic_ncols</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image_time</span><span class="p">,</span> <span class="n">datetime</span><span class="p">),</span> <span class="s2">&quot;the imaging times must be a list of datetimes for non-labeled processing&quot;</span>
+                <span class="n">vis</span><span class="p">,</span> <span class="n">alt</span><span class="p">,</span> <span class="n">gsd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_visibility_image</span><span class="p">(</span><span class="n">image_time</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">nimages</span><span class="p">,</span> <span class="n">rays</span><span class="p">,</span> <span class="n">check_fov</span><span class="p">,</span> <span class="n">compute_gsd</span><span class="p">,</span>  
+                                                               <span class="n">check_shadow</span><span class="o">=</span><span class="n">check_shadows</span><span class="p">)</span>
+                <span class="n">visibility</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vis</span><span class="p">)</span>
+                <span class="n">gsds</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gsd</span><span class="p">)</span>
+                <span class="n">alts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alt</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">time_group</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">imaging_times</span><span class="p">):</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_group</span><span class="p">,</span> <span class="nb">list</span><span class="p">),</span> <span class="s2">&quot;The imaging times must be a list of lists of datetimes for labeled processing&quot;</span>
+                <span class="n">gsds</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;processing </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">))</span>
+
+                <span class="n">nimages</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_group</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">image_time</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">time_group</span><span class="p">),</span>
+                                            <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">time_group</span><span class="p">),</span>
+                                            <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;processing images&#39;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39; images&#39;</span><span class="p">,</span>
+                                            <span class="n">dynamic_ncols</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                    <span class="n">unlabeled_vis</span><span class="p">,</span> <span class="n">alt</span><span class="p">,</span> <span class="n">gsd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_visibility_image</span><span class="p">(</span><span class="n">image_time</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">nimages</span><span class="p">,</span> <span class="n">rays</span><span class="p">,</span> <span class="n">check_fov</span><span class="p">,</span>
+                                                                             <span class="n">compute_gsd</span><span class="p">)</span>
+                    <span class="n">gsds</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gsd</span><span class="p">)</span>
+                    <span class="n">visibility</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">append_fields</span><span class="p">(</span><span class="n">unlabeled_vis</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">label</span><span class="p">]</span> <span class="o">*</span> <span class="n">unlabeled_vis</span><span class="o">.</span><span class="n">size</span><span class="p">)))</span>
+                    <span class="n">alts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alt</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">visibility</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">visibility</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ILLUM_DTYPE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gsds</span> <span class="o">=</span> <span class="n">gsds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">altitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alts</span><span class="p">)</span>
+
+        <span class="k">del</span> <span class="n">visibility</span>
+
+        <span class="c1"># reduce the visibility to be by facet instead of by vertex</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduce_visibility_to_facet</span><span class="p">(</span><span class="n">do_gsds</span><span class="o">=</span><span class="n">compute_gsd</span><span class="p">)</span>
+
+        <span class="c1"># add the normal vectors to the facet visibility</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">facet_visibility</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">surface</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s1">&#39;surface&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">facet_visibility</span><span class="p">[</span><span class="s1">&#39;normal&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">surface</span><span class="o">.</span><span class="n">normals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">normals</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;normals&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">facet_visibility</span><span class="p">[</span><span class="s1">&#39;normal&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">normals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_visibility_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_time</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">image_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_images</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                                  <span class="n">rays</span><span class="p">:</span> <span class="n">Rays</span><span class="p">,</span> <span class="n">check_fov</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">compute_gsd</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+                                  <span class="n">check_shadow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method serves to evaluate the visibility of each vertex on the target shape model</span>
+<span class="sd">        for a specific observation. It uses the GIANT scene ray tracer to determine the illumination</span>
+<span class="sd">        geometry that would be required for the camera to observe each vertex. It then filters</span>
+<span class="sd">        these initial results using flags to determine which vertices would actually</span>
+<span class="sd">        be observable given shadowing and camera fov constraints.</span>
+<span class="sd">        </span>
+<span class="sd">        :param image_time: The time of the observation being considered</span>
+<span class="sd">        :param image_idx: The index of the observation being considered</span>
+<span class="sd">        :param n_images: The total number of observations</span>
+<span class="sd">        :param rays: A :class:`Rays` instance representing lines of sight from each vertex to the camera</span>
+<span class="sd">        :param check_fov: A flag to consider whether vertices are within the field of view of</span>
+<span class="sd">                          the camera, and if they are not, it will filter out those observations of that vertex</span>
+<span class="sd">        :param compute_gsd: A flag to compute and save the ground sample distance at each vertex</span>
+<span class="sd">                            for every observation</span>
+<span class="sd">        :param check_shadow: An optional flag to consider whether vertices are shadowed, and if so to filter</span>
+<span class="sd">                             out those observations of that vertex</span>
+<span class="sd">        </span>
+<span class="sd">        :return: A tuple of the following data, each having the length of the number of</span>
+<span class="sd">                 vertices for the shape model being used:\n</span>
+<span class="sd">                 An array of visibility evaluations,\n</span>
+<span class="sd">                 An array of surface altitudes, and\n</span>
+<span class="sd">                 An array of ground sample distances</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="n">camera_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera_model</span><span class="p">(</span><span class="n">image_time</span><span class="p">)</span> <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera_model</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera_model</span>
+
+        <span class="n">sun_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sun_position_function</span><span class="p">(</span><span class="n">image_time</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;the light_obj must be specified to compute visibility&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">change_position</span><span class="p">(</span><span class="n">sun_position</span><span class="p">)</span>
+
+        <span class="n">camera_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera_position_function</span><span class="p">(</span><span class="n">image_time</span><span class="p">)</span>
+
+        <span class="n">surf2cam</span> <span class="o">=</span> <span class="n">camera_position</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">targetvecs</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">surf2cam_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">surf2cam</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">surf2cam_dir</span> <span class="o">=</span> <span class="n">surf2cam</span> <span class="o">/</span> <span class="n">surf2cam_distances</span>
+
+        <span class="n">rays</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">surf2cam_dir</span>
+
+        <span class="c1"># trace through the scene to see if the rays hit anything</span>
+        <span class="n">initial_intersect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">rays</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">rays</span><span class="o">.</span><span class="n">num_rays</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">initial_intersect</span><span class="p">[</span><span class="s1">&#39;check&#39;</span><span class="p">]:</span>
+                <span class="n">shadow_rays</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">rays</span><span class="p">)</span>
+                <span class="n">shadow_start</span> <span class="o">=</span> <span class="n">shadow_rays</span><span class="o">.</span><span class="n">start</span>
+
+                <span class="n">shadow_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">shadow_start</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">shadow_dir</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">shadow_dir</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">shadow_rays</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">shadow_dir</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">illum_params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">rays</span><span class="o">.</span><span class="n">num_rays</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ILLUM_DTYPE</span><span class="p">)</span>
+
+                <span class="n">surf2cam_distances</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="k">return</span> <span class="n">illum_params</span><span class="p">,</span> <span class="n">surf2cam_distances</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="kc">None</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">shadow_rays</span> <span class="o">=</span> <span class="n">rays</span><span class="p">[</span><span class="o">~</span><span class="n">initial_intersect</span><span class="p">[</span><span class="s1">&#39;check&#39;</span><span class="p">]]</span>
+            <span class="n">shadow_start</span> <span class="o">=</span> <span class="n">shadow_rays</span><span class="o">.</span><span class="n">start</span>
+
+            <span class="n">shadow_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">shadow_start</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">shadow_dir</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">shadow_dir</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">shadow_rays</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">shadow_dir</span>
+
+        <span class="k">if</span> <span class="n">shadow_rays</span><span class="o">.</span><span class="n">num_rays</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+
+            <span class="n">illum_params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">rays</span><span class="o">.</span><span class="n">num_rays</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ILLUM_DTYPE</span><span class="p">)</span>
+
+            <span class="n">check</span> <span class="o">=</span> <span class="o">~</span><span class="n">initial_intersect</span><span class="p">[</span><span class="s1">&#39;check&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">check_shadow</span><span class="p">:</span>
+                <span class="n">shadow_check</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">shadow_rays</span><span class="p">)</span>
+                <span class="n">check</span><span class="p">[</span><span class="n">check</span><span class="p">]</span> <span class="o">=</span> <span class="o">~</span><span class="n">shadow_check</span><span class="p">[</span><span class="s1">&#39;check&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">shadow_check</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="kc">False</span><span class="p">,)]</span> <span class="o">*</span> <span class="n">check</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;check&#39;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">illum_params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">rays</span><span class="o">.</span><span class="n">num_rays</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ILLUM_DTYPE</span><span class="p">)</span>
+            <span class="n">check</span> <span class="o">=</span> <span class="o">~</span><span class="n">initial_intersect</span><span class="p">[</span><span class="s1">&#39;check&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">shadow_check</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">check_fov</span><span class="p">:</span>
+            <span class="n">rotation_body_fixed_to_camera</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera_orientation_function</span><span class="p">(</span><span class="n">image_time</span><span class="p">)</span>
+
+            <span class="n">in_fov</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_fov</span><span class="p">(</span><span class="o">-</span><span class="n">rotation_body_fixed_to_camera</span><span class="o">.</span><span class="n">matrix</span> <span class="o">@</span> <span class="n">surf2cam</span><span class="p">[:,</span> <span class="n">check</span><span class="p">],</span>
+                                    <span class="n">camera_model</span><span class="o">=</span><span class="n">camera_model</span><span class="p">)</span>
+
+            <span class="n">check</span><span class="p">[</span><span class="n">check</span><span class="p">]</span> <span class="o">=</span> <span class="n">in_fov</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">check</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">shadow_rays</span><span class="o">.</span><span class="n">num_rays</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">illum_params</span><span class="p">[</span><span class="n">check</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">shadow_rays</span><span class="p">[</span><span class="o">~</span><span class="n">shadow_check</span><span class="p">[</span><span class="s1">&#39;check&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()]</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">T</span><span class="p">),</span>  <span class="c1"># type: ignore</span>
+                                           <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">rays</span><span class="p">[</span><span class="n">check</span><span class="p">]</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">T</span><span class="p">),</span>
+                                           <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">initial_intersect</span><span class="p">[</span><span class="n">check</span><span class="p">][</span><span class="s1">&#39;normal&#39;</span><span class="p">]),</span>
+                                           <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">check</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+                                           <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">check</span><span class="p">[</span><span class="n">check</span><span class="p">])))</span>
+
+        <span class="k">elif</span> <span class="p">(</span><span class="n">check</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">shadow_rays</span><span class="o">.</span><span class="n">num_rays</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">rays</span><span class="o">.</span><span class="n">num_rays</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">illum_params</span><span class="p">[</span><span class="n">check</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">shadow_rays</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">rays</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                                       <span class="n">initial_intersect</span><span class="p">[</span><span class="n">check</span><span class="p">][</span><span class="s1">&#39;normal&#39;</span><span class="p">],</span> <span class="mf">1.</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">illum_params</span><span class="p">[</span><span class="n">check</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">shadow_rays</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">rays</span><span class="p">[</span><span class="n">check</span><span class="p">]</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                                       <span class="n">initial_intersect</span><span class="p">[</span><span class="n">check</span><span class="p">][</span><span class="s1">&#39;normal&#39;</span><span class="p">],</span> <span class="mf">1.</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;warning, image </span><span class="si">{}</span><span class="s1"> has no visible targets&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">image_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">illum_params</span><span class="p">[</span><span class="o">~</span><span class="n">check</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">vec_viewed</span> <span class="o">+=</span> <span class="n">check</span>
+
+        <span class="k">if</span> <span class="n">compute_gsd</span><span class="p">:</span>
+
+            <span class="n">gsd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">illum_params</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+            <span class="n">ifov</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">camera_model</span><span class="o">.</span><span class="n">instantaneous_field_of_view</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span>
+
+            <span class="n">gsd</span><span class="p">[</span><span class="n">check</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">ifov</span><span class="p">)</span> <span class="o">*</span> <span class="n">surf2cam_distances</span><span class="o">.</span><span class="n">ravel</span><span class="p">()[</span><span class="n">check</span><span class="p">]</span>
+
+            <span class="n">surf2cam_distances</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">~</span><span class="n">check</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+            <span class="k">return</span> <span class="n">illum_params</span><span class="p">,</span> <span class="n">surf2cam_distances</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">gsd</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">surf2cam_distances</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">~</span><span class="n">check</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="k">return</span> <span class="n">illum_params</span><span class="p">,</span> <span class="n">surf2cam_distances</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Coverage.compute_velocities">
+<a class="viewcode-back" href="../../../coverage/coverage_class/giant.coverage.coverage_class.Coverage.compute_velocities.html#giant.coverage.coverage_class.Coverage.compute_velocities">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_velocities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method uses a given velocity function for the camera to compute the</span>
+<span class="sd">        velocity and range of the camera relative to each surface element in the</span>
+<span class="sd">        target body-fixed frame.</span>
+<span class="sd">        </span>
+<span class="sd">        :param velocity_function: A callable function that computes the relative velocity of</span>
+<span class="sd">                                  each surface element to the camera in the camera frame</span>
+<span class="sd">        </span>
+<span class="sd">        :return: A tuple of the following data:\n</span>
+<span class="sd">                 An array of camera velocities relative to each surface element in pixels/s,\n</span>
+<span class="sd">                 An array of camera velocities relative to each surface element in km/s, and\n</span>
+<span class="sd">                 An array of camera ranges relative to each surface element in km</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">visibility</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;you must call compute_visibility before compute_velocities&quot;</span>
+        <span class="n">camera_velocities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">visibility</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">pixel_velocities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">visibility</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">ranges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">visibility</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="n">do_labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="n">current_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">do_labels</span> <span class="k">else</span> <span class="kc">None</span> <span class="c1"># type: ignore</span>
+        <span class="n">nlabel</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">aimage</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">image</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">vis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">visibility</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="n">do_labels</span> <span class="ow">and</span> <span class="p">(</span><span class="n">vis</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">current_label</span><span class="p">):</span>
+                <span class="n">image</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">nlabel</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">current_label</span> <span class="o">=</span> <span class="n">vis</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">vis</span><span class="p">[</span><span class="s1">&#39;visible&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+
+                <span class="n">vecs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">targetvecs</span><span class="p">[:,</span> <span class="n">vis</span><span class="p">[</span><span class="s1">&#39;visible&#39;</span><span class="p">]]</span>
+
+                <span class="k">if</span> <span class="n">do_labels</span><span class="p">:</span>
+                    <span class="n">image_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">imaging_times</span><span class="p">[</span><span class="n">nlabel</span><span class="p">][</span><span class="n">image</span><span class="p">]</span> <span class="c1"># type: ignore</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">image_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">imaging_times</span><span class="p">[</span><span class="n">image</span><span class="p">]</span>
+
+                <span class="n">camera_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera_model</span><span class="p">(</span><span class="n">image_time</span><span class="p">)</span> <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera_model</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera_model</span>
+
+                <span class="c1"># rotation from body-fixed frame to camera frame</span>
+                <span class="n">body_fixed_to_camera_frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera_orientation_function</span><span class="p">(</span><span class="n">image_time</span><span class="p">)</span><span class="o">.</span><span class="n">matrix</span>
+
+                <span class="c1"># relative velocity between camera and targets in the camera frame</span>
+                <span class="n">cam_velocity</span> <span class="o">=</span> <span class="n">body_fixed_to_camera_frame</span> <span class="o">@</span> <span class="n">velocity_function</span><span class="p">(</span><span class="n">image_time</span><span class="p">,</span> <span class="n">vecs</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+                <span class="c1"># relative position from camera to the target in the camera frame</span>
+                <span class="n">pos</span> <span class="o">=</span> <span class="o">-</span><span class="n">body_fixed_to_camera_frame</span> <span class="o">@</span> <span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">camera_position_function</span><span class="p">(</span><span class="n">image_time</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">vecs</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+                <span class="c1"># new position from camera to target in the camera frame one second later</span>
+                <span class="n">new_pos</span> <span class="o">=</span> <span class="n">pos</span> <span class="o">+</span> <span class="n">cam_velocity</span>
+
+                <span class="c1"># velocity in units of pixels per second using finite differencing</span>
+                <span class="n">pix_velocity</span> <span class="o">=</span> <span class="p">(</span><span class="n">camera_model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">new_pos</span><span class="p">)</span> <span class="o">-</span>
+                                <span class="n">camera_model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">pos</span><span class="p">))</span>
+
+                <span class="c1"># store the maximum velocity experienced for each image both in units of km/s and pix/s</span>
+                <span class="n">max_pix_velo_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">pix_velocity</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+
+                <span class="k">if</span> <span class="n">do_labels</span><span class="p">:</span>
+                    <span class="n">camera_velocities</span><span class="p">[</span><span class="n">aimage</span><span class="p">]</span> <span class="o">=</span> <span class="n">cam_velocity</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">cam_velocity</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">argmax</span><span class="p">()]</span>
+                    <span class="n">pixel_velocities</span><span class="p">[</span><span class="n">aimage</span><span class="p">]</span> <span class="o">=</span> <span class="n">pix_velocity</span><span class="p">[:,</span> <span class="n">max_pix_velo_idx</span><span class="p">]</span>
+                    <span class="n">ranges</span><span class="p">[</span><span class="n">aimage</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">pos</span><span class="p">[:,</span> <span class="n">max_pix_velo_idx</span><span class="p">])</span>
+                    <span class="n">aimage</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">camera_velocities</span><span class="p">[</span><span class="n">image</span><span class="p">]</span> <span class="o">=</span> <span class="n">cam_velocity</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">cam_velocity</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">argmax</span><span class="p">()]</span>
+                    <span class="n">pixel_velocities</span><span class="p">[</span><span class="n">image</span><span class="p">]</span> <span class="o">=</span> <span class="n">pix_velocity</span><span class="p">[:,</span> <span class="n">max_pix_velo_idx</span><span class="p">]</span>
+                    <span class="n">ranges</span><span class="p">[</span><span class="n">image</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">pos</span><span class="p">[:,</span> <span class="n">max_pix_velo_idx</span><span class="p">])</span>
+
+            <span class="n">image</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">camera_velocities</span><span class="p">,</span> <span class="n">pixel_velocities</span><span class="p">,</span> <span class="n">ranges</span></div>
+
+
+<div class="viewcode-block" id="Coverage.check_fov">
+<a class="viewcode-back" href="../../../coverage/coverage_class/giant.coverage.coverage_class.Coverage.check_fov.html#giant.coverage.coverage_class.Coverage.check_fov">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_fov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertices</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">camera_model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CameraModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function determines which surface vertices are within the camera&#39;s FOV</span>
+<span class="sd">        by projecting the vertices to a simulated image.</span>
+
+<span class="sd">        :param vertices: An array of 3D vectors representing vertices on the target body&#39;s surface</span>
+<span class="sd">        :param camera_model: A :class:`CameraModel` instance</span>
+<span class="sd">        </span>
+<span class="sd">        :return: An array of booleans representing which vertices are within the camera&#39;s FOV</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">camera_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">camera_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera_model</span>
+
+        <span class="n">pixels</span> <span class="o">=</span> <span class="n">camera_model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span>
+
+        <span class="c1"># verify this with John</span>
+        <span class="n">in_fov</span> <span class="o">=</span> <span class="p">(</span><span class="n">pixels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pixels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> \
+                 <span class="p">(</span><span class="n">pixels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">camera_model</span><span class="o">.</span><span class="n">n_cols</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pixels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">camera_model</span><span class="o">.</span><span class="n">n_rows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># the camera models break down at extremes so also spot check the angular FOV</span>
+        <span class="n">angles</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span> <span class="o">@</span> <span class="n">vertices</span><span class="p">[:,</span> <span class="n">in_fov</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vertices</span><span class="p">[:,</span> <span class="n">in_fov</span><span class="p">],</span>
+                                                                                         <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                                                                         <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span> <span class="o">*</span>
+                  <span class="mi">180</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">camera_model</span><span class="o">.</span><span class="n">field_of_view</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># get the FOV computed</span>
+            <span class="n">camera_model</span><span class="o">.</span><span class="n">compute_field_of_view</span><span class="p">()</span>
+        <span class="n">in_fov</span><span class="p">[</span><span class="n">in_fov</span><span class="p">]</span> <span class="o">=</span> <span class="n">angles</span> <span class="o">&lt;</span> <span class="mf">1.25</span> <span class="o">*</span> <span class="n">camera_model</span><span class="o">.</span><span class="n">field_of_view</span>
+
+        <span class="k">return</span> <span class="n">in_fov</span></div>
+
+
+<div class="viewcode-block" id="Coverage.determine_footprints">
+<a class="viewcode-back" href="../../../coverage/coverage_class/giant.coverage.coverage_class.Coverage.determine_footprints.html#giant.coverage.coverage_class.Coverage.determine_footprints">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">determine_footprints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function determines a rectangular boundary footprint of the camera&#39;s field-of-view</span>
+<span class="sd">        projected onto the target surface. If a corner of the FOV misses the target,</span>
+<span class="sd">        that boundary point will surround the target, but if a corner of the FOV intersects the</span>
+<span class="sd">        target, that boundary point will lie on the target&#39;s surface at the intersection point.</span>
+<span class="sd">        </span>
+<span class="sd">        :return: A list of 4 boundary points at each imaging time defining a rectangle that represents the</span>
+<span class="sd">                 area on the target&#39;s surface that is visible to the camera in its current configuration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">footprint_at_time</span><span class="p">(</span><span class="n">image_time</span><span class="p">:</span> <span class="n">datetime</span><span class="p">):</span>
+            <span class="n">camera_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera_model</span><span class="p">(</span><span class="n">image_time</span><span class="p">)</span> <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera_model</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera_model</span>
+            <span class="n">line_of_sight</span> <span class="o">=</span> <span class="n">camera_model</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">camera_model</span><span class="o">.</span><span class="n">n_cols</span><span class="p">,</span> <span class="n">camera_model</span><span class="o">.</span><span class="n">n_cols</span><span class="p">],</span>
+                 <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">camera_model</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">camera_model</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+            <span class="n">rays</span> <span class="o">=</span> <span class="n">Rays</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">line_of_sight</span><span class="p">)</span>
+            <span class="c1"># position of camera relative to body in body frame</span>
+            <span class="n">camera_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera_position_function</span><span class="p">(</span><span class="n">image_time</span><span class="p">)</span>
+
+            <span class="c1"># from body frame to camera frame</span>
+            <span class="n">rotation_body_fixed_to_camera</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera_orientation_function</span><span class="p">(</span><span class="n">image_time</span><span class="p">)</span>
+
+            <span class="c1"># put body in camera frame</span>
+            <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">:</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">change_orientation</span><span class="p">(</span><span class="n">rotation_body_fixed_to_camera</span><span class="p">)</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">change_position</span><span class="p">(</span><span class="o">-</span><span class="n">rotation_body_fixed_to_camera</span><span class="o">.</span><span class="n">matrix</span> <span class="o">@</span> <span class="n">camera_position</span><span class="p">)</span>
+
+            <span class="n">checks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">rays</span><span class="p">)</span>
+
+            <span class="n">footprint</span> <span class="o">=</span> <span class="p">(</span><span class="n">rotation_body_fixed_to_camera</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">checks</span><span class="p">[</span><span class="s1">&#39;intersect&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">camera_position</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span>
+                                                                                                                  <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+            <span class="n">target_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+
+            <span class="n">footprint</span><span class="p">[</span><span class="o">~</span><span class="n">checks</span><span class="p">[</span><span class="s1">&#39;check&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_range</span> <span class="o">*</span> <span class="n">rotation_body_fixed_to_camera</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span>
+                                           <span class="n">rays</span><span class="p">[</span><span class="o">~</span><span class="n">checks</span><span class="p">[</span><span class="s1">&#39;check&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
+                                           <span class="n">camera_position</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+            <span class="k">return</span> <span class="n">footprint</span>
+
+        <span class="n">footprints</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">imaging_times</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">imaging_times</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">image_time</span> <span class="o">=</span> <span class="n">imaging_times</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image_time</span><span class="p">,</span> <span class="n">datetime</span><span class="p">)</span>
+                <span class="n">footprints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">footprint_at_time</span><span class="p">(</span><span class="n">image_time</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">imaging_times</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+                <span class="n">label_footprints</span> <span class="o">=</span> <span class="p">[</span><span class="n">footprint_at_time</span><span class="p">(</span><span class="n">image_time</span><span class="p">)</span> <span class="k">for</span> <span class="n">image_time</span> <span class="ow">in</span> <span class="n">imaging_times</span><span class="p">]</span>
+                <span class="n">footprints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label_footprints</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">footprints</span></div>
+
+
+<div class="viewcode-block" id="Coverage.compute_dop">
+<a class="viewcode-back" href="../../../coverage/coverage_class/giant.coverage.coverage_class.Coverage.compute_dop.html#giant.coverage.coverage_class.Coverage.compute_dop">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_dop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">DOP_TYPE</span><span class="p">]],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">DOP_TYPE</span><span class="p">]],</span>
+                                   <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">DOP_TYPE</span><span class="p">]],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">DOP_TYPE</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function computes the dilution of precision (DOP) metrics for all facets</span>
+<span class="sd">        based off images where each facet visible as determined by the coverage analysis.</span>
+
+<span class="sd">        The following parameters are computed for each facet separately and then</span>
+<span class="sd">        organized into arrays containing the results for all facets ordered</span>
+<span class="sd">        by the index of the corresponding facet:\n</span>
+<span class="sd">            cnt -- number of usable observation images\n</span>
+<span class="sd">            jac -- SCP jacobian corresponding to a change in illumination given\n</span>
+<span class="sd">                   a change to the surface normal and/or albedo</span>
+<span class="sd">            alb -- DOP of local terrain relative brightness\n</span>
+<span class="sd">            xt  -- DOP of local terrain x slope, typically East/West\n</span>
+<span class="sd">            yt  -- DOP of local terrain y slope, typically North/South\n</span>
+<span class="sd">            tot -- RSS (L2-norm) of xt, yt, and alb DOP values\n</span>
+<span class="sd">        </span>
+<span class="sd">        The DOP values are dependent on the BRDF we are using to characterize</span>
+<span class="sd">        surface illumination.</span>
+<span class="sd">        </span>
+<span class="sd">        :return: A tuple of DOP metrics (cnt, alb, xt, yt, tot) which are each wrapped</span>
+<span class="sd">                 into their own dictionaries with keys denoted by an &quot;all&quot; label</span>
+<span class="sd">                 and any other labels for imaging time intervals if applicable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># extract the local topography variations to consider</span>
+        <span class="n">az_grid</span><span class="p">,</span> <span class="n">elev_grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topography_variations</span>
+
+        <span class="n">mapping_obj</span> <span class="o">=</span> <span class="n">DOPComputations</span><span class="p">(</span><span class="n">az_grid</span><span class="p">,</span> <span class="n">elev_grid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">brdf</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">facet_visibility</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;compute_visibility and reduce_visibility_to_facet must be called before compute_dop&quot;</span>
+        <span class="k">with</span> <span class="n">get_context</span><span class="p">(</span><span class="s1">&#39;spawn&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">Pool</span><span class="p">()</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>  <span class="c1"># spawn context pool is safer than default fork</span>
+
+            <span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="n">mapping_obj</span><span class="o">.</span><span class="n">compute_target_dop_facet</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">facet_visibility</span><span class="o">.</span><span class="n">T</span><span class="p">),</span>
+                                <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">facet_visibility</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;processing facets&#39;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39; facets&#39;</span><span class="p">,</span>
+                                <span class="n">dynamic_ncols</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+        <span class="n">cnt</span><span class="p">,</span> <span class="n">jac</span><span class="p">,</span> <span class="n">alb</span><span class="p">,</span> <span class="n">xt</span><span class="p">,</span> <span class="n">yt</span><span class="p">,</span> <span class="n">tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">observation_count</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="p">[</span><span class="n">dic</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">dic</span> <span class="ow">in</span> <span class="n">cnt</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cnt</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dop_jacobians</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="p">[</span><span class="n">dic</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">dic</span> <span class="ow">in</span> <span class="n">jac</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">jac</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">albedo_dop</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="p">[</span><span class="n">dic</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">dic</span> <span class="ow">in</span> <span class="n">alb</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">alb</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x_terrain_dop</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="p">[</span><span class="n">dic</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">dic</span> <span class="ow">in</span> <span class="n">xt</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xt</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_terrain_dop</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="p">[</span><span class="n">dic</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">dic</span> <span class="ow">in</span> <span class="n">yt</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">yt</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">total_dop</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="p">[</span><span class="n">dic</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">dic</span> <span class="ow">in</span> <span class="n">tot</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">tot</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>  <span class="c1"># type: ignore</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">observation_count</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="n">cnt</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dop_jacobians</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="n">jac</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">albedo_dop</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="n">alb</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x_terrain_dop</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="n">xt</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_terrain_dop</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="n">yt</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">total_dop</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="n">tot</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_terrain_dop</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_terrain_dop</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">albedo_dop</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_dop</span></div>
+</div>
+
+    
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

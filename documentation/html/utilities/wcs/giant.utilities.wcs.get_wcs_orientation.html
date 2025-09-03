@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>get_wcs_orientation &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="get_wcs_model" href="giant.utilities.wcs.get_wcs_model.html" />
+    <link rel="prev" title="giant.utilities.wcs" href="../giant.utilities.wcs.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.utilities.html">giant.utilities</a><ul>
+  <li><a href="../giant.utilities.wcs.html">giant.utilities.wcs</a><ul>
+      <li>Previous: <a href="../giant.utilities.wcs.html" title="previous chapter">giant.utilities.wcs</a></li>
+      <li>Next: <a href="giant.utilities.wcs.get_wcs_model.html" title="next chapter">get_wcs_model</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.utilities.wcs.html" title="Previous document">giant.utilities.wcs</a>
+        </li>
+        <li>
+          <a href="giant.utilities.wcs.get_wcs_model.html" title="Next document">get_wcs_model</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="get-wcs-orientation">
+<h1>get_wcs_orientation<a class="headerlink" href="#get-wcs-orientation" title="Link to this heading">¶</a></h1>
+<p>:mod:<a href="#id1"><span class="problematic" id="id2">`</span></a>giant.utilities.wcs</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="giant.utilities.wcs.get_wcs_orientation">
+<span class="sig-prename descclassname"><span class="pre">giant.utilities.wcs.</span></span><span class="sig-name descname"><span class="pre">get_wcs_orientation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boresight_pixel</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/utilities/wcs.html#get_wcs_orientation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.utilities.wcs.get_wcs_orientation" title="Link to this definition">¶</a></dt>
+<dd><p>This function converts an astropy WCS object into a GIANT Rotation object.</p>
+<p>The conversion happens using astropy’s pixel_to_world method of the wcs object to 
+define a 2 vector frame to account for various projections and coordinate systems 
+used in astronomical imaging.</p>
+<p>If you have a working wcs defined in a fits file you could do something like:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.wcs</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_wcs_orientation</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">astropy.wcs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;my_file.fits&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fits_file</span><span class="p">:</span>
+<span class="gp">... </span>       <span class="n">wcs_l</span> <span class="o">=</span> <span class="n">WCS</span><span class="p">(</span><span class="n">fits_file</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rotation</span> <span class="o">=</span> <span class="n">get_wcs_orientation</span><span class="p">(</span><span class="n">wcs_l</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
+<span class="go">Rotation([...])</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<em>WCS</em>) – The astropy WCS object to be converted</p></li>
+<li><p><strong>boresight_pixel</strong> (<em>Buffer</em><em> | </em><em>_SupportsArray</em><em>[</em><em>dtype</em><em>[</em><em>Any</em><em>]</em><em>] </em><em>| </em><em>_NestedSequence</em><em>[</em><em>_SupportsArray</em><em>[</em><em>dtype</em><em>[</em><em>Any</em><em>]</em><em>]</em><em>] </em><em>| </em><em>complex</em><em> | </em><em>bytes</em><em> | </em><em>str</em><em> | </em><em>_NestedSequence</em><em>[</em><em>complex</em><em> | </em><em>bytes</em><em> | </em><em>str</em><em>]</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A Rotation object representing the rotation from the inertial to the camera 
+frame defined by the WCS</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../rotations/rotation/giant.rotations.rotation.Rotation.html#giant.rotations.rotation.Rotation" title="giant.rotations.rotation.Rotation"><em>Rotation</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.utilities.wcs.html" title="Previous document">giant.utilities.wcs</a>
+        </li>
+        <li>
+          <a href="giant.utilities.wcs.get_wcs_model.html" title="Next document">get_wcs_model</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

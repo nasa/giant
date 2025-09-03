@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.coverage.visualizer &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.coverage.visualizer</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Callable</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.cm</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mcol</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.widgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">Slider</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">PatchCollection</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mpl_toolkits.mplot3d</span><span class="w"> </span><span class="kn">import</span> <span class="n">Axes3D</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mpl_toolkits.mplot3d.art3d</span><span class="w"> </span><span class="kn">import</span> <span class="n">Poly3DCollection</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="kn">import</span> <span class="n">Polygon</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.figure</span><span class="w"> </span><span class="kn">import</span> <span class="n">Figure</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">Axes</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.spherical_coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">unit_to_radec</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.rotations</span><span class="w"> </span><span class="kn">import</span> <span class="n">rot_z</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.coverage.coverage_class</span><span class="w"> </span><span class="kn">import</span> <span class="n">Coverage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.coverage.utilities.project_triangles_latlon</span><span class="w"> </span><span class="kn">import</span> <span class="n">project_triangles_latlon</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DOUBLE_ARRAY</span>
+
+<span class="n">STAT_SETS</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;v_count&#39;</span><span class="p">,</span> <span class="s1">&#39;d_albedo&#39;</span><span class="p">,</span> <span class="s1">&#39;d_x_slope&#39;</span><span class="p">,</span> <span class="s1">&#39;d_y_slope&#39;</span><span class="p">,</span> <span class="s1">&#39;d_total&#39;</span><span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Available stats to visualize.</span>
+
+<span class="sd">* `v_count` is the number of times each facet was visible (in the FOV and illumintated) in the imaging plan</span>
+<span class="sd">* `d_albedo` is the albedo dilution of precision value</span>
+<span class="sd">* `d_x_slope` is the slope in the x direction dilution of precision value</span>
+<span class="sd">* `d_y_slope` is the slope in the z direction dilution of precision value</span>
+<span class="sd">* `d_total` is the RSS of the dilution of precision values</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="polar_plot">
+<a class="viewcode-back" href="../../../coverage/visualizer/giant.coverage.visualizer.polar_plot.html#giant.coverage.visualizer.polar_plot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">polar_plot</span><span class="p">(</span><span class="n">dop</span><span class="p">,</span> <span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;coolwarm&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function serves to visualize the observed geometries of a single target surface element</span>
+<span class="sd">    given a specific dilution of precision metric and the observations where that</span>
+<span class="sd">    surface element was visible.</span>
+<span class="sd">    </span>
+<span class="sd">    It will generate a polar plot with the ra and dec values serving as the polar grid</span>
+<span class="sd">    with the observation data overlayed to see the ra/dec pairs of the surface element&#39;s</span>
+<span class="sd">    orientation when it was observed and the DOP data overlayed to see the confidence</span>
+<span class="sd">    level in the observations at each surface element orientation.</span>
+<span class="sd">    </span>
+<span class="sd">    :param dop: the DOP metric of the surface element evaluated at each permutation of ra and dec values</span>
+<span class="sd">    :param ra: np.ndarray with dtype np.float64 and shape (n, m)</span>
+<span class="sd">               where n is the number of distinct RA values the surface normal of the element permutated through</span>
+<span class="sd">               and m is the number of distinct Dec values the surface normal of the element permutated through</span>
+<span class="sd">    :param dec: np.ndarray with dtype np.float64 and shape (n, m)</span>
+<span class="sd">                where n is the number of distinct RA values the surface normal of the element permutated through</span>
+<span class="sd">                and m is the number of distinct Dec values the surface normal of the element permutated through</span>
+<span class="sd">    :param observations: np.array of visibility parameters for all observations where the</span>
+<span class="sd">                         surface element was visible</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">z_axis</span> <span class="o">=</span> <span class="n">observations</span><span class="p">[</span><span class="s1">&#39;normal&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">east_dir</span> <span class="o">=</span> <span class="n">rot_z</span><span class="p">(</span><span class="o">-</span><span class="mf">0.1</span><span class="p">)</span> <span class="o">@</span> <span class="n">z_axis</span>
+
+    <span class="n">north</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">z_axis</span><span class="p">,</span> <span class="n">east_dir</span><span class="p">)</span>
+    <span class="n">north</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">north</span><span class="p">)</span>
+
+    <span class="n">east</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">north</span><span class="p">,</span> <span class="n">z_axis</span><span class="p">)</span>
+    <span class="n">east</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">east</span><span class="p">)</span>
+
+    <span class="n">rotation2enu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">east</span><span class="p">,</span> <span class="n">north</span><span class="p">,</span> <span class="n">z_axis</span><span class="p">])</span>
+
+    <span class="n">valid_obs</span> <span class="o">=</span> <span class="n">observations</span><span class="p">[</span><span class="n">observations</span><span class="p">[</span><span class="s1">&#39;visible&#39;</span><span class="p">]]</span>
+    <span class="n">local_inc</span> <span class="o">=</span> <span class="o">-</span><span class="n">rotation2enu</span> <span class="o">@</span> <span class="n">valid_obs</span><span class="p">[</span><span class="s1">&#39;incidence&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">local_emi</span> <span class="o">=</span> <span class="n">rotation2enu</span> <span class="o">@</span> <span class="n">valid_obs</span><span class="p">[</span><span class="s1">&#39;exidence&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">ra_sun</span><span class="p">,</span> <span class="n">dec_sun</span> <span class="o">=</span> <span class="n">unit_to_radec</span><span class="p">(</span><span class="n">local_inc</span><span class="p">)</span>
+    <span class="n">ra_cam</span><span class="p">,</span> <span class="n">dec_cam</span> <span class="o">=</span> <span class="n">unit_to_radec</span><span class="p">(</span><span class="n">local_emi</span><span class="p">)</span>
+
+    <span class="n">dop</span> <span class="o">=</span> <span class="n">dop</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">dop</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">dop</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="n">dop</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">dop</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dop</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">dop</span><span class="p">)])</span>
+
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">mcol</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">polar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">mappable</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolor</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
+                         <span class="n">dop</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ra</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span> <span class="n">shading</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ra_sun</span><span class="p">,</span> <span class="mi">90</span> <span class="o">-</span> <span class="n">dec_sun</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ra_cam</span><span class="p">,</span> <span class="mi">90</span> <span class="o">-</span> <span class="n">dec_cam</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">mappable</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="UpdateableColorScale">
+<a class="viewcode-back" href="../../../coverage/visualizer/giant.coverage.visualizer.UpdateableColorScale.html#giant.coverage.visualizer.UpdateableColorScale">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UpdateableColorScale</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class is used to create a color scale to respresent different numerical</span>
+<span class="sd">    data assigned to facets on either a 2D or 3D visualization of a target body.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection</span><span class="p">,</span> <span class="n">color_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;hot&#39;</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">,</span> <span class="n">integer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">xbounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">),</span> <span class="n">ybounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span> <span class="n">zbounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;longitude, degrees&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;latitude, degrees&#39;</span><span class="p">,</span> <span class="n">zlabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">title</span><span class="o">=</span><span class="s1">&#39;dop&#39;</span><span class="p">,</span> <span class="n">absolute_max</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nan_to_inf</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">slider</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_cbar</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param collection: A collection of facets on the target body&#39;s surface</span>
+<span class="sd">                           that are used to visualize the target&#39;s surface in the plot</span>
+<span class="sd">        :param color_data: An np.array containing a value for each facet, which will</span>
+<span class="sd">                           be used to determine which color the facet will be shaded</span>
+<span class="sd">                           on the plot based on where it falls on the color scale.</span>
+<span class="sd">                           Note that any values above the maximum of the color scale</span>
+<span class="sd">                           will take on the maximal color, and similarly, any values below</span>
+<span class="sd">                           the minimum of the color scale will take on the minimal color</span>
+<span class="sd">        :param cmap: An optional string representing a color gradient to use for</span>
+<span class="sd">                     mapping to values to the color scale</span>
+<span class="sd">        :param location: An optional string representing the location of the</span>
+<span class="sd">                         interactive slider</span>
+<span class="sd">        :param integer: An optional flag to force the threshold value on the slider</span>
+<span class="sd">                        to be rounded to the nearest integer</span>
+<span class="sd">        :param fig: An optional pre-existing figure to provide as a destination for</span>
+<span class="sd">                    the color scale to be applied</span>
+<span class="sd">        :param ax: An optional pre-existing axes to provide as a destination for</span>
+<span class="sd">                   the color scale to be applied</span>
+<span class="sd">        :param xbounds: An optional tuple containing bounds for x-values to show in the plot</span>
+<span class="sd">        :param ybounds: An optional tuple containing bounds for y-values to show in the plot</span>
+<span class="sd">        :param zbounds: An optional tuple containing bounds for z-values to show in the plot</span>
+<span class="sd">        :param xlabel: An optional string representing a label for the x-axis to show in the plot</span>
+<span class="sd">        :param ylabel: An optional string representing a label for the y-axis to show in the plot</span>
+<span class="sd">        :param zlabel: An optional string representing a label for the z-axis to show in the plot</span>
+<span class="sd">        :param title: An optional string to set as the title of the plot</span>
+<span class="sd">        :param absolute_max: An optional number to provide as the highest value the</span>
+<span class="sd">                             color bar (and slider) can display. If the absolute_max</span>
+<span class="sd">                             exceeds the largest value in the :attr:`color_data`,</span>
+<span class="sd">                             the color bar (and slider) will be limited to that</span>
+<span class="sd">                             largest value.</span>
+<span class="sd">        :param nan_to_inf: An optional flag to convert np.nan values to np.inf in the</span>
+<span class="sd">                           :attr:`color_data` for consistent plotting results</span>
+<span class="sd">        :param projection: An optional string representing a matplotlib projection type</span>
+<span class="sd">        :param slider: An optional flag to display an interactive slider in the figure.</span>
+<span class="sd">                       The value of the slider represents the maximum value of the</span>
+<span class="sd">                       color scale</span>
+<span class="sd">        :param show_cbar: An optional flag to display the color bar representing</span>
+<span class="sd">                          the numerical value associated with each color in the plot</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">fig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">projection</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">fig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fig</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">figure</span> <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span>
+        <span class="k">elif</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fig</span> <span class="o">=</span> <span class="n">fig</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">projection</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fig</span> <span class="o">=</span> <span class="n">fig</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">collection</span> <span class="o">=</span> <span class="n">collection</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">color_data</span> <span class="o">=</span> <span class="n">color_data</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">integer</span> <span class="o">=</span> <span class="n">integer</span>
+
+        <span class="k">if</span> <span class="n">nan_to_inf</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">color_data</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">color_data</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+        <span class="k">if</span> <span class="n">slider</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;bottom&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;top&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="mf">0.75</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;left&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;right&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.75</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">color_data</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">cmax</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">color_data</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">color_data</span><span class="p">)]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">absolute_max</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cmax</span> <span class="o">=</span> <span class="mf">1.e20</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">mcol</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">cmax</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">ScalarMappable</span><span class="p">(</span><span class="n">norm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rgbcols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">to_rgba</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">color_data</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rgbcols</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">color_data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">show_cbar</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cbar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cbar</span><span class="o">.</span><span class="n">update_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">add_collection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xbounds</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ybounds</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">zlabel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="p">,</span> <span class="n">Axes3D</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_zlim</span><span class="p">(</span><span class="n">zbounds</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="n">zlabel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">slider</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axcolor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">((</span><span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">scolor</span> <span class="o">=</span> <span class="n">Slider</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axcolor</span><span class="p">,</span> <span class="s1">&#39;Threshold&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cmax</span><span class="p">,</span> <span class="n">valinit</span><span class="o">=</span><span class="n">cmax</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scolor</span><span class="o">.</span><span class="n">drawon</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">scolor</span><span class="o">.</span><span class="n">on_changed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_update_slider</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_slider</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method takes input via an interactive slider in a matplotlib figure</span>
+<span class="sd">        and uses this input to update the color scale of the figure.</span>
+<span class="sd">        </span>
+<span class="sd">        :param val: A numeric value automatically input based on the position</span>
+<span class="sd">                    of the slider. It will update the maximum value of the color</span>
+<span class="sd">                    scale to be equal to val, which can change how the target</span>
+<span class="sd">                    will be shaded.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">integer</span><span class="p">:</span>
+            <span class="n">cmax</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scolor</span><span class="o">.</span><span class="n">val</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scolor</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">cmax</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scolor</span><span class="o">.</span><span class="n">valtext</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cmax</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cmax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scolor</span><span class="o">.</span><span class="n">val</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">vmax</span> <span class="o">=</span> <span class="n">cmax</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">to_rgba</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">color_data</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbar</span><span class="o">.</span><span class="n">update_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw_idle</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="create_patches_latlon">
+<a class="viewcode-back" href="../../../coverage/visualizer/giant.coverage.visualizer.create_patches_latlon.html#giant.coverage.visualizer.create_patches_latlon">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_patches_latlon</span><span class="p">(</span><span class="n">lat</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span><span class="p">,</span> <span class="n">lon</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Polygon</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This helper function creates matplotlib Polygon patches for triangles from lat/lon arrays</span>
+<span class="sd">    </span>
+<span class="sd">    :param lat: the lattitude values as a 2d array.  Generally should be from the :func:`.project_triangles_latlon` function</span>
+<span class="sd">    :param lon: the longitude values as a 2d array.  Generally should be from the :func:`.project_triangles_latlon` function</span>
+<span class="sd">    :returns: a list of matplotlib Polygons as specified in the input</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">patches</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">for</span> <span class="n">llat</span><span class="p">,</span> <span class="n">llon</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">):</span>
+        <span class="n">patches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Polygon</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">llon</span><span class="p">,</span> <span class="n">llat</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">))</span>
+    
+    <span class="k">return</span> <span class="n">patches</span></div>
+
+
+
+<div class="viewcode-block" id="percent_below_threshold_reducer">
+<a class="viewcode-back" href="../../../coverage/visualizer/giant.coverage.visualizer.percent_below_threshold_reducer.html#giant.coverage.visualizer.percent_below_threshold_reducer">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">percent_below_threshold_reducer</span><span class="p">(</span><span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">DOUBLE_ARRAY</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This helper function returns a callable which computes the percentage of values that is below some specified </span>
+<span class="sd">    threshold.</span>
+<span class="sd">    </span>
+<span class="sd">    :param threshold: the threshold to use</span>
+<span class="sd">    :returns: a callable</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">percent_below_threshold</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+    <span class="k">return</span> <span class="n">percent_below_threshold</span></div>
+
+
+
+<div class="viewcode-block" id="get_coloring">
+<a class="viewcode-back" href="../../../coverage/visualizer/giant.coverage.visualizer.get_coloring.html#giant.coverage.visualizer.get_coloring">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_coloring</span><span class="p">(</span><span class="n">cov</span><span class="p">:</span> <span class="n">Coverage</span><span class="p">,</span> <span class="n">stat_set</span><span class="p">:</span> <span class="n">STAT_SETS</span> <span class="o">=</span> <span class="s2">&quot;v_count&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">reduction_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">DOUBLE_ARRAY</span><span class="p">],</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">percent_below_threshold_reducer</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This helper function chooses the appropriate values from the coverage object for displaying, applying the reduction function</span>
+<span class="sd">    if necessary.</span>
+<span class="sd">    </span>
+<span class="sd">    :param cov: the :class:`.Coverage` object</span>
+<span class="sd">    :param stat_set: the stats to get the coloring for</span>
+<span class="sd">    :param label: the label to use if labeled analysis was performed</span>
+<span class="sd">    :param reduction_function: a callabe to reduce all the DOP values for a facet to a single value for display</span>
+<span class="sd">    :returns: a numpy array containing the values to color map in the display</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">match</span> <span class="n">stat_set</span><span class="p">:</span>
+        <span class="k">case</span> <span class="s2">&quot;v_count&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">observation_count</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">coloring</span> <span class="o">=</span> <span class="n">cov</span><span class="o">.</span><span class="n">observation_count</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;labeled analyis was performed but you did not specify the label to visualize&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">coloring</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">observation_count</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                
+        <span class="k">case</span> <span class="s2">&quot;d_albedo&quot;</span><span class="p">:</span>
+            
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">albedo_dop</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">coloring</span> <span class="o">=</span> <span class="n">reduction_function</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">albedo_dop</span><span class="p">[</span><span class="n">label</span><span class="p">]))</span> 
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;labeled analyis was performed but you did not specify the label to visualize&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">coloring</span> <span class="o">=</span> <span class="n">reduction_function</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">albedo_dop</span><span class="p">))</span>
+        
+        <span class="k">case</span> <span class="s2">&quot;d_x_slope&quot;</span><span class="p">:</span>
+            
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">x_terrain_dop</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">coloring</span> <span class="o">=</span> <span class="n">reduction_function</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">x_terrain_dop</span><span class="p">[</span><span class="n">label</span><span class="p">]))</span> 
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;labeled analyis was performed but you did not specify the label to visualize&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">coloring</span> <span class="o">=</span> <span class="n">reduction_function</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">x_terrain_dop</span><span class="p">))</span>
+        
+        <span class="k">case</span> <span class="s2">&quot;d_y_slope&quot;</span><span class="p">:</span>
+            
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">y_terrain_dop</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">coloring</span> <span class="o">=</span> <span class="n">reduction_function</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">y_terrain_dop</span><span class="p">[</span><span class="n">label</span><span class="p">]))</span> 
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;labeled analyis was performed but you did not specify the label to visualize&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">coloring</span> <span class="o">=</span> <span class="n">reduction_function</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">y_terrain_dop</span><span class="p">))</span>
+    
+        <span class="k">case</span> <span class="s2">&quot;d_total&quot;</span><span class="p">:</span>
+            
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">total_dop</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">coloring</span> <span class="o">=</span> <span class="n">reduction_function</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">total_dop</span><span class="p">[</span><span class="n">label</span><span class="p">]))</span> 
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;labeled analyis was performed but you did not specify the label to visualize&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">coloring</span> <span class="o">=</span> <span class="n">reduction_function</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">total_dop</span><span class="p">))</span>
+                
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coloring</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></div>
+
+        
+        
+<div class="viewcode-block" id="visualize2d">
+<a class="viewcode-back" href="../../../coverage/visualizer/giant.coverage.visualizer.visualize2d.html#giant.coverage.visualizer.visualize2d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">visualize2d</span><span class="p">(</span><span class="n">cov</span><span class="p">:</span> <span class="n">Coverage</span><span class="p">,</span> <span class="n">patches</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Polygon</span><span class="p">],</span>  <span class="n">stat_set</span><span class="p">:</span> <span class="n">STAT_SETS</span> <span class="o">=</span> <span class="s1">&#39;v_count&#39;</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">reduction_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">DOUBLE_ARRAY</span><span class="p">],</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">percent_below_threshold_reducer</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">fig</span><span class="p">:</span> <span class="n">Figure</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;hot&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UpdateableColorScale</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function provides a simplified interface to generate a 2D, lat/lon projected map of the statistics.</span>
+<span class="sd">    </span>
+<span class="sd">    For more advanced usage, use this function as a template and use the :class:`.UpdateableColorScale` directly.</span>
+<span class="sd">    </span>
+<span class="sd">    :param cov: the coverage object containing the coverage results</span>
+<span class="sd">    :param patches: an option list of Polygons to use (if None, they&#39;ll be created for you)</span>
+<span class="sd">    :param stat_set: a string specifying what stat to show</span>
+<span class="sd">    :param label: the label to visualize (if labeled analysis was performed)</span>
+<span class="sd">    :param reduction_function: a callabe to reduce all the DOP values for a facet to a single value for display</span>
+<span class="sd">    :param fig: the matplitlib Figure to add the plot to (if None a new figure will be created)</span>
+<span class="sd">    :param ax: the matplitlib Axes to add the plot to (if None a new Axes will be created)</span>
+<span class="sd">    :param cmap: The color map to use to color the results.</span>
+<span class="sd">    :returns: A :class:`.UpdateableColorScale` object set for display</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">patches</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>    
+        <span class="n">lat_tris</span><span class="p">,</span> <span class="n">lon_tris</span> <span class="o">=</span> <span class="n">project_triangles_latlon</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">targetvecs</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">cov</span><span class="o">.</span><span class="n">targetfacets</span><span class="p">)</span>
+        <span class="n">patches</span> <span class="o">=</span> <span class="n">create_patches_latlon</span><span class="p">(</span><span class="n">lat_tris</span><span class="p">,</span> <span class="n">lon_tris</span><span class="p">)</span>
+        
+    <span class="n">coloring</span> <span class="o">=</span> <span class="n">get_coloring</span><span class="p">(</span><span class="n">cov</span><span class="p">,</span> <span class="n">stat_set</span><span class="o">=</span><span class="n">stat_set</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">reduction_function</span><span class="o">=</span><span class="n">reduction_function</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">UpdateableColorScale</span><span class="p">(</span><span class="n">PatchCollection</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">patches</span><span class="p">),</span> <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span> <span class="n">coloring</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> 
+                                <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;longitude, deg&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;latitude, deg&#39;</span><span class="p">,</span> 
+                                <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span> <span class="n">integer</span><span class="o">=</span><span class="n">stat_set</span> <span class="o">==</span> <span class="s2">&quot;v_count&quot;</span><span class="p">,</span>
+                                <span class="n">title</span><span class="o">=</span><span class="n">stat_set</span><span class="p">)</span></div>
+
+        
+    
+<div class="viewcode-block" id="visualize3d">
+<a class="viewcode-back" href="../../../coverage/visualizer/giant.coverage.visualizer.visualize3d.html#giant.coverage.visualizer.visualize3d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">visualize3d</span><span class="p">(</span><span class="n">cov</span><span class="p">:</span> <span class="n">Coverage</span><span class="p">,</span>  <span class="n">stat_set</span><span class="p">:</span> <span class="n">STAT_SETS</span> <span class="o">=</span> <span class="s1">&#39;v_count&#39;</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">reduction_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">DOUBLE_ARRAY</span><span class="p">],</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">percent_below_threshold_reducer</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">fig</span><span class="p">:</span> <span class="n">Figure</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;hot&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UpdateableColorScale</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function provides a simplified interface to generate a 2D, lat/lon projected map of the statistics.</span>
+<span class="sd">    </span>
+<span class="sd">    For more advanced usage, use this function as a template and use the :class:`.UpdateableColorScale` directly.</span>
+<span class="sd">    </span>
+<span class="sd">    :param cov: the coverage object containing the coverage results</span>
+<span class="sd">    :param stat_set: a string specifying what stat to show</span>
+<span class="sd">    :param label: the label to visualize (if labeled analysis was performed)</span>
+<span class="sd">    :param reduction_function: a callabe to reduce all the DOP values for a facet to a single value for display</span>
+<span class="sd">    :param fig: the matplitlib Figure to add the plot to (if None a new figure will be created)</span>
+<span class="sd">    :param ax: the matplitlib Axes to add the plot to (if None a new Axes will be created)</span>
+<span class="sd">    :param cmap: The color map to use to color the results.</span>
+<span class="sd">    :returns: A :class:`.UpdateableColorScale` object set for display</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+        
+    <span class="n">coloring</span> <span class="o">=</span> <span class="n">get_coloring</span><span class="p">(</span><span class="n">cov</span><span class="p">,</span> <span class="n">stat_set</span><span class="o">=</span><span class="n">stat_set</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">reduction_function</span><span class="o">=</span><span class="n">reduction_function</span><span class="p">)</span>
+    
+    <span class="n">collection</span> <span class="o">=</span> <span class="n">Poly3DCollection</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">targetvecs</span><span class="p">[</span><span class="n">cov</span><span class="o">.</span><span class="n">targetfacets</span><span class="p">],</span> <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+    
+    <span class="n">shape_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">targetvecs</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    
+    <span class="k">return</span> <span class="n">UpdateableColorScale</span><span class="p">(</span><span class="n">collection</span><span class="p">,</span> <span class="n">coloring</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>  <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">,</span>
+                                <span class="n">xbounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">shape_bounds</span><span class="p">,</span> <span class="n">shape_bounds</span><span class="p">),</span>
+                                <span class="n">ybounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">shape_bounds</span><span class="p">,</span> <span class="n">shape_bounds</span><span class="p">),</span>
+                                <span class="n">zbounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">shape_bounds</span><span class="p">,</span> <span class="n">shape_bounds</span><span class="p">),</span>
+                                <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;x, km&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;y, km&#39;</span><span class="p">,</span> <span class="n">zlabel</span><span class="o">=</span><span class="s1">&#39;z, km&#39;</span><span class="p">,</span>
+                                <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span> <span class="n">integer</span><span class="o">=</span><span class="n">stat_set</span> <span class="o">==</span> <span class="s2">&quot;v_count&quot;</span><span class="p">,</span>
+                                <span class="n">title</span><span class="o">=</span><span class="n">stat_set</span><span class="p">)</span></div>
+
+        
+    
+                
+        
+        
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.photometry.magnitude &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.photometry.magnitude</h1><div class="highlight"><pre>
+<span></span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">log10</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">SceneObject</span><span class="p">,</span> <span class="n">Scene</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.shapes</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ellipsoid</span><span class="p">,</span> <span class="n">Point</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.photometry.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">au</span>
+
+
+<div class="viewcode-block" id="PhaseMagnitudeModel">
+<a class="viewcode-back" href="../../../photometry/magnitude/giant.photometry.magnitude.PhaseMagnitudeModel.html#giant.photometry.magnitude.PhaseMagnitudeModel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PhaseMagnitudeModel</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This is a parent class used to define the magnitude function of a body </span>
+<span class="sd">    by the solar phase angle. A custom magnitude model should follow this </span>
+<span class="sd">    template.</span>
+<span class="sd">    </span>
+<span class="sd">    The class must contain a magnitude_function definition that inputs a scene</span>
+<span class="sd">    and scene object. </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">magnitude_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span> <span class="n">phase_angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method should return the apparent magnitude of the target at the provided phase angle or scene setup.</span>
+<span class="sd">        </span>
+<span class="sd">        :param scene: used to define the geometry of the scene, primarily phase angle</span>
+<span class="sd">        :param target: used to get physical attributes of the target such as diameter</span>
+<span class="sd">        :param phase_angle: optional input for phase angle in radians used to override real phase_angle</span>
+<span class="sd">                            in the scene. This is mainly used for plotting purposes. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    
+
+<div class="viewcode-block" id="LinearPhaseMagnitudeModel">
+<a class="viewcode-back" href="../../../photometry/magnitude/giant.photometry.magnitude.LinearPhaseMagnitudeModel.html#giant.photometry.magnitude.LinearPhaseMagnitudeModel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LinearPhaseMagnitudeModel</span><span class="p">(</span><span class="n">PhaseMagnitudeModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    General Phase-Slope Model used to determine Magnitude of target</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phase_slope</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">albedo</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param phase_slope: phase slope of object brightness</span>
+<span class="sd">        :param albedo: object light reflectance </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase_slope</span> <span class="o">=</span> <span class="n">phase_slope</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">albedo</span> <span class="o">=</span> <span class="n">albedo</span>
+
+<div class="viewcode-block" id="LinearPhaseMagnitudeModel.magnitude_function">
+<a class="viewcode-back" href="../../../photometry/magnitude/giant.photometry.magnitude.LinearPhaseMagnitudeModel.magnitude_function.html#giant.photometry.magnitude.LinearPhaseMagnitudeModel.magnitude_function">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">magnitude_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span> <span class="n">phase_angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param scene: used to define the geometry of the scene, primarily phase angle</span>
+<span class="sd">        :param target: used to get physical attributes of the target such as diameter</span>
+<span class="sd">        :param phase_angle: optional input for phase angle in radians used to override real phase_angle</span>
+<span class="sd">                            in the scene. This is mainly used for plotting purposes. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The scene must contain an illumination source to compute the magnitude&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># get the solar phase angle</span>
+        <span class="k">if</span> <span class="n">phase_angle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">target_index</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">target_index</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The phase angle was not provided and we cannot locate the provided target in the scene&#39;</span><span class="p">)</span>
+            <span class="n">phase_angle</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">phase_angle</span><span class="p">(</span><span class="n">target_index</span><span class="p">)</span>
+
+        <span class="c1"># determine the diameter of the target</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Ellipsoid</span><span class="p">):</span>
+            <span class="n">diameter</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">principal_axes</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Point</span><span class="p">):</span>
+            <span class="n">diameter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">diameter</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># this model needs the target albedo</span>
+        <span class="n">albedo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">albedo</span>
+        <span class="k">if</span> <span class="n">albedo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">s_albedo</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;albedo&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Albedo is required to calculate magnitude using a Linear Phase Slope Model&#39;</span><span class="p">)</span>
+            <span class="n">albedo</span> <span class="o">=</span> <span class="n">s_albedo</span>
+
+        <span class="n">magnitude</span> <span class="o">=</span> <span class="o">-</span><span class="mi">5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">albedo</span><span class="p">)</span> <span class="o">*</span> <span class="n">au</span><span class="p">(</span><span class="n">diameter</span><span class="p">))</span> <span class="o">+</span> \
+                    <span class="mi">5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">((</span><span class="n">au</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">distance</span><span class="p">)</span> <span class="o">-</span> <span class="n">au</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">distance</span><span class="p">))</span> <span class="o">*</span> \
+                    <span class="n">au</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">distance</span><span class="p">))</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase_slope</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">phase_angle</span><span class="p">)</span> <span class="o">-</span> <span class="mf">26.75</span>
+        <span class="k">return</span> <span class="n">magnitude</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HGPhaseMagnitudeModel">
+<a class="viewcode-back" href="../../../photometry/magnitude/giant.photometry.magnitude.HGPhaseMagnitudeModel.html#giant.photometry.magnitude.HGPhaseMagnitudeModel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HGPhaseMagnitudeModel</span><span class="p">(</span><span class="n">PhaseMagnitudeModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Phase-Slope Model Typically used for Asteroids. This model takes the absolute magnitude and </span>
+<span class="sd">    phase-slope brightness of the target into consideration. </span>
+<span class="sd">    </span>
+<span class="sd">    This takes the form of</span>
+<span class="sd">    </span>
+<span class="sd">    .. math::</span>
+<span class="sd">        m(\alpha) &amp;= H-2.5\log\left[[1-G]\Phi_1(\alpha)+G\Phi_2(\alpha)\right] \\</span>
+<span class="sd">        W &amp;= \exp(-90.56\tan^2(\alpha/2)) \\</span>
+<span class="sd">        \Phi_1 &amp;=W\phi_{1S}+(1-@)\phi_{1L} \\ </span>
+<span class="sd">        \phi_{1S} &amp;= 1-\frac{C_1\sin\alpha}{0.119+1.341\sin\alha-0.754\sin^2\alpha} \\</span>
+<span class="sd">        \phi_{1L} &amp;= \exp(-A_1\left(tan\frac{\alpha}{2}\right)^{B_1}) \\</span>
+<span class="sd">        \Phi_2 &amp;= W\phi_{2S}+(1-W)\phi_{2L} \\</span>
+<span class="sd">        \phi_{2S} &amp;=1-\frac{C_2\sin\alpha}{0.119+1.341\sin\alpha-0.754\sin^2\alpha}</span>
+<span class="sd">        \phi_{2L} &amp;= \exp(-A_2\left(tan\frac{\alpha}{2}\right)^{B_2}) </span>
+<span class="sd">            </span>
+<span class="sd">    where :math:`\alpha` is the phase angle in radian, :math:`H` and :math:`G` are the absolute visual magnitude and </span>
+<span class="sd">    phase-slope of brightness respectively, and the cooeficiens take the following values:</span>
+<span class="sd">    </span>
+<span class="sd">        :math:`A_1` = 3.332      :math:`A_2` = 1.862</span>
+<span class="sd">        :math:`B_1` = 0.631      :math:`B_2` = 1.218</span>
+<span class="sd">        :math:`C_1` = 0.986      :math:`C_2` = 0.238</span>
+<span class="sd">        </span>
+<span class="sd">    This model comes from https://adsabs.harvard.edu/full/2010SASS...29..101B</span>
+<span class="sd">    </span>
+<span class="sd">    For most targets, H and G can be retrieved from JPL&#39;s Horizons database.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abs_visual_mag</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">phase_slope</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param abs_visual_mag: Object absolute visual magnitude (H)</span>
+<span class="sd">        :param phase_slope: Phase slope of brightness (G)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abs_visual_mag</span> <span class="o">=</span> <span class="n">abs_visual_mag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase_slope</span> <span class="o">=</span> <span class="n">phase_slope</span>
+
+<div class="viewcode-block" id="HGPhaseMagnitudeModel.magnitude_function">
+<a class="viewcode-back" href="../../../photometry/magnitude/giant.photometry.magnitude.HGPhaseMagnitudeModel.magnitude_function.html#giant.photometry.magnitude.HGPhaseMagnitudeModel.magnitude_function">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">magnitude_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span> <span class="n">phase_angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param scene: used to define the geometry of the scene, primarily phase angle</span>
+<span class="sd">        :param target: used to get physical attributes of the target such as diameter</span>
+<span class="sd">        :param phase_angle: optional input for phase angle in radians used to override real phase_angle</span>
+<span class="sd">                            in the scene. This is mainly used for plotting purposes. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The scene must contain an illumination source to compute the magnitude&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># get the solar phase angle</span>
+        <span class="k">if</span> <span class="n">phase_angle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">target_index</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">target_index</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The phase angle was not provided and we cannot locate the provided target in the scene&#39;</span><span class="p">)</span>
+            <span class="n">phase_angle</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">phase_angle</span><span class="p">(</span><span class="n">target_index</span><span class="p">)</span>
+
+        <span class="c1"># apply the model to get magnitude</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">90.56</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">phase_angle</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">A1</span><span class="p">,</span> <span class="n">B1</span><span class="p">,</span> <span class="n">C1</span> <span class="o">=</span> <span class="mf">3.332</span><span class="p">,</span> <span class="mf">0.631</span><span class="p">,</span> <span class="mf">0.986</span>  <span class="c1"># coefficient</span>
+        <span class="n">th_1s</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">((</span><span class="n">C1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phase_angle</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span>
+                    <span class="mf">0.119</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.341</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phase_angle</span><span class="p">))</span> <span class="o">-</span> <span class="p">(</span><span class="mf">0.754</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phase_angle</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
+        <span class="n">th_1l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">A1</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">phase_angle</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span> <span class="o">**</span> <span class="n">B1</span><span class="p">)</span>
+        <span class="n">th1</span> <span class="o">=</span> <span class="n">W</span> <span class="o">*</span> <span class="n">th_1s</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">W</span><span class="p">)</span> <span class="o">*</span> <span class="n">th_1l</span>
+
+        <span class="n">A2</span><span class="p">,</span> <span class="n">B2</span><span class="p">,</span> <span class="n">C2</span> <span class="o">=</span> <span class="mf">1.862</span><span class="p">,</span> <span class="mf">1.218</span><span class="p">,</span> <span class="mf">0.238</span>  <span class="c1"># coefficients</span>
+        <span class="n">th_2s</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">((</span><span class="n">C2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phase_angle</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span>
+                    <span class="mf">0.119</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.341</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phase_angle</span><span class="p">))</span> <span class="o">-</span> <span class="p">(</span><span class="mf">0.754</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phase_angle</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
+        <span class="n">th_2l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">A2</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">phase_angle</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span> <span class="o">**</span> <span class="n">B2</span><span class="p">)</span>
+        <span class="n">th2</span> <span class="o">=</span> <span class="n">W</span> <span class="o">*</span> <span class="n">th_2s</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">W</span><span class="p">)</span> <span class="o">*</span> <span class="n">th_2l</span>
+
+        <span class="n">phaseH</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs_visual_mag</span> <span class="o">-</span> <span class="mf">2.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(((</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase_slope</span><span class="p">)</span> <span class="o">*</span> <span class="n">th1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phase_slope</span> <span class="o">*</span> <span class="n">th2</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">phaseH</span> <span class="o">+</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">au</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">position</span> <span class="o">-</span> <span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">position</span><span class="p">)))</span> <span class="o">*</span> <span class="n">au</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">distance</span><span class="p">))</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

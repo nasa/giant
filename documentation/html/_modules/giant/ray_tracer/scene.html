@@ -1,36 +1,36 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>giant.ray_tracer.scene &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <title>giant.ray_tracer.scene &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="copyright" title="Copyright" href="../../../copyright.html" />
    
   <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../../../index.html">
-    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -63,7 +63,7 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
@@ -71,8 +71,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -89,8 +89,7 @@
           <div class="body" role="main">
             
   <h1>Source code for giant.ray_tracer.scene</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
-<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
+<span></span>
 
 
 <span class="sd">&quot;&quot;&quot;</span>
@@ -118,31 +117,28 @@
 <span class="sd">with the scene classes much, as this is done for you in the rest of GIANT.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
-<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">cast</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
 
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.rays</span> <span class="kn">import</span> <span class="n">Rays</span>
-<span class="kn">from</span> <span class="nn">giant.rotations</span> <span class="kn">import</span> <span class="n">Rotation</span><span class="p">,</span> <span class="n">quaternion_inverse</span><span class="p">,</span> <span class="n">rotvec_to_rotmat</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.shapes</span> <span class="kn">import</span> <span class="n">Point</span><span class="p">,</span> <span class="n">Surface</span><span class="p">,</span> <span class="n">Ellipsoid</span><span class="p">,</span> <span class="n">Shape</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.kdtree</span> <span class="kn">import</span> <span class="n">KDTree</span>
-<span class="kn">from</span> <span class="nn">giant._typing</span> <span class="kn">import</span> <span class="n">Real</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span>
-<span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">CameraModel</span>
-<span class="kn">from</span> <span class="nn">giant.image</span> <span class="kn">import</span> <span class="n">OpNavImage</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.illumination</span> <span class="kn">import</span> <span class="n">IlluminationModel</span><span class="p">,</span> <span class="n">ILLUM_DTYPE</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.rays</span> <span class="kn">import</span> <span class="n">INTERSECT_DTYPE</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.utilities</span> <span class="kn">import</span> <span class="n">to_block</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.rays</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rays</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.rotations</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rotation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.shapes</span><span class="w"> </span><span class="kn">import</span> <span class="n">RawSurface</span><span class="p">,</span> <span class="n">Ellipsoid</span><span class="p">,</span> <span class="n">Shape</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.kdtree</span><span class="w"> </span><span class="kn">import</span> <span class="n">KDTree</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Moveable</span><span class="p">,</span> <span class="n">Traceable</span><span class="p">,</span> <span class="n">HasBoundingBox</span><span class="p">,</span> <span class="n">HasCircumscribingSphere</span><span class="p">,</span> <span class="n">HasReferenceEllipsoid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">DatetimeLike</span><span class="p">,</span> <span class="n">DOUBLE_ARRAY</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">CameraModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpNavImage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.illumination</span><span class="w"> </span><span class="kn">import</span> <span class="n">IlluminationModel</span><span class="p">,</span> <span class="n">ILLUM_DTYPE</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.rays</span><span class="w"> </span><span class="kn">import</span> <span class="n">INTERSECT_DTYPE</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_block</span><span class="p">,</span> <span class="n">correct_stellar_aberration</span><span class="p">,</span> <span class="n">correct_light_time</span>
 
 
-<span class="n">SPEED_OF_LIGHT</span> <span class="o">=</span> <span class="mf">299792.458</span>  <span class="c1"># km/sec</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">The speed of light in kilometers per second</span>
-<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="n">_SCAN_DIRS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -150,24 +146,26 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<div class="viewcode-block" id="CorrectionsType"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.CorrectionsType.html#giant.ray_tracer.scene.CorrectionsType">[docs]</a><span class="k">class</span> <span class="nc">CorrectionsType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="CorrectionsType">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.CorrectionsType.html#giant.ray_tracer.scene.CorrectionsType">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CorrectionsType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This enumeration provides options for the different corrections that can be used when calculating the apparent</span>
 <span class="sd">    position of an object in a scene</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">NONE</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform not corrections</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">LTPS</span> <span class="o">=</span> <span class="s2">&quot;lt+s&quot;</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform light time and stellar aberration corrections (default)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">LT</span> <span class="o">=</span> <span class="s2">&quot;lt&quot;</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform only light time corrections.</span>
 <span class="sd">    </span>
 <span class="sd">    Note that this is not recommended because stellar aberration undoes much of the angular change imparted by light</span>
@@ -175,7 +173,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">S</span> <span class="o">=</span> <span class="s2">&quot;s&quot;</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform only stellar aberration corrections.</span>
 
 <span class="sd">    Note that this is not recommended because light time undoes much of the angular change imparted by stellar </span>
@@ -183,8 +181,11 @@
 <span class="sd">    &quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="SceneObject"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.SceneObject.html#giant.ray_tracer.scene.SceneObject">[docs]</a><span class="k">class</span> <span class="nc">SceneObject</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SceneObject">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.SceneObject.html#giant.ray_tracer.scene.SceneObject">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SceneObject</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class provides a quick and easy interface for changing the position and orientation of various objects.</span>
 
 <span class="sd">    Essentially, this class adds position and orientation attributes to shapes, rays, KDTrees, and other objects that</span>
@@ -283,7 +284,7 @@
 <span class="sd">    Now, lets use the position function and orientation function we provided to update the rays position/orientation</span>
 <span class="sd">    automatically</span>
 
-<span class="sd">        &gt;&gt;&gt; scene_obj.place(datetime.datetime.utcnow())</span>
+<span class="sd">        &gt;&gt;&gt; scene_obj.place(datetime.datetime.now(datetime.timezone.utc))</span>
 <span class="sd">        &gt;&gt;&gt; print(scene_obj.shape.start)</span>
 <span class="sd">        [-5.  6.  7.]</span>
 <span class="sd">        &gt;&gt;&gt; print(scene_obj.shape.direction)</span>
@@ -313,14 +314,14 @@
 <span class="sd">    has been rotated/translated into the camera frame).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Shape</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Moveable</span><span class="p">,</span>
                  <span class="n">current_position</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ARRAY_LIKE</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">current_orientation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Rotation</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;object&#39;</span><span class="p">,</span>
-                 <span class="n">position_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">datetime</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">orientation_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">datetime</span><span class="p">],</span> <span class="n">Rotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">position_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">DatetimeLike</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">orientation_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">DatetimeLike</span><span class="p">],</span> <span class="n">Rotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">corrections</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CorrectionsType</span><span class="p">]</span> <span class="o">=</span> <span class="n">CorrectionsType</span><span class="o">.</span><span class="n">LTPS</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param shape: The shape that represents the object.  This is typically a subclass of :class:`.Shape`, but can be</span>
 <span class="sd">                      anything so long as it implements ``translate``, ``rotate``, and ``trace`` methods.</span>
 <span class="sd">        :param current_position: The current position of the object in the current frame.  If ``None`` then this will be</span>
@@ -343,8 +344,8 @@
 <span class="sd">                            when the :attr:`position_function` and :attr:`orientation_function` are not ``None``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">position_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">datetime</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="n">position_function</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">DatetimeLike</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="n">position_function</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A function which accepts a python datetime object and returns a 3 element array giving</span>
 <span class="sd">        the position of the object at the requested time.  </span>
 <span class="sd">        </span>
@@ -352,8 +353,8 @@
 <span class="sd">        inertial frame.  While this is not required, it is strongly encouraged in most cases</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">orientation_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">datetime</span><span class="p">],</span> <span class="n">Rotation</span><span class="p">]]</span> <span class="o">=</span> <span class="n">orientation_function</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orientation_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">DatetimeLike</span><span class="p">],</span> <span class="n">Rotation</span><span class="p">]]</span> <span class="o">=</span> <span class="n">orientation_function</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">       A function which accepts a python datetime object and returns a :class:`.Rotation`</span>
 <span class="sd">       that gives the orientation of the object at the requested time.  </span>
 <span class="sd">       </span>
@@ -362,7 +363,7 @@
 <span class="sd">       &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CorrectionsType</span><span class="p">]</span> <span class="o">=</span> <span class="n">corrections</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        What corrections to apply when calculating the apparent location of the object in the camera frame.  </span>
 <span class="sd">        </span>
 <span class="sd">        This should either be ``None`` for no corrections, or one of the enums from</span>
@@ -371,29 +372,29 @@
 <span class="sd">        when the :attr:`position_function` and :attr:`orientation_function` are not ``None``. </span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_shape</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_position</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">current_position</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">current_position</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_orientation</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_orientation</span> <span class="o">=</span> <span class="n">Rotation</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">current_orientation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">current_orientation</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">Rotation</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The name of the object, used for logging purposes and readability.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The date the scene was mostly recently updated to. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Shape</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Moveable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This is the shape of interest.</span>
 
 <span class="sd">        It is usually a :class:`.Shape` or object but the only requirement is that it have</span>
@@ -403,24 +404,27 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span>
 
     <span class="nd">@shape</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
 
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s2">&quot;translate&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s2">&quot;rotate&quot;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="n">val</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;The object must have translate and rotate attributes</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_shape</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Moveable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Moveable</span><span class="p">:</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">Moveable</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;The object must have translate and rotate methods</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">val</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This is the current position of this object as a flat length 3 array</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position</span>
 
     <span class="nd">@position</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
 
@@ -429,17 +433,24 @@
         <span class="k">else</span><span class="p">:</span>
 
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The position array must be of length three&#39;</span><span class="p">)</span>
+        
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">distance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is the current distance to this object as a float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position</span><span class="p">))</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rotation</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rotation</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This is the current orientation of the frame this object is expressed in as a :class:`.Rotation` object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orientation</span>
 
     <span class="nd">@orientation</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Rotation</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Rotation</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span><span class="p">]):</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">Rotation</span><span class="p">):</span>
 
@@ -450,8 +461,10 @@
             <span class="c1"># error checking is handled by Rotation</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_orientation</span> <span class="o">=</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
-<div class="viewcode-block" id="SceneObject.change_position"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.SceneObject.change_position.html#giant.ray_tracer.scene.SceneObject.change_position">[docs]</a>    <span class="k">def</span> <span class="nf">change_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SceneObject.change_position">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.SceneObject.change_position.html#giant.ray_tracer.scene.SceneObject.change_position">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">change_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Change the location of the object in the current frame.</span>
 
 <span class="sd">        This is done by first subtracting off the old position then adding this value.</span>
@@ -470,8 +483,11 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SceneObject.change_orientation"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.SceneObject.change_orientation.html#giant.ray_tracer.scene.SceneObject.change_orientation">[docs]</a>    <span class="k">def</span> <span class="nf">change_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_orientation</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Rotation</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span><span class="p">]):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SceneObject.change_orientation">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.SceneObject.change_orientation.html#giant.ray_tracer.scene.SceneObject.change_orientation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">change_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_orientation</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Rotation</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Change the orientation of the frame the object is expressed in.</span>
 
 <span class="sd">        This is done by first applying the inverse rotation of the current orientation to get back to the base frame,</span>
@@ -490,15 +506,18 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">previous_orientation</span><span class="o">.</span><span class="n">inv</span><span class="p">())</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">new_orientation</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orientation</span><span class="p">)</span>
 
         <span class="c1"># update the orientation of the position</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">quaternion_inverse</span><span class="p">(</span><span class="n">previous_orientation</span><span class="p">)</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">previous_orientation</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">matrix</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span></div>
 
-<div class="viewcode-block" id="SceneObject.translate"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.SceneObject.translate.html#giant.ray_tracer.scene.SceneObject.translate">[docs]</a>    <span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">translation</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SceneObject.translate">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.SceneObject.translate.html#giant.ray_tracer.scene.SceneObject.translate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">translation</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update the location of the object in the current frame by adding a vector to the current location.</span>
 
 <span class="sd">        :param translation: The vector to add to the current vector</span>
@@ -515,28 +534,34 @@
 
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You have entered an improperly sized translation.</span><span class="se">\n</span><span class="s2">&quot;</span>
                              <span class="s2">&quot;Only length 3 translations are allowed.</span><span class="se">\n</span><span class="s2">&quot;</span>
-                             <span class="s2">&quot;You entered a translation of length </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">translation</span><span class="p">)))</span></div>
+                             <span class="s2">&quot;You entered a translation of length </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">translation</span><span class="p">)))</span></div>
 
-<div class="viewcode-block" id="SceneObject.rotate"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.SceneObject.rotate.html#giant.ray_tracer.scene.SceneObject.rotate">[docs]</a>    <span class="k">def</span> <span class="nf">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rotation</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Rotation</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span><span class="p">]):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SceneObject.rotate">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.SceneObject.rotate.html#giant.ray_tracer.scene.SceneObject.rotate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rotation</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Rotation</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update the orientation of the frame the object and its location are expressed in.</span>
 
 <span class="sd">        :param rotation: how we are to rotate the current frame/location</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rotation</span><span class="p">,</span> <span class="n">Rotation</span><span class="p">):</span>
             <span class="n">rotation</span> <span class="o">=</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
 
         <span class="c1"># update the orientation of the position</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">rotation</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SceneObject.get_bounding_pixels"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.SceneObject.get_bounding_pixels.html#giant.ray_tracer.scene.SceneObject.get_bounding_pixels">[docs]</a>    <span class="k">def</span> <span class="nf">get_bounding_pixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">CameraModel</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-                            <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SceneObject.get_bounding_pixels">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.SceneObject.get_bounding_pixels.html#giant.ray_tracer.scene.SceneObject.get_bounding_pixels">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_bounding_pixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">CameraModel</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                            <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span><span class="p">,</span> <span class="n">DOUBLE_ARRAY</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the bounding pixels for the given camera model and the current location.</span>
 
 <span class="sd">        The bounding pixels are the pixel bounds which the scene predicts the target should be completely contained in.</span>
@@ -554,12 +579,8 @@
 <span class="sd">        :return: The minimum (upper left) and maximum (lower right) pixel bounds that should contain the object based</span>
 <span class="sd">                 off of the scene as a tuple of length 2 numpy arrays (min, max).  Note that these are inclusive bounds</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">,</span> <span class="n">Point</span><span class="p">):</span>
-            <span class="n">center</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-            <span class="k">return</span> <span class="n">center</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">center</span><span class="o">+</span><span class="mi">1</span>
-
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">,</span> <span class="n">Ellipsoid</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">,</span> <span class="n">Ellipsoid</span><span class="p">):</span>
             <span class="n">cicum_sphere</span> <span class="o">=</span> <span class="n">Ellipsoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
                                      <span class="n">principal_axes</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="o">.</span><span class="n">principal_axes</span><span class="o">.</span><span class="n">max</span><span class="p">()]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">))</span>
 
@@ -567,25 +588,30 @@
 
             <span class="n">image_locs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">limbs</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span>
                                                   <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
-
-        <span class="k">elif</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">,</span> <span class="s1">&#39;circumscribing_sphere&#39;</span><span class="p">)</span> <span class="ow">and</span>
-              <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">,</span> <span class="s1">&#39;circumscribing_sphere&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)):</span>
-            <span class="n">limbs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="o">.</span><span class="n">circumscribing_sphere</span><span class="o">.</span><span class="n">find_limbs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">/</span>
-                                                                 <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position</span><span class="p">),</span>
-                                                                 <span class="n">_SCAN_DIRS</span><span class="p">)</span>
+            
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">,</span> <span class="n">HasCircumscribingSphere</span><span class="p">):</span>
+            <span class="n">limbs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="o">.</span><span class="n">circumscribing_sphere</span><span class="o">.</span><span class="n">find_limbs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position</span><span class="p">),</span>
+                                             <span class="n">_SCAN_DIRS</span><span class="p">)</span>
 
             <span class="n">image_locs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">limbs</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span>
                                                   <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+            
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">,</span> <span class="n">HasBoundingBox</span><span class="p">):</span>
 
-        <span class="k">else</span><span class="p">:</span>
             <span class="n">image_locs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="o">.</span><span class="n">bounding_box</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span>
                                                   <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
-
-        <span class="c1"># noinspection PyArgumentList</span>
+            
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">center</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">center</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">center</span><span class="o">+</span><span class="mf">1.0</span>
+            
         <span class="k">return</span> <span class="n">image_locs</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">image_locs</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SceneObject.get_apparent_diameter"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.SceneObject.get_apparent_diameter.html#giant.ray_tracer.scene.SceneObject.get_apparent_diameter">[docs]</a>    <span class="k">def</span> <span class="nf">get_apparent_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">CameraModel</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SceneObject.get_apparent_diameter">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.SceneObject.get_apparent_diameter.html#giant.ray_tracer.scene.SceneObject.get_apparent_diameter">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_apparent_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">CameraModel</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the apparent diameter for the given camera model and the current location.</span>
 
 <span class="sd">        The apparent diameter is the be guess at how large the object should appear in the image based on the current</span>
@@ -605,38 +631,34 @@
 <span class="sd">        :return: The approximate apparent diameter of the object in pixels.  Note that if the contained object is a</span>
 <span class="sd">                 :class:`.Point` this will always return 0.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">,</span> <span class="n">Point</span><span class="p">):</span>
-            <span class="k">return</span> <span class="mf">0.0</span>
-
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">,</span> <span class="n">Ellipsoid</span><span class="p">):</span>
-
-            <span class="n">ref_sphere</span> <span class="o">=</span> <span class="n">Ellipsoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
-                                   <span class="n">principal_axes</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="o">.</span><span class="n">principal_axes</span><span class="o">.</span><span class="n">mean</span><span class="p">()]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">))</span>
-
-        <span class="k">elif</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">,</span> <span class="s1">&#39;reference_ellipsoid&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">,</span> <span class="n">HasReferenceEllipsoid</span><span class="p">):</span>  <span class="c1"># covers most shapes, including Ellipsoid</span>
             <span class="n">ref_sphere</span> <span class="o">=</span> <span class="n">Ellipsoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
                                    <span class="n">principal_axes</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="o">.</span><span class="n">reference_ellipsoid</span><span class="o">.</span><span class="n">principal_axes</span><span class="o">.</span><span class="n">mean</span><span class="p">()]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">))</span>
-
-        <span class="k">else</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">,</span> <span class="n">HasBoundingBox</span><span class="p">):</span> <span class="c1"># covers any other 3d shape</span>
             <span class="c1"># we really should never get here, but if we do, this is probably a poor approximation..</span>
             <span class="n">ref_sphere</span> <span class="o">=</span> <span class="n">Ellipsoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_position</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
                                    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="o">.</span><span class="n">bounding_box</span><span class="o">.</span><span class="n">max_sides</span> <span class="o">-</span>
                                               <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="o">.</span><span class="n">bounding_box</span><span class="o">.</span><span class="n">min_sides</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">))</span>
-
+            
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># should only end up here for a Point or similar</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+        
         <span class="c1"># get the limbs from the reference sphere</span>
         <span class="n">limbs</span> <span class="o">=</span> <span class="n">ref_sphere</span><span class="o">.</span><span class="n">find_limbs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">),</span>
                                       <span class="n">_SCAN_DIRS</span><span class="p">)</span>
 
         <span class="c1"># project the limbs onto the image</span>
-        <span class="n">image_locs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">limbs</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span>
-                                              <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+        <span class="n">image_locs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">limbs</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
 
         <span class="c1"># get the norm of the extent of the projected limbs to be the apparent diameter</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">image_locs</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">image_locs</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SceneObject.place"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.SceneObject.place.html#giant.ray_tracer.scene.SceneObject.place">[docs]</a>    <span class="k">def</span> <span class="nf">place</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SceneObject.place">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.SceneObject.place.html#giant.ray_tracer.scene.SceneObject.place">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">place</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">DatetimeLike</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Place the object using the :attr:`orientation_function` and :attr:`position_function` at the requested date.</span>
 
 <span class="sd">        This is done by calling the :attr:`orientation_function` and :attr:`position_function` with the input date and</span>
@@ -656,11 +678,16 @@
             <span class="n">new_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">position_function</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">change_position</span><span class="p">(</span><span class="n">new_position</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Attempted to place a SceneObject without a position_function&quot;</span><span class="p">)</span></div></div>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Attempted to place a SceneObject without a position_function&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">=</span> <span class="n">date</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Scene"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.html#giant.ray_tracer.scene.Scene">[docs]</a><span class="k">class</span> <span class="nc">Scene</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Scene">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.html#giant.ray_tracer.scene.Scene">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Scene</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This is a container for :class:`SceneObject` instances that provides an easy interface for tracing and rendering.</span>
 
 <span class="sd">    This is most useful when you have multiple objects that you want to trace at once, as the scene will trace all of</span>
@@ -674,10 +701,10 @@
 <span class="sd">    printed.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_objs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">],</span> <span class="n">SceneObject</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_objs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">],</span> <span class="n">SceneObject</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">light_obj</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">obscuring_objs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param target_objs: The objects that are to be traced/rendered in a scene as a list of :class:`.SceneObject`.</span>
 <span class="sd">        :param light_obj: The light object.  This is just used to track the position of the light, therefore it is</span>
 <span class="sd">                          typically just a wrapper around a :class:`.Point`</span>
@@ -686,7 +713,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The number of digits that are required to represent the unique id of all objects contained in the scene</span>
 <span class="sd">        </span>
 <span class="sd">        This is used to comprise the facet number in the :data:`.INTERSECT_DTYPE` when tracing the scene such that the </span>
@@ -705,19 +732,20 @@
 <span class="sd">        the class</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_target_objs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_target_objs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">target_objs</span> <span class="o">=</span> <span class="n">target_objs</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_obscuring_objs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_obscuring_objs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">obscuring_objs</span> <span class="o">=</span> <span class="n">obscuring_objs</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_light_obj</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">light_obj</span> <span class="o">=</span> <span class="n">light_obj</span>
+        
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">target_objs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">]]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">target_objs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A list of objects to be tracked/rendered in the scene.</span>
 
 <span class="sd">        This must be set before a call to :meth:`get_illumination_inputs`</span>
@@ -725,7 +753,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_objs</span>
 
     <span class="nd">@target_objs</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">target_objs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">]]]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">target_objs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">]]]):</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
 
@@ -743,26 +771,29 @@
         <span class="c1"># update the order</span>
         <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_objs</span><span class="p">:</span>
 
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;order&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">obj_order</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;order&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="n">obj_order</span><span class="p">)</span>
 
-            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;num_faces&quot;</span><span class="p">):</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">obj_faces</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;num_faces&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">num_faces</span><span class="p">)))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">obj_faces</span><span class="p">)))</span>
 
-            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">id</span><span class="p">)))</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">obj_id</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">obj_id</span><span class="p">)))</span>
+            
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;We don&#39;t know how to set the order for an object of type </span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">obscuring_objs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">]]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">obscuring_objs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A list of objects to be kept up to date with the scene but which are not actually used in the scene</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obscuring_objs</span>
 
     <span class="nd">@obscuring_objs</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">obscuring_objs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">]]]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">obscuring_objs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">]]]):</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
 
@@ -778,8 +809,8 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The target_objs property must be set as a list or SceneObject.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">light_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">light_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SceneObject</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        An object describing the location of the light source in the scene.</span>
 
 <span class="sd">        This must be set before a call to :meth:`get_illumination_inputs`</span>
@@ -788,7 +819,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_light_obj</span>
 
     <span class="nd">@light_obj</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">light_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">light_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">SceneObject</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_light_obj</span> <span class="o">=</span> <span class="n">val</span>
@@ -799,8 +830,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The light_obj property must be set as a SceneObject or None.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Scene.phase_angle"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.phase_angle.html#giant.ray_tracer.scene.Scene.phase_angle">[docs]</a>    <span class="k">def</span> <span class="nf">phase_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Scene.phase_angle">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.phase_angle.html#giant.ray_tracer.scene.Scene.phase_angle">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">phase_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method computes the phase angle between the observer, the target at ``target_index`` and the</span>
 <span class="sd">        :attr:`light_obj`.</span>
 
@@ -817,6 +850,9 @@
 <span class="sd">        :param target_index: the index into the :attr:`target_objs` list for which to compute the phase angle for</span>
 <span class="sd">        :return: the phase angle in radians</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">light_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The light_obj cannot be None when computing the phase angle&#39;</span><span class="p">)</span>
 
         <span class="c1"># get the unit vector from the target to the light</span>
         <span class="n">line_of_sight_light</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_objs</span><span class="p">[</span><span class="n">target_index</span><span class="p">]</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
@@ -826,10 +862,13 @@
         <span class="n">line_of_sight_observer</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_target_objs</span><span class="p">[</span><span class="n">target_index</span><span class="p">]</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">/</span>
                                   <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target_objs</span><span class="p">[</span><span class="n">target_index</span><span class="p">]</span><span class="o">.</span><span class="n">position</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">line_of_sight_light</span><span class="nd">@line_of_sight_observer</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">line_of_sight_light</span><span class="nd">@line_of_sight_observer</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Scene.trace"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.trace.html#giant.ray_tracer.scene.Scene.trace">[docs]</a>    <span class="k">def</span> <span class="nf">trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trace_rays</span><span class="p">:</span> <span class="n">Rays</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Scene.trace">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.trace.html#giant.ray_tracer.scene.Scene.trace">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trace_rays</span><span class="p">:</span> <span class="n">Rays</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Trace trace_rays through the current scene and return the intersections with the objects in the scene for each</span>
 <span class="sd">        ray (optionally only the first intersection for each ray).</span>
 
@@ -850,16 +889,20 @@
         <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_objs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Traceable</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Target </span><span class="si">{</span><span class="n">ind</span><span class="si">}</span><span class="s2"> doesn&#39;t support ray tracing&quot;</span><span class="p">)</span>
 
             <span class="n">ignore_inds</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">trace_rays</span><span class="o">.</span><span class="n">ignore</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">ignore_inds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ignore_inds</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                    <span class="n">ignore_inds</span> <span class="o">=</span> <span class="p">[</span><span class="n">ignore_inds</span><span class="p">]</span><span class="o">*</span><span class="n">trace_rays</span><span class="o">.</span><span class="n">num_rays</span>
 
                 <span class="n">ignore_inds</span> <span class="o">=</span> <span class="n">to_block</span><span class="p">(</span><span class="n">ignore_inds</span><span class="p">)</span>
 
                 <span class="n">ignore_inds</span><span class="p">[</span><span class="n">ignore_inds</span> <span class="o">//</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">!=</span> <span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
                 <span class="n">ignore_inds</span><span class="p">[</span><span class="n">ignore_inds</span> <span class="o">//</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">==</span> <span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">ignore_inds</span><span class="p">[</span><span class="n">ignore_inds</span> <span class="o">//</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">==</span> <span class="n">ind</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">longfloat</span><span class="p">)</span> <span class="o">%</span>
+                    <span class="n">ignore_inds</span><span class="p">[</span><span class="n">ignore_inds</span> <span class="o">//</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">==</span> <span class="n">ind</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">longdouble</span><span class="p">)</span> <span class="o">%</span>
                     <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
                 <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
 
@@ -880,9 +923,12 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_first</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">trace_rays</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Scene.get_illumination_inputs"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.get_illumination_inputs.html#giant.ray_tracer.scene.Scene.get_illumination_inputs">[docs]</a>    <span class="k">def</span> <span class="nf">get_illumination_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trace_rays</span><span class="p">:</span> <span class="n">Rays</span><span class="p">,</span>
+
+<div class="viewcode-block" id="Scene.get_illumination_inputs">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.get_illumination_inputs.html#giant.ray_tracer.scene.Scene.get_illumination_inputs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_illumination_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trace_rays</span><span class="p">:</span> <span class="n">Rays</span><span class="p">,</span>
                                 <span class="n">return_intersects</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method returns the required inputs for an illumination function to compute the illumination for each ray.</span>
 
 <span class="sd">        This is done by performing a single bounce ray trace against all objects in the scene.  First, the rays as</span>
@@ -919,8 +965,10 @@
                 <span class="k">return</span> <span class="n">illum_params</span>
 
         <span class="n">shadow_start</span> <span class="o">=</span> <span class="n">initial_intersect</span><span class="p">[</span><span class="n">initial_intersect</span><span class="p">[</span><span class="s2">&quot;check&quot;</span><span class="p">]][</span><span class="s2">&quot;intersect&quot;</span><span class="p">]</span>
+        
+        <span class="n">lpos</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
 
-        <span class="n">shadow_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">-</span> <span class="n">shadow_start</span>
+        <span class="n">shadow_dir</span> <span class="o">=</span> <span class="n">lpos</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">-</span> <span class="n">shadow_start</span>
 
         <span class="n">shadow_dir</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">shadow_dir</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -943,8 +991,8 @@
                 <span class="k">if</span> <span class="n">check</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
                     <span class="n">illum_params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">shadow_rays</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">T</span><span class="p">),</span>
                                        <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">trace_rays</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">T</span><span class="p">),</span>
-                                       <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">initial_intersect</span><span class="p">[</span><span class="n">check</span><span class="p">][</span><span class="s2">&quot;normal&quot;</span><span class="p">]),</span>
-                                       <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">initial_intersect</span><span class="p">[</span><span class="n">check</span><span class="p">][</span><span class="s2">&quot;albedo&quot;</span><span class="p">]),</span>
+                                       <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">initial_intersect</span><span class="p">[</span><span class="s2">&quot;normal&quot;</span><span class="p">]),</span>
+                                       <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">initial_intersect</span><span class="p">[</span><span class="s2">&quot;albedo&quot;</span><span class="p">]),</span>
                                        <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">check</span><span class="p">))</span>
 
             <span class="k">else</span><span class="p">:</span>
@@ -968,9 +1016,12 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">illum_params</span></div>
 
-<div class="viewcode-block" id="Scene.get_first"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.get_first.html#giant.ray_tracer.scene.Scene.get_first">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_first</span><span class="p">(</span><span class="n">res</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">traced_rays</span><span class="p">:</span> <span class="n">Rays</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Scene.get_first">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.get_first.html#giant.ray_tracer.scene.Scene.get_first">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_first</span><span class="p">(</span><span class="n">res</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">traced_rays</span><span class="p">:</span> <span class="n">Rays</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This static method identifies the first intersection for each ray when there are more than 1 object in the</span>
 <span class="sd">        scene.</span>
 
@@ -990,8 +1041,7 @@
         <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="c1"># nan_check = ~np.isnan(res[&quot;albedo&quot;]).all(axis=0).squeeze()</span>
-        <span class="n">nan_check</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;check&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="n">nan_check</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">],</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;check&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">nan_check</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -1003,11 +1053,14 @@
 
         <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="n">min_ind</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">min_ind</span><span class="o">.</span><span class="n">size</span><span class="p">)]</span></div>
 
-<div class="viewcode-block" id="Scene.raster_render"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.raster_render.html#giant.ray_tracer.scene.Scene.raster_render">[docs]</a>    <span class="k">def</span> <span class="nf">raster_render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+
+<div class="viewcode-block" id="Scene.raster_render">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.raster_render.html#giant.ray_tracer.scene.Scene.raster_render">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">raster_render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                       <span class="n">illumination_model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">IlluminationModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                                                                        <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                                                                        <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the geometry for rendering a target using rasterization, not ray tracing.</span>
 
 <span class="sd">        This is done by simply considering the geometry for each facet of a target based solely on the</span>
@@ -1032,11 +1085,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_objs</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">light_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot rasterize when the light obj is None&#39;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">KDTree</span><span class="p">):</span>
-            <span class="n">shape</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">shapes</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">surface</span>
 
-        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Surface</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">RawSurface</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unable to rasterize targets that are not a surface&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">shape</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span>
@@ -1050,7 +1106,8 @@
         <span class="n">centers</span> <span class="o">=</span> <span class="n">facets_camera</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># get the incidence vectors to each facet</span>
-        <span class="n">incidence</span> <span class="o">=</span> <span class="n">centers</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_light_obj</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">lpos</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s1">&#39;position&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+        <span class="n">incidence</span> <span class="o">=</span> <span class="n">centers</span> <span class="o">-</span> <span class="n">lpos</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
         <span class="n">incidence</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">incidence</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># get the exidence vectors from each facet</span>
@@ -1061,7 +1118,10 @@
 
         <span class="n">illum_inp</span><span class="p">[</span><span class="s1">&#39;exidence&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">exidence</span>
         <span class="n">illum_inp</span><span class="p">[</span><span class="s1">&#39;incidence&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">incidence</span>
-        <span class="n">illum_inp</span><span class="p">[</span><span class="s1">&#39;albedo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># todo: use the albedo for the centers?</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shape</span><span class="o">.</span><span class="n">albedos</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="n">illum_inp</span><span class="p">[</span><span class="s1">&#39;albedo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">shape</span><span class="o">.</span><span class="n">albedos</span><span class="p">[</span><span class="n">shape</span><span class="o">.</span><span class="n">facets</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">illum_inp</span><span class="p">[</span><span class="s1">&#39;albedo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">shape</span><span class="o">.</span><span class="n">albedos</span>  
         <span class="n">illum_inp</span><span class="p">[</span><span class="s1">&#39;normal&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">normals</span>
         <span class="n">illum_inp</span><span class="p">[</span><span class="s1">&#39;visible&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
@@ -1073,8 +1133,11 @@
 
         <span class="k">return</span> <span class="n">illum_values</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span> <span class="n">facets_camera</span></div>
 
-<div class="viewcode-block" id="Scene.update"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.update.html#giant.ray_tracer.scene.Scene.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">corrections</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CorrectionsType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Scene.update">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.update.html#giant.ray_tracer.scene.Scene.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">corrections</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CorrectionsType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method changes the scene to reflect the time specified by image optionally using corrections of</span>
 <span class="sd">        &quot;LT&quot; (light time), &quot;S&quot; (stellar aberration&quot;, or &quot;LTPS&quot; (light time and aberration).</span>
 
@@ -1097,17 +1160,20 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">use_corrections</span> <span class="o">=</span> <span class="n">corrections</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">calculate_apparent_position</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">use_corrections</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">light_obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">corrections</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">use_corrections</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">light_obj</span><span class="p">,</span> <span class="s1">&#39;corrections&#39;</span><span class="p">,</span> <span class="n">CorrectionsType</span><span class="o">.</span><span class="n">LTPS</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">use_corrections</span> <span class="o">=</span> <span class="n">corrections</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calculate_apparent_position</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">light_obj</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">use_corrections</span><span class="p">)</span></div>
 
-        <span class="k">if</span> <span class="n">corrections</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">use_corrections</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">light_obj</span><span class="p">,</span> <span class="s1">&#39;corrections&#39;</span><span class="p">,</span> <span class="n">CorrectionsType</span><span class="o">.</span><span class="n">LTPS</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">use_corrections</span> <span class="o">=</span> <span class="n">corrections</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_apparent_position</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">light_obj</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">use_corrections</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Scene.calculate_apparent_position"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.calculate_apparent_position.html#giant.ray_tracer.scene.Scene.calculate_apparent_position">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">calculate_apparent_position</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span>
+<div class="viewcode-block" id="Scene.calculate_apparent_position">
+<a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.Scene.calculate_apparent_position.html#giant.ray_tracer.scene.Scene.calculate_apparent_position">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_apparent_position</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span>
                                     <span class="n">corrections</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CorrectionsType</span><span class="p">]):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method calculates the apparent position of objects in the scene in the camera frame optionally correcting</span>
 <span class="sd">        for &quot;LT&quot; (light time), &quot;S&quot; (stellar aberration&quot;, or &quot;LTPS&quot; (light time and aberration).  Corrections can only be</span>
 <span class="sd">        applied to scene objects with position and orientation functions defined</span>
@@ -1126,11 +1192,12 @@
 
         <span class="c1"># place the target inertially at the time specified for the image</span>
         <span class="n">date</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="c1"># target.place(observation_date)</span>
+        
+        <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">orientation_function</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">target</span><span class="o">.</span><span class="n">change_orientation</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">orientation_function</span><span class="p">(</span><span class="n">date</span><span class="p">))</span>
-
+            
+        <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">position_function</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            
             <span class="k">if</span> <span class="p">(</span><span class="n">corrections</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">CorrectionsType</span><span class="o">.</span><span class="n">NONE</span> <span class="o">==</span> <span class="n">corrections</span><span class="p">):</span>
 
                 <span class="n">camera_to_target_inertial</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">position_function</span><span class="p">(</span><span class="n">date</span><span class="p">)</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">position</span>
@@ -1149,7 +1216,7 @@
                 <span class="n">camera_to_target_inertial</span> <span class="o">=</span> <span class="n">correct_light_time</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">position_function</span><span class="p">,</span>
                                                                <span class="n">image</span><span class="o">.</span><span class="n">position</span><span class="p">,</span> <span class="n">date</span><span class="p">)</span>
 
-            <span class="k">elif</span> <span class="n">CorrectionsType</span><span class="o">.</span><span class="n">S</span> <span class="o">==</span> <span class="n">corrections</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="k">elif</span> <span class="n">CorrectionsType</span><span class="o">.</span><span class="n">S</span> <span class="o">==</span> <span class="n">corrections</span><span class="p">:</span>
 
                 <span class="n">camera_to_target_inertial</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">position</span> <span class="o">-</span> <span class="n">target</span><span class="o">.</span><span class="n">position_function</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
 
@@ -1161,129 +1228,22 @@
                               <span class="s2">&quot;doing anything&quot;</span><span class="p">)</span>
                 <span class="n">camera_to_target_inertial</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">position_function</span><span class="p">(</span><span class="n">date</span><span class="p">)</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">position</span>
 
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;You have specified a standard SceneObject which cannot be automatically placed</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;You have specified a SceneObject which cannot be automatically placed</span><span class="se">\n</span><span class="s1">&#39;</span>
                           <span class="s1">&#39;We will assume that you know what you are doing and you have correctly placed this object</span><span class="se">\n</span><span class="s1">&#39;</span>
                           <span class="s1">&#39;for the current image but remember that you must update the inertial location of this </span><span class="se">\n</span><span class="s1">&#39;</span>
                           <span class="s1">&#39;object yourself whenever you change an image&#39;</span><span class="p">)</span>
 
             <span class="n">camera_to_target_inertial</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">position</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">position</span>
-
+        
         <span class="c1"># change the position of the target in inertial space</span>
         <span class="n">target</span><span class="o">.</span><span class="n">change_position</span><span class="p">(</span><span class="n">camera_to_target_inertial</span><span class="p">)</span>
 
         <span class="c1"># rotate the target into the camera frame</span>
-        <span class="n">target</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="p">)</span></div></div>
+        <span class="n">target</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="p">)</span></div>
+</div>
 
 
-<div class="viewcode-block" id="correct_light_time"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.correct_light_time.html#giant.ray_tracer.scene.correct_light_time">[docs]</a><span class="k">def</span> <span class="nf">correct_light_time</span><span class="p">(</span><span class="n">target_location_inertial</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">datetime</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
-                       <span class="n">camera_location_inertial</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-                       <span class="n">time</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Correct an inertial position to include the time of flight for light to travel between the target and the camera.</span>
-
-<span class="sd">    This function iteratively calculates the time of flight of light between a target and a camera and then returns</span>
-<span class="sd">    the relative vector between the camera and the target accounting for light time (the apparent relative vector) in</span>
-<span class="sd">    inertial space.  This is done by passing a callable object for target location which accepts a python datetime</span>
-<span class="sd">    object and returns the inertial location of the target at that time (this is usually a function wrapped around a</span>
-<span class="sd">    call to spice).</span>
-
-<span class="sd">    Note that this assumes that the units for the input are all in kilometers.  If they are not you will get unexpected</span>
-<span class="sd">    results.</span>
-
-<span class="sd">    :param target_location_inertial: A callable object which inputs a python datetime object and outputs the inertial</span>
-<span class="sd">                                    location of the target at the given time</span>
-<span class="sd">    :param camera_location_inertial: The location of the camera in inertial space at the time the image was captured</span>
-<span class="sd">    :param time: The time the image was captured</span>
-<span class="sd">    :return: The apparent vector from the target to the camera in inertial space</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">time_of_flight</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="n">camera_location_inertial</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">camera_location_inertial</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-
-    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
-
-        <span class="n">target_location_reflect</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
-            <span class="n">target_location_inertial</span><span class="p">(</span><span class="n">time</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">time_of_flight</span><span class="p">))</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-
-        <span class="n">time_of_flight_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">camera_location_inertial</span> <span class="o">-</span> <span class="n">target_location_reflect</span><span class="p">)</span> <span class="o">/</span> <span class="n">SPEED_OF_LIGHT</span>
-
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="n">time_of_flight_new</span> <span class="o">-</span> <span class="n">time_of_flight</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-8</span><span class="p">):</span>
-            <span class="n">time_of_flight</span> <span class="o">=</span> <span class="n">time_of_flight_new</span>
-            <span class="k">break</span>
-
-        <span class="n">time_of_flight</span> <span class="o">=</span> <span class="n">time_of_flight_new</span>
-
-    <span class="k">return</span> <span class="p">(</span><span class="n">target_location_inertial</span><span class="p">(</span><span class="n">time</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">time_of_flight</span><span class="p">))</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">-</span>
-            <span class="n">camera_location_inertial</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="correct_stellar_aberration_fsp"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.correct_stellar_aberration_fsp.html#giant.ray_tracer.scene.correct_stellar_aberration_fsp">[docs]</a><span class="k">def</span> <span class="nf">correct_stellar_aberration_fsp</span><span class="p">(</span><span class="n">camera_to_target_position_inertial</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-                                   <span class="n">camera_velocity_inertial</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Correct for stellar aberration using linear addition.</span>
-
-<span class="sd">    Note that this only roughly corrects for the direction, it messes up the distance to the object, therefore you</span>
-<span class="sd">    should favor the :func:`.correct_stellar_aberration` function which uses rotations and thus doesn&#39;t mess with the</span>
-<span class="sd">    distance.</span>
-
-<span class="sd">    Note that this assumes that the units for the input are all in kilometers and kilometers per secon.  If they are not</span>
-<span class="sd">    you will get unexpected results.</span>
-
-<span class="sd">    :param camera_to_target_position_inertial: The vector from the camera to the target in the inertial frame</span>
-<span class="sd">    :param camera_velocity_inertial: The velocity of the camera in the inertial frame relative to the SSB</span>
-<span class="sd">    :return: the vector from the camera to the target in the inertial frame corrected for stellar aberration</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># this is only good for adjusting the unit vector. Don&#39;t use if you need anything involving range</span>
-
-    <span class="k">return</span> <span class="p">(</span><span class="n">camera_to_target_position_inertial</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">camera_to_target_position_inertial</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span>
-            <span class="n">camera_velocity_inertial</span> <span class="o">/</span> <span class="n">SPEED_OF_LIGHT</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="correct_stellar_aberration"><a class="viewcode-back" href="../../../ray_tracer/scene/giant.ray_tracer.scene.correct_stellar_aberration.html#giant.ray_tracer.scene.correct_stellar_aberration">[docs]</a><span class="k">def</span> <span class="nf">correct_stellar_aberration</span><span class="p">(</span><span class="n">camera_to_target_position_inertial</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-                               <span class="n">camera_velocity_inertial</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Correct for stellar aberration using rotations.</span>
-
-<span class="sd">    This works by computing the rotation about the aberation axis and then applying this rotation to the vector from the</span>
-<span class="sd">    camera to the target in the inertial frame.  This is accurate and doesn&#39;t mess up the distance to the target.  It</span>
-<span class="sd">    should therefore always be preferred to :func:`.correct_stellar_aberration_fsp`</span>
-
-<span class="sd">    Note that this assumes that the units for the input are all in kilometers and kilometers per secon.  If they are not</span>
-<span class="sd">    you will get unexpected results.</span>
-
-<span class="sd">    :param camera_to_target_position_inertial: The vector from the camera to the target in the inertial frame</span>
-<span class="sd">    :param camera_velocity_inertial: The velocity of the camera in the inertial frame relative to the SSB</span>
-<span class="sd">    :return: the vector from the camera to the target in the inertial frame corrected for stellar aberration</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">velocity_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">camera_velocity_inertial</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">velocity_mag</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-
-        <span class="n">aberration_axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">camera_to_target_position_inertial</span><span class="p">,</span> <span class="n">camera_velocity_inertial</span> <span class="o">/</span> <span class="n">velocity_mag</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-        <span class="n">aberration_axis_magnitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">aberration_axis</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-        <span class="n">velocity_sin_angle</span> <span class="o">=</span> <span class="p">(</span><span class="n">aberration_axis_magnitude</span> <span class="o">/</span>
-                              <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">camera_to_target_position_inertial</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
-
-        <span class="n">aberration_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">velocity_mag</span> <span class="o">*</span> <span class="n">velocity_sin_angle</span> <span class="o">/</span> <span class="n">SPEED_OF_LIGHT</span><span class="p">)</span>
-
-        <span class="n">aberration_axis</span> <span class="o">/=</span> <span class="n">aberration_axis_magnitude</span>
-
-        <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">camera_to_target_position_inertial</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">camera_to_target_position_inertial</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
-
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">rotvec_to_rotmat</span><span class="p">(</span><span class="n">aberration_axis</span> <span class="o">*</span> <span class="n">aberration_angle</span><span class="p">),</span>
-                             <span class="n">camera_to_target_position_inertial</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">rotvec_to_rotmat</span><span class="p">(</span><span class="n">aberration_axis</span> <span class="o">*</span> <span class="n">aberration_angle</span><span class="p">),</span>
-                             <span class="n">camera_to_target_position_inertial</span><span class="p">)</span>
-
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">camera_to_target_position_inertial</span></div>
 </pre></div>
 
           </div>
@@ -1299,17 +1259,24 @@
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

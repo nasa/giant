@@ -2,10 +2,7 @@ giant.calibration
 =================
 
 .. automodule:: giant.calibration
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+    :no-members:
 
 
 .. currentmodule:: giant.calibration

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.image_processing.feature_matchers.roma_matcher &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../../index.html">
+    <img class="logo" src="../../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.image_processing.feature_matchers.roma_matcher</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">DTypeLike</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image_processing.feature_matchers.feature_matcher</span><span class="w"> </span><span class="kn">import</span> <span class="n">FeatureMatcher</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image_processing.utilities.image_validation_mixin</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageValidationMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DOUBLE_ARRAY</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes.attribute_equality_comparison</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttributeEqualityComparison</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes.attribute_printing</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttributePrinting</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.mixin_classes.user_option_configured</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptionConfigured</span>
+
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">romatch.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">roma_outdoor</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_determine_default_device</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">mps</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;mps&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="RoMaFeatureMatcherOptions">
+<a class="viewcode-back" href="../../../../image_processing/feature_matchers/giant.image_processing.feature_matchers.RoMaFeatureMatcherOptions.html#giant.image_processing.feature_matchers.RoMaFeatureMatcherOptions">[docs]</a>
+    <span class="nd">@dataclass</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">RoMaFeatureMatcherOptions</span><span class="p">(</span><span class="n">UserOptions</span><span class="p">):</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">_determine_default_device</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        What device to work on</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">coarse_res</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">560</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The initial coarse resolution of the image (must be a multiple of 14)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">upsample_res</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">864</span><span class="p">,</span> <span class="mi">864</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The resolution to upsample the image to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">sample_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Controls the thresholding used when sampling matches for estimation.</span>
+<span class="sd">        </span>
+<span class="sd">        In certain cases a lower or higher threshold may improve results.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+        
+
+<div class="viewcode-block" id="RoMaFeatureMatcher">
+<a class="viewcode-back" href="../../../../image_processing/feature_matchers/giant.image_processing.feature_matchers.RoMaFeatureMatcher.html#giant.image_processing.feature_matchers.RoMaFeatureMatcher">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">RoMaFeatureMatcher</span><span class="p">(</span><span class="n">UserOptionConfigured</span><span class="p">[</span><span class="n">RoMaFeatureMatcherOptions</span><span class="p">],</span> <span class="n">RoMaFeatureMatcherOptions</span><span class="p">,</span> <span class="n">FeatureMatcher</span><span class="p">,</span>
+                             <span class="n">AttributeEqualityComparison</span><span class="p">,</span> <span class="n">AttributePrinting</span><span class="p">,</span> <span class="n">ImageValidationMixin</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implementation of a matcher using RoMa.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">allowed_dtypes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DTypeLike</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">]</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">RoMaFeatureMatcherOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Initialize the RomaKeypointMatcher.</span>
+
+<span class="sd">            </span>
+<span class="sd">            :param options: The options to configure with</span>
+<span class="sd">            :param romatch_checkpoint: Path to the RoMa model checkpoint.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">RoMaFeatureMatcherOptions</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="c1"># ratio_threshold is unused</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">roma_model</span> <span class="o">=</span> <span class="n">roma_outdoor</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">coarse_res</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">coarse_res</span><span class="p">,</span> <span class="n">upsample_res</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">upsample_res</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">roma_model</span><span class="o">.</span><span class="n">sample_thresh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_thresh</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RoMa model loaded on </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RoMaFeatureMatcher.match_images">
+<a class="viewcode-back" href="../../../../image_processing/feature_matchers/giant.image_processing.feature_matchers.RoMaFeatureMatcher.html#giant.image_processing.feature_matchers.RoMaFeatureMatcher.match_images">[docs]</a>
+        <span class="k">def</span><span class="w"> </span><span class="nf">match_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image1</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">image2</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Matches keypoints by overriding the base class method to use RoMa&#39;s</span>
+<span class="sd">            end-to-end matching process.</span>
+
+<span class="sd">            :param image1: The first image to match (as a NumPy array).</span>
+<span class="sd">            :param image2: The second image to match (as a NumPy array).</span>
+
+<span class="sd">            :returns: An array of the matched keypoint locations of shape (N, 2, 2).</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="c1"># Convert images to PIL RGB</span>
+            <span class="c1"># RoMa&#39;s default processing expects RGB.</span>
+            
+            <span class="n">image1_pil</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_validate_and_convert_image</span><span class="p">(</span><span class="n">image1</span><span class="p">))</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+            <span class="n">image2_pil</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_validate_and_convert_image</span><span class="p">(</span><span class="n">image2</span><span class="p">))</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+
+            <span class="c1"># Use RoMa to get correspondences</span>
+            <span class="n">warp</span><span class="p">,</span> <span class="n">certainty</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">roma_model</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">image1_pil</span><span class="p">,</span> <span class="n">image2_pil</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            
+            <span class="c1"># get the correspondences</span>
+            <span class="n">matches</span><span class="p">,</span> <span class="n">certainty</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">roma_model</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">warp</span><span class="p">,</span> <span class="n">certainty</span><span class="p">)</span>
+            <span class="n">kpts1</span><span class="p">,</span> <span class="n">kpts2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">roma_model</span><span class="o">.</span><span class="n">to_pixel_coordinates</span><span class="p">(</span><span class="n">matches</span><span class="p">,</span> <span class="o">*</span><span class="n">image1</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="o">*</span><span class="n">image2</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+            <span class="c1"># Reshape the (N, 4) array to (N, 2, 2)</span>
+            <span class="n">matched_keypoints_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">kpts1</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">kpts2</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">matched_keypoints_array</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></div>
+</div>
+
+        
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s1">&#39;RoMa is not installed. Please clone and follow the install instructions from https://github.com/Parskatt/RoMa/tree/main&#39;</span><span class="p">)</span>
+ 
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

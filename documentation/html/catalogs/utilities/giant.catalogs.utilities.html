@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>utilities &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.catalogs.utilities">
+<span id="utilities"></span><h1>utilities<a class="headerlink" href="#module-giant.catalogs.utilities" title="Link to this heading">¶</a></h1>
+<p>This submodule provides utility constants and functions for working with star data in GIANT.</p>
+<p>Most of these utilities are focused on conversions of either units or of representations (ie a bearing to a unit
+vector) with the exception of applying proper motion and computing the distance between 2 bearings.  For more details on
+what is contained refer to the following summary tables and the documentation for each constant/function.</p>
+<p class="rubric">Constants</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="utilities/giant.catalogs.utilities.DEG2RAD.html#giant.catalogs.utilities.DEG2RAD" title="giant.catalogs.utilities.DEG2RAD"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEG2RAD</span></code></a></p></td>
+<td><p>This constant converts from units of degrees to units of radians through multiplication.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="utilities/giant.catalogs.utilities.RAD2DEG.html#giant.catalogs.utilities.RAD2DEG" title="giant.catalogs.utilities.RAD2DEG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RAD2DEG</span></code></a></p></td>
+<td><p>This constant converts from units of radians to units of degrees through multiplication.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="utilities/giant.catalogs.utilities.DEG2MAS.html#giant.catalogs.utilities.DEG2MAS" title="giant.catalogs.utilities.DEG2MAS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEG2MAS</span></code></a></p></td>
+<td><p>This constant converts from units of degrees to units of milli-arc-seconds through multiplication.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="utilities/giant.catalogs.utilities.MAS2DEG.html#giant.catalogs.utilities.MAS2DEG" title="giant.catalogs.utilities.MAS2DEG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MAS2DEG</span></code></a></p></td>
+<td><p>This constant converts from units of milli-arc-seconds to units of degrees through multiplication.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="utilities/giant.catalogs.utilities.RAD2MAS.html#giant.catalogs.utilities.RAD2MAS" title="giant.catalogs.utilities.RAD2MAS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RAD2MAS</span></code></a></p></td>
+<td><p>This constant converts from units of radians to units of milli-arc-seconds through multiplication.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="utilities/giant.catalogs.utilities.MAS2RAD.html#giant.catalogs.utilities.MAS2RAD" title="giant.catalogs.utilities.MAS2RAD"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MAS2RAD</span></code></a></p></td>
+<td><p>This constant converts from units of milli-arc-seconds to units of radians through multiplication.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="utilities/giant.catalogs.utilities.PARSEC2KM.html#giant.catalogs.utilities.PARSEC2KM" title="giant.catalogs.utilities.PARSEC2KM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PARSEC2KM</span></code></a></p></td>
+<td><p>This constant converts from units of parsecs to units of kilometers through multiplication.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="utilities/giant.catalogs.utilities.AVG_STAR_DIST.html#giant.catalogs.utilities.AVG_STAR_DIST" title="giant.catalogs.utilities.AVG_STAR_DIST"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AVG_STAR_DIST</span></code></a></p></td>
+<td><p>The average distance of stars from the UCAC4 catalog in kilometers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="utilities/giant.catalogs.utilities.SI_DAYS_PER_YEAR.html#giant.catalogs.utilities.SI_DAYS_PER_YEAR" title="giant.catalogs.utilities.SI_DAYS_PER_YEAR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SI_DAYS_PER_YEAR</span></code></a></p></td>
+<td><p>This constant provides the number of SI days in a SI year.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="utilities/giant.catalogs.utilities.SI_SECONDS_PER_DAY.html#giant.catalogs.utilities.SI_SECONDS_PER_DAY" title="giant.catalogs.utilities.SI_SECONDS_PER_DAY"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SI_SECONDS_PER_DAY</span></code></a></p></td>
+<td><p>This constant provides the number of SI seconds in a SI day.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="utilities/giant.catalogs.utilities.MJD_EPOCH.html#giant.catalogs.utilities.MJD_EPOCH" title="giant.catalogs.utilities.MJD_EPOCH"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MJD_EPOCH</span></code></a></p></td>
+<td><p>This constant provides the standard modified Julian date epoch, November 17, 1858, as a datetime</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="utilities/giant.catalogs.utilities.timedelta_to_si_years.html#giant.catalogs.utilities.timedelta_to_si_years" title="giant.catalogs.utilities.timedelta_to_si_years"><code class="xref py py-obj docutils literal notranslate"><span class="pre">timedelta_to_si_years</span></code></a></p></td>
+<td><p>This function converts a python timedelta object to a fractional number of SI years.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="utilities/giant.catalogs.utilities.datetime_to_mjd_years.html#giant.catalogs.utilities.datetime_to_mjd_years" title="giant.catalogs.utilities.datetime_to_mjd_years"><code class="xref py py-obj docutils literal notranslate"><span class="pre">datetime_to_mjd_years</span></code></a></p></td>
+<td><p>This function converts a python datetime objects to the number of SI years since the MJD Epoch of November 17, 1858.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="utilities/giant.catalogs.utilities.apply_proper_motion.html#giant.catalogs.utilities.apply_proper_motion" title="giant.catalogs.utilities.apply_proper_motion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_proper_motion</span></code></a></p></td>
+<td><p>This function adjusts the right ascension and declination of stars to a new time.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="utilities/giant.catalogs.utilities.radec_to_unit.html#giant.catalogs.utilities.radec_to_unit" title="giant.catalogs.utilities.radec_to_unit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">radec_to_unit</span></code></a></p></td>
+<td><p>This utility converts (a) right ascension and declination pair(s) expressed in units of radians into (an) unit vector(s).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="utilities/giant.catalogs.utilities.unit_to_radec.html#giant.catalogs.utilities.unit_to_radec" title="giant.catalogs.utilities.unit_to_radec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unit_to_radec</span></code></a></p></td>
+<td><p>This function converts a unit vector(s) into a right ascension/declination bearing(s).</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

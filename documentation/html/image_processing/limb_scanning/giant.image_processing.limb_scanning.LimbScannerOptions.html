@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>LimbScannerOptions &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="local_maxima" href="../giant.image_processing.local_maxima.html" />
+    <link rel="prev" title="LimbScanner.extract_limbs" href="LimbScanner.extract_limbs.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.image_processing.html">giant.image_processing</a><ul>
+  <li><a href="../giant.image_processing.limb_scanning.html">limb_scanning</a><ul>
+      <li>Previous: <a href="LimbScanner.extract_limbs.html" title="previous chapter">LimbScanner.extract_limbs</a></li>
+      <li>Next: <a href="../giant.image_processing.local_maxima.html" title="next chapter">local_maxima</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="LimbScanner.extract_limbs.html" title="Previous document">LimbScanner.extract_limbs</a>
+        </li>
+        <li>
+          <a href="../giant.image_processing.local_maxima.html" title="Next document">local_maxima</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="limbscanneroptions">
+<h1>LimbScannerOptions<a class="headerlink" href="#limbscanneroptions" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.image_processing.limb_scanning.LimbScannerOptions">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">giant.image_processing.limb_scanning.</span></span><span class="sig-name descname"><span class="pre">LimbScannerOptions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">psf:</span> <span class="pre">giant.point_spread_functions.psf_meta.PointSpreadFunction</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">number_of_scan_lines:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">51,</span> <span class="pre">scan_range:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">2.356194490192345,</span> <span class="pre">number_of_sample_points:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">501,</span> <span class="pre">brdf:</span> <span class="pre">giant.ray_tracer.illumination.IlluminationModel</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">peak_finder:</span> <span class="pre">Callable[[numpy.ndarray[tuple[Any,</span> <span class="pre">...],</span> <span class="pre">numpy.dtype[numpy.float64]]],</span> <span class="pre">numpy.ndarray[tuple[Any,</span> <span class="pre">...],</span> <span class="pre">numpy.dtype[numpy.float64]]]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">parabolic_peak_finder_1d</span> <span class="pre">at</span> <span class="pre">0x30a7d7c40&gt;,</span> <span class="pre">interpolator_method:</span> <span class="pre">Literal['linear',</span> <span class="pre">'nearest',</span> <span class="pre">'slinear',</span> <span class="pre">'cubic',</span> <span class="pre">'quintic',</span> <span class="pre">'pchip']</span> <span class="pre">=</span> <span class="pre">'linear'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/image_processing/limb_scanning.html#LimbScannerOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.image_processing.limb_scanning.LimbScannerOptions" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psf</strong> (<a class="reference internal" href="../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="giant.point_spread_functions.psf_meta.PointSpreadFunction"><em>PointSpreadFunction</em></a>)</p></li>
+<li><p><strong>number_of_scan_lines</strong> (<em>int</em>)</p></li>
+<li><p><strong>scan_range</strong> (<em>float</em>)</p></li>
+<li><p><strong>number_of_sample_points</strong> (<em>int</em>)</p></li>
+<li><p><strong>brdf</strong> (<a class="reference internal" href="../../ray_tracer/illumination/giant.ray_tracer.illumination.IlluminationModel.html#giant.ray_tracer.illumination.IlluminationModel" title="giant.ray_tracer.illumination.IlluminationModel"><em>IlluminationModel</em></a>)</p></li>
+<li><p><strong>peak_finder</strong> (<em>Callable</em><em>[</em><em>[</em><em>ndarray</em><em>[</em><em>tuple</em><em>[</em><em>Any</em><em>, </em><em>...</em><em>]</em><em>, </em><em>dtype</em><em>[</em><em>float64</em><em>]</em><em>]</em><em>]</em><em>, </em><em>ndarray</em><em>[</em><em>tuple</em><em>[</em><em>Any</em><em>, </em><em>...</em><em>]</em><em>, </em><em>dtype</em><em>[</em><em>float64</em><em>]</em><em>]</em><em>]</em>)</p></li>
+<li><p><strong>interpolator_method</strong> (<em>Literal</em><em>[</em><em>'linear'</em><em>, </em><em>'nearest'</em><em>, </em><em>'slinear'</em><em>, </em><em>'cubic'</em><em>, </em><em>'quintic'</em><em>, </em><em>'pchip'</em><em>]</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.limb_scanning.LimbScannerOptions.psf">
+<span class="sig-name descname"><span class="pre">psf</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../point_spread_functions/psf_meta/giant.point_spread_functions.psf_meta.PointSpreadFunction.html#giant.point_spread_functions.psf_meta.PointSpreadFunction" title="giant.point_spread_functions.psf_meta.PointSpreadFunction"><span class="pre">PointSpreadFunction</span></a></em><a class="headerlink" href="#giant.image_processing.limb_scanning.LimbScannerOptions.psf" title="Link to this definition">¶</a></dt>
+<dd><p>The point spread function to apply to the predicted intensity lines.</p>
+<p>This should provide a <a class="reference internal" href="../../giant.point_spread_functions.html#giant.point_spread_functions.PointSpreadFunction.apply_1d" title="giant.point_spread_functions.PointSpreadFunction.apply_1d"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apply_1d()</span></code></a> that accepts in a numpy array where each 
+row is an intensity line and returns the blurred intensity lines as a numpy array.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.limb_scanning.LimbScannerOptions.number_of_scan_lines">
+<span class="sig-name descname"><span class="pre">number_of_scan_lines</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">51</span></em><a class="headerlink" href="#giant.image_processing.limb_scanning.LimbScannerOptions.number_of_scan_lines" title="Link to this definition">¶</a></dt>
+<dd><p>The number of scan lines to generate/limb points to extract</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.limb_scanning.LimbScannerOptions.scan_range">
+<span class="sig-name descname"><span class="pre">scan_range</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.356194490192345</span></em><a class="headerlink" href="#giant.image_processing.limb_scanning.LimbScannerOptions.scan_range" title="Link to this definition">¶</a></dt>
+<dd><p>The extent about the illumination direction in radians in which to distribute the scan lines.</p>
+<p>The scan lines are distributed +/- scan_range/2 about the illumination direction.  This therefore should 
+generally be less than <span class="math notranslate nohighlight">\(\frac{\pi}{2}\)</span> unless you are 100% certain that the phase angle is perfectly 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.limb_scanning.LimbScannerOptions.number_of_sample_points">
+<span class="sig-name descname"><span class="pre">number_of_sample_points</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">501</span></em><a class="headerlink" href="#giant.image_processing.limb_scanning.LimbScannerOptions.number_of_sample_points" title="Link to this definition">¶</a></dt>
+<dd><p>The number of points to sample each scan line along for the extracted/predicted intensity lines</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.limb_scanning.LimbScannerOptions.brdf">
+<span class="sig-name descname"><span class="pre">brdf</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../ray_tracer/illumination/giant.ray_tracer.illumination.IlluminationModel.html#giant.ray_tracer.illumination.IlluminationModel" title="giant.ray_tracer.illumination.IlluminationModel"><span class="pre">IlluminationModel</span></a></em><a class="headerlink" href="#giant.image_processing.limb_scanning.LimbScannerOptions.brdf" title="Link to this definition">¶</a></dt>
+<dd><p>The illumination function to use to render the predicted scan lines.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.image_processing.limb_scanning.LimbScannerOptions.peak_finder">
+<span class="sig-name descname"><span class="pre">peak_finder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giant.image_processing.limb_scanning.LimbScannerOptions.peak_finder" title="Link to this definition">¶</a></dt>
+<dd><p>the callable to use to return the peak of the correlation lines.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>correlation_lines</strong> (<em>ndarray</em>)</p></li>
+<li><p><strong>fit_size</strong> (<em>int</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>ndarray</em>[tuple[<em>Any</em>, …], <em>dtype</em>[<em>float64</em>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.image_processing.limb_scanning.LimbScannerOptions.interpolator_method">
+<span class="sig-name descname"><span class="pre">interpolator_method</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'linear'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'nearest'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'slinear'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'cubic'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'quintic'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'pchip'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'linear'</span></em><a class="headerlink" href="#giant.image_processing.limb_scanning.LimbScannerOptions.interpolator_method" title="Link to this definition">¶</a></dt>
+<dd><p>The method to use from scipy’s RegularGridInterpolator.</p>
+<p>Generally linear is more than sufficient</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="LimbScanner.extract_limbs.html" title="Previous document">LimbScanner.extract_limbs</a>
+        </li>
+        <li>
+          <a href="../giant.image_processing.local_maxima.html" title="Next document">local_maxima</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

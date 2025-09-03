@@ -59,5 +59,8 @@
     ~IterativeGaussianWBackground.compute_jacobian_bg
     ~IterativeGaussianWBackground.evaluate_bg
     ~IterativeGaussianWBackground.fit_bg
+    ~IterativeGaussianWBackground.volume
+    ~IterativeGaussianWBackground.shift_centroid
+    ~IterativeGaussianWBackground.compare
 
 |

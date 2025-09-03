@@ -1,5 +1,5 @@
-giant.stellar_opnav.star_identification
-=======================================
+giant.stellar\_opnav.star\_identification
+=========================================
 
 .. automodule:: giant.stellar_opnav.star_identification
     :no-members:
@@ -12,6 +12,7 @@ giant.stellar_opnav.star_identification
     :nosignatures:
     :toctree: star_identification
 
+    StarIDOptions
     StarID
 
 |

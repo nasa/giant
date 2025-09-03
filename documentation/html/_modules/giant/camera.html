@@ -1,36 +1,36 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>giant.camera &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <title>giant.camera &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../_static/logo.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
    
   <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../../index.html">
-    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../../_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -63,7 +63,7 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -71,8 +71,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -89,11 +89,7 @@
           <div class="body" role="main">
             
   <h1>Source code for giant.camera</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
-<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
-
-
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">This module defines the Camera object for GIANT, which collects information about a camera and images captured by that</span>
 <span class="sd">camera in a single place and provides some methods for filtering, sorting, and handling the images.</span>
 
@@ -111,24 +107,29 @@
 <span class="sd">attitude of the camera), and also the ability to apply a preprocessor to all images (where you can reorient the image,</span>
 <span class="sd">remove bad pixels, subtract a flat field, etc..).</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Iterable</span>
 
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">giant.image</span> <span class="kn">import</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">ExposureType</span>
-<span class="kn">from</span> <span class="nn">giant.camera_models</span> <span class="kn">import</span> <span class="n">CameraModel</span>
-<span class="kn">from</span> <span class="nn">giant.rotations</span> <span class="kn">import</span> <span class="n">slerp</span><span class="p">,</span> <span class="n">Rotation</span>
-<span class="kn">from</span> <span class="nn">giant._typing</span> <span class="kn">import</span> <span class="n">ARRAY_LIKE_2D</span><span class="p">,</span> <span class="n">PATH</span>
-<span class="kn">from</span> <span class="nn">giant.point_spread_functions</span> <span class="kn">import</span> <span class="n">PointSpreadFunction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">ExposureType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">CameraModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.rotations</span><span class="w"> </span><span class="kn">import</span> <span class="n">slerp</span><span class="p">,</span> <span class="n">Rotation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ARRAY_LIKE_2D</span><span class="p">,</span> <span class="n">PATH</span><span class="p">,</span> <span class="n">DatetimeLike</span><span class="p">,</span> <span class="n">TimedeltaLike</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.point_spread_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">PointSpreadFunction</span>
 
 
-<div class="viewcode-block" id="AttitudeUpdateMethods"><a class="viewcode-back" href="../../camera/giant.camera.AttitudeUpdateMethods.html#giant.camera.AttitudeUpdateMethods">[docs]</a><span class="k">class</span> <span class="nc">AttitudeUpdateMethods</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="n">ATTITUDE_FUNCTION_TYPE</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">DatetimeLike</span><span class="p">],</span> <span class="n">Rotation</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="AttitudeUpdateMethods">
+<a class="viewcode-back" href="../../camera/giant.camera.AttitudeUpdateMethods.html#giant.camera.AttitudeUpdateMethods">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AttitudeUpdateMethods</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This enumeration provides options for performing quaternion updates on short exposure images using long exposure</span>
 <span class="sd">    images.</span>
 
@@ -136,25 +137,28 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">REPLACE</span> <span class="o">=</span> <span class="s2">&quot;replace&quot;</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The replace method where the closest long exposure attitude is used to overwrite the short exposure attitude.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">PROPAGATE</span> <span class="o">=</span> <span class="s2">&quot;propagate&quot;</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The delta quaternion method where the closest long exposure attitude is propagated using the attitude function </span>
 <span class="sd">    to overwrite the short exposure attitude.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">INTERPOLATE</span> <span class="o">=</span> <span class="s2">&quot;interpolate&quot;</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The interpolate method where the 2 closest long exposure attitudes are interpolated using spherical linear </span>
 <span class="sd">    interpolation to overwrite the short exposure attitude.</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="Camera"><a class="viewcode-back" href="../../camera/giant.camera.Camera.html#giant.camera.Camera">[docs]</a><span class="k">class</span> <span class="nc">Camera</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Camera">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.html#giant.camera.Camera">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Camera</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This class collects images, the :class:`.CameraModel`, and some relevant metadata about the camera into a single</span>
 <span class="sd">        object for passing to the GIANT estimators and measurements.</span>
 
@@ -167,7 +171,7 @@
 <span class="sd">            &gt;&gt;&gt; from giant.camera import Camera</span>
 <span class="sd">            &gt;&gt;&gt; import numpy</span>
 <span class="sd">            &gt;&gt;&gt; # generate the image data</span>
-<span class="sd">            &gt;&gt;&gt; image_list = [numpy.random.randn(100, 100) for _ in range(10)]  # type: List[np.ndarray]</span>
+<span class="sd">            &gt;&gt;&gt; image_list: List[np.ndarray] = [numpy.random.randn(100, 100) for _ in range(10)] </span>
 <span class="sd">            &gt;&gt;&gt; # create an instance with the images included</span>
 <span class="sd">            &gt;&gt;&gt; cam = Camera(images=image_list, parse_data=False)</span>
 <span class="sd">            &gt;&gt;&gt; # turn off a few of the images</span>
@@ -190,13 +194,13 @@
 <span class="sd">        the ``default_image_class`` argument to ``__init__``), or provide more custom functionality.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">images</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">PATH</span><span class="p">,</span> <span class="n">ARRAY_LIKE_2D</span><span class="p">]],</span> <span class="n">PATH</span><span class="p">,</span> <span class="n">ARRAY_LIKE_2D</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">images</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">PATH</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span> <span class="n">PATH</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CameraModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">spacecraft_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">frame</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">parse_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">psf</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PointSpreadFunction</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">attitude_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">start_date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">end_date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">metadata_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                 <span class="n">default_image_class</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="n">OpNavImage</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+                 <span class="n">attitude_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ATTITUDE_FUNCTION_TYPE</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">start_date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DatetimeLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">end_date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DatetimeLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">metadata_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">default_image_class</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">OpNavImage</span><span class="p">]</span> <span class="o">=</span> <span class="n">OpNavImage</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param images: A single image, or a list of images to store in the camera object.  The image data can either be</span>
 <span class="sd">                       a string (in which case it is represents the path to the image file), an array of image data</span>
 <span class="sd">                       (this is generally not recommended), an :class:`.OpNavImage` object already initialized, or a</span>
@@ -207,7 +211,7 @@
 <span class="sd">        :param frame: The name of the frame for this camera.  Not Required</span>
 <span class="sd">        :param parse_data: A flag specifying whether to parse the metadata for each image when it is being loaded.</span>
 <span class="sd">        :param psf: A callable object that applies a PSF to a 2D image, and provides a</span>
-<span class="sd">                    :meth`~.PointSpreadFunction.apply_1d` method to apply the PSF to 1D scan lines.  Typically this is a</span>
+<span class="sd">                    :meth`~.meta_psf.PointSpreadFunction.apply_1d` method to apply the PSF to 1D scan lines.  Typically this is a</span>
 <span class="sd">                    :class:`.PointSpreadFunction` subclass.</span>
 <span class="sd">        :param attitude_function: A function that returns the attitude of the camera frame with respect to the inertial</span>
 <span class="sd">                                  frame for an input datetime object.  This is generally a call to a spice routine</span>
@@ -220,21 +224,21 @@
 <span class="sd">        :param default_image_class: The class that the images stored in this instance should be an instance of.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># store the camera model object</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CameraModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
 
         <span class="c1"># store the image class we want to make sure our images are instances of</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_default_image_class</span> <span class="o">=</span> <span class="n">default_image_class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_default_image_class</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">OpNavImage</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_image_class</span>
 
         <span class="c1"># add the images and create the image mask</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_images</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">OpNavImage</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">images</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_images</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">parse_data</span><span class="o">=</span><span class="n">parse_data</span><span class="p">,</span> <span class="n">metadata_only</span><span class="o">=</span><span class="n">metadata_only</span><span class="p">)</span>
 
         <span class="c1"># add the start and end dates:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">=</span> <span class="n">start_date</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The initial time to start processing images.</span>
 <span class="sd">        </span>
 <span class="sd">        Any images with an :attr:`~.OpNavImage.observation_date` before this epoch are ignored.  This typically should </span>
@@ -243,7 +247,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span> <span class="o">=</span> <span class="n">end_date</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The final time to stop processing images.</span>
 
 <span class="sd">        Any images with an :attr:`~.OpNavImage.observation_date` after this epoch are ignored.  This typically should </span>
@@ -255,7 +259,7 @@
 
         <span class="c1"># store the metadata</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The name of the camera.  </span>
 <span class="sd">        </span>
 <span class="sd">        This attribute is provided for documentation and convenience, but isn&#39;t used directly by core GIANT</span>
@@ -264,7 +268,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The name of the camera frame corresponding to this camera (typically a spice id).</span>
 
 <span class="sd">        This attribute is provided for documentation and convenience, but isn&#39;t used directly by core GIANT</span>
@@ -273,7 +277,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">spacecraft_name</span> <span class="o">=</span> <span class="n">spacecraft_name</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The name of the spacecraft hosting this camera (typically set to a spice id).</span>
 
 <span class="sd">        This attribute is provided for documentation and convenience, but isn&#39;t used directly by core GIANT</span>
@@ -289,8 +293,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_attitude_function</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">attitude_function</span> <span class="o">=</span> <span class="n">attitude_function</span>
 
-    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">OpNavImage</span><span class="p">]]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">OpNavImage</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Loop through the images and their indices that are stored in the :attr:`.images` attribute</span>
 <span class="sd">        and that are turned on according to the :attr:`.image_mask` attribute.</span>
 
@@ -300,7 +304,7 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]:</span>
                 <span class="k">yield</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">odict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
@@ -309,7 +313,7 @@
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot;(&quot;</span> <span class="o">+</span>
                 <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">=</span><span class="si">{!r}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">odict</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">odict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Callable</span><span class="p">):</span>
@@ -322,8 +326,8 @@
                 <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">=</span><span class="si">{!s}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">odict</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">images</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OpNavImage</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">images</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OpNavImage</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The list of :class:`.OpNavImages` contained in this camera object that should be considered by the GIANT</span>
 <span class="sd">        routines.</span>
 
@@ -334,14 +338,14 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_images</span>
 
     <span class="nd">@images</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 
         <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;The images cannot be set directly.</span><span class="se">\n</span><span class="s2">&quot;</span>
                              <span class="s2">&quot;Use the add_images or remove_images methods instead&quot;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">image_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">image_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This property contains a mask for turning images on or off in the GIANT estimation and measurement routines.</span>
 
 <span class="sd">        The mask is a list of boolean values, where a ``True`` indicates that the image **should** be considered</span>
@@ -362,7 +366,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span>
 
     <span class="nd">@image_mask</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">image_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">image_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">):</span>
 
@@ -385,8 +389,8 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The image mask must be set as a Sequence or a bool&quot;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">psf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PointSpreadFunction</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">psf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PointSpreadFunction</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        An object that applies a point spread function to 1D scan lines and 2D images.</span>
 
 <span class="sd">        This object should provide a ``__call__`` method which applies the PSF to a 2D image, and an ``apply_1d`` method</span>
@@ -404,7 +408,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_psf</span>
 
     <span class="nd">@psf</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">psf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PointSpreadFunction</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">psf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PointSpreadFunction</span><span class="p">]):</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">Callable</span><span class="p">):</span>
 
@@ -419,8 +423,8 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The psf object must be callable&#39;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">attitude_function</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">attitude_function</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ATTITUDE_FUNCTION_TYPE</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A function that returns the orientation of the camera frame with respect to the inertial frame as an</span>
 <span class="sd">        :class:`.Rotation` object for a specific time input as a python :class:`datetime` object.</span>
 
@@ -449,25 +453,19 @@
 <span class="sd">        transformation from the J2000 inertial frame to the `&#39;MyNavCam&#39;` frame.  See the :mod:`.spice_interface`</span>
 <span class="sd">        documentation for more information about how this works.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attitude_function</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;attitude_function cannot be None at this point&#39;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attitude_function</span>
 
     <span class="nd">@attitude_function</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">attitude_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">Callable</span><span class="p">):</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">_attitude_function</span> <span class="o">=</span> <span class="n">val</span>
-
-        <span class="k">elif</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">_attitude_function</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="k">else</span><span class="p">:</span>
-
+    <span class="k">def</span><span class="w"> </span><span class="nf">attitude_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ATTITUDE_FUNCTION_TYPE</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The attitude_function object must be callable&#39;</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_attitude_function</span> <span class="o">=</span> <span class="n">val</span>
+
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CameraModel</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CameraModel</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The camera model which describes how 3D points in the camera frame are transformed into 2D points in the image.</span>
 
 <span class="sd">        The object set to this class will be used by all GIANT routines that make use of a camera model to relate</span>
@@ -479,23 +477,23 @@
 <span class="sd">        Although not required, it is strongly recommended that the object assigned to this property be a</span>
 <span class="sd">        subclass of :class:`.CameraModel`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;The camera model should not be None at this point&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span>
 
     <span class="nd">@model</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CameraModel</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CameraModel</span><span class="p">]):</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">CameraModel</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">val</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">CameraModel</span><span class="p">):</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;The camera model you specified is not a subclass of CameraModel.</span><span class="se">\n</span><span class="s2">&quot;</span>
                           <span class="s2">&quot;We&#39;ll assume you know what you&#39;re doing and have setup the proper methods.</span><span class="se">\n</span><span class="s2">&quot;</span>
                           <span class="s2">&quot;In the future you should subclass CameraModel to avoid this warning.&quot;</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">val</span>
 
-<div class="viewcode-block" id="Camera.short_on"><a class="viewcode-back" href="../../camera/giant.camera.Camera.short_on.html#giant.camera.Camera.short_on">[docs]</a>    <span class="k">def</span> <span class="nf">short_on</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Camera.short_on">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.short_on.html#giant.camera.Camera.short_on">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">short_on</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method updates the :attr:`.image_mask` attribute so that any image whose :attr:`~.OpNavImage.exposure_type`</span>
 <span class="sd">        is set to ``SHORT`` or ``DUAL`` is turned on (processed).</span>
 
@@ -519,8 +517,11 @@
             <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">exposure_type</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ExposureType</span><span class="o">.</span><span class="n">SHORT</span><span class="p">,</span> <span class="n">ExposureType</span><span class="o">.</span><span class="n">DUAL</span><span class="p">]:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="Camera.short_off"><a class="viewcode-back" href="../../camera/giant.camera.Camera.short_off.html#giant.camera.Camera.short_off">[docs]</a>    <span class="k">def</span> <span class="nf">short_off</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Camera.short_off">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.short_off.html#giant.camera.Camera.short_off">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">short_off</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method updates the :attr:`.image_mask` attribute so that any image whose :attr:`~.OpNavImage.exposure_type`</span>
 <span class="sd">        is set to ``SHORT`` is turned off (not processed).</span>
 
@@ -543,8 +544,11 @@
             <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">exposure_type</span> <span class="o">==</span> <span class="n">ExposureType</span><span class="o">.</span><span class="n">SHORT</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="Camera.long_on"><a class="viewcode-back" href="../../camera/giant.camera.Camera.long_on.html#giant.camera.Camera.long_on">[docs]</a>    <span class="k">def</span> <span class="nf">long_on</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Camera.long_on">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.long_on.html#giant.camera.Camera.long_on">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">long_on</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method updates the :attr:`.image_mask` attribute so that any image whose :attr:`~.OpNavImage.exposure_type`</span>
 <span class="sd">        is set to ``LONG`` or ``DUAL`` is turned on (processed).</span>
 
@@ -568,8 +572,11 @@
             <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">exposure_type</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ExposureType</span><span class="o">.</span><span class="n">LONG</span><span class="p">,</span> <span class="n">ExposureType</span><span class="o">.</span><span class="n">DUAL</span><span class="p">]:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="Camera.long_off"><a class="viewcode-back" href="../../camera/giant.camera.Camera.long_off.html#giant.camera.Camera.long_off">[docs]</a>    <span class="k">def</span> <span class="nf">long_off</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Camera.long_off">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.long_off.html#giant.camera.Camera.long_off">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">long_off</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method updates the :attr:`.image_mask` attribute so that any image whose :attr:`~.OpNavImage.exposure_type`</span>
 <span class="sd">        is set to ``LONG`` is turned off (not processed).</span>
 
@@ -592,24 +599,33 @@
             <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">exposure_type</span> <span class="o">==</span> <span class="n">ExposureType</span><span class="o">.</span><span class="n">LONG</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="Camera.all_on"><a class="viewcode-back" href="../../camera/giant.camera.Camera.all_on.html#giant.camera.Camera.all_on">[docs]</a>    <span class="k">def</span> <span class="nf">all_on</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Camera.all_on">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.all_on.html#giant.camera.Camera.all_on">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_on</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method sets every element of the :attr:`.image_mask` list to ``True`` so that all images are considered in</span>
 <span class="sd">        the GIANT routines and returned when this class is iterated on.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">True</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Camera.all_off"><a class="viewcode-back" href="../../camera/giant.camera.Camera.all_off.html#giant.camera.Camera.all_off">[docs]</a>    <span class="k">def</span> <span class="nf">all_off</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Camera.all_off">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.all_off.html#giant.camera.Camera.all_off">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_off</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method sets every element of the :attr:`.image_mask` list to ``False`` so that no images are considered in</span>
 <span class="sd">        the GIANT routines or returned when this class is iterated on.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Camera.only_short_on"><a class="viewcode-back" href="../../camera/giant.camera.Camera.only_short_on.html#giant.camera.Camera.only_short_on">[docs]</a>    <span class="k">def</span> <span class="nf">only_short_on</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Camera.only_short_on">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.only_short_on.html#giant.camera.Camera.only_short_on">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">only_short_on</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method updated the :attr:`.image_mask` list so that any image whose :attr:`~.OpNavImage.exposure_type`</span>
 <span class="sd">        attribute is set to ``SHORT`` or ``DUAL`` is turned on (processed) and any image whose</span>
 <span class="sd">        :attr:`~.OpNavImage.exposure_type` is set to ``LONG`` is turned off (not processed).</span>
@@ -633,8 +649,11 @@
         <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">exposure_type</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ExposureType</span><span class="o">.</span><span class="n">SHORT</span><span class="p">,</span> <span class="n">ExposureType</span><span class="o">.</span><span class="n">DUAL</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Camera.only_long_on"><a class="viewcode-back" href="../../camera/giant.camera.Camera.only_long_on.html#giant.camera.Camera.only_long_on">[docs]</a>    <span class="k">def</span> <span class="nf">only_long_on</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Camera.only_long_on">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.only_long_on.html#giant.camera.Camera.only_long_on">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">only_long_on</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method updated the :attr:`.image_mask` list so that any image whose :attr:`~.OpNavImage.exposure_type`</span>
 <span class="sd">        attribute is set to ``LONG`` or ``DUAL`` is turned on (processed) and any image whose</span>
 <span class="sd">        :attr:`~.OpNavImage.exposure_type` is set to ``SHORT`` is turned off (not processed).</span>
@@ -658,8 +677,11 @@
         <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">exposure_type</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ExposureType</span><span class="o">.</span><span class="n">LONG</span><span class="p">,</span> <span class="n">ExposureType</span><span class="o">.</span><span class="n">DUAL</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Camera.apply_date_range"><a class="viewcode-back" href="../../camera/giant.camera.Camera.apply_date_range.html#giant.camera.Camera.apply_date_range">[docs]</a>    <span class="k">def</span> <span class="nf">apply_date_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Camera.apply_date_range">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.apply_date_range.html#giant.camera.Camera.apply_date_range">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply_date_range</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method filters images by date, setting any whose :attr:`~.OpNavImage.observation_date` is not</span>
 <span class="sd">        between :attr:`start_date` and :attr:`end_date` to False.</span>
 
@@ -681,24 +703,27 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">end_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">&lt;=</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">&lt;=</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">end_date</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
             <span class="k">pass</span>
 
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">&lt;=</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">&lt;=</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
 
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="Camera.sort_by_date"><a class="viewcode-back" href="../../camera/giant.camera.Camera.sort_by_date.html#giant.camera.Camera.sort_by_date">[docs]</a>    <span class="k">def</span> <span class="nf">sort_by_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Camera.sort_by_date">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.sort_by_date.html#giant.camera.Camera.sort_by_date">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sort_by_date</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method is used to sort the images currently loaded to the :attr:`images` attribute by date.</span>
 
 <span class="sd">        It also ensures that the :attr:`image_mask` list remains in sync with the images.  The images are sorted</span>
@@ -724,9 +749,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_images</span> <span class="o">=</span> <span class="n">sorted_images</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span> <span class="o">=</span> <span class="n">sorted_image_mask</span></div>
 
-<div class="viewcode-block" id="Camera.add_images"><a class="viewcode-back" href="../../camera/giant.camera.Camera.add_images.html#giant.camera.Camera.add_images">[docs]</a>    <span class="k">def</span> <span class="nf">add_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">PATH</span><span class="p">,</span> <span class="n">ARRAY_LIKE_2D</span><span class="p">]],</span> <span class="n">PATH</span><span class="p">,</span> <span class="n">ARRAY_LIKE_2D</span><span class="p">],</span>
-                   <span class="n">parse_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">preprocessor</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">metadata_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Camera.add_images">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.add_images.html#giant.camera.Camera.add_images">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">PATH</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span> <span class="n">PATH</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+                   <span class="n">parse_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">preprocessor</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">metadata_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method is used to add images to the :attr:`.images` while also ensuring that the :attr:`.image_mask` list</span>
 <span class="sd">        remains the same size as the :attr:`.images` list.</span>
 
@@ -767,8 +795,25 @@
 <span class="sd">        :param metadata_only: A flag to specify to only load the metadata for an image, not the image data itself.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">PATH</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_check</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">parse_data</span><span class="o">=</span><span class="n">parse_data</span><span class="p">,</span> <span class="n">metadata_only</span><span class="o">=</span><span class="n">metadata_only</span><span class="p">)</span>
 
+            <span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">preprocessor</span><span class="p">(</span><span class="n">image</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;estimate_multiple_misalignments&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">misalignment</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;misalignment&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">misalignment</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">misalignment</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">misalignment</span> <span class="o">=</span> <span class="p">[</span><span class="n">misalignment</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;misalignment&#39;</span><span class="p">,</span> <span class="n">misalignment</span><span class="p">)</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">datum</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
 
                 <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_check</span><span class="p">(</span><span class="n">datum</span><span class="p">,</span> <span class="n">parse_data</span><span class="o">=</span><span class="n">parse_data</span><span class="p">,</span> <span class="n">metadata_only</span><span class="o">=</span><span class="n">metadata_only</span><span class="p">)</span>
@@ -780,38 +825,25 @@
 
                 <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;estimate_multiple_misalignments&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
                     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;misalignment&#39;</span><span class="p">):</span>
+                        <span class="n">misalignment</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;misalignment&#39;</span><span class="p">)</span>
 
-                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">misalignment</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">misalignment</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">misalignment</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                            <span class="n">misalignment</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
 
                         <span class="k">else</span><span class="p">:</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">misalignment</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">misalignment</span><span class="p">]</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">misalignment</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+                            <span class="n">misalignment</span> <span class="o">=</span> <span class="p">[</span><span class="n">misalignment</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+                            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;misalignment&#39;</span><span class="p">,</span> <span class="n">misalignment</span><span class="p">)</span>
 
                 <span class="k">try</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-                    <span class="k">pass</span>
+                    <span class="k">pass</span></div>
 
-        <span class="k">else</span><span class="p">:</span>
 
-            <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_check</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">parse_data</span><span class="o">=</span><span class="n">parse_data</span><span class="p">,</span> <span class="n">metadata_only</span><span class="o">=</span><span class="n">metadata_only</span><span class="p">)</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">preprocessor</span><span class="p">(</span><span class="n">image</span><span class="p">))</span>
-
-            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;estimate_multiple_misalignments&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;misalignment&#39;</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">misalignment</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">misalignment</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
-
-            <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-                <span class="k">pass</span></div>
-
-<div class="viewcode-block" id="Camera.remove_images"><a class="viewcode-back" href="../../camera/giant.camera.Camera.remove_images.html#giant.camera.Camera.remove_images">[docs]</a>    <span class="k">def</span> <span class="nf">remove_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">images</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">slice</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">slice</span><span class="p">]]]):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Camera.remove_images">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.remove_images.html#giant.camera.Camera.remove_images">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">images</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">slice</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">slice</span><span class="p">]]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method is used to remove images from the :attr:`.images` list while also ensuring that the</span>
 <span class="sd">        :attr:`.image_mask` list remains the same size as the :attr:`.images` list.</span>
 
@@ -837,20 +869,23 @@
                 <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="p">[</span><span class="n">image</span><span class="p">]</span>
                 <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="p">[</span><span class="n">image</span><span class="p">]</span>
                 <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;estimate_multiple_misalignments&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;misalignment&#39;</span><span class="p">):</span>
-                        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">misalignment</span><span class="p">[</span><span class="n">image</span><span class="p">]</span>
+                    <span class="n">misalignment</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;misalignment&#39;</span><span class="p">,</span> <span class="p">[])</span>
+                    <span class="k">del</span> <span class="n">misalignment</span><span class="p">[</span><span class="n">image</span><span class="p">]</span>
 
         <span class="k">else</span><span class="p">:</span>
 
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_images</span><span class="p">[</span><span class="n">images</span><span class="p">]</span>
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_mask</span><span class="p">[</span><span class="n">images</span><span class="p">]</span>
             <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;estimate_multiple_misalignments&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;misalignment&#39;</span><span class="p">):</span>
-                    <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">misalignment</span><span class="p">[</span><span class="n">images</span><span class="p">]</span></div>
+                <span class="n">misalignment</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;misalignment&#39;</span><span class="p">,</span> <span class="p">[])</span>
+                <span class="k">del</span> <span class="n">misalignment</span><span class="p">[</span><span class="n">images</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Camera.image_check"><a class="viewcode-back" href="../../camera/giant.camera.Camera.image_check.html#giant.camera.Camera.image_check">[docs]</a>    <span class="k">def</span> <span class="nf">image_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">PATH</span><span class="p">,</span> <span class="n">ARRAY_LIKE_2D</span><span class="p">],</span>
+
+<div class="viewcode-block" id="Camera.image_check">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.image_check.html#giant.camera.Camera.image_check">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">image_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">PATH</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
                     <span class="n">parse_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">metadata_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OpNavImage</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method is used to interpret the image data that is supplied by the user (either during initialization or</span>
 <span class="sd">        through the :meth:`add_images` method) and ensure that it is a subclass of :class:`.OpNavImage`</span>
 
@@ -897,8 +932,11 @@
 
         <span class="k">return</span> <span class="n">image</span></div>
 
-<div class="viewcode-block" id="Camera.preprocessor"><a class="viewcode-back" href="../../camera/giant.camera.Camera.preprocessor.html#giant.camera.Camera.preprocessor">[docs]</a>    <span class="k">def</span> <span class="nf">preprocessor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OpNavImage</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Camera.preprocessor">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.preprocessor.html#giant.camera.Camera.preprocessor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">preprocessor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OpNavImage</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method is used to globally apply corrections to all images contained in the :class:`Camera` instance.</span>
 
 <span class="sd">        The corrections applied by this method generally include things like image flips/transposes to put the image</span>
@@ -914,8 +952,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">image</span></div>
 
-    <span class="k">def</span> <span class="nf">_determine_closest_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OpNavImage</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_determine_closest_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OpNavImage</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This private method determines the closest (in time) long exposure image to a given short exposure image.</span>
 
 <span class="sd">        Note that this does not ensure that the returned image is long exposure so you should check yourself.</span>
@@ -952,17 +991,22 @@
                 <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">ind</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">ind</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pointing_post_fit</span><span class="p">):</span>
                     <span class="n">next_ind</span> <span class="o">=</span> <span class="n">ind</span> <span class="o">+</span> <span class="mi">1</span>
                 <span class="k">else</span><span class="p">:</span>
+                    <span class="n">prev_date</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">ind</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">observation_date</span>
+                    <span class="n">next_date</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">ind</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">observation_date</span>
+                    <span class="k">assert</span> <span class="n">prev_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;observation date must not be None at this point&quot;</span>
+                    <span class="k">assert</span> <span class="n">next_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;observation date must not be None at this point&quot;</span>
+                    <span class="k">assert</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;observation date must not be None at this point&quot;</span>
                     <span class="c1"># 2*np.argmin - 1 will either give -1 (previous image) or 1 (next image)</span>
-                    <span class="n">delta</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">([</span><span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">ind</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">),</span>
-                                           <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">ind</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)])</span> <span class="o">-</span> <span class="mi">1</span>
+                    <span class="n">delta</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">abs</span><span class="p">(</span><span class="n">prev_date</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">),</span>
+                                                    <span class="nb">abs</span><span class="p">(</span><span class="n">next_date</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)]))</span> <span class="o">-</span> <span class="mi">1</span>
 
                     <span class="n">next_ind</span> <span class="o">=</span> <span class="n">ind</span> <span class="o">+</span> <span class="n">delta</span>
 
         <span class="c1"># return the image we are considering</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">next_ind</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">_replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">:</span> <span class="n">TimedeltaLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This private method applies the replace method to update short exposure attitude information from surrounding</span>
 <span class="sd">        long exposure images.</span>
 
@@ -996,6 +1040,7 @@
 
         <span class="c1"># if the difference between the short and long exposure image is too long</span>
         <span class="c1"># throw a warning and do nothing</span>
+        <span class="k">assert</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">next_image</span><span class="o">.</span><span class="n">observation_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;observation date cannot be None at this point&quot;</span>
         <span class="n">diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">next_image</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">diff</span> <span class="o">&gt;</span> <span class="n">max_delta</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Two images are separated by too large of a time difference to use replace.&quot;</span>
@@ -1004,12 +1049,12 @@
             <span class="k">return</span>
 
         <span class="c1"># copy the long exposure attitude to the short exposure attitude</span>
+        <span class="k">assert</span> <span class="n">next_image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;rotation_inertial_to_camera cannot be None at this point&quot;</span>
         <span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="n">next_image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="c1"># noinspection PyTypeChecker</span>
-    <span class="k">def</span> <span class="nf">_propagate_attitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_propagate_attitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">:</span> <span class="n">TimedeltaLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This private method applies the delta quaternion method to update short exposure attitude information from</span>
 <span class="sd">        surrounding long exposure images.</span>
 
@@ -1044,6 +1089,7 @@
 
         <span class="c1"># if the difference between the short and long exposure image is too long</span>
         <span class="c1"># throw a warning and do nothing</span>
+        <span class="k">assert</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">next_image</span><span class="o">.</span><span class="n">observation_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;observation date cannot be None at this point&quot;</span>
         <span class="n">diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">next_image</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">-</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">diff</span> <span class="o">&gt;</span> <span class="n">max_delta</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Two images are separated by too large of a time difference to use delta quaternion.&quot;</span>
@@ -1051,19 +1097,20 @@
             <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">return</span>
 
-        <span class="n">att_prev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attitude_function</span><span class="p">(</span><span class="n">next_image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span>  <span class="c1"># type: Rotation</span>
+        <span class="n">att_prev</span><span class="p">:</span> <span class="n">Rotation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attitude_function</span><span class="p">(</span><span class="n">next_image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span> 
 
-        <span class="n">att_curr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attitude_function</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span>  <span class="c1"># type: Rotation</span>
+        <span class="n">att_curr</span><span class="p">:</span> <span class="n">Rotation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attitude_function</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span> 
 
         <span class="c1"># compute the delta quaternion between the long exposure and short exposure image.</span>
         <span class="n">delta_q</span> <span class="o">=</span> <span class="n">att_curr</span> <span class="o">*</span> <span class="n">att_prev</span><span class="o">.</span><span class="n">inv</span><span class="p">()</span>
 
         <span class="c1"># apply the updated delta quaternion</span>
+        <span class="k">assert</span> <span class="n">next_image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;rotation_inertial_to_camera cannot be None at this point&quot;</span>
         <span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="n">delta_q</span> <span class="o">*</span> <span class="n">next_image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span>
         <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="k">def</span> <span class="nf">_interp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_interp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">:</span> <span class="n">TimedeltaLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This private method applies the interpolate quaternion method to a given short exposure image.</span>
 
 <span class="sd">        If a short exposure image is not surrounded by long exposure images then the quaternion interpolation will not</span>
@@ -1119,6 +1166,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">)</span>
                     <span class="k">return</span>
 
+                <span class="k">assert</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">image_prev</span><span class="o">.</span><span class="n">observation_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">image_next</span><span class="o">.</span><span class="n">observation_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;observation_date cannot be None at this point&quot;</span>
                 <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="o">-</span> <span class="n">image_prev</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_delta</span><span class="p">:</span>
                     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;the time delta between two images is larger than the maximum time delta.&quot;</span>
                                   <span class="s2">&quot;Falling back to replace method.&quot;</span><span class="p">)</span>
@@ -1130,17 +1178,20 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">)</span>
 
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">slerp</span><span class="p">(</span><span class="n">image_prev</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="p">,</span>
-                                                                       <span class="n">image_next</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="p">,</span>
+                    <span class="k">assert</span> <span class="n">image_prev</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">image_next</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;rotation_inertial_to_camera cannot be None at this point&quot;</span>
+                    <span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">slerp</span><span class="p">(</span><span class="n">image_prev</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="o">.</span><span class="n">quaternion</span><span class="p">,</span>
+                                                                       <span class="n">image_next</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span><span class="o">.</span><span class="n">quaternion</span><span class="p">,</span>
                                                                        <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">,</span>
                                                                        <span class="n">image_prev</span><span class="o">.</span><span class="n">observation_date</span><span class="p">,</span>
                                                                        <span class="n">image_next</span><span class="o">.</span><span class="n">observation_date</span><span class="p">))</span>
                     <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">True</span>
 
-<div class="viewcode-block" id="Camera.update_short_attitude"><a class="viewcode-back" href="../../camera/giant.camera.Camera.update_short_attitude.html#giant.camera.Camera.update_short_attitude">[docs]</a>    <span class="k">def</span> <span class="nf">update_short_attitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="Camera.update_short_attitude">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.update_short_attitude.html#giant.camera.Camera.update_short_attitude">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_short_attitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                               <span class="n">method</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AttitudeUpdateMethods</span><span class="p">]</span> <span class="o">=</span> <span class="n">AttitudeUpdateMethods</span><span class="o">.</span><span class="n">INTERPOLATE</span><span class="p">,</span>
-                              <span class="n">max_delta</span><span class="p">:</span> <span class="n">timedelta</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">5</span><span class="p">)):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+                              <span class="n">max_delta</span><span class="p">:</span> <span class="n">TimedeltaLike</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method updates the attitude metadata for short exposure images based off of the solved for attitudes in</span>
 <span class="sd">        the long-exposure images.</span>
 
@@ -1195,7 +1246,7 @@
 
         <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="n">AttitudeUpdateMethods</span><span class="o">.</span><span class="n">PROPAGATE</span><span class="p">:</span>
 
-            <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attitude_function</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attitude_function</span><span class="p">):</span>
                 <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_propagate_attitude</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;attitude_function must be callable to use propagate&quot;</span><span class="p">)</span>
@@ -1217,8 +1268,11 @@
 
                 <span class="n">func</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Camera.update_attitude_from_function"><a class="viewcode-back" href="../../camera/giant.camera.Camera.update_attitude_from_function.html#giant.camera.Camera.update_attitude_from_function">[docs]</a>    <span class="k">def</span> <span class="nf">update_attitude_from_function</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Camera.update_attitude_from_function">
+<a class="viewcode-back" href="../../camera/giant.camera.Camera.update_attitude_from_function.html#giant.camera.Camera.update_attitude_from_function">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_attitude_from_function</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method is used ot overwrite the attitude information stored in all images that are turned on with</span>
 <span class="sd">        information from the :attr:`.attitude_function`.</span>
 
@@ -1232,12 +1286,15 @@
 <span class="sd">        :raises: ValueError if the :attr:`.attitude_function` is not callable.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attitude_function</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attitude_function</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;attitude_function must be callable to use update_attitude_from_file&quot;</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;observation date cannot be None at this point&quot;</span>
             <span class="n">image</span><span class="o">.</span><span class="n">rotation_inertial_to_camera</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attitude_function</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span>
-            <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">False</span></div></div>
+            <span class="n">image</span><span class="o">.</span><span class="n">pointing_post_fit</span> <span class="o">=</span> <span class="kc">False</span></div>
+</div>
+
 </pre></div>
 
           </div>
@@ -1253,17 +1310,24 @@
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

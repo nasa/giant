@@ -1,36 +1,36 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>giant.utilities.outlier_identifier &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <title>giant.utilities.outlier_identifier &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="copyright" title="Copyright" href="../../../copyright.html" />
    
   <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../../../index.html">
-    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -63,7 +63,7 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
@@ -71,8 +71,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -89,23 +89,21 @@
           <div class="body" role="main">
             
   <h1>Source code for giant.utilities.outlier_identifier</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
-<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
-
-
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">This module provides a function for calculating outliers in a 1 dimensional data set using Median Absolute Deviation.</span>
 
 <span class="sd">This is useful for rejecting gross outliers from large data sets and is used fairly frequently internal to GIANT.  See</span>
 <span class="sd">the :func:`.get_outliers` documentation for more details.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">.._typing</span> <span class="kn">import</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">Real</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ARRAY_LIKE</span>
 
 
-<div class="viewcode-block" id="get_outliers"><a class="viewcode-back" href="../../../utilities/outlier_identifier/giant.utilities.outlier_identifier.get_outliers.html#giant.utilities.outlier_identifier.get_outliers">[docs]</a><span class="k">def</span> <span class="nf">get_outliers</span><span class="p">(</span><span class="n">samples</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">sigma_cutoff</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="get_outliers">
+<a class="viewcode-back" href="../../../utilities/outlier_identifier/giant.utilities.outlier_identifier.get_outliers.html#giant.utilities.outlier_identifier.get_outliers">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_outliers</span><span class="p">(</span><span class="n">samples</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">sigma_cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function can be used to identify outliers in a 1 dimensional set of data.</span>
 
 <span class="sd">    It is based on the median absolute deviation algorithm:</span>
@@ -121,7 +119,7 @@
 <span class="sd">    sigma threshold and anything greater than or equal to this value is labeled as an outlier</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        \sigma_{mad} = 1.4826\frac{\left|\mathbf{x}-\widetilde{\mathbf{x}}\right|}{mad}</span>
+<span class="sd">        \sigma_{mad} = \frac{\left|\mathbf{x}-\widetilde{\mathbf{x}}\right|}{1.4826 mad}</span>
 
 <span class="sd">    To use this function, simply enter a 1 dimensional data set and optionally the desired sigma threshold and you will</span>
 <span class="sd">    get out a numpy boolean array which is True where the identified outliers are</span>
@@ -143,19 +141,21 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># compute the distance each sample is from the median of the samples</span>
-    <span class="n">median_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">samples</span><span class="p">))</span>
+    <span class="n">asamples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+    <span class="n">median_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">asamples</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">asamples</span><span class="p">))</span>
 
     <span class="c1"># the median of the median distances</span>
     <span class="n">median_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">median_distances</span><span class="p">)</span>
 
     <span class="c1"># compute the median distance sigma score for each point</span>
-    <span class="n">median_sigmas</span> <span class="o">=</span> <span class="mf">1.4826</span><span class="o">*</span><span class="n">median_distances</span><span class="o">/</span><span class="n">median_distance</span> <span class="k">if</span> <span class="n">median_distance</span> <span class="k">else</span> \
-        <span class="n">median_distances</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">median_distances</span><span class="p">)</span>
+    <span class="n">median_sigmas</span> <span class="o">=</span> <span class="n">median_distances</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.4826</span> <span class="o">*</span> <span class="n">median_distance</span><span class="p">)</span> <span class="k">if</span> <span class="n">median_distance</span> <span class="k">else</span> \
+        <span class="n">median_distances</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.4826</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">median_distances</span><span class="p">))</span>
 
     <span class="c1"># find outliers based on the specified sigma level</span>
     <span class="n">outliers</span> <span class="o">=</span> <span class="n">median_sigmas</span> <span class="o">&gt;=</span> <span class="n">sigma_cutoff</span>
 
     <span class="k">return</span> <span class="n">outliers</span></div>
+
 </pre></div>
 
           </div>
@@ -171,17 +171,24 @@
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

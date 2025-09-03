@@ -1,40 +1,39 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>giant.rotations &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link rel="shortcut icon" href="_static/logo.ico"/>
+    <title>giant.rotations &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+    <script src="_static/documentation_options.js?v=51b770b3"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/logo.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="next" title="Rotation" href="rotations/giant.rotations.Rotation.html" />
-    <link rel="prev" title="giant.image_processing.SECOND_ORDER_MOMENTS" href="image_processing/giant.image_processing.SECOND_ORDER_MOMENTS.html" />
+    <link rel="next" title="giant.rotations.core" href="rotations/giant.rotations.core.html" />
+    <link rel="prev" title="utilities" href="image_processing/giant.image_processing.utilities.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="index.html">
-    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    <img class="logo" src="_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -63,13 +62,13 @@
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="giant.html">API Reference</a><ul>
-      <li>Previous: <a href="image_processing/giant.image_processing.SECOND_ORDER_MOMENTS.html" title="previous chapter">giant.image_processing.SECOND_ORDER_MOMENTS</a></li>
-      <li>Next: <a href="rotations/giant.rotations.Rotation.html" title="next chapter">Rotation</a></li>
+      <li>Previous: <a href="image_processing/giant.image_processing.utilities.html" title="previous chapter">utilities</a></li>
+      <li>Next: <a href="rotations/giant.rotations.core.html" title="next chapter">giant.rotations.core</a></li>
   </ul></li>
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -77,8 +76,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -89,10 +88,10 @@
     <ul>
         <li>
           &larr;
-          <a href="image_processing/giant.image_processing.SECOND_ORDER_MOMENTS.html" title="Previous document">giant.image_processing.SECOND_ORDER_MOMENTS</a>
+          <a href="image_processing/giant.image_processing.utilities.html" title="Previous document">utilities</a>
         </li>
         <li>
-          <a href="rotations/giant.rotations.Rotation.html" title="Next document">Rotation</a>
+          <a href="rotations/giant.rotations.core.html" title="Next document">giant.rotations.core</a>
           &rarr;
         </li>
     </ul>
@@ -103,126 +102,100 @@
           <div class="body" role="main">
             
   <section id="module-giant.rotations">
-<span id="giant-rotations"></span><h1>giant.rotations<a class="headerlink" href="#module-giant.rotations" title="Permalink to this headline">¶</a></h1>
-<p>This module defines a number of useful routines for converting between various attitude and rotation representations
-as well as a class which acts as the primary way to express attitude and rotation data in GIANT.</p>
-<p>There are a few different rotation representations that are used in this module and their format is described as
-follows:</p>
-<table class="docutils align-default" id="rotation-representation-table">
-<colgroup>
-<col style="width: 14%" />
-<col style="width: 86%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Representation</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
+<span id="giant-rotations"></span><h1>giant.rotations<a class="headerlink" href="#module-giant.rotations" title="Link to this heading">¶</a></h1>
+<p class="rubric">Modules</p>
+<table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-even"><td><p>quaternion</p></td>
-<td><p>A 4 element rotation quaternion of the form
-<span class="math notranslate nohighlight">\(\mathbf{q}=\left[\begin{array}{c} q_x \\ q_y \\ q_z \\ q_s\end{array}\right]=
-\left[\begin{array}{c}\text{sin}(\frac{\theta}{2})\hat{\mathbf{x}}\\
-\text{cos}(\frac{\theta}{2})\end{array}\right]\)</span>
-where <span class="math notranslate nohighlight">\(\hat{\mathbf{x}}\)</span> is a 3 element unit vector representing the axis of rotation and
-<span class="math notranslate nohighlight">\(\theta\)</span> is the total angle to rotate about that vector.  Note that quaternions are not unique
-in that the rotation represented by <span class="math notranslate nohighlight">\(\mathbf{q}\)</span> is the same rotation represented by
-<span class="math notranslate nohighlight">\(-\mathbf{q}\)</span>.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="rotations/giant.rotations.core.html#module-giant.rotations.core" title="giant.rotations.core"><code class="xref py py-obj docutils literal notranslate"><span class="pre">core</span></code></a></p></td>
+<td><p>This module contains fundamental mathematical operations and utilities for rotation calculations.</p></td>
 </tr>
-<tr class="row-odd"><td><p>rotation vector</p></td>
-<td><p>A 3 element rotation vector of the form <span class="math notranslate nohighlight">\(\mathbf{v}=\theta\hat{\mathbf{x}}\)</span> where
-<span class="math notranslate nohighlight">\(\theta\)</span> is the total angle to rotate by in radians and <span class="math notranslate nohighlight">\(\hat{\mathbf{x}}\)</span> is the
-rotation axis.  Note that rotation vectors are not unique as there is a long and a short vector that
-both represent the same rotation.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="rotations/giant.rotations.frames.html#module-giant.rotations.frames" title="giant.rotations.frames"><code class="xref py py-obj docutils literal notranslate"><span class="pre">frames</span></code></a></p></td>
+<td><p></p></td>
 </tr>
-<tr class="row-even"><td><p>rotation matrix</p></td>
-<td><p>A <span class="math notranslate nohighlight">\(3\times 3\)</span> orthonormal matrix representing a rotation such that
-<span class="math notranslate nohighlight">\(\mathbf{T}_B^A\mathbf{y}_A\)</span> rotates the 3 element position/direction vector
-<span class="math notranslate nohighlight">\(\mathbf{y}_A\)</span> from frame <span class="math notranslate nohighlight">\(A\)</span> to <span class="math notranslate nohighlight">\(B\)</span> where <span class="math notranslate nohighlight">\(\mathbf{T}_B^A\)</span> is the rotation
-matrix from <span class="math notranslate nohighlight">\(A\)</span> to <span class="math notranslate nohighlight">\(B\)</span>.  Rotation matrices uniquely represent a single rotation.</p></td>
-</tr>
-<tr class="row-odd"><td><p>euler angles</p></td>
-<td><p>A sequence of 3 angles corresponding to a rotation about 3 unit axes.  There are 12 different axis
-combinations for euler angles.  Mathematically they relate to the rotation matrix as
-<span class="math notranslate nohighlight">\(\mathbf{T}=\mathbf{R}_3(c)\mathbf{R}_2(b)\mathbf{R}_1(a)\)</span> where <span class="math notranslate nohighlight">\(\mathbf{R}_i(\theta)\)</span>
-represents a rotation about axis <span class="math notranslate nohighlight">\(i\)</span> (either x, y, or z) by angle <span class="math notranslate nohighlight">\(\theta\)</span>, <span class="math notranslate nohighlight">\(a\)</span> is
-the angle to rotate about the first axis, <span class="math notranslate nohighlight">\(b\)</span> is angle to rotate about the second axis, and
-<span class="math notranslate nohighlight">\(c\)</span> is the angle to rotate about the third axis.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="rotations/giant.rotations.rotation.html#module-giant.rotations.rotation" title="giant.rotations.rotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotation</span></code></a></p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
-<p>The <a class="reference internal" href="rotations/giant.rotations.Rotation.html#giant.rotations.Rotation" title="giant.rotations.Rotation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rotation</span></code></a> object is the primary tool that will be used by users.  It offers a convenient constructor which
-accepts 3 common rotation representations to initialize the object.  It also offers operator overloading to allow
-a sequence of rotations to be performed using the standard multiplication operator <code class="docutils literal notranslate"><span class="pre">*</span></code>.  Finally, it offers properties
-of the three most common rotation representations (quaternion, matrix, rotation vector).</p>
-<p>In addition, there are also a number of utilities provided in this module for converting between different
-representations of attitudes and rotations, as well as for working with this data.</p>
 <p class="rubric">Classes</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="rotations/giant.rotations.Rotation.html#giant.rotations.Rotation" title="giant.rotations.Rotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Rotation</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="rotations/rotation/giant.rotations.rotation.Rotation.html#giant.rotations.rotation.Rotation" title="giant.rotations.rotation.Rotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Rotation</span></code></a></p></td>
 <td><p>A class to represent and manipulate rotations in GIANT.</p></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Functions</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="rotations/giant.rotations.quaternion_inverse.html#giant.rotations.quaternion_inverse" title="giant.rotations.quaternion_inverse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quaternion_inverse</span></code></a></p></td>
-<td><p>This function provides the inverse of a rotation quaternion of the form discussed in <a class="reference internal" href="#rotation-representation-table"><span class="std std-ref">Rotation Representations</span></a>.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="rotations/core/giant.rotations.core.conversions.quaternion_to_rotvec.html#giant.rotations.core.conversions.quaternion_to_rotvec" title="giant.rotations.core.conversions.quaternion_to_rotvec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quaternion_to_rotvec</span></code></a></p></td>
+<td><p>This function converts a rotation quaternion into a rotation vector of the form discussed in <span class="xref std std-ref">Rotation Representations</span>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="rotations/giant.rotations.quaternion_multiplication.html#giant.rotations.quaternion_multiplication" title="giant.rotations.quaternion_multiplication"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quaternion_multiplication</span></code></a></p></td>
-<td><p>This function performs the hamiltonian quaternion multiplication operation.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="rotations/core/giant.rotations.core.conversions.quaternion_to_rotmat.html#giant.rotations.core.conversions.quaternion_to_rotmat" title="giant.rotations.core.conversions.quaternion_to_rotmat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quaternion_to_rotmat</span></code></a></p></td>
+<td><p>This function converts an attitude quaternion into its equivalent rotation matrix of the form discussed in <span class="xref std std-ref">Rotation Representations</span>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="rotations/giant.rotations.quaternion_to_rotvec.html#giant.rotations.quaternion_to_rotvec" title="giant.rotations.quaternion_to_rotvec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quaternion_to_rotvec</span></code></a></p></td>
-<td><p>This function converts a rotation quaternion into a rotation vector of the form discussed in <a class="reference internal" href="#rotation-representation-table"><span class="std std-ref">Rotation Representations</span></a>.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="rotations/giant.rotations.quaternion_to_rotmat.html#giant.rotations.quaternion_to_rotmat" title="giant.rotations.quaternion_to_rotmat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quaternion_to_rotmat</span></code></a></p></td>
-<td><p>This function converts an attitude quaternion into its equivalent rotation matrix of the form discussed in <a class="reference internal" href="#rotation-representation-table"><span class="std std-ref">Rotation Representations</span></a>.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="rotations/giant.rotations.quaternion_to_euler.html#giant.rotations.quaternion_to_euler" title="giant.rotations.quaternion_to_euler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quaternion_to_euler</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="rotations/core/giant.rotations.core.conversions.quaternion_to_euler.html#giant.rotations.core.conversions.quaternion_to_euler" title="giant.rotations.core.conversions.quaternion_to_euler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quaternion_to_euler</span></code></a></p></td>
 <td><p>This function converts a rotation quaternion to 3 euler angles to be applied to the axes specified in order.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="rotations/giant.rotations.rotvec_to_rotmat.html#giant.rotations.rotvec_to_rotmat" title="giant.rotations.rotvec_to_rotmat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotvec_to_rotmat</span></code></a></p></td>
-<td><p>This function converts a rotation vector to a rotation matrix according to the form specified in <a class="reference internal" href="#rotation-representation-table"><span class="std std-ref">Rotation Representations</span></a>.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="rotations/core/giant.rotations.core.conversions.rotvec_to_rotmat.html#giant.rotations.core.conversions.rotvec_to_rotmat" title="giant.rotations.core.conversions.rotvec_to_rotmat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotvec_to_rotmat</span></code></a></p></td>
+<td><p>This function converts a rotation vector to a rotation matrix according to the form specified in <span class="xref std std-ref">Rotation Representations</span>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="rotations/giant.rotations.rotvec_to_quaternion.html#giant.rotations.rotvec_to_quaternion" title="giant.rotations.rotvec_to_quaternion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotvec_to_quaternion</span></code></a></p></td>
-<td><p>This function converts a rotation vector given as a 3 element Sequence into a rotation quaternion of the form discussed in <a class="reference internal" href="#rotation-representation-table"><span class="std std-ref">Rotation Representations</span></a>.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="rotations/core/giant.rotations.core.conversions.rotvec_to_quaternion.html#giant.rotations.core.conversions.rotvec_to_quaternion" title="giant.rotations.core.conversions.rotvec_to_quaternion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotvec_to_quaternion</span></code></a></p></td>
+<td><p>This function converts a rotation vector given as a 3 element Sequence into a rotation quaternion of the form discussed in <span class="xref std std-ref">Rotation Representations</span>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="rotations/giant.rotations.rotmat_to_quaternion.html#giant.rotations.rotmat_to_quaternion" title="giant.rotations.rotmat_to_quaternion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotmat_to_quaternion</span></code></a></p></td>
-<td><p>This function converts a rotation matrix into a rotation quaternion of the form discussed in <a class="reference internal" href="#rotation-representation-table"><span class="std std-ref">Rotation Representations</span></a>.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="rotations/core/giant.rotations.core.conversions.rotvec_to_euler.html#giant.rotations.core.conversions.rotvec_to_euler" title="giant.rotations.core.conversions.rotvec_to_euler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotvec_to_euler</span></code></a></p></td>
+<td><p>This function converts a rotation vector into euler angles in the specified order.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="rotations/giant.rotations.rotmat_to_euler.html#giant.rotations.rotmat_to_euler" title="giant.rotations.rotmat_to_euler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotmat_to_euler</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="rotations/core/giant.rotations.core.conversions.rotmat_to_quaternion.html#giant.rotations.core.conversions.rotmat_to_quaternion" title="giant.rotations.core.conversions.rotmat_to_quaternion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotmat_to_quaternion</span></code></a></p></td>
+<td><p>This function converts a rotation matrix into a rotation quaternion of the form discussed in <span class="xref std std-ref">Rotation Representations</span>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="rotations/core/giant.rotations.core.conversions.rotmat_to_euler.html#giant.rotations.core.conversions.rotmat_to_euler" title="giant.rotations.core.conversions.rotmat_to_euler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotmat_to_euler</span></code></a></p></td>
 <td><p>This function converts a rotation matrix to 3 euler angles to be applied to the axes specified in order.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="rotations/giant.rotations.euler_to_rotmat.html#giant.rotations.euler_to_rotmat" title="giant.rotations.euler_to_rotmat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">euler_to_rotmat</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="rotations/core/giant.rotations.core.conversions.rotmat_to_rotvec.html#giant.rotations.core.conversions.rotmat_to_rotvec" title="giant.rotations.core.conversions.rotmat_to_rotvec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotmat_to_rotvec</span></code></a></p></td>
+<td><p>Converts a rotation matrix to a rotation vector.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="rotations/core/giant.rotations.core.conversions.euler_to_rotmat.html#giant.rotations.core.conversions.euler_to_rotmat" title="giant.rotations.core.conversions.euler_to_rotmat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">euler_to_rotmat</span></code></a></p></td>
 <td><p>This function converts a sequence of 3 euler angles into a rotation matrix.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="rotations/giant.rotations.rot_x.html#giant.rotations.rot_x" title="giant.rotations.rot_x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rot_x</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="rotations/core/giant.rotations.core.conversions.euler_to_rotvec.html#giant.rotations.core.conversions.euler_to_rotvec" title="giant.rotations.core.conversions.euler_to_rotvec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">euler_to_rotvec</span></code></a></p></td>
+<td><p>This function converts Euler angles into a a rotation vector.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="rotations/core/giant.rotations.core.conversions.euler_to_quaternion.html#giant.rotations.core.conversions.euler_to_quaternion" title="giant.rotations.core.conversions.euler_to_quaternion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">euler_to_quaternion</span></code></a></p></td>
+<td><p>This function converts Euler angles into a a rotation quaternion.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="rotations/core/giant.rotations.core.elementals.rot_x.html#giant.rotations.core.elementals.rot_x" title="giant.rotations.core.elementals.rot_x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rot_x</span></code></a></p></td>
 <td><p>This function performs a right handed rotation about the x axis by angle theta.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="rotations/giant.rotations.rot_y.html#giant.rotations.rot_y" title="giant.rotations.rot_y"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rot_y</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="rotations/core/giant.rotations.core.elementals.rot_y.html#giant.rotations.core.elementals.rot_y" title="giant.rotations.core.elementals.rot_y"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rot_y</span></code></a></p></td>
 <td><p>This function performs a right handed rotation about the y axis by angle theta.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="rotations/giant.rotations.rot_z.html#giant.rotations.rot_z" title="giant.rotations.rot_z"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rot_z</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="rotations/core/giant.rotations.core.elementals.rot_z.html#giant.rotations.core.elementals.rot_z" title="giant.rotations.core.elementals.rot_z"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rot_z</span></code></a></p></td>
 <td><p>This function performs a right handed rotation about the z axis by angle theta.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="rotations/giant.rotations.skew.html#giant.rotations.skew" title="giant.rotations.skew"><code class="xref py py-obj docutils literal notranslate"><span class="pre">skew</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="rotations/core/giant.rotations.core.elementals.skew.html#giant.rotations.core.elementals.skew" title="giant.rotations.core.elementals.skew"><code class="xref py py-obj docutils literal notranslate"><span class="pre">skew</span></code></a></p></td>
 <td><p>This function returns a numpy array with the skew symmetric cross product matrix for vector.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="rotations/giant.rotations.nlerp.html#giant.rotations.nlerp" title="giant.rotations.nlerp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nlerp</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="rotations/core/quaternion_math/giant.rotations.core.quaternion_math.quaternion_normalize.html#giant.rotations.core.quaternion_math.quaternion_normalize" title="giant.rotations.core.quaternion_math.quaternion_normalize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quaternion_normalize</span></code></a></p></td>
+<td><p>Normalizes the quaternion(s) such that the scalar term is positive and the length is 1</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="rotations/core/quaternion_math/giant.rotations.core.quaternion_math.quaternion_inverse.html#giant.rotations.core.quaternion_math.quaternion_inverse" title="giant.rotations.core.quaternion_math.quaternion_inverse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quaternion_inverse</span></code></a></p></td>
+<td><p>This function provides the inverse of a rotation quaternion of the form discussed in <span class="xref std std-ref">Rotation Representations</span>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="rotations/core/quaternion_math/giant.rotations.core.quaternion_math.quaternion_multiplication.html#giant.rotations.core.quaternion_math.quaternion_multiplication" title="giant.rotations.core.quaternion_math.quaternion_multiplication"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quaternion_multiplication</span></code></a></p></td>
+<td><p>This function performs the hamiltonian quaternion multiplication operation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="rotations/core/quaternion_math/giant.rotations.core.quaternion_math.nlerp.html#giant.rotations.core.quaternion_math.nlerp" title="giant.rotations.core.quaternion_math.nlerp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nlerp</span></code></a></p></td>
 <td><p>This function performs normalized linear interpolation of rotation quaternions.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="rotations/giant.rotations.slerp.html#giant.rotations.slerp" title="giant.rotations.slerp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slerp</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="rotations/core/quaternion_math/giant.rotations.core.quaternion_math.slerp.html#giant.rotations.core.quaternion_math.slerp" title="giant.rotations.core.quaternion_math.slerp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slerp</span></code></a></p></td>
 <td><p>This function performs spherical linear interpolation of rotation quaternions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="rotations/frames/giant.rotations.frames.two_vector_frame.html#giant.rotations.frames.two_vector_frame" title="giant.rotations.frames.two_vector_frame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">two_vector_frame</span></code></a></p></td>
+<td><p>Compute a 2-vector frame given primary and secondary vectors and their corresponding axes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="rotations/frames/giant.rotations.frames.dynamic_two_vector_frame.html#giant.rotations.frames.dynamic_two_vector_frame" title="giant.rotations.frames.dynamic_two_vector_frame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_two_vector_frame</span></code></a></p></td>
+<td><p>Create a dynamic (time dependent) 2-vector frame function.</p></td>
 </tr>
 </tbody>
 </table>
@@ -239,10 +212,10 @@ representations of attitudes and rotations, as well as for working with this dat
     <ul>
         <li>
           &larr;
-          <a href="image_processing/giant.image_processing.SECOND_ORDER_MOMENTS.html" title="Previous document">giant.image_processing.SECOND_ORDER_MOMENTS</a>
+          <a href="image_processing/giant.image_processing.utilities.html" title="Previous document">utilities</a>
         </li>
         <li>
-          <a href="rotations/giant.rotations.Rotation.html" title="Next document">Rotation</a>
+          <a href="rotations/giant.rotations.core.html" title="Next document">giant.rotations.core</a>
           &rarr;
         </li>
     </ul>
@@ -253,20 +226,24 @@ representations of attitudes and rotations, as well as for working with this dat
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="_sources/giant.rotations.rst.txt"
-          rel="nofollow">Page source</a>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

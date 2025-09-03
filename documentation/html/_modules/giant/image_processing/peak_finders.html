@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.image_processing.peak_finders &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.image_processing.peak_finders</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides functionality for finding the (subpixel) peak of a 2d surface or of 1d lines.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ARRAY_LIKE</span>
+
+
+<div class="viewcode-block" id="pixel_level_peak_finder_2d">
+<a class="viewcode-back" href="../../../image_processing/peak_finders/giant.image_processing.peak_finders.pixel_level_peak_finder_2d.html#giant.image_processing.peak_finders.pixel_level_peak_finder_2d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pixel_level_peak_finder_2d</span><span class="p">(</span><span class="n">surface</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">blur</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function returns a numpy array containing the (x, y) location of the maximum surface value</span>
+<span class="sd">    to pixel level accuracy.</span>
+
+<span class="sd">    Optionally, a blur can be applied to the surface before locating the peak to attempt to remove high frequency noise.</span>
+
+<span class="sd">    :param surface: A surface, or image, to use</span>
+<span class="sd">    :param blur: A flag to indicate whether to apply Gaussian blur to image</span>
+<span class="sd">    :return: The (x, y) location of the maximum surface values to pixel level accuracy.</span>
+<span class="sd">    :raises ValueError: If the provided surface is not 2 dimensional</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">array_surface</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">array_surface</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The surface must be 2d to use this function&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">blur</span><span class="p">:</span>
+        <span class="n">valid_dtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int16</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">array_surface</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">vdtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">vdtype</span> <span class="ow">in</span> <span class="n">valid_dtypes</span><span class="p">):</span>
+            <span class="n">array_surface</span> <span class="o">=</span> <span class="n">array_surface</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="c1"># Do this to try to avoid spikes due to noise aligning</span>
+        <span class="n">array_surface</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">GaussianBlur</span><span class="p">(</span><span class="n">array_surface</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">BORDER_CONSTANT</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">array_surface</span><span class="p">),</span> <span class="n">array_surface</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="quadric_peak_finder_2d">
+<a class="viewcode-back" href="../../../image_processing/peak_finders/giant.image_processing.peak_finders.quadric_peak_finder_2d.html#giant.image_processing.peak_finders.quadric_peak_finder_2d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">quadric_peak_finder_2d</span><span class="p">(</span><span class="n">surface</span><span class="p">:</span> <span class="n">ARRAY_LIKE</span><span class="p">,</span> <span class="n">fit_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">blur</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                           <span class="n">shift_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function returns a numpy array containing the (x, y) location of the maximum surface value</span>
+<span class="sd">    which corresponds to the peak of the fitted quadric surface to subpixel accuracy.</span>
+
+<span class="sd">    First, this function calls :func:`pixel_level_peak_finder_2d` to identify the pixel location of the peak of the</span>
+<span class="sd">    correlation surface.  It then fits a 2D quadric to the pixels around the peak and solves for the center of the</span>
+<span class="sd">    quadric to be the peak value.  The quadric equation that is fit is</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        z = Ax^2+By^2+Cxy+Dx+Ey+F</span>
+
+<span class="sd">    where :math:`z` is the height of the correlation surface at location :math:`(x,y)`, and :math:`A--F` are the</span>
+<span class="sd">    coefficients to be fit.  The fit is performed in an algebraic least squares sense.</span>
+<span class="sd">    The location of the peak of the surface is then given by:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \left[\begin{array}{c}x_p \\ y_p\end{array}\right] = \frac{1}{4AB-C^2}\left[\begin{array}{c} CE-2BD\\</span>
+<span class="sd">        CD-2AE\end{array}\right]</span>
+
+<span class="sd">    where :math:`(x_p,y_p)` is the location of the peak.</span>
+
+<span class="sd">    If the peak is invalid because it is too close to the edge, the fit failed, or the parabolic fit moved</span>
+<span class="sd">    the peak too far from the pixel level peak then the result is returned as NaNs.</span>
+
+<span class="sd">    :param surface: A surface, or image, to use</span>
+<span class="sd">    :param fit_size: Number of pixels around the peak that are used in fitting the paraboloid</span>
+<span class="sd">    :param blur: A flag to indicate whether to apply Gaussian blur to the correlation surface to filter out high</span>
+<span class="sd">                 frequency noise</span>
+<span class="sd">    :param shift_limit: maximum difference from the pixel level peak to the fitted peak for the fitted peak to be</span>
+<span class="sd">                        accepted</span>
+<span class="sd">    :return: The (x, y) location corresponding to the peak of fitted quadric surface to subpixel accuracy</span>
+<span class="sd">    :raises ValueError: If the provided surface is not 2 dimensional</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># make sure we have an array</span>
+    <span class="n">surface</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span>
+
+    <span class="c1"># find the pixel level peak</span>
+    <span class="n">max_col</span><span class="p">,</span> <span class="n">max_row</span> <span class="o">=</span> <span class="n">pixel_level_peak_finder_2d</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">blur</span><span class="o">=</span><span class="n">blur</span><span class="p">)</span>
+
+    <span class="c1"># if we&#39;re too close to the edge return NaNs</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">max_row</span> <span class="o">-</span> <span class="n">fit_size</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">((</span><span class="n">max_row</span> <span class="o">+</span> <span class="n">fit_size</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">surface</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">or</span> \
+            <span class="p">((</span><span class="n">max_col</span> <span class="o">-</span> <span class="n">fit_size</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">((</span><span class="n">max_col</span> <span class="o">+</span> <span class="n">fit_size</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">surface</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">])</span>
+
+    <span class="c1"># set up the columns/rows we will fit the peak to</span>
+    <span class="n">deltas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">fit_size</span><span class="p">,</span> <span class="n">fit_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">cols</span><span class="p">,</span> <span class="n">rows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">max_col</span> <span class="o">+</span> <span class="n">deltas</span><span class="p">,</span> <span class="n">max_row</span> <span class="o">+</span> <span class="n">deltas</span><span class="p">)</span>
+
+    <span class="n">cols</span> <span class="o">=</span> <span class="n">cols</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">rows</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+    <span class="c1"># form the jacobian matrix for the least squares</span>
+    <span class="n">jac_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">cols</span> <span class="o">*</span> <span class="n">cols</span><span class="p">,</span> <span class="n">rows</span> <span class="o">*</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">*</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">rows</span><span class="o">.</span><span class="n">shape</span><span class="p">)])</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># perform the least squares fit</span>
+    <span class="n">coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">jac_matrix</span><span class="p">,</span> <span class="n">surface</span><span class="p">[</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># extract the peak column and row</span>
+    <span class="n">peak_col</span> <span class="o">=</span> <span class="p">(</span><span class="n">coefs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">peak_row</span> <span class="o">=</span> <span class="p">(</span><span class="n">coefs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">coefs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Check if peak of fitted parabolic surface is outside the correlation surface:</span>
+    <span class="k">if</span> <span class="n">peak_col</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">surface</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="n">peak_row</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">surface</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">])</span>
+
+    <span class="c1"># Check if peak pixel and peak of fitted parabolic surface are reasonably close:</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">max_col</span> <span class="o">-</span> <span class="n">peak_col</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">shift_limit</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">max_row</span> <span class="o">-</span> <span class="n">peak_row</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">shift_limit</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">])</span>
+
+    <span class="c1"># Fit is valid, return the fit:</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">peak_col</span><span class="p">,</span> <span class="n">peak_row</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="pixel_level_peak_finder_1d">
+<a class="viewcode-back" href="../../../image_processing/peak_finders/giant.image_processing.peak_finders.pixel_level_peak_finder_1d.html#giant.image_processing.peak_finders.pixel_level_peak_finder_1d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pixel_level_peak_finder_1d</span><span class="p">(</span><span class="n">correlation_lines</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function returns a numpy array containing the location of the maximum surface value</span>
+<span class="sd">    to pixel level accuracy for each row of the input matrix.</span>
+
+<span class="sd">    :return: The location of the maximum surface values to pixel level accuracy.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">correlation_lines</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> 
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+
+<div class="viewcode-block" id="parabolic_peak_finder_1d">
+<a class="viewcode-back" href="../../../image_processing/peak_finders/giant.image_processing.peak_finders.parabolic_peak_finder_1d.html#giant.image_processing.peak_finders.parabolic_peak_finder_1d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parabolic_peak_finder_1d</span><span class="p">(</span><span class="n">correlation_lines</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">fit_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find the subpixel maximum location along each row.</span>
+
+<span class="sd">    First, this function calls :func:`pixel_level_peak_finder_1d` to identify the location of the peak of each row.</span>
+<span class="sd">    It then fits a parabola to the values around the peak and solves for the center of the</span>
+<span class="sd">    parabola to be the peak value.  The parabola equation that is fit is</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        y = Ax^2+Bx+C</span>
+
+<span class="sd">    where :math:`y` is the value of the correlation line at location :math:`x`, and :math:`A-C` are the</span>
+<span class="sd">    coefficients to be fit.  The fit is performed in an algebraic least squares sense.</span>
+<span class="sd">    The location of the peak of the surface is then given by:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        x_p = \frac{-B}{2A}</span>
+
+<span class="sd">    where :math:`x_p` is the location of the peak.</span>
+
+<span class="sd">    :param correlation_lines: array of correlation lines</span>
+<span class="sd">    :param fit_size: number of values on each side to include in the parabola fit</span>
+<span class="sd">    :return: array of subpixel centers for each row</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get the pixel level correlation surface</span>
+    <span class="n">max_cols</span> <span class="o">=</span> <span class="n">pixel_level_peak_finder_1d</span><span class="p">(</span><span class="n">correlation_lines</span><span class="p">)</span>
+
+    <span class="c1"># Determine which values to include in the parabola fit</span>
+    <span class="n">deltas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">fit_size</span><span class="p">,</span> <span class="n">fit_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Get the original shape of the correlation lines</span>
+    <span class="n">base_shape</span> <span class="o">=</span> <span class="n">correlation_lines</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Reshape the correlation lines to be only 2d</span>
+    <span class="n">correlation_lines</span> <span class="o">=</span> <span class="n">correlation_lines</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">base_shape</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Get the column indices for the fit</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_cols</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">base_shape</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">deltas</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="c1"># Build the jacobian matrix</span>
+    <span class="n">jac_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rollaxis</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">cols</span> <span class="o">*</span> <span class="n">cols</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">cols</span><span class="o">.</span><span class="n">shape</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Build the rhs</span>
+    <span class="n">rhs</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation_lines</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ogrid</span><span class="p">[:</span><span class="n">correlation_lines</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:</span><span class="mi">0</span><span class="p">][:</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">cols</span><span class="p">)]</span>
+
+    <span class="c1"># Fit the paraboloid using LLS</span>
+    <span class="n">solus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">jac_matrix</span> <span class="o">@</span> <span class="n">jac_matrix</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="n">jac_matrix</span> <span class="o">@</span> <span class="n">rhs</span><span class="p">)</span>
+
+    <span class="c1"># Return the subpixel center</span>
+    <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="n">solus</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">solus</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">base_shape</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,))</span></div>
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

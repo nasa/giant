@@ -1,36 +1,36 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>giant.utilities.spice_interface &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../../_static/logo.ico"/>
+    <title>giant.utilities.spice_interface &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="copyright" title="Copyright" href="../../../copyright.html" />
    
   <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../../../index.html">
-    <img class="logo" src="../../../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -63,7 +63,7 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
@@ -71,8 +71,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -89,11 +89,7 @@
           <div class="body" role="main">
             
   <h1>Source code for giant.utilities.spice_interface</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
-<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
-
-
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">This module provides utility functions and classes for quickly creating callable objects to NAIF spice functions as well</span>
 <span class="sd">as a function to convert a datetime object to spice ephemeris time without using spice itself.</span>
 
@@ -123,11 +119,6 @@
 <span class="sd">    &gt;&gt;&gt; moon_pos_earth = spint.SpicePosition(&quot;Moon&quot;, &quot;J2000&quot;, &quot;LT+S&quot;, &quot;Earth&quot;)</span>
 <span class="sd">    &gt;&gt;&gt; pos = moon_pos_earth(observation_date)</span>
 
-<span class="sd">The 2 functions in the prefered interface, :func:`leap_seconds` and :func:`datetime_to_et` are useful time operations</span>
-<span class="sd">that are available whether spice is being used or not.  The :func:`leap_seconds` function inputs a datetime object and</span>
-<span class="sd">outputs the number of leap seconds that occurred between the input observation_date and the J2000 epoch.  The</span>
-<span class="sd">:func:`datetime_to_et` function converts and input datetime object into its corresponding ephemeris time.</span>
-
 <span class="sd">The next group of functions are not prefered and also are only available when</span>
 <span class="sd">`spiceypy &lt;https://spiceypy.readthedocs.io/en/master/&gt;`_ is part of the current python installation and you have loaded</span>
 <span class="sd">the apropriate data.  These functions create callable objects (actually partial function objects)</span>
@@ -155,102 +146,24 @@
 <span class="sd">function work with only a datetime object input, making this module extremely useful (both interfaces).</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">cast</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="kn">from</span> <span class="nn">..rotations</span> <span class="kn">import</span> <span class="n">Rotation</span>
-
-
-<span class="n">HAS_SPICE</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">This flag specifies whether spiceypy is available in the current python environment</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.rotations</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rotation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatetimeLike</span>
 
 
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">spiceypy</span> <span class="k">as</span> <span class="nn">spice</span>
-
-    <span class="n">HAS_SPICE</span> <span class="o">=</span> <span class="kc">True</span>
-
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-
-    <span class="n">spice</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">spiceypy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">spice</span>
 
 
-<span class="n">J2000_EPOCH</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">The UTC Epoch for spice ephemeris time</span>
-<span class="sd">&quot;&quot;&quot;</span>
-
-
-<span class="c1"># info from naif0012.tls -- list of leap_seconds since 1972 as datetime objects</span>
-<span class="n">LEAP_SECONDS_LIST</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1972</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -23</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1972</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -22</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1973</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -21</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1974</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -20</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1975</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -19</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1976</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -18</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1977</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -17</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1978</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -16</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1979</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -15</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1980</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -14</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1981</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -13</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1982</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -12</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1983</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -11</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1985</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -10</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1988</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -9</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1990</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -8</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1991</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -7</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1992</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -6</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1993</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -5</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1994</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -4</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1996</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -3</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1997</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -2</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1999</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># -1</span>
-                              <span class="c1"># J2000 epoch                            32 past TAI</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2006</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># +1</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2009</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># +2</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># +3</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2015</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>  <span class="c1"># +4</span>
-                              <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2017</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># +5</span>
-                              <span class="p">],</span> <span class="s1">&#39;datetime64[us]&#39;</span><span class="p">)</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">A numpy datetime64 array of leap seconds taken from naif0012.tls</span>
-<span class="sd">&quot;&quot;&quot;</span>
-
-
-<span class="c1"># constants take from naif0012.tls</span>
-<span class="n">_DELTA_T_A</span> <span class="o">=</span> <span class="mf">32.184</span>
-<span class="n">_K_CONST</span> <span class="o">=</span> <span class="mf">1.657e-3</span>
-<span class="n">_EB_CONST</span> <span class="o">=</span> <span class="mf">1.671e-2</span>
-<span class="n">_MEAN_ANOM_START</span> <span class="o">=</span> <span class="mf">6.239996</span>
-<span class="n">_MEAN_ANOM_VELO</span> <span class="o">=</span> <span class="mf">1.99096871e-7</span>
-
-
-<div class="viewcode-block" id="leap_seconds"><a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.leap_seconds.html#giant.utilities.spice_interface.leap_seconds">[docs]</a><span class="k">def</span> <span class="nf">leap_seconds</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function returns the number of leap seconds between observation_date and January 1, 12:00:00.000 (TDB).</span>
-
-<span class="sd">    For dates before the epoch, leap seconds are returned as negative integers.  For dates after the epoch</span>
-<span class="sd">    leap seconds are returned as positive integers.</span>
-
-<span class="sd">    :param date: a python datetime object</span>
-<span class="sd">    :return: The number of leap seconds between the input observation_date and the epoch</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">positive_leaps</span> <span class="o">=</span> <span class="p">((</span><span class="n">date</span> <span class="o">&gt;=</span> <span class="n">LEAP_SECONDS_LIST</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">J2000_EPOCH</span> <span class="o">&lt;</span> <span class="n">LEAP_SECONDS_LIST</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-
-    <span class="n">negative_leaps</span> <span class="o">=</span> <span class="p">((</span><span class="n">date</span> <span class="o">&lt;=</span> <span class="n">LEAP_SECONDS_LIST</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">J2000_EPOCH</span> <span class="o">&gt;</span> <span class="n">LEAP_SECONDS_LIST</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-
-    <span class="k">return</span> <span class="n">positive_leaps</span> <span class="o">-</span> <span class="n">negative_leaps</span></div>
-
-
-<div class="viewcode-block" id="datetime_to_et"><a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.datetime_to_et.html#giant.utilities.spice_interface.datetime_to_et">[docs]</a><span class="k">def</span> <span class="nf">datetime_to_et</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="datetime_to_et">
+<a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.datetime_to_et.html#giant.utilities.spice_interface.datetime_to_et">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">datetime_to_et</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">DatetimeLike</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function converts a python datetime object to ephemeris time correcting for leap seconds</span>
 
 <span class="sd">    If you have spiceypy installed in your python distribution then this is essentially just a wrapper around the</span>
@@ -262,34 +175,15 @@
 <span class="sd">    :return: The ephemeris time corresponding to observation_date for use in the spice system</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">HAS_SPICE</span><span class="p">:</span>
-
-        <span class="n">leapsecs</span> <span class="o">=</span> <span class="n">leap_seconds</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
-
-        <span class="n">delta_at</span> <span class="o">=</span> <span class="mi">32</span> <span class="o">+</span> <span class="n">leapsecs</span>
-
-        <span class="n">time_since_j2000</span> <span class="o">=</span> <span class="p">(</span><span class="n">date</span> <span class="o">-</span> <span class="n">J2000_EPOCH</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">+</span> <span class="n">leapsecs</span>
-
-        <span class="n">mean_anom</span> <span class="o">=</span> <span class="n">_MEAN_ANOM_START</span> <span class="o">+</span> <span class="n">_MEAN_ANOM_VELO</span> <span class="o">*</span> <span class="n">time_since_j2000</span>
-
-        <span class="n">eccentricity</span> <span class="o">=</span> <span class="n">mean_anom</span> <span class="o">+</span> <span class="n">_EB_CONST</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">mean_anom</span><span class="p">)</span>
-
-        <span class="n">et_m_tai</span> <span class="o">=</span> <span class="n">_DELTA_T_A</span> <span class="o">+</span> <span class="n">_K_CONST</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">eccentricity</span><span class="p">)</span>
-
-        <span class="n">delta_et</span> <span class="o">=</span> <span class="n">et_m_tai</span> <span class="o">+</span> <span class="n">delta_at</span>
-
-        <span class="k">return</span> <span class="n">delta_et</span> <span class="o">+</span> <span class="p">(</span><span class="n">date</span> <span class="o">-</span> <span class="n">J2000_EPOCH</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
-
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">spice</span><span class="o">.</span><span class="n">datetime2et</span><span class="p">(</span><span class="n">cast</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span> <span class="n">date</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">))))</span>
     <span class="k">else</span><span class="p">:</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">spice</span><span class="o">.</span><span class="n">str2et</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">isoformat</span><span class="p">())</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">spice</span><span class="o">.</span><span class="n">str2et</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">())</span></div>
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">spice</span><span class="o">.</span><span class="n">datetime2et</span><span class="p">(</span><span class="n">cast</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span> <span class="n">date</span><span class="p">)))</span>        </div>
 
 
-<span class="k">def</span> <span class="nf">_move_et_end_and_drop_lt</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">targ</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ref</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">abcorr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">et</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_move_et_end_and_drop_lt</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">targ</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ref</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">abcorr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">et</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This helper function simply rearranges the order of inputs for a call to spkpos or spkezr and drops the light time</span>
 <span class="sd">    output from those functions so only the position or position and velocity are returned</span>
 <span class="sd">    :param func: spkpos or spkezr function</span>
@@ -305,8 +199,10 @@
     <span class="k">return</span> <span class="n">res</span>
 
 
-<div class="viewcode-block" id="create_callable_position"><a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.create_callable_position.html#giant.utilities.spice_interface.create_callable_position">[docs]</a><span class="k">def</span> <span class="nf">create_callable_position</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">corrections</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">observer</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="create_callable_position">
+<a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.create_callable_position.html#giant.utilities.spice_interface.create_callable_position">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_callable_position</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">corrections</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">observer</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function generates a partial function of the spkpos method from spice with the target, frame, abcorr, and</span>
 <span class="sd">    observer inputs already set (so that the only remaining input is the ephemeris time).</span>
 
@@ -330,7 +226,7 @@
 <span class="sd">             input</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="n">HAS_SPICE</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">spice</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 
         <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">_move_et_end_and_drop_lt</span><span class="p">,</span> <span class="n">spice</span><span class="o">.</span><span class="n">spkpos</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">corrections</span><span class="p">,</span> <span class="n">observer</span><span class="p">)</span>
 
@@ -339,8 +235,11 @@
         <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s1">&#39;Spiceypy must be installed to use this utility</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="create_callable_state"><a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.create_callable_state.html#giant.utilities.spice_interface.create_callable_state">[docs]</a><span class="k">def</span> <span class="nf">create_callable_state</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">corrections</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">observer</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="create_callable_state">
+<a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.create_callable_state.html#giant.utilities.spice_interface.create_callable_state">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_callable_state</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">corrections</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">observer</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function generates a partial function of the spkezr method from spice with the target, frame, abcorr, and</span>
 <span class="sd">    observer inputs already set (so that the only remaining input is the ephemeris time).</span>
 
@@ -364,7 +263,7 @@
 <span class="sd">             input</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="n">HAS_SPICE</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">spice</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 
         <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">_move_et_end_and_drop_lt</span><span class="p">,</span> <span class="n">spice</span><span class="o">.</span><span class="n">spkezr</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">corrections</span><span class="p">,</span> <span class="n">observer</span><span class="p">)</span>
 
@@ -373,15 +272,16 @@
         <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s1">&#39;Spiceypy must be installed to use this utility&#39;</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_rotation_to_attitude</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_rotation_to_attitude</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function changes an output from a 3x3 rotation matrix to an Rotation object</span>
 
 <span class="sd">    :param func:  A function that returns a 3x3 rotation matrix</span>
 <span class="sd">    :return: A callable which returns and Rotation object</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">return_rotation</span><span class="p">(</span><span class="n">et</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rotation</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">return_rotation</span><span class="p">(</span><span class="n">et</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rotation</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert the output of func into a GIANT Rotation object</span>
 
 <span class="sd">        :param et: The ephemeris time in seconds the rotation is requested at</span>
@@ -392,8 +292,10 @@
     <span class="k">return</span> <span class="n">return_rotation</span>
 
 
-<div class="viewcode-block" id="create_callable_orientation"><a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.create_callable_orientation.html#giant.utilities.spice_interface.create_callable_orientation">[docs]</a><span class="k">def</span> <span class="nf">create_callable_orientation</span><span class="p">(</span><span class="n">from_frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">to_frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="create_callable_orientation">
+<a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.create_callable_orientation.html#giant.utilities.spice_interface.create_callable_orientation">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_callable_orientation</span><span class="p">(</span><span class="n">from_frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">to_frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function generates a partial function of the pxform function from spice with the from and the to frames</span>
 <span class="sd">    specified.</span>
 
@@ -415,7 +317,7 @@
 <span class="sd">    :return: A partial function wrapper around the spiceypy.pxform function which only requires the et input</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="n">HAS_SPICE</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">spice</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 
         <span class="k">return</span> <span class="n">_rotation_to_attitude</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">spice</span><span class="o">.</span><span class="n">pxform</span><span class="p">,</span> <span class="n">from_frame</span><span class="p">,</span> <span class="n">to_frame</span><span class="p">))</span>
 
@@ -424,8 +326,11 @@
         <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s1">&#39;Spiceypy must be installed to use this utility</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="et_callable_to_datetime_callable"><a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.et_callable_to_datetime_callable.html#giant.utilities.spice_interface.et_callable_to_datetime_callable">[docs]</a><span class="k">def</span> <span class="nf">et_callable_to_datetime_callable</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="et_callable_to_datetime_callable">
+<a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.et_callable_to_datetime_callable.html#giant.utilities.spice_interface.et_callable_to_datetime_callable">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">et_callable_to_datetime_callable</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function takes a callable object that takes a time in ephemeris time and returns a callable object that takes</span>
 <span class="sd">    a time as a python datetime object.</span>
 
@@ -444,12 +349,11 @@
 <span class="sd">    :return: An object which accepts a datetime object inplace of an et float</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">datetime_callable</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">datetime_callable</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">DatetimeLike</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This function returns a callable object which accepts a python datetime object instead of an et float.</span>
 
 <span class="sd">        :param date: A python datetime object to be used to call the function</span>
-<span class="sd">        :type date: datetime.datetime</span>
 <span class="sd">        :return: The result of func(datetime_to_et(observation_date)) which is generally a numpy array containing either</span>
 <span class="sd">                 the position or state of an object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -460,8 +364,11 @@
     <span class="k">return</span> <span class="n">datetime_callable</span></div>
 
 
-<div class="viewcode-block" id="SpicePosition"><a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.SpicePosition.html#giant.utilities.spice_interface.SpicePosition">[docs]</a><span class="k">class</span> <span class="nc">SpicePosition</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SpicePosition">
+<a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.SpicePosition.html#giant.utilities.spice_interface.SpicePosition">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SpicePosition</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class creates a callable that returns the position (in km) of one object to another given a python datetime.</span>
 
 <span class="sd">    This class works by storing the &quot;static&quot; inputs to the call to the spice function ``spkpos`` (specifically the</span>
@@ -477,8 +384,8 @@
 <span class="sd">    and provides more functionality.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">reference_frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">corrections</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">observer</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">reference_frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">corrections</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">observer</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param target: The name/integer spice id for the object we are computing the position vector to as a string.</span>
 <span class="sd">        :param reference_frame: The frame we are computing the position vector in as a string</span>
 <span class="sd">        :param corrections: The corrections to use when computing the position vector (usually for GIANT this should be</span>
@@ -487,7 +394,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">target</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The object we are computing the position vector to as a string.  </span>
 <span class="sd">        </span>
 <span class="sd">        This usually is the name of the object or its integer spice id as a string.  This is passed to the </span>
@@ -495,14 +402,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reference_frame</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">reference_frame</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The frame we are to compute the position vector in as a string</span>
 
 <span class="sd">        For GIANT this should usually be the inertial frame ``&#39;J200&#39;``.  This is passed to the ``REF`` input for spkpos.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">corrections</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The corrections we are to apply when computing the position vector.</span>
 <span class="sd">        </span>
 <span class="sd">        Valid inputs are ``&#39;NONE&#39;`` for no correction, ``&#39;LT&#39;`` for light time only corrections, ``&#39;LT+S&#39;`` for light </span>
@@ -515,7 +422,7 @@
 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">observer</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The object we are computing the position vector from as a string.  </span>
 
 <span class="sd">        This usually is the name of the object or its integer spice id as a string.  This is passed to the </span>
@@ -523,8 +430,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">DatetimeLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make the call to spkpos given the stored settings at the input date returning the position vector in kilometers.</span>
 
 <span class="sd">        Specifically the call is</span>
@@ -542,9 +449,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="n">spice</span><span class="o">.</span><span class="n">spkpos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">datetime_to_et</span><span class="p">(</span><span class="n">date</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-
-<div class="viewcode-block" id="SpicePosition.light_time"><a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.SpicePosition.light_time.html#giant.utilities.spice_interface.SpicePosition.light_time">[docs]</a>    <span class="k">def</span> <span class="nf">light_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="SpicePosition.light_time">
+<a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.SpicePosition.light_time.html#giant.utilities.spice_interface.SpicePosition.light_time">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">light_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">DatetimeLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make the call to spkpos given the stored settings at the input date returning only the light time in TDB</span>
 <span class="sd">        seconds.</span>
 
@@ -561,10 +470,13 @@
 <span class="sd">        :return: The one way light time between the observer and the target in TDB seconds.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="n">spice</span><span class="o">.</span><span class="n">spkpos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">datetime_to_et</span><span class="p">(</span><span class="n">date</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">spice</span><span class="o">.</span><span class="n">spkpos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">datetime_to_et</span><span class="p">(</span><span class="n">date</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="SpicePosition.position_light_time"><a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.SpicePosition.position_light_time.html#giant.utilities.spice_interface.SpicePosition.position_light_time">[docs]</a>    <span class="k">def</span> <span class="nf">position_light_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SpicePosition.position_light_time">
+<a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.SpicePosition.position_light_time.html#giant.utilities.spice_interface.SpicePosition.position_light_time">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">position_light_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">DatetimeLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make the call to spkpos given the stored settings at the input date returning both the position vector in</span>
 <span class="sd">        kilometers and the light time in TDB</span>
 <span class="sd">        seconds.</span>
@@ -582,11 +494,15 @@
 <span class="sd">                 target in TDB seconds as a tuple.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="n">spice</span><span class="o">.</span><span class="n">spkpos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">datetime_to_et</span><span class="p">(</span><span class="n">date</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">spice</span><span class="o">.</span><span class="n">spkpos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">datetime_to_et</span><span class="p">(</span><span class="n">date</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="p">))</span></div>
+</div>
 
 
-<div class="viewcode-block" id="SpiceState"><a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.SpiceState.html#giant.utilities.spice_interface.SpiceState">[docs]</a><span class="k">class</span> <span class="nc">SpiceState</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SpiceState">
+<a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.SpiceState.html#giant.utilities.spice_interface.SpiceState">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SpiceState</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class creates a callable that returns the state vector (position and velocity, km and km/s respectively) of one</span>
 <span class="sd">    object to another given a python datetime.</span>
 
@@ -602,8 +518,8 @@
 <span class="sd">    and provides more functionality.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">reference_frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">corrections</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">observer</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">reference_frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">corrections</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">observer</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param target: The name/integer spice id for the object we are computing the state vector to as a string.</span>
 <span class="sd">        :param reference_frame: The frame we are computing the state vector in as a string</span>
 <span class="sd">        :param corrections: The corrections to use when computing the state vector (usually for GIANT this should be</span>
@@ -612,7 +528,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">target</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The object we are computing the state vector to as a string.  </span>
 
 <span class="sd">        This usually is the name of the object or its integer spice id as a string.  This is passed to the </span>
@@ -620,14 +536,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reference_frame</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">reference_frame</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The frame we are to compute the state vector in as a string</span>
 
 <span class="sd">        For GIANT this should usually be the inertial frame ``&#39;J200&#39;``.  This is passed to the ``REF`` input for spkezr.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">corrections</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The corrections we are to apply when computing the state vector.</span>
 
 <span class="sd">        Valid inputs are ``&#39;NONE&#39;`` for no correction, ``&#39;LT&#39;`` for light time only corrections, ``&#39;LT+S&#39;`` for light </span>
@@ -641,15 +557,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">observer</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The object we are computing the state vector from as a string.  </span>
 
 <span class="sd">        This usually is the name of the object or its integer spice id as a string.  This is passed to the </span>
 <span class="sd">        ``OBS`` input for spkezr.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">DatetimeLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make the call to spkezr given the stored settings at the input date returning the state vector</span>
 <span class="sd">        (position, velocity) in kilometers and kilometers per second respectively.</span>
 
@@ -667,10 +583,12 @@
 <span class="sd">                 corrections :attr:`corrections` at ``date``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="n">spice</span><span class="o">.</span><span class="n">spkpos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">datetime_to_et</span><span class="p">(</span><span class="n">date</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">spice</span><span class="o">.</span><span class="n">spkezr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">datetime_to_et</span><span class="p">(</span><span class="n">date</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
 
-<div class="viewcode-block" id="SpiceState.light_time"><a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.SpiceState.light_time.html#giant.utilities.spice_interface.SpiceState.light_time">[docs]</a>    <span class="k">def</span> <span class="nf">light_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SpiceState.light_time">
+<a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.SpiceState.light_time.html#giant.utilities.spice_interface.SpiceState.light_time">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">light_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">DatetimeLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make the call to spkezr given the stored settings at the input date returning only the light time in TDB</span>
 <span class="sd">        seconds.</span>
 
@@ -687,10 +605,13 @@
 <span class="sd">        :return: The one way light time between the observer and the target in TDB seconds.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="n">spice</span><span class="o">.</span><span class="n">spkezr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">datetime_to_et</span><span class="p">(</span><span class="n">date</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">spice</span><span class="o">.</span><span class="n">spkezr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">datetime_to_et</span><span class="p">(</span><span class="n">date</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="SpiceState.position_light_time"><a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.SpiceState.position_light_time.html#giant.utilities.spice_interface.SpiceState.position_light_time">[docs]</a>    <span class="k">def</span> <span class="nf">position_light_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SpiceState.position_light_time">
+<a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.SpiceState.position_light_time.html#giant.utilities.spice_interface.SpiceState.position_light_time">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">position_light_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">DatetimeLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make the call to spkezr given the stored settings at the input date returning both the state vector in</span>
 <span class="sd">        kilometers and kilometers per second and the light time in TDB seconds.</span>
 
@@ -707,11 +628,15 @@
 <span class="sd">                 the observer and the target in TDB seconds as a tuple.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="n">spice</span><span class="o">.</span><span class="n">spkezr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">datetime_to_et</span><span class="p">(</span><span class="n">date</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">spice</span><span class="o">.</span><span class="n">spkezr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">datetime_to_et</span><span class="p">(</span><span class="n">date</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="p">))</span></div>
+</div>
 
 
-<div class="viewcode-block" id="SpiceOrientation"><a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.SpiceOrientation.html#giant.utilities.spice_interface.SpiceOrientation">[docs]</a><span class="k">class</span> <span class="nc">SpiceOrientation</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SpiceOrientation">
+<a class="viewcode-back" href="../../../utilities/spice_interface/giant.utilities.spice_interface.SpiceOrientation.html#giant.utilities.spice_interface.SpiceOrientation">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SpiceOrientation</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class creates a callable that returns the rotation  from one frame to another as a :class:`.Rotation` given a</span>
 <span class="sd">    python datetime.</span>
 
@@ -725,14 +650,14 @@
 <span class="sd">    pickle.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">to_frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">to_frame</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param from_frame: The name/integer spice id for the starting frame as a string.</span>
 <span class="sd">        :param to_frame: The name/integer spice id for the ending frame as a string.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">from_frame</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">from_frame</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The frame that we are starting in as a string.</span>
 
 <span class="sd">        This usually is the name of the frame or its integer spice id as a string.  This is passed to the </span>
@@ -740,15 +665,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">to_frame</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">to_frame</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The frame that we are rotating to as a string.</span>
 
 <span class="sd">        This usually is the name of the frame or its integer spice id as a string.  This is passed to the </span>
 <span class="sd">        ``TO`` input for pxform.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">DatetimeLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rotation</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make the call to pxform given the stored settings at the input date returning the rotation as a</span>
 <span class="sd">        :class:`.Rotation` object.</span>
 
@@ -761,10 +686,11 @@
 <span class="sd">        where :func:`.datetime_to_et` converts a datetime object into ephemeris (TDB) seconds since the J2000 epoch.</span>
 
 <span class="sd">        :param date: The date we are querying spice at as a datetime object</span>
-<span class="sd">        :return: The rotation from :attr:`from_frame` to :attr:`to_fram` at time ``date`` as a :class:`.Rotation`.</span>
+<span class="sd">        :return: The rotation from :attr:`from_frame` to :attr:`to_frame` at time ``date`` as a :class:`.Rotation`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">spice</span><span class="o">.</span><span class="n">pxform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">from_frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_frame</span><span class="p">,</span> <span class="n">datetime_to_et</span><span class="p">(</span><span class="n">date</span><span class="p">)))</span></div>
+
 </pre></div>
 
           </div>
@@ -780,17 +706,24 @@
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

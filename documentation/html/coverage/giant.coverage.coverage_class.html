@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>giant.coverage.coverage_class &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="next" title="giant.coverage.coverage_class.Coverage" href="coverage_class/giant.coverage.coverage_class.Coverage.html" />
+    <link rel="prev" title="giant.coverage" href="../giant.coverage.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../giant.html">API Reference</a><ul>
+  <li><a href="../giant.coverage.html">giant.coverage</a><ul>
+      <li>Previous: <a href="../giant.coverage.html" title="previous chapter">giant.coverage</a></li>
+      <li>Next: <a href="coverage_class/giant.coverage.coverage_class.Coverage.html" title="next chapter">giant.coverage.coverage_class.Coverage</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.coverage.html" title="Previous document">giant.coverage</a>
+        </li>
+        <li>
+          <a href="coverage_class/giant.coverage.coverage_class.Coverage.html" title="Next document">giant.coverage.coverage_class.Coverage</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-giant.coverage.coverage_class">
+<span id="giant-coverage-coverage-class"></span><h1>giant.coverage.coverage_class<a class="headerlink" href="#module-giant.coverage.coverage_class" title="Link to this heading">¶</a></h1>
+<p>This module provides the capability to perform coverage analysis for
+remote sensing instruments given a notional ConOps.</p>
+<section id="description">
+<h2>Description<a class="headerlink" href="#description" title="Link to this heading">¶</a></h2>
+<p>The coverage analysis works by taking the observation plan and then at each “imaging”
+epoch in the observation plan, computing which facets of the shape model fall within
+the field of view of the instrument (and optionally are illuminated by the sun).</p>
+<p>This information is then stored, per image, per facet, and can then be queried to
+check what percentage of the surface was observed according to some constraints.
+Additionally, for SPC coverage, we can then take the information from the visibility
+check, and use it to compute the shape from shading dilutions of precision (DOP) for each
+facet, to get an idea of how good the coverage is for building shape models using SPC.</p>
+</section>
+<section id="use">
+<h2>Use<a class="headerlink" href="#use" title="Link to this heading">¶</a></h2>
+<p>## Preparation
+To run coverage analysis we need to prepare the shape model.
+This is done in 2 simple steps.</p>
+<ol class="arabic simple">
+<li><p>Ingest the shape model you wish to use for coverage analysis into the GIANT
+format using the <cite>ingest_shape</cite> command line utility provided by GIANT</p></li>
+<li><p>run <cite>python prepare_shape.py -t /path/to/kdtree.pickle -o /path/to/output.pickle</cite>
+to precompute necessary information about the shape model for coverage analysis.
+(Depending on the size of the shape model, this can take a while to run, but
+only needs to be run once for shape model)</p></li>
+</ol>
+<p>We also need to define our observation ConOps.
+This is more detailed but roughly works through the following:</p>
+<ol class="arabic simple">
+<li><p>Provide trajectory information (usually through the form of NAIF SPICE SPK files
+but could also be done through a csv file or similar)</p></li>
+<li><p>Provide pointing information (this can be done most simply through NAIF SPICE CK
+files, or can be done programmatically by defining a python function which takes
+in a <cite>datetime</cite> object and outputs a <cite>giant.rotations.Rotation</cite> object defining
+the rotation from the inertial frame to the “camera frame” or through a csv file)</p></li>
+<li><p>Provide an imaging cadence. This can be done most simply from a file
+(like a list of image times or a csv file) or can be done programmatically</p></li>
+</ol>
+<p>## Running the analysis
+To get results for visibility and DOP, you will need to have a model for a camera,
+and write a script to be able to create a <a class="reference internal" href="coverage_class/giant.coverage.coverage_class.Coverage.html#giant.coverage.coverage_class.Coverage" title="giant.coverage.coverage_class.Coverage"><code class="xref py py-class docutils literal notranslate"><span class="pre">Coverage</span></code></a> instance.</p>
+<p>Once initialized, you can run <a class="reference internal" href="coverage_class/giant.coverage.coverage_class.Coverage.compute_visibility.html#giant.coverage.coverage_class.Coverage.compute_visibility" title="giant.coverage.coverage_class.Coverage.compute_visibility"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Coverage.compute_visibility()</span></code></a> to get visibility
+results, and then you can run <a class="reference internal" href="coverage_class/giant.coverage.coverage_class.Coverage.compute_dop.html#giant.coverage.coverage_class.Coverage.compute_dop" title="giant.coverage.coverage_class.Coverage.compute_dop"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Coverage.compute_dop()</span></code></a> to get DOP results.</p>
+<p>## Interpreting the results
+The results for visibility (and optionally DOP) can be saved to numpy files as
+dictionaries (or in some cases pickle files) that can later be used for plotting.</p>
+</section>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="coverage_class/giant.coverage.coverage_class.Coverage.html#giant.coverage.coverage_class.Coverage" title="giant.coverage.coverage_class.Coverage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Coverage</span></code></a></p></td>
+<td><p>This class provides coverage analysis capabilities for remote sensing instruments given an observation plan.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.coverage.html" title="Previous document">giant.coverage</a>
+        </li>
+        <li>
+          <a href="coverage_class/giant.coverage.coverage_class.Coverage.html" title="Next document">giant.coverage.coverage_class.Coverage</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.utilities.mixin_classes.user_option_configured &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../../index.html">
+    <img class="logo" src="../../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.utilities.mixin_classes.user_option_configured</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides the :class:`UserOptionConfigured` mixin class that enables classes to be</span>
+<span class="sd">configured using :class:`.UserOptions`-derived classes while maintaining the ability to reset</span>
+<span class="sd">to the original configuration state.</span>
+
+<span class="sd">The mixin pattern allows for clean separation of configuration logic and provides a consistent</span>
+<span class="sd">interface for option management across different classes.</span>
+
+<span class="sd">Example:</span>
+<span class="sd">    Basic usage of the UserOptionConfigured mixin::</span>
+
+<span class="sd">        from giant.utilities.options import UserOptions</span>
+<span class="sd">        from giant.utilities.mixin_classes.user_option_configured import UserOptionConfigured</span>
+<span class="sd">        from dataclasses import dataclass</span>
+
+<span class="sd">        @dataclass</span>
+<span class="sd">        class MyOptions(UserOptions):</span>
+<span class="sd">            a: int = 5</span>
+<span class="sd">            b: float = -32.1</span>
+
+<span class="sd">        class MyUsefulClass(UserOptionConfigured[MyOptions], MyOptions):</span>
+<span class="sd">            def __init__(self, options: MyOptions = None):</span>
+<span class="sd">                super().__init__(MyOptions, options)</span>
+
+<span class="sd">        # Usage</span>
+<span class="sd">        my_useful_inst = MyUsefulClass()</span>
+<span class="sd">        my_useful_inst.a = 6  # Make a change</span>
+<span class="sd">        print(my_useful_inst.a)  # Output: 6</span>
+<span class="sd">        my_useful_inst.reset_settings()  # Reset to original</span>
+<span class="sd">        print(my_useful_inst.a)  # Output: 5</span>
+
+<span class="sd">.. Note::</span>
+<span class="sd">    The :class:`UserOptionConfigured` class should come first in the inheritance order</span>
+<span class="sd">    due to Method Resolution Order (MRO) requirements.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserOptions</span>
+
+
+<span class="n">OptionsT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;OptionsT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">UserOptions</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Type variable bound to UserOptions for type safety</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="UserOptionConfigured">
+<a class="viewcode-back" href="../../../../utilities/mixin_classes/user_option_configured/giant.utilities.mixin_classes.user_option_configured.UserOptionConfigured.html#giant.utilities.mixin_classes.UserOptionConfigured">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UserOptionConfigured</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">OptionsT</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Mixin class providing UserOptions-based configuration with reset capability.</span>
+<span class="sd">    </span>
+<span class="sd">    This mixin class enables classes to be configured using :class:`UserOptions`-derived </span>
+<span class="sd">    classes and provides the ability to reset the class to its default (initially provided) </span>
+<span class="sd">    state.</span>
+<span class="sd">    </span>
+<span class="sd">    The class works in conjunction with the :class:`UserOptions` ABC to provide:</span>
+<span class="sd">    </span>
+<span class="sd">    * Automatic configuration of class instances based on provided options</span>
+<span class="sd">    * Storage of original configuration for reset functionality  </span>
+<span class="sd">    * Type-safe option handling through generic typing</span>
+<span class="sd">    </span>
+<span class="sd">    To use this mixin, subclass it with the :class:`UserOptions` subclass as the type </span>
+<span class="sd">    parameter::</span>
+<span class="sd">    </span>
+<span class="sd">        class MyUsefulClass(UserOptionConfigured[MyOptions], MyOptions):</span>
+<span class="sd">            def __init__(self, options: MyOptions = None):</span>
+<span class="sd">                super().__init__(MyOptions, options)</span>
+<span class="sd">    </span>
+<span class="sd">    :param OptionsT: The :class:`UserOptions`-derived class type for configuration</span>
+<span class="sd">        </span>
+<span class="sd">    :attr original_options: The original configuration used during initialization.</span>
+<span class="sd">                            This is stored as a deep copy and used for reset operations.</span>
+<span class="sd">    </span>
+<span class="sd">    .. Warning::</span>
+<span class="sd">        If options are not provided during initialization, default initialization of the</span>
+<span class="sd">        options_type class will be used.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">OptionsT</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">OptionsT</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param options_type: The type of the :class:`.UserOptions` to use</span>
+<span class="sd">        :param options: An optional oinstance of `options_type` preconfigured.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">options</span> <span class="o">=</span> <span class="n">options_type</span><span class="p">()</span>
+            
+        <span class="n">options</span><span class="o">.</span><span class="n">apply_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original_options</span><span class="p">:</span> <span class="n">OptionsT</span> <span class="o">=</span> <span class="n">options</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The original configuration for this class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="UserOptionConfigured.reset_settings">
+<a class="viewcode-back" href="../../../../utilities/mixin_classes/user_option_configured/giant.utilities.mixin_classes.user_option_configured.UserOptionConfigured.reset_settings.html#giant.utilities.mixin_classes.UserOptionConfigured.reset_settings">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets the class to the state it was originally initialized with.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_options</span><span class="o">.</span><span class="n">apply_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+        
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">original_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OptionsT</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the original configuration options.</span>
+<span class="sd">        </span>
+<span class="sd">        :returns: OptionsT: The original options used during initialization.</span>
+<span class="sd">            </span>
+<span class="sd">        .. Warning::</span>
+<span class="sd">            Modifying the returned object will affect reset behavior.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_options</span>
+    
+    <span class="nd">@original_options</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">original_options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">OptionsT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Manually Set the original configuration options.</span>
+<span class="sd">        </span>
+<span class="sd">        :param value: The options to store as original configuration.</span>
+<span class="sd">            </span>
+<span class="sd">        .. note::</span>
+<span class="sd">            Generally this shouldn&#39;t be used.  If you want to manually change options</span>
+<span class="sd">            you can do so directly just by using </span>
+<span class="sd">            `my_options.apply_options(my_class_inst)`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original_options</span> <span class="o">=</span> <span class="n">value</span></div>
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.catalogs.usnognc &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.catalogs.usnognc</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides a class for interfacing with the USNO GNC (Guidance Navigation and Control) star catalog.</span>
+
+<span class="sd">The GNC catalog provides high-precision astrometric data based on GAIA DR3, Hipparcos, and USNO&#39;s bright star </span>
+<span class="sd">catalog for navigation applications.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.catalogs.meta_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catalog</span><span class="p">,</span> <span class="n">GIANT_COLUMNS</span><span class="p">,</span> <span class="n">GIANT_TYPES</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.catalogs.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">PARSEC2KM</span><span class="p">,</span> <span class="n">AVG_STAR_DIST</span><span class="p">,</span> <span class="n">apply_proper_motion</span><span class="p">,</span> <span class="n">AVG_STAR_DIST_SIGMA</span><span class="p">,</span> <span class="n">DEG2MAS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.spherical_coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">radec_to_unit</span><span class="p">,</span> <span class="n">radec_distance</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DOUBLE_ARRAY</span><span class="p">,</span> <span class="n">PATH</span>
+
+
+<span class="n">DEFAULT_GNC_DIR</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span>  
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This gives the default directory of the GNC catalog file.</span>
+
+<span class="sd">The default location is a directory called &quot;data&quot; in the directory containing this source file.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">_GNC_COLS</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ra_2016&#39;</span><span class="p">,</span> <span class="s1">&#39;de_2016&#39;</span><span class="p">,</span> <span class="s1">&#39;plx&#39;</span><span class="p">,</span> <span class="s1">&#39;pmra&#39;</span><span class="p">,</span> <span class="s1">&#39;pmde&#39;</span><span class="p">,</span> <span class="s1">&#39;gmag&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;e_ra_2016&#39;</span><span class="p">,</span> <span class="s1">&#39;e_de_2016&#39;</span><span class="p">,</span> <span class="s1">&#39;e_plx&#39;</span><span class="p">,</span> <span class="s1">&#39;e_pmra&#39;</span><span class="p">,</span> <span class="s1">&#39;e_pmde&#39;</span><span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This specifies the names of the GNC columns that are required in converting the a GIANT star record</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># specify the mapping of GNC columns to GIANT columns</span>
+<span class="n">_GNC_TO_GIANT</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">_GNC_COLS</span><span class="p">,</span> <span class="n">GIANT_COLUMNS</span><span class="p">))</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This specifies the mapping of the GAIA column names to the GIANT star record column names</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="USNOGNC">
+<a class="viewcode-back" href="../../../catalogs/usnognc/usnognc/giant.catalogs.usnognc.USNOGNC.html#giant.catalogs.usnognc.USNOGNC">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">USNOGNC</span><span class="p">(</span><span class="n">Catalog</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class provides an interface to the USNO GNC (Guidance, Navigation, and Control) star catalog.</span>
+<span class="sd">    </span>
+<span class="sd">    The GNC catalog is based on GAIA DR3, Hipparcos, and USNO Bright Star data and provides </span>
+<span class="sd">    high-precision astrometric measurements for navigation applications. The catalog epoch is 2016.0 </span>
+<span class="sd">    (January 1, 2016 00:00:00).</span>
+<span class="sd">    </span>
+<span class="sd">    The catalog is stored as a CSV file that can be downloaded from the US Naval Observatory.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">catalog_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PATH</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">include_proper_motion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the GNC catalog interface.</span>
+<span class="sd">        </span>
+<span class="sd">        :param catalog_file: Path to the GNC CSV file. If None, will look for default location.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">include_proper_motion</span><span class="o">=</span><span class="n">include_proper_motion</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">catalog_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Default location</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">catalog_file</span> <span class="o">=</span> <span class="n">DEFAULT_GNC_DIR</span> <span class="o">/</span> <span class="s1">&#39;gnc_v1_1_mar_2_2023.csv&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">catalog_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">catalog_file</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">_catalog_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">catalog_epoch</span> <span class="o">=</span> <span class="mf">2016.0</span>
+        
+        <span class="c1"># Column mapping from GNC CSV to internal names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gnc_columns</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;gnc_id&#39;</span><span class="p">:</span> <span class="s1">&#39;gnc_id&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;ra_2016&#39;</span><span class="p">:</span> <span class="s1">&#39;ra_deg&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;de_2016&#39;</span><span class="p">:</span> <span class="s1">&#39;dec_deg&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;e_ra_2016&#39;</span><span class="p">:</span> <span class="s1">&#39;ra_sigma_mas&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;e_de_2016&#39;</span><span class="p">:</span> <span class="s1">&#39;dec_sigma_mas&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;pmra&#39;</span><span class="p">:</span> <span class="s1">&#39;pmra_mas_yr&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;pmde&#39;</span><span class="p">:</span> <span class="s1">&#39;pmde_mas_yr&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;e_pmra&#39;</span><span class="p">:</span> <span class="s1">&#39;pmra_sigma_mas_yr&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;e_pmde&#39;</span><span class="p">:</span> <span class="s1">&#39;pmde_sigma_mas_yr&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;plx&#39;</span><span class="p">:</span> <span class="s1">&#39;parallax_mas&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;e_plx&#39;</span><span class="p">:</span> <span class="s1">&#39;parallax_sigma_mas&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;gmag&#39;</span><span class="p">:</span> <span class="s1">&#39;magnitude&#39;</span>
+        <span class="p">}</span>
+        
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_catalog</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load the GNC catalog from the CSV file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_catalog_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalog_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;USNO GNC file not found at </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">catalog_file</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">user_response</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Would you like to download the USNO GNC data to this location (y/n)?</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                    <span class="s2">&quot;    WARNING: THIS REQUIRES AN INTERNET CONNECTION AND USE UP ~400MB OF DISK SPACE!</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="n">user_response</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span>
+                    <span class="n">download_gnc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">catalog_file</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;The catalog file is missing and you don&#39;t want to download it&quot;</span><span class="p">)</span>
+                
+            <span class="c1"># Read the CSV file</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_catalog_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">catalog_file</span><span class="p">,</span> <span class="n">low_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            
+            <span class="c1"># Rename columns for easier access</span>
+            <span class="c1"># Handle missing values</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_catalog_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_catalog_data</span><span class="o">.</span><span class="n">fillna</span><span class="p">({</span>
+                <span class="s1">&#39;e_ra_2016&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s1">&#39;e_de_2016&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s1">&#39;pmde&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> 
+                <span class="s1">&#39;pmra&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s1">&#39;pmde&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> 
+                <span class="s1">&#39;e_pmra&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s1">&#39;e_pmde&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s1">&#39;plx&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s1">&#39;e_plx&#39;</span><span class="p">:</span> <span class="mf">0.0</span>
+            <span class="p">})</span>
+    
+<div class="viewcode-block" id="USNOGNC.query_catalog">
+<a class="viewcode-back" href="../../../catalogs/usnognc/usnognc/giant.catalogs.usnognc.USNOGNC.query_catalog.html#giant.catalogs.usnognc.USNOGNC.query_catalog">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">query_catalog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">min_ra</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">max_ra</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">360</span><span class="p">,</span>
+                        <span class="n">min_dec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="n">max_dec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">90</span><span class="p">,</span> <span class="n">min_mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="n">max_mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+                        <span class="n">search_center</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">DOUBLE_ARRAY</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">search_radius</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">new_epoch</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">datetime</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Query the GNC catalog for stars within a specified region and magnitude range.</span>
+<span class="sd">        </span>
+<span class="sd">        :param ra: Right ascension of search center in degrees</span>
+<span class="sd">        :param dec: Declination of search center in degrees  </span>
+<span class="sd">        :param radius: Search radius in degrees</span>
+<span class="sd">        :param max_mag: Maximum magnitude (faintest stars)</span>
+<span class="sd">        :param min_mag: Minimum magnitude (brightest stars)</span>
+<span class="sd">        :param epoch: Target epoch for coordinates (default 2000.0)</span>
+<span class="sd">        :return: DataFrame with star data in GIANT format</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_catalog</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_catalog_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;something went wrong&quot;</span>
+        
+        <span class="c1"># Filter by magnitude</span>
+        <span class="n">mag_filter</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_catalog_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;gmag&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">min_mag</span><span class="p">)</span> <span class="o">&amp;</span> 
+                     <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_catalog_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;gmag&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">max_mag</span><span class="p">))</span>
+        
+        <span class="c1"># filter by min/max ra and dec</span>
+        <span class="n">ra</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_catalog_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;ra_2016&quot;</span><span class="p">]</span>
+        <span class="n">dec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_catalog_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;de_2016&quot;</span><span class="p">]</span>
+        <span class="n">dir_filter</span> <span class="o">=</span> <span class="p">((</span><span class="n">ra</span> <span class="o">&gt;=</span> <span class="n">min_ra</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ra</span> <span class="o">&lt;=</span> <span class="n">max_ra</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">dec</span> <span class="o">&gt;=</span> <span class="n">min_dec</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">dec</span> <span class="o">&lt;=</span> <span class="n">max_dec</span><span class="p">))</span>
+        
+        <span class="k">if</span> <span class="n">search_center</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">search_radius</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;search radius must be specified if search center is specified&quot;</span>
+            
+            <span class="n">dir_filter</span><span class="p">[</span><span class="n">dir_filter</span><span class="p">]</span> <span class="o">=</span> <span class="n">radec_distance</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">ra</span><span class="p">[</span><span class="n">dir_filter</span><span class="p">]),</span>
+                                                    <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">dec</span><span class="p">[</span><span class="n">dir_filter</span><span class="p">]),</span>
+                                                    <span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">search_center</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span> <span class="o">&lt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">search_radius</span><span class="p">)</span>
+        
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_catalog_data</span><span class="p">[</span><span class="n">mag_filter</span> <span class="o">&amp;</span> <span class="n">dir_filter</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_empty_frame</span><span class="p">()</span>
+        
+        <span class="n">giant_records</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_to_giant_format</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span>
+            
+        <span class="c1"># Apply proper motion corrections to target epoch</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_proper_motion</span> <span class="ow">and</span> <span class="n">new_epoch</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">apply_proper_motion</span><span class="p">(</span><span class="n">giant_records</span><span class="p">,</span> <span class="n">new_epoch</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            
+        <span class="k">return</span> <span class="n">giant_records</span></div>
+
+        
+    <span class="k">def</span><span class="w"> </span><span class="nf">_convert_to_giant_format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gnc_records</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert GNC records to GIANT format.</span>
+<span class="sd">        </span>
+<span class="sd">        :param gnc_records: DataFrame with GNC catalog data</span>
+<span class="sd">        :return: DataFrame in GIANT format</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">gnc_records</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;GNC_ID&quot;</span>
+        
+        <span class="n">giant_records</span> <span class="o">=</span> <span class="n">gnc_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">_GNC_COLS</span><span class="p">]</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">_GNC_TO_GIANT</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">giant_records</span> <span class="o">=</span> <span class="n">giant_records</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">epoch</span><span class="o">=</span><span class="mf">2016.0</span><span class="p">)</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">GIANT_TYPES</span><span class="p">)</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;USNO GNC V1.1&quot;</span>
+        
+        <span class="c1"># Use parallax for distance calculation where available</span>
+        <span class="n">invalid_plx</span> <span class="o">=</span> <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span>
+        <span class="c1"># Distance in parsecs = 1000 / parallax_mas, then convert to km</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;distance_sigma&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>  <span class="c1"># convert parallax std to distance std</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;distance_sigma&#39;</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">PARSEC2KM</span>  <span class="c1"># convert to km</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="mi">1000</span>  <span class="c1"># MAS to arcsecond</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">**=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># parallax to distance (arcsecond to parsec)</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">*=</span> <span class="n">PARSEC2KM</span>  <span class="c1"># parsec to kilometers</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">invalid_plx</span><span class="p">,</span> <span class="s2">&quot;distance&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AVG_STAR_DIST</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">invalid_plx</span><span class="p">,</span> <span class="s2">&quot;distance_sigma&quot;</span><span class="p">]</span> <span class="o">=</span>  <span class="n">AVG_STAR_DIST_SIGMA</span>
+        
+        <span class="c1"># convert mas to deg</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;ra_sigma&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">DEG2MAS</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;dec_sigma&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">DEG2MAS</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;ra_proper_motion&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">DEG2MAS</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;dec_proper_motion&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">DEG2MAS</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;ra_pm_sigma&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">DEG2MAS</span>
+        <span class="n">giant_records</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;dec_pm_sigma&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">DEG2MAS</span>
+        
+        <span class="k">return</span> <span class="n">giant_records</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_empty_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return an empty DataFrame with the correct GIANT columns.</span>
+<span class="sd">        </span>
+<span class="sd">        :return: Empty DataFrame</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">empty_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">GIANT_TYPES</span><span class="p">[</span><span class="n">col</span><span class="p">])</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">GIANT_COLUMNS</span><span class="p">}</span>
+        <span class="n">empty_data</span><span class="p">[</span><span class="s1">&#39;epoch&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">GIANT_TYPES</span><span class="p">[</span><span class="s1">&#39;epoch&#39;</span><span class="p">])</span>
+        
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">empty_data</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;gnc_id&#39;</span>
+        <span class="k">return</span> <span class="n">df</span></div>
+
+
+
+<div class="viewcode-block" id="download_gnc">
+<a class="viewcode-back" href="../../../catalogs/usnognc/usnognc/giant.catalogs.usnognc.download_gnc.html#giant.catalogs.usnognc.download_gnc">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_gnc</span><span class="p">(</span><span class="n">target_directory</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">verify_checksum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Download the USNO GNC catalog from the official source.</span>
+<span class="sd">    </span>
+<span class="sd">    This function downloads the GNC catalog CSV file and optionally verifies its integrity</span>
+<span class="sd">    using the provided SHA256 checksum.</span>
+<span class="sd">    </span>
+<span class="sd">    :param target_directory: Directory to save the catalog file</span>
+<span class="sd">    :param verify_checksum: Whether to verify the downloaded file&#39;s checksum</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">target_directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">target_directory</span><span class="p">)</span>
+    <span class="n">target_directory</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="n">catalog_url</span> <span class="o">=</span> <span class="s2">&quot;https://crf.usno.navy.mil/data_products/ICRF/GNC/2023/gnc_v1_1_mar_2_2023.csv&quot;</span>
+    <span class="n">checksum_url</span> <span class="o">=</span> <span class="s2">&quot;https://crf.usno.navy.mil/data_products/ICRF/GNC/2023/checksum.sha256&quot;</span>
+    
+    <span class="n">catalog_file</span> <span class="o">=</span> <span class="n">target_directory</span> <span class="o">/</span> <span class="s2">&quot;gnc_v1_1_mar_2_2023.csv&quot;</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading GNC catalog to </span><span class="si">{</span><span class="n">catalog_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Download the catalog file</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">catalog_url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+    
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">catalog_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">8192</span><span class="p">):</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Download complete. File size: </span><span class="si">{</span><span class="n">catalog_file</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> bytes&quot;</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">verify_checksum</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Verifying checksum...&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Download checksum file</span>
+        <span class="n">checksum_response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">checksum_url</span><span class="p">)</span>
+        <span class="n">checksum_response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        
+        <span class="c1"># Parse checksum (format: &quot;hash  filename&quot;)</span>
+        <span class="n">checksum_line</span> <span class="o">=</span> <span class="n">checksum_response</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">expected_hash</span> <span class="o">=</span> <span class="n">checksum_line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="c1"># Calculate actual hash</span>
+        <span class="n">sha256_hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">catalog_file</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4096</span><span class="p">),</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+                <span class="n">sha256_hash</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+        
+        <span class="n">actual_hash</span> <span class="o">=</span> <span class="n">sha256_hash</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="n">actual_hash</span> <span class="o">==</span> <span class="n">expected_hash</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✓ Checksum verification passed&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✗ Checksum verification failed!&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected: </span><span class="si">{</span><span class="n">expected_hash</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Actual:   </span><span class="si">{</span><span class="n">actual_hash</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Downloaded file checksum does not match expected value&quot;</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;GNC catalog download completed successfully&quot;</span><span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

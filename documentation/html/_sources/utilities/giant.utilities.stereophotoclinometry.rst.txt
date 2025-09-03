@@ -13,12 +13,12 @@ giant.utilties.stereophotoclinometry
     :toctree: stereophotoclinometry
 
     Summary
-    Nominal
     Image
-    Regress
-    ShapeModel
-    Maplet
+    Nominal
     Landmark
+    MapletTransformationPrecision
+    Maplet
+    ShapeModel
 
 .. rubric:: Functions
 

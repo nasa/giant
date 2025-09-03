@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.image_processing.feature_matchers.sift_matcher &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../../index.html">
+    <img class="logo" src="../../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.image_processing.feature_matchers.sift_matcher</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">asdict</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">DTypeLike</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image_processing.feature_matchers.keypoint_matcher</span><span class="w"> </span><span class="kn">import</span> <span class="n">KeypointMatcher</span><span class="p">,</span> <span class="n">KeypointMatcherOptions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image_processing.feature_matchers.flann_configuration</span><span class="w"> </span><span class="kn">import</span> <span class="n">FLANN_INDEX_PARAM_TYPES</span><span class="p">,</span> <span class="n">FLANNIndexAlgorithmType</span><span class="p">,</span> <span class="n">FLANNIndexKdTreeParams</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SIFTOptions</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Options for creating the SIFT instance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_features</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The number of best features to retain. </span>
+<span class="sd">    </span>
+<span class="sd">    The features are ranked by their scores (measured in SIFT algorithm as the local contrast)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">n_octave_layers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The number of layers in each octave. </span>
+<span class="sd">    </span>
+<span class="sd">    3 is the value used in D. Lowe paper. The number of octaves is computed automatically from the image resolution.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">contrast_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.04</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The contrast threshold used to filter out weak features in semi-uniform (low-contrast) regions. </span>
+<span class="sd">    </span>
+<span class="sd">    The larger the threshold, the less features are produced by the detector.</span>
+<span class="sd">    </span>
+<span class="sd">    .. Note::</span>
+<span class="sd">        The contrast threshold will be divided by nOctaveLayers when the filtering is applied. When nOctaveLayers is set to default and if you want to use the value used in D. Lowe paper, 0.03, set this argument to 0.09.</span>
+<span class="sd">        edgeThreshold	The threshold used to filter out edge-like features. Note that the its meaning is different from the contrastThreshold, i.e. the larger the edgeThreshold, the less features are filtered out (more features are retained).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">edge_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span>	
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The threshold used to filter out edge-like features. </span>
+<span class="sd">    </span>
+<span class="sd">    Note that the its meaning is different from the :attr:`contrast_threshold`, i.e. the larger the `edge_threshold`, the less features are filtered out (more features are retained).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.6</span>	
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The sigma of the Gaussian applied to the input image at the octave #0. </span>
+<span class="sd">    </span>
+<span class="sd">    If your image is captured with a weak camera with soft lenses, you might want to reduce the number.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">enable_precise_upscale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Whether to enable precise upscaling in the scale pyramid, which maps index to x to 2x.</span>
+<span class="sd">    </span>
+<span class="sd">    This prevents localization bias. The option is disabled by default.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    
+<div class="viewcode-block" id="SIFTKeypointMatcherOptions">
+<a class="viewcode-back" href="../../../../image_processing/feature_matchers/giant.image_processing.feature_matchers.SIFTKeypointMatcherOptions.html#giant.image_processing.feature_matchers.SIFTKeypointMatcherOptions">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SIFTKeypointMatcherOptions</span><span class="p">(</span><span class="n">KeypointMatcherOptions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Options for configuring the ORB keypoint matcher</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">sift_options</span><span class="p">:</span> <span class="n">SIFTOptions</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">SIFTOptions</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Options used to configure cv2.ORB.create() which configures how keypoints are detected and described</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">flann_index_algorithm_type</span><span class="p">:</span> <span class="n">FLANNIndexAlgorithmType</span> <span class="o">=</span> <span class="n">FLANNIndexAlgorithmType</span><span class="o">.</span><span class="n">FLANN_INDEX_KDTREE</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    What FLANN algorithm to use. </span>
+<span class="sd">    </span>
+<span class="sd">    For SIFT, FLANN_INDEX_KDTREE is recommended</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">flann_algorithm_parameters</span><span class="p">:</span> <span class="n">FLANN_INDEX_PARAM_TYPES</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">FLANNIndexKdTreeParams</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The parameters to configure the index in FLANN.</span>
+<span class="sd">    </span>
+<span class="sd">    This should match the flann_index_algorithm_type although OpenCV will not complain if it doesn&#39;t.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="SIFTKeypointMatcher">
+<a class="viewcode-back" href="../../../../image_processing/feature_matchers/giant.image_processing.feature_matchers.SIFTKeypointMatcher.html#giant.image_processing.feature_matchers.SIFTKeypointMatcher">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SIFTKeypointMatcher</span><span class="p">(</span><span class="n">KeypointMatcher</span><span class="p">,</span> <span class="n">SIFTKeypointMatcherOptions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implementation of KeypointMatcher using SIFT for detection and FLANN for matching.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">allowed_dtypes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DTypeLike</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">]</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">SIFTKeypointMatcherOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param options: how to configure the class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">SIFTKeypointMatcherOptions</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">sift</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">SIFT</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">nfeatures</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sift_options</span><span class="o">.</span><span class="n">n_features</span><span class="p">,</span>
+                                    <span class="n">nOctaveLayers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sift_options</span><span class="o">.</span><span class="n">n_octave_layers</span><span class="p">,</span>
+                                    <span class="n">contrastThreshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sift_options</span><span class="o">.</span><span class="n">contrast_threshold</span><span class="p">,</span>
+                                    <span class="n">edgeThreshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sift_options</span><span class="o">.</span><span class="n">edge_threshold</span><span class="p">,</span>
+                                    <span class="n">sigma</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sift_options</span><span class="o">.</span><span class="n">sigma</span><span class="p">,</span>
+                                    <span class="n">enable_precise_upscale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sift_options</span><span class="o">.</span><span class="n">enable_precise_upscale</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="SIFTKeypointMatcher.detect_keypoints">
+<a class="viewcode-back" href="../../../../image_processing/feature_matchers/giant.image_processing.feature_matchers.SIFTKeypointMatcher.html#giant.image_processing.feature_matchers.SIFTKeypointMatcher.detect_keypoints">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detect_keypoints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Detect keypoint descriptors using SIFT.</span>
+<span class="sd">        </span>
+<span class="sd">        :param image: The image to search for keypoints</span>
+<span class="sd">            </span>
+<span class="sd">        :returns: Tuple of (keypoints, descriptors)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># Convert image to allowable type</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_and_convert_image</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        
+        <span class="n">keypoints</span><span class="p">,</span> <span class="n">descriptors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sift</span><span class="o">.</span><span class="n">detectAndCompute</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="c1"># type: ignore</span>
+        
+        <span class="k">return</span> <span class="n">keypoints</span><span class="p">,</span> <span class="n">descriptors</span></div>
+</div>
+
+        
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

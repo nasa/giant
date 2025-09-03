@@ -26,5 +26,8 @@
     ~Gaussian.generate_kernel
     ~Gaussian.normalize_amplitude
     ~Gaussian.update_state
+    ~Gaussian.volume
+    ~Gaussian.shift_centroid
+    ~Gaussian.compare
 
 |

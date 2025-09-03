@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.calibration.estimators.alignment.temperature_dependent &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../../../index.html">
+    <img class="logo" src="../../../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.calibration.estimators.alignment.temperature_dependent</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">NamedTuple</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.rotations</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rotation</span><span class="p">,</span> <span class="n">euler_to_quaternion</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">EULER_ORDERS</span>
+
+
+<div class="viewcode-block" id="TemperatureDependentResults">
+<a class="viewcode-back" href="../../../../../calibration/estimators/geometric/giant.calibration.estimators.alignment.temperature_dependent.TemperatureDependentResults.html#giant.calibration.estimators.alignment.temperature_dependent.TemperatureDependentResults">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TemperatureDependentResults</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Named tuple to make the results clear</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">order</span><span class="p">:</span> <span class="n">EULER_ORDERS</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The order of the angles.</span>
+<span class="sd">    </span>
+<span class="sd">    This is the same as the argument provided by the user and is included for awareness.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">angle_m_offset</span><span class="p">:</span> <span class="nb">float</span> 
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The estimated constant angle offset for the m (first) rotation axis in radians.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">angle_m_slope</span><span class="p">:</span> <span class="nb">float</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The estimated angle temperature slope for the m (first) rotation axis in radians.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">angle_n_offset</span><span class="p">:</span> <span class="nb">float</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The estimated constant angle offset for the n (second) rotation axis in radians.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">angle_n_slope</span><span class="p">:</span> <span class="nb">float</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The estimated angle temperature slope for the n (second) rotation axis in radians.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">angle_p_offset</span><span class="p">:</span> <span class="nb">float</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The estimated constant angle offset for the p (third) rotation axis in radians.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">angle_p_slope</span><span class="p">:</span> <span class="nb">float</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The estimated angle temperature slope for the p (third) rotation axis in radians.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="temperature_dependent_alignment_estimator">
+<a class="viewcode-back" href="../../../../../calibration/estimators/alignment/giant.calibration.estimators.alignment.temperature_dependent.temperature_dependent_alignment_estimator.html#giant.calibration.estimators.alignment.temperature_dependent.temperature_dependent_alignment_estimator">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">temperature_dependent_alignment_estimator</span><span class="p">(</span><span class="n">frame_1_rotations</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Rotation</span><span class="p">],</span> 
+                                              <span class="n">frame_2_rotations</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Rotation</span><span class="p">],</span> 
+                                              <span class="n">temperatures</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+                                              <span class="n">order</span><span class="p">:</span> <span class="n">EULER_ORDERS</span> <span class="o">=</span> <span class="s1">&#39;xyz&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TemperatureDependentResults</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function estimates a temperature dependent attitude alignment between one frame and another.</span>
+
+<span class="sd">    The temperature dependent alignment is found by fitting linear temperature dependent euler angles (or</span>
+<span class="sd">    Tait-Bryan angles) to transform from the first frame to the second.  That is</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \mathbf{T}_B=\mathbf{R}_m(\theta_m(t))\mathbf{R}_n(\theta_n(t))\mathbf{R}_p(\theta_p(t))\mathbf{T}_A</span>
+
+<span class="sd">    where :math:`\mathbf{T}_B` is the target frame, :math:`\mathbf{R}_i` is the rotation matrix about the :math:`i^{th}`</span>
+<span class="sd">    axis, :math:`\mathbf{T}_A` is the base frame, and :math:`\theta_i(t)` are the linear angles.</span>
+
+<span class="sd">    This fit is done in a least squares sense by computing the values for :math:`\theta_i(t)` across a range of</span>
+<span class="sd">    temperatures (by estimating the attitude for multiple single images) and then solving the system</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \left[\begin{array}{cc} 1 &amp; t_1 \\ 1 &amp; t_2 \\ \vdots &amp; \vdots \\ 1 &amp; t_n \end{array}\right]</span>
+<span class="sd">        \left[\begin{array}{ccc} \theta_{m0} &amp; \theta_{n0} &amp; \theta_{p0} \\</span>
+<span class="sd">        \theta_{m1} &amp; \theta_{n1} &amp; \theta_{p1}\end{array}\right] =</span>
+<span class="sd">        \left[\begin{array}{ccc}\vphantom{\theta}^0\theta_m &amp;\vphantom{\theta}^0\theta_n &amp;\vphantom{\theta}^0\theta_p\\</span>
+<span class="sd">        \vdots &amp; \vdots &amp; \vdots \\</span>
+<span class="sd">        \vphantom{\theta}^k\theta_m &amp;\vphantom{\theta}^k\theta_n &amp;\vphantom{\theta}^k\theta_p\end{array}\right]</span>
+
+<span class="sd">    where :math:`\vphantom{\theta}^k\theta_i` is the measured Euler/Tait-Bryan angle for the :math:`k^{th}` image.</span>
+<span class="sd">    </span>
+<span class="sd">    Internally, we take each provided pair of rotations, compute the difference (`r2*r1.inv()`), convert the </span>
+<span class="sd">    difference to Euler/Tait-Bryan angles, and then perform the linear regression on the results (which yes, is </span>
+<span class="sd">    somewhat a case of castcading estimators...).</span>
+
+<span class="sd">    In general a user should not use this function and instead the</span>
+<span class="sd">    :meth:`.Calibration.estimate_temperature_dependent_alignment` should be used which handles the proper setup.</span>
+<span class="sd">    </span>
+<span class="sd">    :param frame_1_rotations: the base frame rotations (normally common to base frame)</span>
+<span class="sd">    :param frame_2_rotations: the target frame rotations (normally common to target frame)</span>
+<span class="sd">    :param temperatures: the temperature of the image for each corresponding rotation</span>
+<span class="sd">    :param  order: the order of the Euler/Tait-Bryan angles you want to use</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">relative_euler_angles</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># get the independent euler angles</span>
+    <span class="k">for</span> <span class="n">f1</span><span class="p">,</span> <span class="n">f2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">frame_1_rotations</span><span class="p">,</span> <span class="n">frame_2_rotations</span><span class="p">):</span>
+
+        <span class="n">relative_euler_angles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">((</span><span class="n">f2</span><span class="o">*</span><span class="n">f1</span><span class="o">.</span><span class="n">inv</span><span class="p">())</span><span class="o">.</span><span class="n">as_euler_angles</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">)))</span>
+
+    <span class="c1"># make the coefficient matrix</span>
+    <span class="n">temperatures</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">temperatures</span><span class="p">)</span>
+    <span class="n">coef_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">temperatures</span><span class="p">)),</span> <span class="n">temperatures</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># solve for the solution</span>
+    <span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">coef_mat</span><span class="p">,</span> <span class="n">relative_euler_angles</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># return the solution</span>
+    <span class="k">return</span> <span class="n">TemperatureDependentResults</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">solution</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">solution</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">solution</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">solution</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">solution</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">solution</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="evaluate_temperature_dependent_alignment">
+<a class="viewcode-back" href="../../../../../calibration/estimators/alignment/giant.calibration.estimators.alignment.temperature_dependent.evaluate_temperature_dependent_alignment.html#giant.calibration.estimators.alignment.temperature_dependent.evaluate_temperature_dependent_alignment">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">evaluate_temperature_dependent_alignment</span><span class="p">(</span><span class="n">alignment</span><span class="p">:</span> <span class="n">TemperatureDependentResults</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rotation</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function takes a fit temperature dependent alignment solution and evaluates what the </span>
+<span class="sd">    alignment rotation is at a specified temperature.</span>
+<span class="sd">    </span>
+<span class="sd">    Essentially, we compute the euler angles specified by the alignment for the requested temperature</span>
+<span class="sd">    and then convert the angles into a :class:`.Rotation` object using the specified order.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">euler_angles</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">alignment</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">@</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">temperature</span><span class="p">])</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    
+    <span class="k">return</span> <span class="n">Rotation</span><span class="p">(</span><span class="n">euler_to_quaternion</span><span class="p">(</span><span class="n">euler_angles</span><span class="p">,</span> <span class="n">alignment</span><span class="o">.</span><span class="n">order</span><span class="p">))</span></div>
+
+    
+    
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

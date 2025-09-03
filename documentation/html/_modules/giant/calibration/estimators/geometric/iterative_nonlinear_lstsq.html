@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.calibration.estimators.geometric.iterative_nonlinear_lstsq &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../../../index.html">
+    <img class="logo" src="../../../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  <li><a href="../geometric.html">giant.calibration.estimators.geometric</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.calibration.estimators.geometric.iterative_nonlinear_lstsq</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.calibration.estimators.geometric.geometric_estimator</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeometricEstimatorBC</span><span class="p">,</span> <span class="n">GeometricEstimatorOptions</span><span class="p">,</span> <span class="n">ModelT</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">CameraModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DOUBLE_ARRAY</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span>
+
+
+<div class="viewcode-block" id="IterativeNonlinearLstSqOptions">
+<a class="viewcode-back" href="../../../../../calibration/estimators/geometric/giant.calibration.estimators.geometric.iterative_nonlinear_lstsq.IterativeNonlinearLstSqOptions.html#giant.calibration.estimators.geometric.iterative_nonlinear_lstsq.IterativeNonlinearLstSqOptions">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">IterativeNonlinearLstSqOptions</span><span class="p">(</span><span class="n">GeometricEstimatorOptions</span><span class="p">):</span>
+    <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The maximum number of iteration steps to attempt to reach convergence.  </span>
+<span class="sd">    </span>
+<span class="sd">    If convergence has not been reached after attempting ``max_iter`` steps, a warning will be raised that the model has</span>
+<span class="sd">    not converged and :attr:`successful` will be set to ``False``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">residual_atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-10</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The absolute convergence tolerance criteria for the sum of squares of the residual.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">residual_rtol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-10</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The relative convergence tolerance criteria for the sum of squares of the residual.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">state_atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-10</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The absolute convergence tolerance criteria for the elements of the state vecto.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">state_rtol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-10</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The relative convergence tolerance criteria for the elements of the state vector.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+    
+
+<div class="viewcode-block" id="IterativeNonlinearLSTSQ">
+<a class="viewcode-back" href="../../../../../calibration/estimators/geometric/giant.calibration.estimators.geometric.iterative_nonlinear_lstsq.IterativeNonlinearLSTSQ.html#giant.calibration.estimators.geometric.iterative_nonlinear_lstsq.IterativeNonlinearLSTSQ">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IterativeNonlinearLSTSQ</span><span class="p">(</span><span class="n">GeometricEstimatorBC</span><span class="p">[</span><span class="n">ModelT</span><span class="p">],</span> <span class="n">IterativeNonlinearLstSqOptions</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This concrete estimator implements iterative non-linear least squares for estimating an updated camera model.</span>
+
+<span class="sd">    Iterative non-linear least squares estimation is done by estimating updates to the &quot;state&quot; vector (in this case the</span>
+<span class="sd">    camera model parameters being updated) iteratively.  At each step, the system is linearized about the current</span>
+<span class="sd">    estimate of the state and the additive update is estimated.  This iteration is repeated until convergence (or</span>
+<span class="sd">    divergence) based on the pre/post update residuals and the update vector itself.</span>
+
+<span class="sd">    The state vector that is being estimated by this class is controlled by the</span>
+<span class="sd">    :attr:`.CameraModel.estimation_parameters` attribute of the provided camera model.  This class does not actually use</span>
+<span class="sd">    the :attr:`.CameraModel.estimation_parameters` attribute since it is handled by the</span>
+<span class="sd">    :meth:`.CameraModel.compute_jacobian` and :meth:`.CameraModel.apply_update` methods of the provided camera model</span>
+<span class="sd">    internally, but it is mentioned here to show how to control what exactly is being estimated.</span>
+
+<span class="sd">    Because this class linearizes about the current estimate of the state, it requires an initial guess for the camera</span>
+<span class="sd">    model that is &quot;close enough&quot; to the actual model to ensure convergence.  Defining &quot;close enough&quot; in any broad sense</span>
+<span class="sd">    is impossible, but based on experience, using the manufacturer defined specs for focal length/pixel pitch and</span>
+<span class="sd">    assuming no distortion is generally &quot;close enough&quot; even for cameras with heavy distortion (star identification may</span>
+<span class="sd">    require a better initial model than this anyway).</span>
+
+<span class="sd">    As this class converges the state estimate, it updates the supplied camera model in place, therefore, if you wish to</span>
+<span class="sd">    keep a copy of the original camera model, you should manually create a copy of it before calling the</span>
+<span class="sd">    :meth:`estimate` method on this class.</span>
+
+<span class="sd">    In the :meth:`estimate` method, convergence is checked on both the sum of squares of the residuals and the update</span>
+<span class="sd">    vector for the state.  That is convergence is reached when either of</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        :nowrap:</span>
+
+<span class="sd">        \begin{gather*}</span>
+<span class="sd">        \left\|\mathbf{r}_{pre}^T\mathbf{r}_{pre} - \mathbf{r}_{post}^T\mathbf{r}_{post}\right\|</span>
+<span class="sd">        \le(a_r+r_r\mathbf{r}_{pre}^T\mathbf{r}_{pre}) \\</span>
+<span class="sd">        \text{all}\left[\left\|\mathbf{u}\right\|\le(a_s+r_s\mathbf{s}_{pre})\right]</span>
+<span class="sd">        \end{gather*}</span>
+
+<span class="sd">    is ``True``. Here :math:`\mathbf{r}_{pre}` is the nx1 vector of residuals before the update is applied,</span>
+<span class="sd">    :math:`\mathbf{r}_{post}` is the nx1 vector of residuals after the update is applied, :math:`a_r` is the</span>
+<span class="sd">    :attr:`residual_atol` absolute residual tolerance, :math:`r_r` is the :attr:`residual_rtol` relative residual</span>
+<span class="sd">    tolerance, :math:`\mathbf{u}` is the update vector, :math:`\text{all}` indicates that the contained expression is</span>
+<span class="sd">    ``True`` for all elements, :math:`a_s` is the :attr:`state_atol` absolute tolerance for the state vector,</span>
+<span class="sd">    :math:`r_s` is the :attr:`state_rtol` relative tolerance for the state vector, and :math:`\mathbf{s}_{pre}` is the</span>
+<span class="sd">    state vector before the update is applied.  Divergence is only checked on the sum of squares of the residuals, that</span>
+<span class="sd">    is, divergence is occurring when</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \mathbf{r}_{pre}^T\mathbf{r}_{pre} &lt; \mathbf{r}_{post}^T\mathbf{r}_{post}</span>
+
+<span class="sd">    where all is as defined as before.  If a case is diverging then a warning will be printed, the iteration will cease,</span>
+<span class="sd">    and :attr:`successful` will be set to ``False``.</span>
+
+<span class="sd">    Typically this class is not used by the user, and instead it is used internally by the :class:`.Calibration` class</span>
+<span class="sd">    which handles data preparation for you. If you wish to use this externally from the :class:`.Calibration` class you</span>
+<span class="sd">    must first set</span>
+
+<span class="sd">    * :attr:`model`</span>
+<span class="sd">    * :attr:`measurements`</span>
+<span class="sd">    * :attr:`camera_frame_directions`</span>
+<span class="sd">    * :attr:`temperatures`</span>
+<span class="sd">    * :attr:`weighted_estimation`</span>
+<span class="sd">    * :attr:`measurement_covariance` *if* :attr:`weighted_estimation` *is* ``True``</span>
+<span class="sd">    * :attr:`a_priori_state_covariance` *if* :attr:`~.CameraModel.use_a_priori` *is set to* ``True`` for the camera</span>
+<span class="sd">      model.</span>
+
+<span class="sd">    according to their documentation.  Once those have been set, you can perform the estimation using :meth:`estimate`</span>
+<span class="sd">    which will iterate until convergence (or divergence).  If the fit successfully converges, :attr:`successful` will be</span>
+<span class="sd">    set to ``True`` and attributes :attr:`postfit_covariance` and :attr:`postfit_residuals` will both return numpy</span>
+<span class="sd">    arrays instead of ``None``.  If you wish to use the same instance of this class to do another estimation you should</span>
+<span class="sd">    call :meth:`reset` before setting the new data to ensure that data is not mixed between estimation runs and all</span>
+<span class="sd">    flags are set correctly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">ModelT</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">IterativeNonlinearLstSqOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param model: The camera model instance to be estimated set with an initial guess of the state.</span>
+<span class="sd">        :param options: the dataclass containing the options to configure the class with</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">IterativeNonlinearLstSqOptions</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">:</span> <span class="n">ModelT</span> <span class="o">=</span> <span class="n">model</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The instance attribute to store the camera model being estimated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_measurements</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The instance attribute to store the measurement array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_frame_directions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>  
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The instance attribute to store the base frame direction list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_temperatures</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>   
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The instance attribute to store the camera temperature values for each image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># set the internal success flag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_successful</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The instance attribute to store the success flag</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_measurement_covariance</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="n">DOUBLE_ARRAY</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The instance attribute to store the measurement covariance matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A place to store the Jacobian matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_postfit_covariance</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A place to cache the post-fit covariance matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_postfit_residuals</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A place to cache the post-fit residual vector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelT</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The camera model that is being estimated.</span>
+
+<span class="sd">        Typically this should be a subclass of :class:`.CameraModel`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span>
+
+    <span class="nd">@model</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">ModelT</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">CameraModel</span><span class="p">):</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;You are setting a camera model that is not a subclass of CameraModel.  We&#39;ll assume duck &quot;</span>
+                          <span class="s2">&quot;typing for now, but be sure that you have implemented all required interfaces or you&#39;ll end &quot;</span>
+                          <span class="s2">&quot;up with an error.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">successful</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A boolean flag indicating whether the fit was successful or not.</span>
+
+<span class="sd">        If the fit was successful this should return ``True``, and ``False`` if otherwise.  A fit is defined as</span>
+<span class="sd">        successful if convergence criteria were reached before the maximum number of iterations.  Divergence and</span>
+<span class="sd">        non-convergence are both considered an unsuccessful fit resulting in this being set to ``False``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_successful</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">measurement_covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A square numpy array containing the covariance matrix for the measurements or a scalar containing the variance</span>
+<span class="sd">        for all of the measurements.</span>
+
+<span class="sd">        If :attr:`weighted_estimation` is set to ``True`` then this property will contain the measurement covariance</span>
+<span class="sd">        matrix as a square, full rank, numpy array or the measurement variance as a scalar float.  If</span>
+<span class="sd">        :attr:`weighted_estimation` is set to ``False`` then this property may be ``None`` and will be ignored.</span>
+
+<span class="sd">        If specified as a scalar, it is treated as the **variance** for each measurement (that is ``cov = v*I(n,n)``</span>
+<span class="sd">        where ``cov`` is the covariance matrix, ``v`` is the specified scalar variance, and ``I(n,n)`` is a nxn identity</span>
+<span class="sd">        matrix) in a memory efficient way.</span>
+
+<span class="sd">        :raises ValueError: When attempting to set an array that does not have the proper shape for the</span>
+<span class="sd">                            :attr:`measurements` vector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measurement_covariance</span>
+
+    <span class="nd">@measurement_covariance</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">measurement_covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="n">ARRAY_LIKE</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measurements</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measurements</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The measurement covariance matrix must be a square matrix of nxn where n is the &#39;</span>
+                                    <span class="s1">&#39;number of measurements being used in estimation.</span><span class="se">\n\t</span><span class="s1">measurement_covariance shape = </span><span class="si">{}</span><span class="s1">&#39;</span>
+                                    <span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1">number of measurements = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measurements</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_postfit_covariance</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># drop the cache</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_measurement_covariance</span> <span class="o">=</span> <span class="n">val</span>  <span class="c1"># type: ignore</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">measurements</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A nx2 numpy array of the observed pixel locations for stars across all images</span>
+
+<span class="sd">        Each column of this array corresponds to the same column of the :attr:`camera_frame_directions` concatenated</span>
+<span class="sd">        down the last axis. (That is ``measurements[:, i] &lt;-&gt; np.concatenate(camera_frame_directions, axis=-1)[:, i]``)</span>
+
+<span class="sd">        This must always be set before a call to :meth:`estimate`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measurements</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;measurements shouldn&#39;t be none at this point&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measurements</span>
+
+    <span class="nd">@measurements</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">measurements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ARRAY_LIKE</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_measurements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_measurements</span> <span class="o">=</span> <span class="kc">None</span>
+        
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">camera_frame_directions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A length m list of unit vectors in the camera frame as numpy arrays for m images corresponding to the</span>
+<span class="sd">        :attr:`measurements` attribute.</span>
+
+<span class="sd">        Each element of this list corresponds to a unique image that is being considered for estimation and the</span>
+<span class="sd">        subsequent element in the :attr:`temperatures` list. Each column of this concatenated array will correspond to</span>
+<span class="sd">        the same column of the :attr:`measurements` array. (That is</span>
+<span class="sd">        ``np.concatenate(camera_frame_directions, axis=-1)[:, i] &lt;-&gt; measurements[:, i]``).</span>
+
+<span class="sd">        Any images for which no stars were identified (due to any number of reasons) will have a list of empty arrays in</span>
+<span class="sd">        the corresponding element of this list (that is ``camera_frame_directions[i] == [[], [], []]`` where ``i`` is an</span>
+<span class="sd">        image with no measurements identified).  These will be automatically dropped by numpy&#39;s concatenate, but are</span>
+<span class="sd">        included to notify the which temperatures/misalignments to use.</span>
+
+<span class="sd">        This must always be set before a call to :meth:`estimate`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_frame_directions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;base frame directions should not be None at this point&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_frame_directions</span>
+
+    <span class="nd">@camera_frame_directions</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">camera_frame_directions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">]]]):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_frame_directions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">temperatures</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A length m list of temperatures of the camera for each image being considered in estimation.</span>
+
+<span class="sd">        Each element of this list corresponds to a unique image that is being considered for estimation and the</span>
+<span class="sd">        subsequent element in the :attr:`camera_frame_directions` list.</span>
+
+<span class="sd">        This must always be set before a call to :meth:`estimate` (although sometimes it may be a list of all zeros if</span>
+<span class="sd">        temperature data is not available for the camera).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_temperatures</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Temperatures should not be None at this point&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_temperatures</span>
+
+    <span class="nd">@temperatures</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">temperatures</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_temperatures</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">postfit_covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The post-fit state covariance matrix, taking into account the measurement covariance matrix (if applicable).</span>
+
+<span class="sd">        This returns the post-fit state covariance matrix after a call to :meth:`estimate`.  The covariance matrix will</span>
+<span class="sd">        be in the order according to :attr:`~.CameraModel.estimation_parameters` and if :attr:`weighted_estimation` is</span>
+<span class="sd">        ``True`` will return the state covariance matrix taking into account the measurement covariance matrix.  If</span>
+<span class="sd">        :attr:`weighted_estimation` is ``False``, then this will return the post-fit state covariance matrix assuming no</span>
+<span class="sd">        measurement weighting (that is a measurement covariance matrix of the identity matrix).  If :meth:`estimate`</span>
+<span class="sd">        has not been called yet or the fit was unsuccessful then this will return ``None``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_covariance</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">postfit_residuals</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DOUBLE_ARRAY</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The post-fit observed-computed measurement residuals as a 2xn numpy array.</span>
+
+<span class="sd">        This returns the post-fit observed minus computed measurement residuals after a call to :meth:`estimate`.  If</span>
+<span class="sd">        :meth:`estimate` has not been called yet or the fit was unsuccessful then this will return ``None``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_successful</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postfit_residuals</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="IterativeNonlinearLSTSQ.reset">
+<a class="viewcode-back" href="../../../../../calibration/estimators/geometric/giant.calibration.estimators.geometric.iterative_nonlinear_lstsq.IterativeNonlinearLSTSQ.reset.html#giant.calibration.estimators.geometric.iterative_nonlinear_lstsq.IterativeNonlinearLSTSQ.reset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method resets all of the data attributes to their default values to prepare for another estimation.</span>
+
+<span class="sd">        Specifically</span>
+
+<span class="sd">        * :attr:`successful`</span>
+<span class="sd">        * :attr:`measurement_covariance`</span>
+<span class="sd">        * :attr:`a_priori_state_covariance`</span>
+<span class="sd">        * :attr:`measurements`</span>
+<span class="sd">        * :attr:`camera_frame_directions`</span>
+<span class="sd">        * :attr:`temperatures`</span>
+<span class="sd">        * :attr:`postfit_covariance`</span>
+<span class="sd">        * :attr:`postfit_residuals`</span>
+
+<span class="sd">        are reset to their default values (typically ``None``).  This also clears the caches for some internally used</span>
+<span class="sd">        attributes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_successful</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_measurement_covariance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_measurements</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_frame_directions</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_temperatures</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_postfit_covariance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_postfit_residuals</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calc_covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method calculates the post fit covariance (if a fit was successful) using the cached value if available.</span>
+
+<span class="sd">        The post-fit covariance is defined as</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \mathbf{C}=\left((\mathbf{J}^T\mathbf{J})^{-1}</span>
+<span class="sd">            \mathbf{J}^T\mathbf{W}\mathbf{J}</span>
+<span class="sd">            (\mathbf{J}^T\mathbf{J})^{-1}\right)^{-1}</span>
+
+<span class="sd">        where :math:`\mathbf{J}` is the Jacobian matrix evaluated at the final state estimate and</span>
+<span class="sd">        :math:`\mathbf{W}=\mathbf{R}^{-1}` is the weight matrix, which is the inverse of the measurement covariance</span>
+<span class="sd">        matrix (if applicable).</span>
+
+<span class="sd">        If the fit was not successful (or it has not been performed yet) this will return ``None``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># if the fit was unsuccessful return None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">successful</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># if the covariance is cached return it</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postfit_covariance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postfit_covariance</span>
+
+        <span class="c1"># otherwise compute it</span>
+        <span class="n">weight_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_weight_matrix</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">state_vector</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurements</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;The jacobian hasn&#39;t been computed, something is wrong&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">weight_matrix</span><span class="p">):</span>
+            <span class="n">orthogonal_project_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span><span class="p">)</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span><span class="o">.</span><span class="n">T</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_postfit_covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">orthogonal_project_mat</span> <span class="o">@</span>
+                                                     <span class="n">weight_matrix</span> <span class="o">@</span>
+                                                     <span class="n">orthogonal_project_mat</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_postfit_covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span>
+                                                     <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span> <span class="o">*</span> <span class="n">weight_matrix</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="c1"># type: ignore</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postfit_covariance</span>
+
+<div class="viewcode-block" id="IterativeNonlinearLSTSQ.compute_residuals">
+<a class="viewcode-back" href="../../../../../calibration/estimators/geometric/giant.calibration.estimators.geometric.iterative_nonlinear_lstsq.IterativeNonlinearLSTSQ.compute_residuals.html#giant.calibration.estimators.geometric.iterative_nonlinear_lstsq.IterativeNonlinearLSTSQ.compute_residuals">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_residuals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CameraModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method computes the observed minus computed residuals for the current model (or an input model).</span>
+
+<span class="sd">        The residuals are returned as a 2xn numpy array where n is the number of stars observed with units of pixels.</span>
+
+<span class="sd">        The computed values are determined by calls to ``model.project_onto_image`` for the</span>
+<span class="sd">        :attr:`camera_frame_directions` for each image.</span>
+
+<span class="sd">        :param model: An optional model to compute the residuals using.  If ``None``, then will use :attr:`model`.</span>
+<span class="sd">        :return: The observed minus computed residuals as a numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># use the model attribute if necessary</span>
+        <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurements</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">vecs</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">ind</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">temperatures</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span>
+             <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">vecs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera_frame_directions</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_weight_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_vector_size</span><span class="p">,</span> <span class="n">number_of_measurements</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">DOUBLE_ARRAY</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method computes the weight matrix based on whether weighted estimation is being performed, and whether</span>
+<span class="sd">        using the a priori state as a measurement.</span>
+
+<span class="sd">        :param state_vector_size: The size of the state vector</span>
+<span class="sd">        :param number_of_measurements: The number of measurements</span>
+<span class="sd">        :return: the weight matrix, or 1 if a weight matrix is not needed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_estimation</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">use_a_priori</span><span class="p">:</span>
+            <span class="n">weight_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">state_vector_size</span> <span class="o">+</span> <span class="n">number_of_measurements</span><span class="p">,</span>
+                                      <span class="n">state_vector_size</span> <span class="o">+</span> <span class="n">number_of_measurements</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">a_priori_model_covariance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">weight_matrix</span><span class="p">[</span><span class="n">number_of_measurements</span><span class="p">:,</span>
+                              <span class="n">number_of_measurements</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a_priori_model_covariance</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">weight_matrix</span><span class="p">[</span><span class="n">number_of_measurements</span><span class="p">:,</span> <span class="n">number_of_measurements</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">state_vector_size</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measurement_covariance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measurement_covariance</span><span class="p">):</span>
+                    <span class="n">measurement_info</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">cast</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurement_covariance</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_measurements</span><span class="p">):</span>
+                        <span class="n">weight_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">measurement_info</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">weight_matrix</span><span class="p">[:</span><span class="n">number_of_measurements</span><span class="p">,</span>
+                                  <span class="p">:</span><span class="n">number_of_measurements</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measurement_covariance</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_measurements</span><span class="p">):</span>
+                    <span class="n">weight_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_estimation</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measurement_covariance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measurement_covariance</span><span class="p">):</span>
+                    <span class="n">weight_matrix</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">cast</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurement_covariance</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">weight_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measurement_covariance</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">weight_matrix</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">use_a_priori</span><span class="p">:</span>
+            <span class="n">weight_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">state_vector_size</span> <span class="o">+</span> <span class="n">number_of_measurements</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">a_priori_model_covariance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">weight_matrix</span><span class="p">[</span><span class="n">number_of_measurements</span><span class="p">:,</span>
+                              <span class="n">number_of_measurements</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a_priori_model_covariance</span><span class="p">))</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">weight_matrix</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">weight_matrix</span>
+
+<div class="viewcode-block" id="IterativeNonlinearLSTSQ.estimate">
+<a class="viewcode-back" href="../../../../../calibration/estimators/geometric/giant.calibration.estimators.geometric.iterative_nonlinear_lstsq.IterativeNonlinearLSTSQ.estimate.html#giant.calibration.estimators.geometric.iterative_nonlinear_lstsq.IterativeNonlinearLSTSQ.estimate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimates an updated camera model that better transforms the camera frame directions into pixel locations to</span>
+<span class="sd">        minimize the residuals between the observed and the predicted star locations.</span>
+
+<span class="sd">        Upon successful completion, the updated camera model is stored in the :attr:`model` attribute, the</span>
+<span class="sd">        :attr:`successful` will return ``True``, and :attr:`postfit_residuals` and :attr:`postfit_covariance` should</span>
+<span class="sd">        both be not None.  If estimation is unsuccessful, then :attr:`successful` should be set to ``False``.</span>
+
+<span class="sd">        The estimation is done using nonlinear iterative least squares, as discussed in the class documentation</span>
+<span class="sd">        (:class:`IterativeNonlinearLSTSQ`).</span>
+
+<span class="sd">        :raises ValueError: if :attr:`measurements` or :attr:`camera_frame_directions` are ``None``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurements</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;measurements must not be None before a call to estimate&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera_frame_directions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;camera_frame_directions must not be None before a call to estimate&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_estimation</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measurement_covariance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;measurement_covariance must not be None before a call to estimate &quot;</span>
+                             <span class="s2">&quot;if weighed_estimation is True&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">use_a_priori</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a_priori_model_covariance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;a_priori_model_covariance must not be None before a call to estimate &quot;</span>
+                             <span class="s2">&quot;if model.use_a_priori is True&quot;</span><span class="p">)</span>
+
+        <span class="c1"># get the size of the state vector</span>
+        <span class="n">a_priori_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">state_vector</span><span class="p">)</span>
+        <span class="n">state_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">a_priori_state</span><span class="p">)</span>
+
+        <span class="c1"># get the number of measurements</span>
+        <span class="n">num_meas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurements</span><span class="o">.</span><span class="n">size</span>
+
+        <span class="c1"># get the weight matrix</span>
+        <span class="n">weight_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_weight_matrix</span><span class="p">(</span><span class="n">state_size</span><span class="p">,</span> <span class="n">num_meas</span><span class="p">)</span>
+
+        <span class="c1"># calculate the prefit residuals</span>
+        <span class="n">prefit_residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_residuals</span><span class="p">()</span>
+        <span class="n">pre_ss</span> <span class="o">=</span> <span class="n">prefit_residuals</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="nd">@prefit_residuals</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span><span class="p">):</span>
+
+            <span class="n">jacobian</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera_frame_directions</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">temperatures</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">use_a_priori</span><span class="p">:</span>
+                <span class="n">residuals_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">prefit_residuals</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">),</span>
+                                                <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">state_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">))],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">residuals_vec</span> <span class="o">=</span> <span class="n">prefit_residuals</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">weight_matrix</span><span class="p">):</span>
+                <span class="n">lhs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">weight_matrix</span><span class="p">)</span><span class="o">*</span><span class="n">jacobian</span><span class="o">.</span><span class="n">T</span><span class="nd">@jacobian</span>
+                <span class="n">rhs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">weight_matrix</span><span class="p">)</span><span class="o">*</span><span class="n">jacobian</span><span class="o">.</span><span class="n">T</span><span class="nd">@residuals_vec</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lhs</span> <span class="o">=</span> <span class="n">jacobian</span><span class="o">.</span><span class="n">T</span><span class="nd">@weight_matrix@jacobian</span>
+                <span class="n">rhs</span> <span class="o">=</span> <span class="n">jacobian</span><span class="o">.</span><span class="n">T</span><span class="nd">@weight_matrix@residuals_vec</span>
+
+            <span class="n">update_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+            <span class="n">model_copy</span><span class="p">:</span> <span class="n">ModelT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+            <span class="n">model_copy</span><span class="o">.</span><span class="n">apply_update</span><span class="p">(</span><span class="n">update_vec</span><span class="p">)</span>
+
+            <span class="n">postfit_residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_residuals</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model_copy</span><span class="p">)</span>
+            <span class="n">post_ss</span> <span class="o">=</span> <span class="n">postfit_residuals</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="nd">@postfit_residuals</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+            <span class="n">resid_change</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">pre_ss</span><span class="o">-</span><span class="n">post_ss</span><span class="p">)</span>
+
+            <span class="c1"># check for convergence</span>
+            <span class="k">if</span> <span class="n">resid_change</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">residual_atol</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">residual_rtol</span><span class="o">*</span><span class="n">pre_ss</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_successful</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_postfit_residuals</span> <span class="o">=</span> <span class="n">postfit_residuals</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model_copy</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera_frame_directions</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">temperatures</span><span class="p">)</span>
+                <span class="k">return</span>
+
+            <span class="k">elif</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">update_vec</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_atol</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">state_rtol</span><span class="o">*</span><span class="n">a_priori_state</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_successful</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_postfit_residuals</span> <span class="o">=</span> <span class="n">postfit_residuals</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model_copy</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera_frame_directions</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">temperatures</span><span class="p">)</span>
+                <span class="k">return</span>
+
+            <span class="k">elif</span> <span class="n">pre_ss</span> <span class="o">&lt;</span> <span class="n">post_ss</span><span class="p">:</span>  <span class="c1"># check for divergence</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Solution is diverging.  Stopping iteration.&#39;</span>
+                              <span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1">pre-update residuals </span><span class="si">{}</span><span class="s1">&#39;</span>
+                              <span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1">post-update residuals </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pre_ss</span><span class="p">,</span> <span class="n">post_ss</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_successful</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_postfit_residuals</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">return</span>
+
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># converging</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model_copy</span>
+                <span class="n">prefit_residuals</span> <span class="o">=</span> <span class="n">postfit_residuals</span>
+                <span class="n">pre_ss</span> <span class="o">=</span> <span class="n">post_ss</span>
+                <span class="n">a_priori_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">state_vector</span><span class="p">)</span>
+
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Solution didn&#39;t converge in the requested number of iterations&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_successful</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_postfit_residuals</span> <span class="o">=</span> <span class="n">prefit_residuals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">compute_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera_frame_directions</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">temperatures</span><span class="p">)</span></div>
+</div>
+
+
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

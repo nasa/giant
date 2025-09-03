@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.coverage.utilities.dop_computations &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../../index.html">
+    <img class="logo" src="../../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.coverage.utilities.dop_computations</h1><div class="highlight"><pre>
+<span></span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.illumination</span><span class="w"> </span><span class="kn">import</span> <span class="n">IlluminationModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.rotations.core.elementals</span><span class="w"> </span><span class="kn">import</span> <span class="n">rot_z</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.utilities.spherical_coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">radec_to_unit</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.coverage.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DOP_TYPE</span><span class="p">,</span> <span class="n">JACOBIAN_TYPE</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DOUBLE_ARRAY</span>
+
+
+
+<div class="viewcode-block" id="DOPComputations">
+<a class="viewcode-back" href="../../../../coverage/utilities/dop_computations/giant.coverage.utilities.dop_computations.DOPComputations.html#giant.coverage.utilities.dop_computations.DOPComputations">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DOPComputations</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class serves as a container for methods that compute dilution of precision (DOP) metrics for given</span>
+<span class="sd">    illumination observation data.</span>
+<span class="sd">    </span>
+<span class="sd">    This is used to make it easy to distribute the DOP computations across multiple cores using multiprocessing.</span>
+<span class="sd">    Generally, you should not use this as the :class:`.Coverage` class should set everything up for you.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">az_grid</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span><span class="p">,</span> <span class="n">elev_grid</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span><span class="p">,</span>
+                 <span class="n">brdf</span><span class="p">:</span> <span class="n">IlluminationModel</span><span class="p">,</span> <span class="n">visibility</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param az_grid: An array of azimuth angles in radians with shape (n, m)</span>
+<span class="sd">                        where n is the number of distinct azimuth values the facet&#39;s surface normal will permutate through,</span>
+<span class="sd">                        and m is the number of distinct elevation values the facet&#39;s surface normal will permutate through</span>
+<span class="sd">        :param elev_grid: An array of elevation angles in radians with shape (n, m)</span>
+<span class="sd">                         where n is the number of distinct azimuth values the facet&#39;s surface normal will permutate through,</span>
+<span class="sd">                         and m is the number of distinct elevation values the facet&#39;s surface normal will permutate through</span>
+<span class="sd">        :param brdf: An :class:`IlluminationModel` representing a Bidirectional</span>
+<span class="sd">                     Reflectance Distribution Function (BRDF) used to compute the</span>
+<span class="sd">                     jacobian matrix of the change in the illumination values</span>
+<span class="sd">                     given a change in the surface normal and/or albedo.</span>
+<span class="sd">        :param visibility: An optional array of observations of the target body</span>
+<span class="sd">                          :data:`ILLUM_DTYPE` values with shape (i, f)</span>
+<span class="sd">                          where i is the number of images and f is the number of</span>
+<span class="sd">                          surface elements for the shape model being used</span>
+<span class="sd">                          (surface elements can be vertices or facets).</span>
+<span class="sd">                          Each entry characterizes the illumination geometry</span>
+<span class="sd">                          of a surface element at a specific time so that</span>
+<span class="sd">                          DOP metrics can be computed from the surface normal vector</span>
+<span class="sd">                          provided by each entry.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">visibility</span> <span class="o">=</span> <span class="n">visibility</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">az_grid</span> <span class="o">=</span> <span class="n">az_grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elev_grid</span> <span class="o">=</span> <span class="n">elev_grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">brdf</span> <span class="o">=</span> <span class="n">brdf</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_combine_results</span><span class="p">(</span><span class="n">jacobians</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">JACOBIAN_TYPE</span><span class="p">])</span> \
+            <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">JACOBIAN_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method combines jacobians for different time labels together and extracts</span>
+<span class="sd">        DOP metrics from the combined jacobians.</span>
+
+<span class="sd">        The combined DOP values for albedo, x slope, y slope, and rss are computed from the diagonal</span>
+<span class="sd">        of the inverse of the observability Gramian matrix (H^T*W*H)^(-1) where H is the jacobian and</span>
+<span class="sd">        W is a weighting matrix (in this code W is just the identity matrix)</span>
+<span class="sd">        </span>
+<span class="sd">        :param jacobians: A dictionary with the keys being labels for imaging times,</span>
+<span class="sd">                          and the values being 2D lists of illumination jacobians</span>
+<span class="sd">        </span>
+<span class="sd">        :return: A tuple of the following data, each having the length of the number</span>
+<span class="sd">                 of permutations the facet&#39;s surface normal vector was oriented through:\n</span>
+<span class="sd">                 The combined jacobians,\n</span>
+<span class="sd">                 The albedo DOP values,\n</span>
+<span class="sd">                 The x slope DOP values,\n</span>
+<span class="sd">                 The y slope DOP values, and\n</span>
+<span class="sd">                 The RSS of the DOP values\n</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">big_jacs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">alb_dops</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">xt_dops</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">yt_dops</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">rss_dops</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">jacs</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">jacobians</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+
+            <span class="n">jacs</span> <span class="o">=</span> <span class="p">[</span><span class="n">jac</span> <span class="k">for</span> <span class="n">jac</span> <span class="ow">in</span> <span class="n">jacs</span> <span class="k">if</span> <span class="n">jac</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">jacs</span><span class="p">:</span>
+                <span class="n">jacs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">5e-3</span><span class="p">))</span>
+                <span class="n">current_jac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">jacs</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="n">big_jacs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_jac</span><span class="p">)</span>
+
+                <span class="n">dop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">current_jac</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">current_jac</span><span class="p">)</span>
+
+                <span class="n">alb_dops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dop</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span>
+                <span class="n">xt_dops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dop</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+                <span class="n">yt_dops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dop</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+                <span class="n">rss_dops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">dop</span><span class="p">)))</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">big_jacs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                <span class="n">alb_dops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                <span class="n">xt_dops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                <span class="n">yt_dops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                <span class="n">rss_dops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">big_jacs</span><span class="p">,</span> <span class="n">alb_dops</span><span class="p">,</span> <span class="n">xt_dops</span><span class="p">,</span> <span class="n">yt_dops</span><span class="p">,</span> <span class="n">rss_dops</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_dop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visibility</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">JACOBIAN_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method takes a list of observations for a certain facet on the target&#39;s</span>
+<span class="sd">        surface where the facet is determined to be visible and computes DOP metrics.</span>
+<span class="sd">        </span>
+<span class="sd">        It permutates the facet&#39;s surface normal vector through every combination</span>
+<span class="sd">        of azimuth and elevation values as specified in :attr:`.az_grid` and :attr:`.elev_grid`,</span>
+<span class="sd">        and uses these orientations to compute the jacobian using the</span>
+<span class="sd">        :meth:`.compute_photoclinometry_jacobian` method for the specified :attr:`.brdf`.</span>
+<span class="sd">        </span>
+<span class="sd">        Once it has a jacobian, it computes DOP values for albedo, x slope, y slope, and rss</span>
+<span class="sd">        from the diagonal of the inverse of the observability Gramian matrix (H^T*W*H)^(-1)</span>
+<span class="sd">        where H is the jacobian and W is a weighting matrix (in this code W is just the identity matrix)</span>
+<span class="sd">        </span>
+<span class="sd">        :param visibility: An array of :data:`ILLUM_DTYPE` values representing the</span>
+<span class="sd">                           illumination geometry of a certain facet, with length i</span>
+<span class="sd">                           where i is the number of observations where the facet is visible</span>
+<span class="sd">        </span>
+<span class="sd">        :return: A tuple of the following data, each having the length of the number</span>
+<span class="sd">                 of permutations the facet&#39;s surface normal vector was oriented through:\n</span>
+<span class="sd">                 The number of usable observations for the given facet,\n</span>
+<span class="sd">                 The jacobians,\n</span>
+<span class="sd">                 The albedo DOP values,\n</span>
+<span class="sd">                 The x slope DOP values,\n</span>
+<span class="sd">                 The y slope DOP values, and\n</span>
+<span class="sd">                 The RSS of the DOP values\n</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">obs_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">visibility</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">jacobians</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">obs_count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">current_hx</span><span class="p">,</span> <span class="n">current_hy</span><span class="p">,</span> <span class="n">current_alb</span><span class="p">,</span> <span class="n">current_tot</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+
+            <span class="c1"># define the local ENU frame</span>
+            <span class="c1"># define the z axis to be in line with the normal vector for the facet in the body-fixed frame</span>
+            <span class="n">z_axis</span> <span class="o">=</span> <span class="n">visibility</span><span class="p">[</span><span class="s1">&#39;normal&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+            <span class="c1"># as long as we aren&#39;t at the north or south pole</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">z_axis</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span> <span class="o">!=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="c1"># rotate about the body-fixed z axis to get the vector constraining the east direciton</span>
+                <span class="n">east_dir</span> <span class="o">=</span> <span class="n">rot_z</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span> <span class="o">@</span> <span class="n">z_axis</span>
+
+                <span class="c1"># cross the z axis and the east direction constraint vector to get the north vector</span>
+                <span class="n">north</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">z_axis</span><span class="p">,</span> <span class="n">east_dir</span><span class="p">)</span>
+                <span class="n">north</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">north</span><span class="p">)</span>
+
+                <span class="c1"># complete the right handed system</span>
+                <span class="n">east</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">north</span><span class="p">,</span> <span class="n">z_axis</span><span class="p">)</span>
+                <span class="n">east</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">east</span><span class="p">)</span>
+
+                <span class="c1"># form the rotation matrix from the local frame to the body-fixed frame</span>
+                <span class="n">local_enu_to_body_fixed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">east</span><span class="p">,</span> <span class="n">north</span><span class="p">,</span> <span class="n">z_axis</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># if the local normal is the north or south pole then use the body-fixed frame</span>
+                <span class="c1"># complete the right handed system</span>
+                <span class="n">x_axis</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="n">y_axis</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">z_axis</span><span class="o">.</span><span class="n">ravel</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+                <span class="c1"># form the rotation matrix from the local frame to the body-fixed frame</span>
+                <span class="n">local_enu_to_body_fixed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x_axis</span><span class="p">,</span> <span class="n">y_axis</span><span class="p">,</span> <span class="n">z_axis</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+            <span class="n">counts</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">az</span><span class="p">,</span> <span class="n">elev</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">az_grid</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">elev_grid</span><span class="o">.</span><span class="n">ravel</span><span class="p">()):</span>
+
+                <span class="c1"># get the shifted normal vector in the body-fixed frame</span>
+                <span class="n">visibility</span><span class="p">[</span><span class="s1">&#39;normal&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">local_enu_to_body_fixed</span> <span class="o">@</span> <span class="n">radec_to_unit</span><span class="p">(</span><span class="n">az</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">elev</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+                <span class="n">current_jac</span><span class="p">,</span> <span class="n">valid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">brdf</span><span class="o">.</span><span class="n">compute_photoclinometry_jacobian</span><span class="p">(</span><span class="n">visibility</span><span class="p">,</span> <span class="n">local_enu_to_body_fixed</span><span class="p">)</span>
+                <span class="n">counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">valid</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+
+                <span class="k">if</span> <span class="n">counts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="n">current_jac</span> <span class="o">=</span> <span class="n">current_jac</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
+
+                    <span class="n">jacobians</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_jac</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">current_dop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">current_jac</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">current_jac</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
+                        <span class="n">current_alb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                        <span class="n">current_hx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                        <span class="n">current_hy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                        <span class="n">current_tot</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                        <span class="n">jacobians</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                        <span class="k">continue</span>
+
+                    <span class="n">current_total_dop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">current_dop</span><span class="o">.</span><span class="n">trace</span><span class="p">())</span>
+
+                    <span class="n">current_alb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">current_dop</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span>
+                    <span class="n">current_hx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">current_dop</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+                    <span class="n">current_hy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">current_dop</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+                    <span class="n">current_tot</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_total_dop</span><span class="p">)</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">current_alb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                    <span class="n">current_hx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                    <span class="n">current_hy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                    <span class="n">current_tot</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                    <span class="n">jacobians</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">jacobians</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">az_grid</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">current_alb</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">az_grid</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">current_hx</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">az_grid</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">current_hy</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">az_grid</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">current_tot</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">az_grid</span><span class="o">.</span><span class="n">size</span>
+
+        <span class="k">return</span> <span class="n">obs_count</span><span class="p">,</span> <span class="n">jacobians</span><span class="p">,</span> <span class="n">current_alb</span><span class="p">,</span> <span class="n">current_hx</span><span class="p">,</span> <span class="n">current_hy</span><span class="p">,</span> <span class="n">current_tot</span>
+
+<div class="viewcode-block" id="DOPComputations.compute_target_dop_facet">
+<a class="viewcode-back" href="../../../../coverage/utilities/dop_computations/giant.coverage.utilities.dop_computations.DOPComputations.compute_target_dop_facet.html#giant.coverage.utilities.dop_computations.DOPComputations.compute_target_dop_facet">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_target_dop_facet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visibility</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">JACOBIAN_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">]</span> <span class="o">|</span> \
+               <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">JACOBIAN_TYPE</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method takes a list of observations for a certain facet on the target&#39;s</span>
+<span class="sd">        surface and computes DOP metrics based on the observations where the facet is visible.</span>
+<span class="sd">        </span>
+<span class="sd">        :param visibility: An array of :data:`ILLUM_DTYPE` values representing the</span>
+<span class="sd">                           illumination geometry of a certain facet, with length i</span>
+<span class="sd">                           where i is the number of images. Each entry characterizes</span>
+<span class="sd">                           the illumination geometry of the facet at a specific time</span>
+<span class="sd">                           so that DOP metrics can be computed from the surface</span>
+<span class="sd">                           normal vector provided by each entry</span>
+<span class="sd">        </span>
+<span class="sd">        Note that if labels are being used to handle multiple sets of imaging times,</span>
+<span class="sd">        the DOP metrics will be calculated for each label and then a set of combined</span>
+<span class="sd">        DOP metrics will be computed for all imaging times. Each of these computed</span>
+<span class="sd">        metrics will be stored as values in a dictionary with each label being the</span>
+<span class="sd">        keys along with an &quot;all&quot; label for the combined DOP metrics.</span>
+<span class="sd">        </span>
+<span class="sd">        :return: A tuple of the following data, each having the length of the number</span>
+<span class="sd">                 of permutations the facet&#39;s surface normal vector was oriented through:\n</span>
+<span class="sd">                 The number of usable observations for the given facet,\n</span>
+<span class="sd">                 The jacobians,\n</span>
+<span class="sd">                 The albedo DOP values,\n</span>
+<span class="sd">                 The x slope DOP values,\n</span>
+<span class="sd">                 The y slope DOP values, and\n</span>
+<span class="sd">                 The RSS of the DOP values\n</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s1">&#39;label&#39;</span> <span class="ow">in</span> <span class="n">visibility</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">visibility</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">])</span>
+
+            <span class="n">jacobians</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">JACOBIAN_TYPE</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">observation_count</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">x_terrain_dop</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">y_terrain_dop</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">albedo_dop</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">rss_dop</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="c1"># compute dop for each label</span>
+            <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
+                <span class="n">test</span> <span class="o">=</span> <span class="n">visibility</span><span class="p">[</span><span class="s1">&#39;visible&#39;</span><span class="p">]</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">visibility</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">label</span><span class="p">)</span>
+                <span class="p">(</span><span class="n">observation_count</span><span class="p">[</span><span class="n">label</span><span class="p">],</span> <span class="n">jacobians</span><span class="p">[</span><span class="n">label</span><span class="p">],</span> <span class="n">albedo_dop</span><span class="p">[</span><span class="n">label</span><span class="p">],</span>
+                 <span class="n">x_terrain_dop</span><span class="p">[</span><span class="n">label</span><span class="p">],</span> <span class="n">y_terrain_dop</span><span class="p">[</span><span class="n">label</span><span class="p">],</span> <span class="n">rss_dop</span><span class="p">[</span><span class="n">label</span><span class="p">])</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dop</span><span class="p">(</span><span class="n">visibility</span><span class="p">[</span><span class="n">test</span><span class="p">])</span>
+
+            <span class="c1"># compute overall dop</span>
+
+            <span class="n">observation_count</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">observation_count</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">observation_count</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">jacobians</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">],</span> <span class="n">albedo_dop</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">],</span> <span class="n">x_terrain_dop</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">],</span>
+                 <span class="n">y_terrain_dop</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">],</span> <span class="n">rss_dop</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">])</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combine_results</span><span class="p">(</span><span class="n">jacobians</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">jacobians</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">az_grid</span><span class="o">.</span><span class="n">size</span>
+                <span class="n">albedo_dop</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">az_grid</span><span class="o">.</span><span class="n">size</span>
+                <span class="n">x_terrain_dop</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">az_grid</span><span class="o">.</span><span class="n">size</span>
+                <span class="n">y_terrain_dop</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">az_grid</span><span class="o">.</span><span class="n">size</span>
+                <span class="n">rss_dop</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">az_grid</span><span class="o">.</span><span class="n">size</span>
+                
+            <span class="k">return</span> <span class="n">observation_count</span><span class="p">,</span> <span class="n">jacobians</span><span class="p">,</span> <span class="n">albedo_dop</span><span class="p">,</span> <span class="n">x_terrain_dop</span><span class="p">,</span> <span class="n">y_terrain_dop</span><span class="p">,</span> <span class="n">rss_dop</span>
+                
+        <span class="k">else</span><span class="p">:</span>
+             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dop</span><span class="p">(</span><span class="n">visibility</span><span class="p">[</span><span class="n">visibility</span><span class="p">[</span><span class="s1">&#39;visible&#39;</span><span class="p">]])</span></div>
+
+
+
+<div class="viewcode-block" id="DOPComputations.compute_target_dop">
+<a class="viewcode-back" href="../../../../coverage/utilities/dop_computations/giant.coverage.utilities.dop_computations.DOPComputations.compute_target_dop.html#giant.coverage.utilities.dop_computations.DOPComputations.compute_target_dop">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_target_dop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">normal</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> \
+            <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">JACOBIAN_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">,</span> <span class="n">DOP_TYPE</span><span class="p">]</span> <span class="o">|</span> \
+               <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">JACOBIAN_TYPE</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method takes a surface element index and a surface normal vector to</span>
+<span class="sd">        compute the DOP metrics for the surface element at various potential orientations.</span>
+<span class="sd">        </span>
+<span class="sd">        The surface element index is used to access sorted data in a visibility matrix,</span>
+<span class="sd">        which corresponds to a specific vertex or facet on the surface.</span>
+<span class="sd">        </span>
+<span class="sd">        The normal vector is permutated through every combination of azimuth and elevation values as specified in</span>
+<span class="sd">        :attr:`.az_grid` and :attr:`.elev_grid`, and these orientations are used to compute the jacobian using the</span>
+<span class="sd">        :meth:`compute_photoclinometry_jacobian` method for the specified :attr:`.brdf`.</span>
+<span class="sd">        </span>
+<span class="sd">        Once it has a jacobian, it computes DOP values for albedo, x slope, y slope, and rss</span>
+<span class="sd">        from the diagonal of the inverse of the observability Gramian matrix (H^T*W*H)^(-1)</span>
+<span class="sd">        where H is the jacobian and W is a weighting matrix (in this code W is just an identity matrix)</span>
+<span class="sd">        </span>
+<span class="sd">        :param index: An integer index representing which surface element of the visibility</span>
+<span class="sd">                      matrix is being used to compute DOP metrics</span>
+<span class="sd">        :param normal: A surface normal vector corresponding to the specified surface</span>
+<span class="sd">                       element that will be rotated through various orientations</span>
+<span class="sd">        </span>
+<span class="sd">        :return: A tuple of the following data, each having the length of the number</span>
+<span class="sd">                 of permutations the normal vector was oriented through:\n</span>
+<span class="sd">                 The number of usable observations for the given surface element,\n</span>
+<span class="sd">                 The jacobians,\n</span>
+<span class="sd">                 The albedo DOP values,\n</span>
+<span class="sd">                 The x slope DOP values,\n</span>
+<span class="sd">                 The y slope DOP values, and\n</span>
+<span class="sd">                 The RSS of the DOP values\n</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">visibility</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;must call compute_visibility before compute_target_dop&quot;</span>
+        <span class="n">visibility</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">visibility</span><span class="p">[:,</span> <span class="n">index</span><span class="p">]</span>
+
+        <span class="n">observation_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">visibility</span><span class="p">[</span><span class="s1">&#39;visible&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="n">jacobians</span><span class="p">:</span> <span class="n">JACOBIAN_TYPE</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">visibility</span><span class="p">[</span><span class="s1">&#39;visible&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+
+            <span class="n">current_hx</span><span class="p">,</span> <span class="n">current_hy</span><span class="p">,</span> <span class="n">current_alb</span><span class="p">,</span> <span class="n">current_tot</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+
+            <span class="n">visibility</span> <span class="o">=</span> <span class="n">visibility</span><span class="p">[</span><span class="n">visibility</span><span class="p">[</span><span class="s1">&#39;visible&#39;</span><span class="p">]]</span>
+
+            <span class="c1"># determine the local frame</span>
+            <span class="c1"># use the normal vector for the target as the z axis</span>
+            <span class="n">z_axis</span> <span class="o">=</span> <span class="n">normal</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">z_axis</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span> <span class="o">!=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="n">east_dir</span> <span class="o">=</span> <span class="n">rot_z</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span> <span class="o">@</span> <span class="n">z_axis</span>
+
+                <span class="n">north</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">z_axis</span><span class="p">,</span> <span class="n">east_dir</span><span class="p">)</span>
+                <span class="n">north</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">north</span><span class="p">)</span>
+
+                <span class="n">east</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">north</span><span class="p">,</span> <span class="n">z_axis</span><span class="p">)</span>
+                <span class="n">east</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">east</span><span class="p">)</span>
+
+                <span class="c1"># form the rotation matrix from the local frame to the body-fixed frame</span>
+                <span class="n">local_enu_to_body_fixed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">east</span><span class="p">,</span> <span class="n">north</span><span class="p">,</span> <span class="n">z_axis</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># if the local normal is the north or south pole then use the body-fixed frame</span>
+                <span class="c1"># complete the right handed system</span>
+                <span class="n">x_axis</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="n">y_axis</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">z_axis</span><span class="o">.</span><span class="n">ravel</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+                <span class="c1"># form the rotation matrix from the local frame to the body-fixed frame</span>
+                <span class="n">local_enu_to_body_fixed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x_axis</span><span class="p">,</span> <span class="n">y_axis</span><span class="p">,</span> <span class="n">z_axis</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+            <span class="k">for</span> <span class="n">az</span><span class="p">,</span> <span class="n">elev</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">az_grid</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">elev_grid</span><span class="o">.</span><span class="n">ravel</span><span class="p">()):</span>
+
+                <span class="c1"># get the normal shifted normal vector in the body-fixed frame</span>
+                <span class="n">visibility</span><span class="p">[</span><span class="s1">&#39;normal&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">local_enu_to_body_fixed</span> <span class="o">@</span> <span class="n">radec_to_unit</span><span class="p">(</span><span class="n">az</span><span class="p">,</span> <span class="mi">90</span> <span class="o">-</span> <span class="n">elev</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+                <span class="n">current_jac</span><span class="p">,</span> <span class="n">valid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">brdf</span><span class="o">.</span><span class="n">compute_photoclinometry_jacobian</span><span class="p">(</span><span class="n">visibility</span><span class="p">,</span> <span class="n">local_enu_to_body_fixed</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">valid</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                    <span class="n">current_jac</span> <span class="o">=</span> <span class="n">current_jac</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
+
+                    <span class="n">jacobians</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_jac</span><span class="p">)</span>
+
+                    <span class="n">current_dop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">current_jac</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">current_jac</span><span class="p">)</span>
+
+                    <span class="n">current_total_dop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">current_dop</span><span class="o">.</span><span class="n">trace</span><span class="p">())</span>
+
+                    <span class="n">current_alb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">current_dop</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span>
+                    <span class="n">current_hx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">current_dop</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+                    <span class="n">current_hy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">current_dop</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+                    <span class="n">current_tot</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_total_dop</span><span class="p">)</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">current_alb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                    <span class="n">current_hx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                    <span class="n">current_hy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                    <span class="n">current_tot</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+            <span class="n">albedo_dop</span><span class="p">:</span> <span class="n">DOP_TYPE</span> <span class="o">=</span> <span class="n">current_alb</span>
+            <span class="n">x_terrain_dop</span><span class="p">:</span> <span class="n">DOP_TYPE</span> <span class="o">=</span> <span class="n">current_hx</span>
+            <span class="n">y_terrain_dop</span><span class="p">:</span> <span class="n">DOP_TYPE</span> <span class="o">=</span> <span class="n">current_hy</span>
+            <span class="n">all_total_dop</span><span class="p">:</span> <span class="n">DOP_TYPE</span> <span class="o">=</span> <span class="n">current_tot</span>
+            
+            <span class="k">return</span> <span class="n">observation_count</span><span class="p">,</span> <span class="n">jacobians</span><span class="p">,</span> <span class="n">albedo_dop</span><span class="p">,</span> <span class="n">x_terrain_dop</span><span class="p">,</span> <span class="n">y_terrain_dop</span><span class="p">,</span> <span class="n">all_total_dop</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">return</span> <span class="n">observation_count</span><span class="p">,</span> <span class="n">jacobians</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

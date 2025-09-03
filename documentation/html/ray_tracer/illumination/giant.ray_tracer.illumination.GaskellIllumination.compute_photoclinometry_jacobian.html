@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>GaskellIllumination.compute_photoclinometry_jacobian &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="GaskellIllumination.compute_photoclinometry_jacobian_numeric" href="giant.ray_tracer.illumination.GaskellIllumination.compute_photoclinometry_jacobian_numeric.html" />
+    <link rel="prev" title="GaskellIllumination" href="giant.ray_tracer.illumination.GaskellIllumination.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.ray_tracer.html">giant.ray_tracer</a><ul>
+  <li><a href="../giant.ray_tracer.illumination.html">illumination</a><ul>
+  <li><a href="giant.ray_tracer.illumination.GaskellIllumination.html">GaskellIllumination</a><ul>
+      <li>Previous: <a href="giant.ray_tracer.illumination.GaskellIllumination.html" title="previous chapter">GaskellIllumination</a></li>
+      <li>Next: <a href="giant.ray_tracer.illumination.GaskellIllumination.compute_photoclinometry_jacobian_numeric.html" title="next chapter">GaskellIllumination.compute_photoclinometry_jacobian_numeric</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.ray_tracer.illumination.GaskellIllumination.html" title="Previous document">GaskellIllumination</a>
+        </li>
+        <li>
+          <a href="giant.ray_tracer.illumination.GaskellIllumination.compute_photoclinometry_jacobian_numeric.html" title="Next document">GaskellIllumination.compute_photoclinometry_jacobian_numeric</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="gaskellillumination-compute-photoclinometry-jacobian">
+<h1>GaskellIllumination.compute_photoclinometry_jacobian<a class="headerlink" href="#gaskellillumination-compute-photoclinometry-jacobian" title="Link to this heading">¶</a></h1>
+<p><a class="reference internal" href="../giant.ray_tracer.illumination.html#module-giant.ray_tracer.illumination" title="giant.ray_tracer.illumination"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.ray_tracer.illumination</span></code></a>:</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giant.ray_tracer.illumination.GaskellIllumination.compute_photoclinometry_jacobian">
+<span class="sig-prename descclassname"><span class="pre">GaskellIllumination.</span></span><span class="sig-name descname"><span class="pre">compute_photoclinometry_jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_to_inertial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_inc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.2217304763960306</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_emi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.2217304763960306</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_phase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.443460952792061</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/ray_tracer/illumination.html#GaskellIllumination.compute_photoclinometry_jacobian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.ray_tracer.illumination.GaskellIllumination.compute_photoclinometry_jacobian" title="Link to this definition">¶</a></dt>
+<dd><p>This computes the Jacobian matrix of the change in the illumination values given a change in the surface normal
+(represented by a change in the surface slope) and a change in the local albedo values.</p>
+<p>Mathematically the jacobian is</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{J}=\frac{\partial I}{\partial\left[\begin{array} {ccc} h_x &amp; h_y &amp; \alpha \end{array}\right]} =
+\left[\begin{array}{ccc} \frac{\partial I}{\partial h_x} &amp; \frac{\partial I}{\partial h_y} &amp;
+\frac{\partial I}{\partial\alpha} \end{array}\right]\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\frac{\partial I}{\partial h_x} = \frac{\partial I}{\partial \hat{\mathbf{n}}}
+\frac{\partial \hat{\mathbf{n}}}{\partial\mathbf{n}}\frac{\partial \mathbf{n}}{\partial h_x} \\
+\frac{\partial I}{\partial h_y} = \frac{\partial I}{\partial \hat{\mathbf{n}}}
+\frac{\partial \hat{\mathbf{n}}}{\partial\mathbf{n}}\frac{\partial \mathbf{n}}{\partial h_y} \\
+\frac{\partial I}{\partial \alpha} = \alpha_0\left(-(1-\beta)\mathbf{n}^T\mathbf{i} +
+\beta\frac{-\mathbf{n}^T\mathbf{i}}{-\mathbf{n}^T\mathbf{i}+\mathbf{n}^T\mathbf{e}}\right) \\
+\frac{\partial I}{\partial \hat{\mathbf{n}}} = \frac{\partial I}{\partial \cos(i)}
+\frac{\partial \cos(i)}{\partial\hat{\mathbf{n}}} + \frac{\partial I}{\partial \cos(e)}
+\frac{\partial \cos(e)}{\partial\hat{\mathbf{n}}}\\
+\frac{\partial I}{\partial \cos(i)} = \alpha_0\alpha(1-\beta+\beta\frac{\cos{i}}{(\cos{i}+\cos{e})^2}) \\
+\frac{\partial I}{\partial \cos(e)} = -\beta\alpha_0\alpha\frac{\cos{i}}{(\cos{i}+\cos{e})^2} \\
+\frac{\partial \cos(i)}{\partial \hat{\mathbf{n}}} = -\mathbf{i}^T \\
+\frac{\partial \cos(e)}{\partial \hat{\mathbf{n}}} = \mathbf{e}^T \\
+\frac{\partial\hat{\mathbf{n}}}{\partial\mathbf{n}} = \frac{\mathbf{n}\mathbf{n}^T-
+\mathbf{n}^T\mathbf{n}\mathbf{I}}{(\mathbf{n}^T\mathbf{n})^{1.5}} \\
+\frac{\partial\mathbf{n}}{\partial h_x} = \left[\begin{array}{ccc} -1 &amp; 0 &amp; 0\end{array}\right] \\
+\frac{\partial\mathbf{n}}{\partial h_y} = \left[\begin{array}{ccc} 0 &amp; -1 &amp; 0\end{array}\right]\end{split}\]</div>
+<p><span class="math notranslate nohighlight">\(\cos(i)\)</span> is the cosine of the incidence angle, <span class="math notranslate nohighlight">\(\cos(e)\)</span> is the cosine of the exidence angle,
+and all else is as defined before.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>observations</strong> (<em>ndarray</em>) – The observations as a numpy array with type <code class="xref py py-attr docutils literal notranslate"><span class="pre">ILLUM_DTYPE</span></code>.</p></li>
+<li><p><strong>rotation_to_inertial</strong> (<em>ndarray</em>) – The rotation that takes the frame the observations are expressed in into the the
+local frame for the surface (usually the local east north up frame)</p></li>
+<li><p><strong>max_inc</strong> (<em>float</em>) – the maximum incidence angle to consider valid in radians</p></li>
+<li><p><strong>max_emi</strong> (<em>float</em>) – the maximum emission angle to consider valid in radians</p></li>
+<li><p><strong>max_phase</strong> (<em>float</em>) – the maximum phase angle to consider valid in radians</p></li>
+<li><p><strong>update</strong> (<em>bool</em>) – A flag specifying whether to form an update Jacobian</p></li>
+<li><p><strong>update_weight</strong> (<em>float</em>) – The weight of the prior values if doing an update</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the jacobian matrix as a n(+3)x3 array (where n is the number of observations) and a boolean array of
+length n specifying which rows of the jacobian matrix are valid</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Tuple</em>[<em>ndarray</em>, <em>ndarray</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.ray_tracer.illumination.GaskellIllumination.html" title="Previous document">GaskellIllumination</a>
+        </li>
+        <li>
+          <a href="giant.ray_tracer.illumination.GaskellIllumination.compute_photoclinometry_jacobian_numeric.html" title="Next document">GaskellIllumination.compute_photoclinometry_jacobian_numeric</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

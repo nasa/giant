@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>giant.relative_opnav.visualizers &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for giant.relative_opnav.visualizers</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides some basic visualization functions for various relnav results.</span>
+
+<span class="sd">Contents</span>
+<span class="sd">--------</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">Axes</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.figure</span><span class="w"> </span><span class="kn">import</span> <span class="n">Figure</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.animation</span><span class="w"> </span><span class="kn">import</span> <span class="n">PillowWriter</span>
+<span class="k">except</span> <span class="ne">UnicodeDecodeError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;unable to import PillowWriter&#39;</span><span class="p">)</span>
+    <span class="n">PillowWriter</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.relative_opnav.relnav_class</span><span class="w"> </span><span class="kn">import</span> <span class="n">RelativeOpNav</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.shapes</span><span class="w"> </span><span class="kn">import</span> <span class="n">Shape</span>
+
+<span class="n">ANGLES</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="n">SCAN_VECTORS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">ANGLES</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">ANGLES</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ANGLES</span><span class="o">.</span><span class="n">size</span><span class="p">)])</span>
+
+
+<div class="viewcode-block" id="show_templates">
+<a class="viewcode-back" href="../../../relative_opnav/visualizers/giant.relative_opnav.visualizers.show_templates.html#giant.relative_opnav.visualizers.show_templates">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">show_templates</span><span class="p">(</span><span class="n">relnav</span><span class="p">:</span> <span class="n">RelativeOpNav</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> 
+                   <span class="n">ax1</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ax2</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fig</span><span class="p">:</span> <span class="n">Figure</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> \
+                       <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Axes</span><span class="p">,</span> <span class="n">Axes</span><span class="p">,</span> <span class="n">Figure</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Show the rendered template alongside of a specific image.</span>
+<span class="sd">    </span>
+<span class="sd">    :param relnav: the :class:`.RelativeOpNav` instance to plot the residuals from</span>
+<span class="sd">    :param index: the image index (in th camera) to show</span>
+<span class="sd">    :param ax1: the axes to show the image on (if None one will be created)</span>
+<span class="sd">    :param ax2: the axes to show the template on (if None, one will be created)</span>
+<span class="sd">    :param fig: the fig containing ax1 and ax2 (if None, one will be created)</span>
+<span class="sd">    :returns: a tuple containing the image axes, the template axes, and the figure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># retrieve the image we are processing</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+    <span class="c1"># update the scene to reflect the current time</span>
+    <span class="n">relnav</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">ax1</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">ax2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">fig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
+        <span class="n">ax2</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+
+    <span class="c1"># set the title so we know what we&#39;re looking at</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span> <span class="n">relnav</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+    <span class="c1"># show the image</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+
+    <span class="c1"># determine the location of the template in the image (roughly)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">templ</span> <span class="o">:=</span> <span class="n">relnav</span><span class="o">.</span><span class="n">saved_templates</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="n">target_ind</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="n">template_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">templ</span><span class="o">.</span><span class="n">shape</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">template_size</span> <span class="o">=</span> <span class="n">template_shape</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s2">&quot;measured&quot;</span><span class="p">][:</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">center</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;invalid solved-for center.  using predicted.&#39;</span><span class="p">)</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s2">&quot;predicted&quot;</span><span class="p">][:</span><span class="mi">2</span><span class="p">])</span>
+
+    <span class="n">min_bounds</span> <span class="o">=</span> <span class="n">center</span> <span class="o">-</span> <span class="n">template_size</span>
+    <span class="n">max_bounds</span> <span class="o">=</span> <span class="n">center</span> <span class="o">+</span> <span class="n">template_size</span> <span class="o">+</span> <span class="p">(</span><span class="n">template_shape</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># crop the image, accounting for when the shape is odd using the modulo</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">min_bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">max_bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">max_bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">min_bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># label this subplot as the image</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Image&#39;</span><span class="p">)</span>
+
+    <span class="c1"># show the template</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">templ</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+    <span class="c1"># label this subplot as the template</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Template&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">,</span> <span class="n">fig</span></div>
+
+
+
+<div class="viewcode-block" id="show_limbs">
+<a class="viewcode-back" href="../../../relative_opnav/visualizers/giant.relative_opnav.visualizers.show_limbs.html#giant.relative_opnav.visualizers.show_limbs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">show_limbs</span><span class="p">(</span><span class="n">relnav</span><span class="p">:</span> <span class="n">RelativeOpNav</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Axes</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Show the observed and computed limbs on a specific image.</span>
+<span class="sd">    </span>
+<span class="sd">    :param relnav: the :class:`.RelativeOpNav` instance to plot the residuals from</span>
+<span class="sd">    :param index: the image index (in th camera) to show</span>
+<span class="sd">    :param ax: the axes to plot to (or None, in which case new axes will be created)</span>
+<span class="sd">    :returns: a tuple of the axes that was plotted to, the max bounds of the limbs, and the min bounds of the limbs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># retrieve the image we are processing</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+    <span class="c1"># retrieve the observation observation_date of the image we are processing</span>
+    <span class="n">date</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">observation_date</span>
+
+    <span class="c1"># update the scene to reflect the current time</span>
+    <span class="n">relnav</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+
+    <span class="c1"># initialize variables to store the bounds of the limbs</span>
+    <span class="n">min_limb_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">])</span>
+    <span class="n">max_limb_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">target_ind</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">):</span>
+        
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Shape</span><span class="p">),</span> <span class="s2">&quot;the target must contain a traceable shape&quot;</span>
+
+        <span class="c1"># determine the a priori distance to the target</span>
+        <span class="n">apriori_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+
+        <span class="c1"># get the a priori limb points</span>
+        <span class="c1"># define the line of sight to the body in the camera frame</span>
+        <span class="n">apriori_los</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">/</span> <span class="n">apriori_distance</span>
+
+        <span class="c1"># find the limb points in the camera frame</span>
+        <span class="n">apriori_limbs_cam</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">find_limbs</span><span class="p">(</span><span class="n">apriori_los</span><span class="p">,</span> <span class="n">SCAN_VECTORS</span><span class="p">)</span>
+
+        <span class="c1"># project the limb points into the image</span>
+        <span class="n">apriori_limbs_image</span> <span class="o">=</span> <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">apriori_limbs_cam</span><span class="p">,</span>
+                                                                     <span class="n">image</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
+                                                                     <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="c1"># plot the a priori limb points</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">apriori_limbs_image</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> a priori limbs&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="c1"># adjust the target object to its observed location</span>
+        <span class="n">rtype</span> <span class="o">=</span> <span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rtype</span><span class="p">:</span>
+            <span class="n">rtype</span> <span class="o">=</span> <span class="n">relnav</span><span class="o">.</span><span class="n">relative_position_results</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">rtype</span> <span class="ow">in</span> <span class="p">[</span><span class="sa">b</span><span class="s1">&#39;cof&#39;</span><span class="p">,</span> <span class="s1">&#39;cof&#39;</span><span class="p">]:</span>
+            <span class="n">los</span> <span class="o">=</span> <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;measured&#39;</span><span class="p">][:</span><span class="mi">2</span><span class="p">],</span>
+                                                     <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">index</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">los</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="n">target</span><span class="o">.</span><span class="n">change_position</span><span class="p">(</span><span class="n">los</span> <span class="o">*</span> <span class="n">apriori_distance</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">rtype</span> <span class="ow">in</span> <span class="p">[</span><span class="sa">b</span><span class="s1">&#39;pos&#39;</span><span class="p">,</span> <span class="s1">&#39;pos&#39;</span><span class="p">]:</span>
+            <span class="n">los</span> <span class="o">=</span> <span class="n">relnav</span><span class="o">.</span><span class="n">relative_position_results</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;measured&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">los</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">los</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">los</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="n">target</span><span class="o">.</span><span class="n">change_position</span><span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">relative_position_results</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;measured&#39;</span><span class="p">])</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Can&#39;t display limbs for </span><span class="si">{}</span><span class="s2"> type relnav&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rtype</span><span class="p">))</span>
+
+        <span class="n">limbs_cam</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">find_limbs</span><span class="p">(</span><span class="n">los</span><span class="p">,</span> <span class="n">SCAN_VECTORS</span><span class="p">)</span>
+
+        <span class="c1"># project the limb points into the image</span>
+        <span class="n">limbs_image</span> <span class="o">=</span> <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">limbs_cam</span><span class="p">,</span>
+                                                             <span class="n">image</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
+                                                             <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="c1"># update the limb bounds</span>
+        <span class="n">min_limb_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">min_limb_bounds</span><span class="p">,</span> <span class="n">limbs_image</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">max_limb_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">max_limb_bounds</span><span class="p">,</span> <span class="n">limbs_image</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># plot the updated limb points</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">limbs_image</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> solved for limbs&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">rtype</span> <span class="ow">in</span> <span class="p">[</span><span class="sa">b</span><span class="s1">&#39;cof&#39;</span><span class="p">,</span> <span class="s1">&#39;cof&#39;</span><span class="p">]:</span>
+            <span class="c1"># show the predicted center pixel</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="o">*</span><span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;predicted&#39;</span><span class="p">][:</span><span class="mi">2</span><span class="p">],</span>
+                       <span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> predicted center&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+            <span class="c1"># show the solved for center</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="o">*</span><span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;measured&#39;</span><span class="p">][:</span><span class="mi">2</span><span class="p">],</span>
+                       <span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> solved-for center&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># get the apriori image location</span>
+            <span class="n">apriori_image_pos</span> <span class="o">=</span> <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span>
+                <span class="n">relnav</span><span class="o">.</span><span class="n">relative_position_results</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;predicted&#39;</span><span class="p">],</span>
+                <span class="n">image</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+
+            <span class="c1"># get the solved for image location</span>
+            <span class="n">image_pos</span> <span class="o">=</span> <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span>
+                <span class="n">relnav</span><span class="o">.</span><span class="n">relative_position_results</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;measured&#39;</span><span class="p">],</span>
+                <span class="n">image</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+
+            <span class="c1"># show the centers</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="o">*</span><span class="n">apriori_image_pos</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> predicted center&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="o">*</span><span class="n">image_pos</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> solved-for center&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+    <span class="c1"># set the title so we know what image we&#39;re looking at</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">isoformat</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">ax</span><span class="p">,</span> <span class="n">max_limb_bounds</span><span class="p">,</span> <span class="n">min_limb_bounds</span></div>
+
+
+
+<div class="viewcode-block" id="limb_summary_gif">
+<a class="viewcode-back" href="../../../relative_opnav/visualizers/giant.relative_opnav.visualizers.limb_summary_gif.html#giant.relative_opnav.visualizers.limb_summary_gif">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">limb_summary_gif</span><span class="p">(</span><span class="n">relnav</span><span class="p">:</span> <span class="n">RelativeOpNav</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">outfile</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;./opnavsummary.gif&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a GIF of the observed and predicted limbs</span>
+<span class="sd">    </span>
+<span class="sd">    :param relnav: the :class:`.RelativeOpNav` instance to plot the residuals from</span>
+<span class="sd">    :param fps: the frames per second for the gif</span>
+<span class="sd">    :param outfile: the file to save the gif to</span>
+<span class="sd">    :param dpi: digital pixels per inch of the resulting gif</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># initialize the figure and axes</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">set_layout_engine</span><span class="p">(</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+
+    <span class="c1"># initialize the writer</span>
+    <span class="k">assert</span> <span class="n">PillowWriter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="n">writer</span> <span class="o">=</span> <span class="n">PillowWriter</span><span class="p">(</span><span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">)</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="n">outfile</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+
+    <span class="c1"># loop through each image and save the frame</span>
+    <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="p">:</span>
+
+        <span class="n">ax</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">max_limbs</span><span class="p">,</span> <span class="n">min_limbs</span> <span class="o">=</span> <span class="n">show_limbs</span><span class="p">(</span><span class="n">relnav</span><span class="p">,</span> <span class="n">ind</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+
+        <span class="c1"># set the limits to highlight only the portion of interest</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">min_limbs</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">max_limbs</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">min_limbs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">10</span><span class="p">,</span> <span class="n">max_limbs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">10</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">min_limbs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">10</span><span class="p">,</span> <span class="n">max_limbs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">10</span><span class="p">)</span>
+
+        <span class="n">fig</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">set_draggable</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">writer</span><span class="o">.</span><span class="n">grab_frame</span><span class="p">()</span>
+
+    <span class="n">writer</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="template_summary_gif">
+<a class="viewcode-back" href="../../../relative_opnav/visualizers/giant.relative_opnav.visualizers.template_summary_gif.html#giant.relative_opnav.visualizers.template_summary_gif">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">template_summary_gif</span><span class="p">(</span><span class="n">relnav</span><span class="p">:</span> <span class="n">RelativeOpNav</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">outfile</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;./templatesummary.gif&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a GIF of the rendered templates from relnav</span>
+<span class="sd">    </span>
+<span class="sd">    :param relnav: the :class:`.RelativeOpNav` instance to plot the residuals from</span>
+<span class="sd">    :param fps: the frames per second for the gif</span>
+<span class="sd">    :param outfile: the file to save the gif to</span>
+<span class="sd">    :param dpi: digital pixels per inch of the resulting gif</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># initialize the figure and axes</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">set_layout_engine</span><span class="p">(</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+    <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
+    <span class="n">ax2</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+
+    <span class="c1"># initialize the writer</span>
+    <span class="k">assert</span> <span class="n">PillowWriter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="n">writer</span> <span class="o">=</span> <span class="n">PillowWriter</span><span class="p">(</span><span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">)</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="n">outfile</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+
+    <span class="c1"># loop through each image and save the frame</span>
+    <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="p">:</span>
+
+        <span class="c1"># loop through each object</span>
+        <span class="k">for</span> <span class="n">obj_ind</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)):</span>
+
+            <span class="k">if</span> <span class="n">relnav</span><span class="o">.</span><span class="n">saved_templates</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">relnav</span><span class="o">.</span><span class="n">saved_templates</span><span class="p">[</span><span class="n">ind</span><span class="p">][</span><span class="n">obj_ind</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">ax1</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                    <span class="n">ax2</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+                    <span class="n">show_templates</span><span class="p">(</span><span class="n">relnav</span><span class="p">,</span> <span class="n">ind</span><span class="p">,</span> <span class="n">obj_ind</span><span class="p">,</span> <span class="n">ax1</span><span class="o">=</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="o">=</span><span class="n">ax2</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">)</span>
+
+                    <span class="n">writer</span><span class="o">.</span><span class="n">grab_frame</span><span class="p">()</span>
+
+    <span class="n">writer</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="show_center_finding_residuals">
+<a class="viewcode-back" href="../../../relative_opnav/visualizers/giant.relative_opnav.visualizers.show_center_finding_residuals.html#giant.relative_opnav.visualizers.show_center_finding_residuals">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">show_center_finding_residuals</span><span class="p">(</span><span class="n">relnav</span><span class="p">:</span> <span class="n">RelativeOpNav</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the center finding residuals as a function of time.</span>
+<span class="sd">    </span>
+<span class="sd">    :param relnav: the :class:`.RelativeOpNav` instance to plot the residuals from</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+
+    <span class="c1"># initialize lists to store the data</span>
+    <span class="n">resids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">dates</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># loop through each image</span>
+    <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="p">:</span>
+
+        <span class="c1"># store a list in the resids list and the datetime object in the dates list</span>
+        <span class="n">resids</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
+        <span class="n">dates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span>
+
+        <span class="c1"># loop through each target</span>
+        <span class="k">for</span> <span class="n">target_ind</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)):</span>
+
+            <span class="c1"># determine the type of results we are considering</span>
+            <span class="k">if</span> <span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="sa">b</span><span class="s1">&#39;cof&#39;</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;lmk&#39;</span><span class="p">,</span> <span class="s1">&#39;cof&#39;</span><span class="p">,</span> <span class="s1">&#39;lmk&#39;</span><span class="p">]:</span>
+
+                <span class="c1"># compute the observed minus computed residuals</span>
+                <span class="n">resids</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;measured&#39;</span><span class="p">]</span> <span class="o">-</span>
+                                   <span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;predicted&#39;</span><span class="p">])[:</span><span class="mi">2</span><span class="p">])</span>
+
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># if we are considering a technique that estimates the full 3DOF position</span>
+                <span class="c1"># project the predicted and measured positions onto the image and compute the o-c resids</span>
+                <span class="n">resids</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;measured&#39;</span><span class="p">],</span>
+                                                           <span class="n">image</span><span class="o">=</span><span class="n">ind</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span> <span class="o">-</span>
+                    <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;predicted&#39;</span><span class="p">],</span>
+                                                           <span class="n">image</span><span class="o">=</span><span class="n">ind</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">))</span>
+
+    <span class="c1"># stack all of the resids together</span>
+    <span class="n">resids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">resids</span><span class="p">)</span>
+    <span class="n">dates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;datetime64[us]&#39;</span><span class="p">)</span>
+
+    <span class="c1"># loop through each target again and plot the residuals vs time</span>
+    <span class="k">for</span> <span class="n">target_ind</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="n">resids</span><span class="p">[:,</span> <span class="n">target_ind</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> Columns&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="n">resids</span><span class="p">[:,</span> <span class="n">target_ind</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> Rows&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+    <span class="c1"># set the labels and update the x axis to display the dates better</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Observation Date&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;O-C Residuals, pix&#39;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">autofmt_xdate</span><span class="p">()</span>
+
+    <span class="c1"># create a legend</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">set_draggable</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="scatter_residuals_sun_dependent">
+<a class="viewcode-back" href="../../../relative_opnav/visualizers/giant.relative_opnav.visualizers.scatter_residuals_sun_dependent.html#giant.relative_opnav.visualizers.scatter_residuals_sun_dependent">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">scatter_residuals_sun_dependent</span><span class="p">(</span><span class="n">relnav</span><span class="p">:</span> <span class="n">RelativeOpNav</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Show observed minus computed residuals with units of pixels plotted in a frame rotated so that +x points towards the</span>
+<span class="sd">    sun in the image.</span>
+<span class="sd">    </span>
+<span class="sd">    :param relnav: the :class:`.RelativeOpNav` instance to plot the residuals from</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">resids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># loop through each image</span>
+    <span class="k">assert</span> <span class="n">relnav</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="p">:</span>
+
+        <span class="c1"># loop through each target</span>
+        <span class="k">for</span> <span class="n">target_ind</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)):</span>
+
+            <span class="c1"># update the scene so we can get the sun direction</span>
+            <span class="n">relnav</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+            <span class="c1"># figure out the direction to the sun in the image</span>
+            <span class="n">line_of_sight_sun</span> <span class="o">=</span> <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_directions</span><span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+
+            <span class="c1"># get the rotation to make the x axis line up with this direction</span>
+            <span class="c1"># since line_of_sight_sun is a unit vector the x component = cos(theta) and y component = sin of theta</span>
+            <span class="c1"># so the following gives</span>
+            <span class="c1"># [[ cos(theta), sin(theta)],</span>
+            <span class="c1">#  [-sin(theta), cos(theta)]]</span>
+            <span class="c1"># which rotates from the image frame to the frame with +x pointing towards the sun</span>
+            <span class="n">rmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">line_of_sight_sun</span><span class="p">,</span> <span class="n">line_of_sight_sun</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+
+            <span class="c1"># determine the type of results we are considering</span>
+            <span class="k">if</span> <span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="sa">b</span><span class="s1">&#39;cof&#39;</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;lmk&#39;</span><span class="p">,</span> <span class="s1">&#39;cof&#39;</span><span class="p">,</span> <span class="s1">&#39;lmk&#39;</span><span class="p">]:</span>
+
+                <span class="c1"># compute the observed minus computed residuals</span>
+                <span class="n">resids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rmat</span> <span class="o">@</span> <span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;measured&#39;</span><span class="p">]</span> <span class="o">-</span>
+                                      <span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;predicted&#39;</span><span class="p">])[:</span><span class="mi">2</span><span class="p">])</span>
+
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># if we are considering a technique that estimates the full 3DOF position</span>
+                <span class="c1"># project the predicted and measured positions onto the image and compute the o-c resids</span>
+                <span class="n">resids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rmat</span> <span class="o">@</span>
+                              <span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span>
+                                  <span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;measured&#39;</span><span class="p">],</span>
+                                  <span class="n">image</span><span class="o">=</span><span class="n">ind</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span>
+                              <span class="p">)</span> <span class="o">-</span>
+                               <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span>
+                                   <span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;predicted&#39;</span><span class="p">],</span>
+                                   <span class="n">image</span><span class="o">=</span><span class="n">ind</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+                               <span class="p">))</span>
+
+    <span class="c1"># stack all of the resids together</span>
+    <span class="n">resids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">resids</span><span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="o">*</span><span class="n">resids</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Sun direction O-C error, pix&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Anti-sun direction O-C error, pix&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="plot_residuals_sun_dependent_time">
+<a class="viewcode-back" href="../../../relative_opnav/visualizers/giant.relative_opnav.visualizers.plot_residuals_sun_dependent_time.html#giant.relative_opnav.visualizers.plot_residuals_sun_dependent_time">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_residuals_sun_dependent_time</span><span class="p">(</span><span class="n">relnav</span><span class="p">:</span> <span class="n">RelativeOpNav</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Show observed minus computed residuals with units of pixels plotted in a frame rotated so that +x points towards the</span>
+<span class="sd">    sun in the image.</span>
+
+<span class="sd">    This is done with a time series (so the x axis of the plot is time and the y axis is residual in pixels) with 2</span>
+<span class="sd">    different series</span>
+<span class="sd">    </span>
+<span class="sd">    :param relnav: the :class:`.RelativeOpNav` instance to plot the residuals from</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">dates</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">resids</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># loop through each image</span>
+    <span class="k">assert</span> <span class="n">relnav</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="p">:</span>
+
+        <span class="c1"># store a list in the resids list and the datetime object in the dates list</span>
+        <span class="n">resids</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
+        <span class="n">dates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">observation_date</span><span class="p">)</span>
+
+        <span class="c1"># loop through each target</span>
+        <span class="k">for</span> <span class="n">target_ind</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)):</span>
+
+            <span class="c1"># update the scene so we can get the sun direction</span>
+            <span class="n">relnav</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+            <span class="c1"># figure out the direction to the sun in the image</span>
+            <span class="n">line_of_sight_sun</span> <span class="o">=</span> <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_directions</span><span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+
+            <span class="c1"># get the rotation to make the x axis line up with this direction</span>
+            <span class="c1"># since line_of_sight_sun is a unit vector the x component = cos(theta) and y component = sin of theta</span>
+            <span class="c1"># so the following gives</span>
+            <span class="c1"># [[ cos(theta), sin(theta)],</span>
+            <span class="c1">#  [-sin(theta), cos(theta)]]</span>
+            <span class="c1"># which rotates from the image frame to the frame with +x pointing towards the sun</span>
+            <span class="n">rmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">line_of_sight_sun</span><span class="p">,</span> <span class="n">line_of_sight_sun</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+
+            <span class="c1"># determine the type of results we are considering</span>
+            <span class="k">if</span> <span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="sa">b</span><span class="s1">&#39;cof&#39;</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;lmk&#39;</span><span class="p">,</span> <span class="s1">&#39;cof&#39;</span><span class="p">,</span> <span class="s1">&#39;lmk&#39;</span><span class="p">]:</span>
+
+                <span class="c1"># compute the observed minus computed residuals</span>
+                <span class="n">resids</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rmat</span> <span class="o">@</span> <span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;measured&#39;</span><span class="p">]</span> <span class="o">-</span>
+                                      <span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;predicted&#39;</span><span class="p">])[:</span><span class="mi">2</span><span class="p">])</span>
+
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># if we are considering a technique that estimates the full 3DOF position</span>
+                <span class="c1"># project the predicted and measured positions onto the image and compute the o-c resids</span>
+                <span class="n">resids</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rmat</span> <span class="o">@</span>
+                              <span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span>
+                                  <span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;measured&#39;</span><span class="p">],</span>
+                                  <span class="n">image</span><span class="o">=</span><span class="n">ind</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span>
+                              <span class="p">)</span> <span class="o">-</span>
+                               <span class="n">relnav</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span>
+                                   <span class="n">relnav</span><span class="o">.</span><span class="n">center_finding_results</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">][</span><span class="s1">&#39;predicted&#39;</span><span class="p">],</span>
+                                   <span class="n">image</span><span class="o">=</span><span class="n">ind</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
+                               <span class="p">))</span>
+
+    <span class="c1"># stack all of the resids together</span>
+    <span class="n">resids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">resids</span><span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+
+    <span class="c1"># loop through each target again and plot the residuals vs time</span>
+    <span class="k">for</span> <span class="n">target_ind</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">relnav</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="n">resids</span><span class="p">[:,</span> <span class="n">target_ind</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> Sun direction&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="n">resids</span><span class="p">[:,</span> <span class="n">target_ind</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> Anti sun direction&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+    <span class="c1"># set the labels and update the x axis to display the dates better</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Observation Date&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;O-C Residuals, pix&#39;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">autofmt_xdate</span><span class="p">()</span>
+
+    <span class="c1"># create a legend</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">set_draggable</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+</pre></div>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

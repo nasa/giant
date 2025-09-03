@@ -7,7 +7,6 @@
 .. currentmodule:: giant.calibration.visualizer
 
 
-
 .. rubric:: Functions
 
 .. autosummary::

@@ -3,7 +3,7 @@
 
 .. currentmodule:: giant.point_spread_functions.psf_meta
 
-In addition to the methods and attributes from :class:`.PointSpreadFunction`, :class:`KernelBasedApply1DPSF` implements
+In addition to the methods and attributes from :class:`~.psf_meta.PointSpreadFunction`, :class:`KernelBasedApply1DPSF` implements
 the following:
 
 .. autoclass:: KernelBasedApply1DPSF

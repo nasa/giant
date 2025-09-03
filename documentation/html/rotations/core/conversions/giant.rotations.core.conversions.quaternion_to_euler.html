@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>quaternion_to_euler &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="next" title="rotvec_to_rotmat" href="giant.rotations.core.conversions.rotvec_to_rotmat.html" />
+    <link rel="prev" title="quaternion_to_rotmat" href="giant.rotations.core.conversions.quaternion_to_rotmat.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../giant.html">API Reference</a><ul>
+  <li><a href="../../../giant.rotations.html">giant.rotations</a><ul>
+  <li><a href="../../giant.rotations.core.html">giant.rotations.core</a><ul>
+  <li><a href="../giant.rotations.core.conversions.html">giant.rotations.core.conversions</a><ul>
+      <li>Previous: <a href="giant.rotations.core.conversions.quaternion_to_rotmat.html" title="previous chapter">quaternion_to_rotmat</a></li>
+      <li>Next: <a href="giant.rotations.core.conversions.rotvec_to_rotmat.html" title="next chapter">rotvec_to_rotmat</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.rotations.core.conversions.quaternion_to_rotmat.html" title="Previous document">quaternion_to_rotmat</a>
+        </li>
+        <li>
+          <a href="giant.rotations.core.conversions.rotvec_to_rotmat.html" title="Next document">rotvec_to_rotmat</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="quaternion-to-euler">
+<h1>quaternion_to_euler<a class="headerlink" href="#quaternion-to-euler" title="Link to this heading">¶</a></h1>
+<p><a class="reference internal" href="../giant.rotations.core.conversions.html#module-giant.rotations.core.conversions" title="giant.rotations.core.conversions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.rotations.core.conversions</span></code></a>:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="giant.rotations.core.conversions.quaternion_to_euler">
+<span class="sig-prename descclassname"><span class="pre">giant.rotations.core.conversions.</span></span><span class="sig-name descname"><span class="pre">quaternion_to_euler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quaternion</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'xyz'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/giant/rotations/core/conversions.html#quaternion_to_euler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.rotations.core.conversions.quaternion_to_euler" title="Link to this definition">¶</a></dt>
+<dd><p>This function converts a rotation quaternion to 3 euler angles to be applied to the axes specified in order.</p>
+<p>This function works by first converting the quaternion to a rotation matrix using <a class="reference internal" href="../giant.rotations.core.conversions.quaternion_to_rotmat.html#giant.rotations.core.conversions.quaternion_to_rotmat" title="giant.rotations.core.conversions.quaternion_to_rotmat"><code class="xref py py-func docutils literal notranslate"><span class="pre">quaternion_to_rotmat()</span></code></a> and
+then using the function <a class="reference internal" href="../giant.rotations.core.conversions.rotmat_to_euler.html#giant.rotations.core.conversions.rotmat_to_euler" title="giant.rotations.core.conversions.rotmat_to_euler"><code class="xref py py-func docutils literal notranslate"><span class="pre">rotmat_to_euler()</span></code></a> to find the euler angles.  See the documentation for those two
+functions for more information.</p>
+<p>This function is vectorized so multiple quaternions can be converted simultaneously by specifying them as columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>quaternion</strong> (<em>Buffer</em><em> | </em><em>_SupportsArray</em><em>[</em><em>dtype</em><em>[</em><em>Any</em><em>]</em><em>] </em><em>| </em><em>_NestedSequence</em><em>[</em><em>_SupportsArray</em><em>[</em><em>dtype</em><em>[</em><em>Any</em><em>]</em><em>]</em><em>] </em><em>| </em><em>complex</em><em> | </em><em>bytes</em><em> | </em><em>str</em><em> | </em><em>_NestedSequence</em><em>[</em><em>complex</em><em> | </em><em>bytes</em><em> | </em><em>str</em><em>]</em>) – The quaternion(s) to be converted to euler angles</p></li>
+<li><p><strong>order</strong> (<em>Literal</em><em>[</em><em>'xyz'</em><em>, </em><em>'xzy'</em><em>, </em><em>'xyx'</em><em>, </em><em>'xzx'</em><em>, </em><em>'yxz'</em><em>, </em><em>'yzx'</em><em>, </em><em>'yxy'</em><em>, </em><em>'yzy'</em><em>, </em><em>'zxy'</em><em>, </em><em>'zyx'</em><em>, </em><em>'zyz'</em><em>, </em><em>'zxz'</em><em>]</em>) – The order of the rotations</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The euler angles corresponding to the rotation quaternion(s) acording to order</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[float | <em>ndarray</em>[tuple[<em>Any</em>, …], <em>dtype</em>[<em>float64</em>]], float | <em>ndarray</em>[tuple[<em>Any</em>, …], <em>dtype</em>[<em>float64</em>]], float | <em>ndarray</em>[tuple[<em>Any</em>, …], <em>dtype</em>[<em>float64</em>]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="giant.rotations.core.conversions.quaternion_to_rotmat.html" title="Previous document">quaternion_to_rotmat</a>
+        </li>
+        <li>
+          <a href="giant.rotations.core.conversions.rotvec_to_rotmat.html" title="Next document">rotvec_to_rotmat</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

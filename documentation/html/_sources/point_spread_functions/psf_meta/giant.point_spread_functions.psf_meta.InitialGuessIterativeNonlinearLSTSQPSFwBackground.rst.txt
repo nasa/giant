@@ -3,7 +3,7 @@
 
 .. currentmodule:: giant.point_spread_functions.psf_meta
 
-In addition to the methods and attributes from :class:`.PointSpreadFunction` and
+In addition to the methods and attributes from :class:`~.psf_meta.PointSpreadFunction` and
 :class:`.IterativeNonlinearLSTSQwBackground`, :class:`InitialGuessIterativeNonlinearLSTSQPSFwBackground` implements
 the following.
 

@@ -1,36 +1,36 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>giant.relative_opnav.estimators.ellipse_matching &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
-    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../../../_static/logo.ico"/>
+    <title>giant.relative_opnav.estimators.ellipse_matching &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../../_static/logo.ico"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
     <link rel="copyright" title="Copyright" href="../../../../copyright.html" />
    
   <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../../../../index.html">
-    <img class="logo" src="../../../../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../../../../_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -63,7 +63,7 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../../search.html" method="get">
@@ -71,8 +71,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -89,11 +89,7 @@
           <div class="body" role="main">
             
   <h1>Source code for giant.relative_opnav.estimators.ellipse_matching</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright 2021 United States Government as represented by the Administrator of the National Aeronautics and Space</span>
-<span class="c1"># Administration.  No copyright is claimed in the United States under Title 17, U.S. Code. All Other Rights Reserved.</span>
-
-
-<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">This module provides the capability to locate the relative position of a regular target body (well modelled by a</span>
 <span class="sd">triaxial ellipsoid) by matching the observed ellipse of the limb in an image with the ellipsoid model of the target.</span>
 
@@ -150,22 +146,11 @@
 <span class="sd">------</span>
 
 <span class="sd">There are a few parameters to tune for this method.  The main thing that may make a difference is the choice and tuning</span>
-<span class="sd">for the limb extraction routines.  There are 2 categories of routines you can choose from.  The first is image</span>
-<span class="sd">processing, where the limbs are extracted using only the image and the sun direction.  To tune the image processing limb</span>
-<span class="sd">extraction routines you can adjust the following :class:`.ImageProcessing` settings:</span>
+<span class="sd">for the limb extraction routines.  There are 2 categories of routines you can choose from.  The first is edge</span>
+<span class="sd">detection, where the limbs are extracted using only the image and the sun direction.  To tune the edge detection limb</span>
+<span class="sd">extraction routines refer to the :class:`.LimbEdgeDetection` class.</span>
 
-<span class="sd">========================================= ==============================================================================</span>
-<span class="sd">Parameter                                 Description</span>
-<span class="sd">========================================= ==============================================================================</span>
-<span class="sd">:attr:`.ImageProcessing.denoise_flag`     A flag specifying to apply :meth:`~.ImageProcessing.denoise_image` to the</span>
-<span class="sd">                                          image before attempting to locate the limbs.</span>
-<span class="sd">:attr:`.ImageProcessing.image_denoising`  The routine to use to attempt to denoise the image</span>
-<span class="sd">:attr:`.ImageProcessing.subpixel_method`  The subpixel method to use to refine the limb points.</span>
-<span class="sd">========================================= ==============================================================================</span>
-
-<span class="sd">Other tunings are specific to the subpixel method chosen and are discussed in :mod:`.image_processing`.</span>
-
-<span class="sd">The other option for limb extraction is limb scanning.  In limb scanning predicted illumination values based on the</span>
+<span class="sd">The other option for limb extraction is limb scanning.  In limb scanning, predicted illumination values based on the</span>
 <span class="sd">shape model and a prior state are correlated with extracted scan lines to locate the limbs in the image.  This technique</span>
 <span class="sd">can be quite accurate (if the shape model is accurate) but is typically much slower and the extraction must be repeated</span>
 <span class="sd">each iteration.  The general tunings to use for limb scanning are from the :class:`.LimbScanner` class:</span>
@@ -204,355 +189,54 @@
 <span class="sd">by this technique, refer to the following class documentation.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
-<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span>  <span class="n">cast</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 
-<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">RegularGridInterpolator</span><span class="p">,</span> <span class="n">interp1d</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.relative_opnav.estimators.estimator_interface_abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">RelNavEstimator</span><span class="p">,</span> <span class="n">RelNavObservablesType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.relative_opnav.estimators.moment_algorithm</span><span class="w"> </span><span class="kn">import</span> <span class="n">MomentAlgorithm</span><span class="p">,</span> <span class="n">MomentAlgorithmOptions</span>
 
-<span class="kn">from</span> <span class="nn">giant.relative_opnav.estimators.estimator_interface_abc</span> <span class="kn">import</span> <span class="n">RelNavEstimator</span><span class="p">,</span> <span class="n">RelNavObservablesType</span>
-<span class="kn">from</span> <span class="nn">giant.relative_opnav.estimators.moment_algorithm</span> <span class="kn">import</span> <span class="n">MomentAlgorithm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.shapes</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ellipsoid</span>
 
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.shapes</span> <span class="kn">import</span> <span class="n">Ellipsoid</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.rays</span> <span class="kn">import</span> <span class="n">Rays</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.illumination</span> <span class="kn">import</span> <span class="n">IlluminationModel</span><span class="p">,</span> <span class="n">McEwenIllumination</span>
-
-<span class="kn">from</span> <span class="nn">giant.image_processing</span> <span class="kn">import</span> <span class="n">ImageProcessing</span><span class="p">,</span> <span class="n">parabolic_peak_finder_1d</span><span class="p">,</span> <span class="n">fft_correlator_1d</span>
-<span class="kn">from</span> <span class="nn">giant.camera</span> <span class="kn">import</span> <span class="n">Camera</span>
-<span class="kn">from</span> <span class="nn">giant.image</span> <span class="kn">import</span> <span class="n">OpNavImage</span>
-<span class="kn">from</span> <span class="nn">giant.ray_tracer.scene</span> <span class="kn">import</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">SceneObject</span>
-<span class="kn">from</span> <span class="nn">giant.point_spread_functions</span> <span class="kn">import</span> <span class="n">PointSpreadFunction</span>
-<span class="kn">from</span> <span class="nn">giant._typing</span> <span class="kn">import</span> <span class="n">NONEARRAY</span><span class="p">,</span> <span class="n">Real</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.camera</span><span class="w"> </span><span class="kn">import</span> <span class="n">Camera</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.image</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpNavImage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scene</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.ray_tracer._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">HasReferenceEllipsoid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NONEARRAY</span><span class="p">,</span> <span class="n">DOUBLE_ARRAY</span><span class="p">,</span> <span class="n">ARRAY_LIKE</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">giant.relative_opnav.estimators._limb_pairer</span><span class="w"> </span><span class="kn">import</span> <span class="n">LimbPairer</span><span class="p">,</span> <span class="n">LimbPairerOptions</span><span class="p">,</span> <span class="n">LimbExtractionMethods</span>
 
 
-<div class="viewcode-block" id="LimbExtractionMethods"><a class="viewcode-back" href="../../../../relative_opnav/estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.LimbExtractionMethods.html#giant.relative_opnav.estimators.ellipse_matching.LimbExtractionMethods">[docs]</a><span class="k">class</span> <span class="nc">LimbExtractionMethods</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This enumeration provides the valid options for the limb extraction methods that can be used on the image.</span>
+
+<div class="viewcode-block" id="EllipseMatchingOptions">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.EllipseMatchingOptions.html#giant.relative_opnav.estimators.ellipse_matching.EllipseMatchingOptions">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">EllipseMatchingOptions</span><span class="p">(</span><span class="n">LimbPairerOptions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Options for configuring the EllipseMatching class</span>
+<span class="sd">    </span>
+<span class="sd">    Generally, the default options are what you want, which use subpixel edge detection to identify limbs in the image.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">recenter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A flag specifying whether to locate the center of the target using a moment algorithm before beginning.</span>
 
-    <span class="n">LIMB_SCANNING</span> <span class="o">=</span> <span class="s2">&quot;LIMB_SCANNING&quot;</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Extract limbs from the image through 1D cross correlation of predicted and observed intensity profiles along scan </span>
-<span class="sd">    vectors.</span>
-
-<span class="sd">    This method relies on the a priori knowledge of the state vector therefore the limbs are re-extracted after each </span>
-<span class="sd">    iteration.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">EDGE_DETECTION</span> <span class="o">=</span> <span class="s2">&quot;EDGE_DETECTION&quot;</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Extract limbs from the image using edge detection image processing techniques.  </span>
-
-<span class="sd">    Because this does not rely on the a priori knowledge of the state vector and only considers the image and the sun </span>
-<span class="sd">    direction in the image, this is only performed once.  The specific edge detection technique and other parameters can</span>
-<span class="sd">    be set in the :class:`.ImageProcessing` class.  </span>
-
-<span class="sd">    The edges are extracted using the :meth:`.ImageProcessing.identify_subpixel_limbs` method.</span>
+<span class="sd">    If the a priori knowledge of the bearing to the target is poor (outside of the body) then this flag will help</span>
+<span class="sd">    to correct the initial error.  See the :mod:`.moment_algorithm` module for details.</span>
+<span class="sd">    </span>
+<span class="sd">    This is only used if the extraction method is set to LIMB_SCANNING as it does not affect the EDGE_DETECTION extraction method.</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
 
-
-<div class="viewcode-block" id="LimbScanner"><a class="viewcode-back" href="../../../../relative_opnav/estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.LimbScanner.html#giant.relative_opnav.estimators.ellipse_matching.LimbScanner">[docs]</a><span class="k">class</span> <span class="nc">LimbScanner</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This class is used to extract limbs from an image and pair them to surface points on the target.</span>
-
-<span class="sd">    This is done by first determining the surface points on the limb based on the shape model, the scan center vector,</span>
-<span class="sd">    and the sun direction vector.  Once these surface points have been identified (using :meth:.Shape.find_limbs`) they</span>
-<span class="sd">    are projected onto the image to generate the predicted limb locations in the image.  Then the image is sampled</span>
-<span class="sd">    along the scan line through each predicted limb location and the scan center location in the image using the</span>
-<span class="sd">    ``image_interpolator`` input to get the observed intensity line.  In addition, the scan line is rendered using</span>
-<span class="sd">    ray tracing to generate the predicted intensity line.  The predicted intensity lines and the extracted intensity</span>
-<span class="sd">    lines are then compared using cross correlation to find the shift that best aligns them.  This shift is then applied</span>
-<span class="sd">    to the predicted limb locations in the image along the scan line to get the extracted limb location in the image.</span>
-<span class="sd">    This is all handled by the :meth:`extract_limbs` method.</span>
-
-<span class="sd">    There are a few tuning options for this class.  The first collection affects the scan lines that are used to extract</span>
-<span class="sd">    the limb locations from the image.  The :attr:`number_of_scan_lines` sets the number of generated scan lines and</span>
-<span class="sd">    directly corresponds to the number of limb points that will be extracted from the image.  In addition,</span>
-<span class="sd">    the :attr:`scan_range` attribute sets the angular extent about the sun direction vector that these scan lines will</span>
-<span class="sd">    be evenly distributed. Finally, the :attr:`number_of_sample_points` specifies how many samples to take along the</span>
-<span class="sd">    scan lines for both the extracted and predicted intensity lines and corresponds somewhat to how accurate the</span>
-<span class="sd">    resulting limb location will be. (Generally a higher number will lead to a higher accuracy though this is also</span>
-<span class="sd">    limited by the resolution of the image and the shape model itself.  A higher number also will make things take</span>
-<span class="sd">    longer.)</span>
-
-<span class="sd">    In addition to the control over the scan lines, you can adjust the :attr:`brdf` which is used to generate the</span>
-<span class="sd">    predicted intensity lines (although this will generally not make much difference) and you can change what peak</span>
-<span class="sd">    finder is used to find the subpixel peaks of the correlation lines.</span>
-
-<span class="sd">    This technique requires decent a priori knowledge of the relative state between the target and the camera for it to</span>
-<span class="sd">    work.  At minimum it requires that the scan center be located through both the observed target location in the image</span>
-<span class="sd">    and the target shape model placed at the current relative position in the scene.  If this isn&#39;t guaranteed by your</span>
-<span class="sd">    knowledge then you can use something like the :mod:`.moment_algorithm` to correct the gross errors in your a priori</span>
-<span class="sd">    knowledge as is done by :class:`.LimbMatching`.</span>
-
-<span class="sd">    Generally you will not use this class directly as it is used by the :class:`.LimbMatching` class.  If you want to</span>
-<span class="sd">    use it for some other purpose however, simply provide the required initialization parameters, then use</span>
-<span class="sd">    :meth:`extract_limbs` to extract the limbs from the image.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span> <span class="n">psf</span><span class="p">:</span> <span class="n">PointSpreadFunction</span><span class="p">,</span> <span class="n">number_of_scan_lines</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">51</span><span class="p">,</span>
-                 <span class="n">scan_range</span><span class="p">:</span> <span class="n">Real</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">number_of_sample_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">501</span><span class="p">,</span>
-                 <span class="n">brdf</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">IlluminationModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">peak_finder</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">parabolic_peak_finder_1d</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param scene: The scene containing the target(s) and the light source</span>
-<span class="sd">        :param camera: The camera containing the camera model</span>
-<span class="sd">        :param psf: The point spread function to apply to the predicted intensity lines.  This should have a</span>
-<span class="sd">                    :meth:`~.PointSpreadFunction.apply_1d`</span>
-<span class="sd">        :param number_of_scan_lines: The number of scan lines to generate (number of extracted limb points)</span>
-<span class="sd">        :param scan_range: The angular extent about the sun direction vector to distribute the scan lines through.  This</span>
-<span class="sd">                           Should be in units of radians and should generally be less than :math:`\pi`.</span>
-<span class="sd">        :param number_of_sample_points: The number of points to sample along each scan line</span>
-<span class="sd">        :param brdf: The illumination model to use to render the predicted scan intensity lines</span>
-<span class="sd">        :param peak_finder: The peak finder to find the peak of each correlation line.  This should assume that each</span>
-<span class="sd">                            row of the input array is a correlation line that the peak needs to be found for.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span> <span class="o">=</span> <span class="n">scene</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The scene containing the target(s) and the light source</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span> <span class="o">=</span> <span class="n">camera</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The camera containing the camera model</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">psf</span><span class="p">:</span> <span class="n">PointSpreadFunction</span> <span class="o">=</span> <span class="n">psf</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The point spread function to apply to the predicted intensity lines.</span>
-
-<span class="sd">        This should provide a :meth:`~.PointSpreadFunction.apply_1d` that accepts in a numpy array where each </span>
-<span class="sd">        row is an intensity line and returns the blurred intensity lines as a numpy array.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_scan_lines</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">number_of_scan_lines</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The number of scan lines to generate/limb points to extract</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">scan_range</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">scan_range</span><span class="p">)</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The extent about the illumination direction in radians in which to distribute the scan lines.</span>
-
-<span class="sd">        The scan lines are distributed +/- scan_range/2 about the illumination direction.  This therefore should </span>
-<span class="sd">        generally be less than :math:`\frac{\pi}{2}` unless you are 100% certain that the phase angle is perfectly 0</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_sample_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">number_of_sample_points</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The number of points to sample each scan line along for the extracted/predicted intensity lines</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">brdf</span><span class="p">:</span> <span class="n">IlluminationModel</span> <span class="o">=</span> <span class="n">brdf</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The illumination function to use to render the predicted scan lines.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># set the default if it wasn&#39;t specified</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">brdf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">brdf</span> <span class="o">=</span> <span class="n">McEwenIllumination</span><span class="p">()</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">peak_finder</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">peak_finder</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        the callable to use to return the peak of the correlation lines.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">predicted_illums</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The predicted intensity lines from rendering the scan lines.</span>
-
-<span class="sd">        This will be a ``number_of_scan_lines`` by ``number_of_sample_points`` 2d array where each row is a scan line.</span>
-
-<span class="sd">        This will be ``None`` until :meth:`extract_limbs` is called</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">extracted_illums</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The extracted intensity lines from sampling the image.</span>
-
-<span class="sd">        This will be a ``number_of_scan_lines`` by ``number_of_sample_points`` 2d array where each row is a scan line.</span>
-
-<span class="sd">        This will be ``None`` until :meth:`extract_limbs` is called</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">correlation_lines</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The correlation lines resulting from doing 1D cross correlation between the predicted and extracted scan lines.</span>
-
-<span class="sd">        This will be a ``number_of_scan_lines`` by ``number_of_sample_points`` 2d array where each row is a correlation </span>
-<span class="sd">        line.</span>
-
-<span class="sd">        This will be ``None`` until :meth:`extract_limbs` is called</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">correlation_peaks</span><span class="p">:</span> <span class="n">NONEARRAY</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The peaks of the correlation lines.</span>
-
-<span class="sd">        This will be a ``number_of_scan_lines`` length 1d array where each element is the peak of the corresponding </span>
-<span class="sd">        correlation line.</span>
-
-<span class="sd">        This will be ``None`` until :meth:`extract_limbs` is called</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="LimbScanner.predict_limbs"><a class="viewcode-back" href="../../../../relative_opnav/estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.LimbScanner.predict_limbs.html#giant.relative_opnav.estimators.ellipse_matching.LimbScanner.predict_limbs">[docs]</a>    <span class="k">def</span> <span class="nf">predict_limbs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scan_center</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">line_of_sight_sun</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span>
-                      <span class="n">camera_temperature</span><span class="p">:</span> <span class="n">Real</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Predict the limb locations for a given target in the camera frame.</span>
-
-<span class="sd">        This is done by</span>
-
-<span class="sd">        #. get the angle between the illumination vector and the x axis of the image</span>
-<span class="sd">        #. Generate :attr:`number_of_scan_lines` scan angles evenly distributed between the sun angle -</span>
-<span class="sd">           :attr:`scan_range` /2 the and sun angle + :attr:`scan_range` /2</span>
-<span class="sd">        #. convert the image scan line directions into directions in the camera frame</span>
-<span class="sd">        #. use :meth:`.Shape.find_limbs` to find the limbs of the target given the scan center and the scan directions</span>
-<span class="sd">           in the camera frame</span>
-
-<span class="sd">        The limbs will be returned as a 3xn array in the camera frame.</span>
-
-<span class="sd">        This method is automatically called by :meth:`extract_limbs` and will almost never be used directly, however,</span>
-<span class="sd">        it is exposed for the adventurous types.</span>
-
-<span class="sd">        :param scan_center: the beginning of the scan in the image (pixels)</span>
-<span class="sd">        :param line_of_sight_sun: the line of sight to the sun in the image (pixels)</span>
-<span class="sd">        :param target: The target the limbs are to be predicted for</span>
-<span class="sd">        :param camera_temperature: The temperature of the camera</span>
-<span class="sd">        :return: The predicted limb locations in the camera frame</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># Get the angle of the illumination direction from the x axis in the image</span>
-        <span class="n">angle_sun</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">line_of_sight_sun</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">line_of_sight_sun</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-
-        <span class="c1"># Set the scan angles +/- scan range around the sun direction</span>
-        <span class="n">scan_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">angle_sun</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_range</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">angle_sun</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_range</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
-                                  <span class="bp">self</span><span class="o">.</span><span class="n">number_of_scan_lines</span><span class="p">)</span>
-
-        <span class="c1"># get the scan directions in the image</span>
-        <span class="n">scan_dirs_pixels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">scan_angles</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">scan_angles</span><span class="p">)])</span>
-
-        <span class="c1"># get the line of sight to the target in the camera frame</span>
-        <span class="n">scan_center_camera</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="n">scan_center</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">camera_temperature</span><span class="p">)</span>
-        <span class="n">scan_center_camera</span> <span class="o">/=</span> <span class="n">scan_center_camera</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-
-        <span class="c1"># get the scan directions in the camera frame</span>
-        <span class="n">scan_dirs_camera</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="n">scan_center</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">scan_dirs_pixels</span><span class="p">,</span>
-                                                            <span class="n">temperature</span><span class="o">=</span><span class="n">camera_temperature</span><span class="p">)</span>
-        <span class="n">scan_dirs_camera</span> <span class="o">/=</span> <span class="n">scan_dirs_camera</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">scan_dirs_camera</span> <span class="o">-=</span> <span class="n">scan_center_camera</span>
-        <span class="n">scan_dirs_camera</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">scan_dirs_camera</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-        <span class="c1"># get the limbs body centered</span>
-        <span class="n">limbs</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">find_limbs</span><span class="p">(</span><span class="n">scan_center_camera</span><span class="p">,</span> <span class="n">scan_dirs_camera</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
-
-        <span class="c1"># return the limbs in the camera frame</span>
-        <span class="k">return</span> <span class="n">limbs</span> <span class="o">+</span> <span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">scan_dirs_pixels</span><span class="p">,</span> <span class="n">scan_dirs_camera</span></div>
-
-<div class="viewcode-block" id="LimbScanner.extract_limbs"><a class="viewcode-back" href="../../../../relative_opnav/estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.LimbScanner.extract_limbs.html#giant.relative_opnav.estimators.ellipse_matching.LimbScanner.extract_limbs">[docs]</a>    <span class="k">def</span> <span class="nf">extract_limbs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_interpolator</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">camera_temperature</span><span class="p">:</span> <span class="n">Real</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span>
-                      <span class="n">scan_center</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">line_of_sight_sun</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> \
-            <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        This method extracts limb points in an image and pairs them to surface points that likely generated them.</span>
-
-<span class="sd">        This is completed through the used of 1D cross correlation.</span>
-
-<span class="sd">        #. The predicted limb locations in the image and the scan lines are determined using :meth:`predict_limbs`</span>
-<span class="sd">        #. Scan lines are generated along the scan directions and used to create extracted intensity lines by sampling</span>
-<span class="sd">           the image and predicted intensity lines by rendering the results of a ray trace along the scan line.</span>
-<span class="sd">        #. The predicted and extracted intensity lines are cross correlated in 1 dimension :func:`.fft_correlator_1d`</span>
-<span class="sd">        #. The peak of each correlation line is found using :attr:`peak_finder`.</span>
-<span class="sd">        #. the peak of the correlation surface is translated into a shift between the predicted and extracted limb</span>
-<span class="sd">           location in the image and used to compute the extracted limb location.</span>
-
-<span class="sd">        The resulting predicted surface points, predicted image points, observed image points, and scan directions</span>
-<span class="sd">        in the camera frame are then all returned as numpy arrays.</span>
-
-<span class="sd">        :param image_interpolator: A callable which returns the interpolated image values for provides [y,x] locations</span>
-<span class="sd">                                   in the image</span>
-<span class="sd">        :param camera_temperature: The temperature of the camera in degrees at the time the image was captured</span>
-<span class="sd">        :param target: The target we are looking for limb points for</span>
-<span class="sd">        :param scan_center: The center where all of our scan lines will start</span>
-<span class="sd">        :param line_of_sight_sun:  The line of sight of the sun in the image</span>
-<span class="sd">        :return: The predicted surface points in the camera frame as a 3xn array, the predicted limbs in the image as a</span>
-<span class="sd">                 2xn array, the observed limbs in the image as a 2xn array, and the scan directions in the camera frame</span>
-<span class="sd">                 as a 3xn array of unit vectors where n is the :attr:`number_of_scan_lines`</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># predict the limb locations</span>
-        <span class="n">predicted_limbs_camera</span><span class="p">,</span> <span class="n">scan_dirs</span><span class="p">,</span> <span class="n">scan_dirs_camera</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_limbs</span><span class="p">(</span><span class="n">scan_center</span><span class="p">,</span> <span class="n">line_of_sight_sun</span><span class="p">,</span>
-                                                                                 <span class="n">target</span><span class="p">,</span> <span class="n">camera_temperature</span><span class="p">)</span>
-        <span class="n">predicted_limbs_pixels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">predicted_limbs_camera</span><span class="p">,</span>
-                                                                      <span class="n">temperature</span><span class="o">=</span><span class="n">camera_temperature</span><span class="p">)</span>
-
-        <span class="c1"># set the distance to search along each scan line 2 times the apparent radius of the target in the image</span>
-        <span class="c1"># noinspection PyArgumentList</span>
-        <span class="n">apparent_radius_pixels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">predicted_limbs_pixels</span> <span class="o">-</span> <span class="n">scan_center</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-
-        <span class="n">search_dist</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">apparent_radius_pixels</span>
-
-        <span class="c1"># Create an array of where we want to interpolate the image at/shoot rays through</span>
-        <span class="n">search_distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">search_dist</span><span class="p">,</span> <span class="n">search_dist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_sample_points</span><span class="p">)</span>
-
-        <span class="c1"># Create an interpolator to figure out the distance from the scan center for the subpixel locations of</span>
-        <span class="c1"># the correlation</span>
-        <span class="n">distance_interpolator</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_sample_points</span><span class="p">),</span> <span class="n">search_distance_array</span><span class="p">)</span>
-
-        <span class="c1"># Get the center of each scan line</span>
-        <span class="n">center</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_sample_points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
-
-        <span class="c1"># Only take the middle of the predicted scan lines since we know the limb will lie in that region</span>
-        <span class="n">template_selection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_sample_points</span> <span class="o">//</span> <span class="mi">4</span>
-
-        <span class="c1"># Determine the deltas to apply to the limb locations</span>
-        <span class="n">search_deltas</span> <span class="o">=</span> <span class="n">scan_dirs</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">search_distance_array</span>
-
-        <span class="c1"># Get the pixels that we are sampling in the image along each scan line</span>
-        <span class="n">search_points_image</span> <span class="o">=</span> <span class="n">search_deltas</span> <span class="o">+</span> <span class="n">predicted_limbs_pixels</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
-
-        <span class="c1"># Flatten everything to just 2d matrices instead of nd matrices</span>
-        <span class="n">sp_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">search_points_image</span><span class="p">)</span>
-
-        <span class="c1"># Select the template portion</span>
-        <span class="n">sp_flat_template</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">search_points_image</span><span class="p">[</span><span class="o">...</span><span class="p">,</span>
-                                     <span class="n">center</span> <span class="o">-</span> <span class="n">template_selection</span><span class="p">:</span><span class="n">center</span> <span class="o">+</span> <span class="n">template_selection</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
-
-        <span class="c1"># Compute the direction vector through each pixel we are sampling in the template</span>
-        <span class="n">direction_vectors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="n">sp_flat_template</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">camera_temperature</span><span class="p">)</span>
-
-        <span class="c1"># Build the rays we are going to trace to determine our predicted scan lines</span>
-        <span class="n">render_rays</span> <span class="o">=</span> <span class="n">Rays</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">direction_vectors</span><span class="p">)</span>
-
-        <span class="c1"># Get the predicted scan line illumination inputs</span>
-        <span class="n">illum_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">get_illumination_inputs</span><span class="p">(</span><span class="n">render_rays</span><span class="p">)</span>
-
-        <span class="c1"># Compute the scan line illuminations</span>
-        <span class="n">illums</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">brdf</span><span class="p">(</span><span class="n">illum_inputs</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">search_points_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">template_selection</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-
-        <span class="c1"># Apply the psf to the predicted illuminations and store the scan lines</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">predicted_illums</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">psf</span><span class="p">(</span><span class="n">illums</span><span class="p">)</span>
-
-        <span class="c1"># Extract the scan line DN values from the image</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">extracted_illums</span> <span class="o">=</span> <span class="n">image_interpolator</span><span class="p">(</span><span class="n">sp_flat</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">search_points_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                                                            <span class="n">search_points_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-
-        <span class="c1"># Do the 1d correlations between the extracted and predicted scan lines</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">correlation_lines</span> <span class="o">=</span> <span class="n">fft_correlator_1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_illums</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">predicted_illums</span><span class="p">)</span>
-
-        <span class="c1"># Find the peak of each correlation line</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">correlation_peaks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peak_finder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">correlation_lines</span><span class="p">)</span>
-
-        <span class="n">distances</span> <span class="o">=</span> <span class="n">distance_interpolator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">correlation_peaks</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">correlation_peaks</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-
-        <span class="n">observed_limbs_pixels</span> <span class="o">=</span> <span class="n">distances</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">scan_dirs</span> <span class="o">+</span> <span class="n">predicted_limbs_pixels</span>
-
-        <span class="k">return</span> <span class="n">predicted_limbs_camera</span><span class="p">,</span> <span class="n">predicted_limbs_pixels</span><span class="p">,</span> <span class="n">observed_limbs_pixels</span><span class="p">,</span> <span class="n">scan_dirs_camera</span></div></div>
-
-
-<div class="viewcode-block" id="EllipseMatching"><a class="viewcode-back" href="../../../../relative_opnav/estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.html#giant.relative_opnav.estimators.ellipse_matching.EllipseMatching">[docs]</a><span class="k">class</span> <span class="nc">EllipseMatching</span><span class="p">(</span><span class="n">RelNavEstimator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+   
+    
+<div class="viewcode-block" id="EllipseMatching">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.html#giant.relative_opnav.estimators.ellipse_matching.EllipseMatching">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EllipseMatching</span><span class="p">(</span><span class="n">LimbPairer</span><span class="p">,</span> <span class="n">RelNavEstimator</span><span class="p">,</span> <span class="n">EllipseMatchingOptions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class implements GIANT&#39;s version of limb based OpNav for regular bodies.</span>
 
 <span class="sd">    The class provides an interface to perform limb based OpNav for each target body that is predicted to be in an</span>
@@ -594,69 +278,30 @@
 <span class="sd">        image time.  This class does not update the scene automatically.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">technique</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;ellipse_matching&#39;</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="n">technique</span> <span class="o">=</span> <span class="s1">&#39;ellipse_matching&#39;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The name of the technique identifier in the :class:`.RelativeOpNav` class.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">observable_type</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RelNavObservablesType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">RelNavObservablesType</span><span class="o">.</span><span class="n">LIMB</span><span class="p">,</span> <span class="n">RelNavObservablesType</span><span class="o">.</span><span class="n">RELATIVE_POSITION</span><span class="p">]</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="n">observable_type</span> <span class="o">=</span> <span class="p">[</span><span class="n">RelNavObservablesType</span><span class="o">.</span><span class="n">LIMB</span><span class="p">,</span> <span class="n">RelNavObservablesType</span><span class="o">.</span><span class="n">RELATIVE_POSITION</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The type of observables this technique generates.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span> <span class="n">image_processing</span><span class="p">:</span> <span class="n">ImageProcessing</span><span class="p">,</span>
-                 <span class="n">limb_scanner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LimbScanner</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">extraction_method</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">LimbExtractionMethods</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">LimbExtractionMethods</span><span class="o">.</span><span class="n">EDGE_DETECTION</span><span class="p">,</span>
-                 <span class="n">interpolator</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="n">RegularGridInterpolator</span><span class="p">,</span>
-                 <span class="n">recenter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">Camera</span><span class="p">,</span> 
+                 <span class="n">options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EllipseMatchingOptions</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param scene: The :class:`.Scene` object containing the target, light, and obscuring objects.</span>
 <span class="sd">        :param camera: The :class:`.Camera` object containing the camera model and images to be utilized</span>
 <span class="sd">        :param image_processing: The :class:`.ImageProcessing` object to be used to process the images</span>
-<span class="sd">        :param limb_scanner: The :class:`.LimbScanner` object containing the limb scanning settings.</span>
-<span class="sd">        :param extraction_method: The method to use to extract the observed limbs from the image.  Should be</span>
-<span class="sd">                                  ``&#39;LIMB_SCANNING&#39;`` or ``&#39;EDGE_DETECTION&#39;``.  See :class:`.LimbExtractionMethods` for</span>
-<span class="sd">                                  details.</span>
-<span class="sd">        :param interpolator: The type of image interpolator to use if the extraction method is set to LIMB_SCANNING.</span>
-<span class="sd">        :param recenter: A flag to estimate the center using the moment algorithm to get a fast rough estimate of the</span>
-<span class="sd">                         center-of-figure</span>
+<span class="sd">        :param options: A dataclass specifying the options to set for this instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># store the scene and camera in the class instance using the super class&#39;s init method</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">image_processing</span><span class="p">)</span>
-
-        <span class="c1"># interpret the limb extraction method into the enum</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extraction_method</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">extraction_method</span> <span class="o">=</span> <span class="n">extraction_method</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">extraction_method</span><span class="p">:</span> <span class="n">LimbExtractionMethods</span> <span class="o">=</span> <span class="n">LimbExtractionMethods</span><span class="p">(</span><span class="n">extraction_method</span><span class="p">)</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The method to use to extract observed limb points from the image.</span>
-
-<span class="sd">        The valid options are provided in the :class:`LimbExtractionMethods` enumeration</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_limb_scanner</span><span class="p">:</span> <span class="n">LimbScanner</span> <span class="o">=</span> <span class="n">limb_scanner</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The limb scanning instance to use.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">interpolator</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="n">interpolator</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The type of interpolator to use for the image.  </span>
-
-<span class="sd">        This is ignored if the :attr:`extraction_method` is not set to ``&#39;LIMB_SCANNING&#39;``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_edge_detection_limbs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">NONEARRAY</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The extracted limbs from the image in pixels before they have been paired to a target</span>
-
-<span class="sd">        Until :meth:`estimate` is called this list will be filled with ``None``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">EllipseMatchingOptions</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">limbs_camera</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">NONEARRAY</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The limb surface points with respect to the center of the target</span>
 
 <span class="sd">        Until :meth:`estimate` is called this list will be filled with ``None``.</span>
@@ -664,146 +309,19 @@
 <span class="sd">        Each element of this list corresponds to the same element in the :attr:`.Scene.target_objs` list.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_image_interp</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The interpolator for the image to use.  </span>
 
-<span class="sd">        This is set on the call to estimate</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_limbs_extracted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        This flag specifies where limbs have already be extracted from the current image or not.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">recenter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">recenter</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A flag specifying whether to locate the center of the target using a moment algorithm before beginning.</span>
-
-<span class="sd">        If the a priori knowledge of the bearing to the target is poor (outside of the body) then this flag will help</span>
-<span class="sd">        to correct the initial error.  See the :mod:`.moment_algorithm` module for details.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
+        <span class="n">moment_options</span> <span class="o">=</span> <span class="n">MomentAlgorithmOptions</span><span class="p">(</span><span class="n">apply_phase_correction</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">use_apparent_area</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="c1"># the moment algorithm instance to use if recentering has been requested.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_moment_algorithm</span><span class="p">:</span> <span class="n">MomentAlgorithm</span> <span class="o">=</span> <span class="n">MomentAlgorithm</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">image_processing</span><span class="p">,</span>
-                                                                  <span class="n">apply_phase_correction</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                                                                  <span class="n">use_apparent_area</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_moment_algorithm</span><span class="p">:</span> <span class="n">MomentAlgorithm</span> <span class="o">=</span> <span class="n">MomentAlgorithm</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">moment_options</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The moment algorithm instance to use to recenter if we are using limb scanning</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
 
-<div class="viewcode-block" id="EllipseMatching.extract_and_pair_limbs"><a class="viewcode-back" href="../../../../relative_opnav/estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.extract_and_pair_limbs.html#giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.extract_and_pair_limbs">[docs]</a>    <span class="k">def</span> <span class="nf">extract_and_pair_limbs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">SceneObject</span><span class="p">,</span> <span class="n">target_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> \
-            <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Extract and pair limb points in an image to the surface point on a target that created it.</span>
-
-<span class="sd">        For irregular bodies this is an approximate procedure that depends on the current estimate of the state vector.</span>
-<span class="sd">        See :meth:`.Shape.find_limbs` for details.</span>
-
-<span class="sd">        This technique extracts limbs in 2 ways.  If :attr:`extraction_method` is ``EDGE_DETECTION``, then all limbs are</span>
-<span class="sd">        extracted from the image using :meth:`.ImageProcessing.identify_subpixel_limbs`.  These extracted limbs are then</span>
-<span class="sd">        stored and paired to their corresponding targets based on the apparent diameter.  This only happens once per</span>
-<span class="sd">        image since the extracted limb locations in the image are independent of the relative position of the target to</span>
-<span class="sd">        the camera.  If :attr:`extraction_method` is ``LIMB_SCANNING`` then this will extract and pair the limbs for the</span>
-<span class="sd">        requested target using :meth:`.LimbScanner.extract_limbs`.  This is performed ever iteration, as the extracted</span>
-<span class="sd">        limb locations are dependent on the relative position of the target in the scene.</span>
-
-<span class="sd">        For both techniques, the paired observed limb location in the image for the target are stored in the appropriate</span>
-<span class="sd">        element of :attr:`observed_bearings` as a 2xn array of pixel locations.</span>
-
-<span class="sd">        :param image: The image that the limbs are to be extracted from</span>
-<span class="sd">        :param target:  The target that the extracted limbs are to be paired to</span>
-<span class="sd">        :param target_ind:  The index of the target that the extracted limbs are to be paired to</span>
-<span class="sd">        :return: The scan center, the scan center direction, the scan directions, the predicted limbs in the camera, and</span>
-<span class="sd">                 the predicted limbs in the image.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># set the scan center</span>
-        <span class="n">scan_center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="p">,</span>
-                                                           <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
-        <span class="n">scan_center_dir</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">scan_center_dir</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">scan_center_dir</span><span class="p">)</span>
-
-        <span class="c1"># Determine the illumination direction in the image</span>
-        <span class="n">line_of_sight_sun</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_directions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">light_obj</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extraction_method</span> <span class="o">==</span> <span class="n">LimbExtractionMethods</span><span class="o">.</span><span class="n">EDGE_DETECTION</span><span class="p">:</span>
-
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_limbs_extracted</span><span class="p">:</span>
-                <span class="n">n_objs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>
-                <span class="c1"># extract the limbs from the image</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_edge_detection_limbs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_processing</span><span class="o">.</span><span class="n">identify_subpixel_limbs</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="o">-</span><span class="n">line_of_sight_sun</span><span class="p">,</span>
-                                                                                           <span class="n">num_objs</span><span class="o">=</span><span class="n">n_objs</span><span class="p">)</span>
-
-                <span class="c1"># match the limbs to each target</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_match_limbs_to_targets</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
-
-                <span class="bp">self</span><span class="o">.</span><span class="n">_limbs_extracted</span> <span class="o">=</span> <span class="kc">True</span>
-
-            <span class="n">extracted_limbs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span>
-
-            <span class="c1"># get the scan directions for each extracted limb point</span>
-            <span class="n">scan_dirs_pixels</span> <span class="o">=</span> <span class="n">extracted_limbs</span> <span class="o">-</span> <span class="n">scan_center</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-
-            <span class="n">scan_dirs_camera</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="n">scan_center</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">scan_dirs_pixels</span><span class="p">,</span>
-                                                                <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
-            <span class="n">scan_dirs_camera</span> <span class="o">/=</span> <span class="n">scan_dirs_camera</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-            <span class="n">scan_dirs_camera</span> <span class="o">-=</span> <span class="n">scan_center_dir</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">scan_center_dir</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-            <span class="n">scan_dirs_camera</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">scan_dirs_camera</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-            <span class="k">try</span><span class="p">:</span>
-                <span class="c1"># find the corresponding limbs</span>
-                <span class="n">predicted_limbs</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">find_limbs</span><span class="p">(</span><span class="n">scan_center_dir</span><span class="p">,</span> <span class="n">scan_dirs_camera</span><span class="p">)</span>
-
-                <span class="c1"># project them onto the image</span>
-                <span class="n">predicted_limbs_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">predicted_limbs</span><span class="p">,</span>
-                                                                             <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
-
-            <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
-                <span class="n">predicted_limbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="n">extracted_limbs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-                <span class="n">predicted_limbs_image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">extracted_limbs</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-
-        <span class="k">else</span><span class="p">:</span>
-
-            <span class="p">(</span><span class="n">predicted_limbs</span><span class="p">,</span>
-             <span class="n">predicted_limbs_image</span><span class="p">,</span>
-             <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">],</span>
-             <span class="n">scan_dirs_camera</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_limb_scanner</span><span class="o">.</span><span class="n">extract_limbs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_image_interp</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span>
-                                                                  <span class="n">scan_center</span><span class="p">,</span> <span class="n">line_of_sight_sun</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">scan_center</span><span class="p">,</span> <span class="n">scan_center_dir</span><span class="p">,</span> <span class="n">scan_dirs_camera</span><span class="p">,</span> <span class="n">predicted_limbs</span><span class="p">,</span> <span class="n">predicted_limbs_image</span></div>
-
-    <span class="k">def</span> <span class="nf">_match_limbs_to_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="n">Real</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        This matches the limb clumps returned by :meth:`.ImageProcessing.identify_subpixel_limbs` to the targets in</span>
-<span class="sd">        :attr:`.Scene.target_objs`.</span>
-
-<span class="sd">        The matching is done based on apparent size, therefore it is expected that the relative size of each target and</span>
-<span class="sd">        the relative range to each target is mostly correct.  (i.e. if in real life target 1 is smaller but closer then</span>
-<span class="sd">        target 2, then in the scene this should also be the case.  These can be wrong by a common scale factor, that is</span>
-<span class="sd">        if target 2 is 50% larger than what is truth, then target 1 should also ~50% larger than truth.).</span>
-
-<span class="sd">        The results are stored in :attr:`observed_bearings`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">apparent_diameters_observed</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">limbs</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">-</span>
-                                                      <span class="n">limbs</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-                                       <span class="k">for</span> <span class="n">limbs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_edge_detection_limbs</span><span class="p">]</span>
-
-        <span class="n">apparent_diameters_predicted</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">:</span>
-            <span class="n">apparent_diameters_predicted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">get_apparent_diameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-                                                                             <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">))</span>
-
-        <span class="n">sorted_diameters_observed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">apparent_diameters_observed</span><span class="p">)</span>
-        <span class="n">sorted_diameters_predicted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">apparent_diameters_predicted</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">target_ind</span><span class="p">,</span> <span class="n">limb_ind</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sorted_diameters_predicted</span><span class="p">,</span> <span class="n">sorted_diameters_observed</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_edge_detection_limbs</span><span class="p">[</span><span class="n">limb_ind</span><span class="p">]</span>
-
-<div class="viewcode-block" id="EllipseMatching.estimate"><a class="viewcode-back" href="../../../../relative_opnav/estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.estimate.html#giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.estimate">[docs]</a>    <span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">include_targets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="EllipseMatching.estimate">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.estimate.html#giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.estimate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">OpNavImage</span><span class="p">,</span> <span class="n">include_targets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method identifies the position of each target in the camera frame using ellipse matching.</span>
 
 <span class="sd">        This method first extracts limb observations from an image and matches them to the targets in the scene.  Then,</span>
@@ -819,9 +337,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extraction_method</span> <span class="o">==</span> <span class="n">LimbExtractionMethods</span><span class="o">.</span><span class="n">LIMB_SCANNING</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_image_interp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolator</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="n">image</span><span class="p">,</span>
-                                                   <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-
             <span class="c1"># If we were requested to recenter using a moment algorithm then do it</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">recenter</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;recentering&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -829,15 +344,17 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_moment_algorithm</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">include_targets</span><span class="o">=</span><span class="n">include_targets</span><span class="p">)</span>
 
                 <span class="k">for</span> <span class="n">target_ind</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_generator</span><span class="p">(</span><span class="n">include_targets</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_moment_algorithm</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
-                        <span class="n">new_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">_moment_algorithm</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span>
-                        <span class="p">)</span>
+                    <span class="n">target_observed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_moment_algorithm</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">target_observed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">target_observed</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                        <span class="n">new_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="n">target_observed</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
                         <span class="n">new_position</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
                         <span class="n">target</span><span class="o">.</span><span class="n">change_position</span><span class="p">(</span><span class="n">new_position</span><span class="p">)</span>
 
         <span class="c1"># loop through each object in the scene</span>
         <span class="k">for</span> <span class="n">target_ind</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_generator</span><span class="p">(</span><span class="n">include_targets</span><span class="p">):</span>
+            <span class="n">target_observed_bearings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">target_observed_bearings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;no observed limbs for target </span><span class="si">{target_ind}</span><span class="s1">&#39;</span><span class="p">)</span>
 
             <span class="n">relative_position</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">computed_positions</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">relative_position</span>
@@ -853,14 +370,15 @@
                 <span class="k">continue</span>
 
             <span class="c1"># Drop any invalid limbs</span>
-            <span class="n">valid_test</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">])</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">valid_test</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">target_observed_bearings</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">][:,</span> <span class="n">valid_test</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_observed_bearings</span><span class="p">[:,</span> <span class="n">valid_test</span><span class="p">]</span>
 
             <span class="c1"># extract the shape from the object and see if it is an ellipsoid</span>
             <span class="n">shape</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span>
+            
 
-            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">Ellipsoid</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="s1">&#39;reference_ellipsoid&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">Ellipsoid</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">HasReferenceEllipsoid</span><span class="p">):</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;The primary shape is not an ellipsoid but it has a reference ellipsoid.&quot;</span>
                               <span class="s2">&quot;We&#39;re going to use the reference ellipsoid but maybe you should actually use &quot;</span>
                               <span class="s2">&quot;limb_matching instead.&quot;</span><span class="p">)</span>
@@ -881,57 +399,60 @@
             <span class="n">q_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">shape</span><span class="o">.</span><span class="n">principal_axes</span><span class="p">)</span>
 
             <span class="c1"># Now, we need to get the unit vectors in the direction of our measurements</span>
-            <span class="n">unit_vectors_camera</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">],</span>
+            <span class="n">unit_vectors_camera</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">pixels_to_unit</span><span class="p">(</span><span class="n">target_observed_bearings</span><span class="p">,</span>
                                                                    <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
 
             <span class="c1"># Rotate the unit vectors into the principal axis frame</span>
-            <span class="n">unit_vectors_principal</span> <span class="o">=</span> <span class="n">shape</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">unit_vectors_camera</span>
+            <span class="n">unit_vectors_principal</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span> <span class="o">=</span> <span class="n">shape</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">unit_vectors_camera</span>
 
             <span class="c1"># Now, convert into the unit sphere space and make unit vectors</span>
             <span class="n">right_sphere_cone_vectors</span> <span class="o">=</span> <span class="n">q_matrix</span> <span class="o">@</span> <span class="n">unit_vectors_principal</span>
-            <span class="n">right_sphere_cone_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">right_sphere_cone_vectors</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">right_sphere_cone_size</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">right_sphere_cone_vectors</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">right_sphere_cone_vectors</span> <span class="o">/=</span> <span class="n">right_sphere_cone_size</span>
 
             <span class="c1"># Now, we solve for the position in the sphere space</span>
-            <span class="n">location_sphere</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">right_sphere_cone_vectors</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
-                                              <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">right_sphere_cone_vectors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
-                                              <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">location_sphere</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">DOUBLE_ARRAY</span><span class="p">,</span>
+                                                 <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">right_sphere_cone_vectors</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                                                                 <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">right_sphere_cone_vectors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                                                 <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
 
             <span class="c1"># Finally, get the position in the camera frame and store it</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">observed_positions</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">shape</span><span class="o">.</span><span class="n">orientation</span> <span class="o">@</span> <span class="n">q_inv</span> <span class="o">@</span> <span class="n">location_sphere</span> <span class="o">/</span>
-                                                   <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">location_sphere</span><span class="p">,</span> <span class="n">location_sphere</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+            <span class="n">target_observed_position</span><span class="p">:</span> <span class="n">DOUBLE_ARRAY</span> <span class="o">=</span> <span class="p">(</span><span class="n">shape</span><span class="o">.</span><span class="n">orientation</span> <span class="o">@</span> <span class="n">q_inv</span> <span class="o">@</span> <span class="n">location_sphere</span> <span class="o">/</span>
+                                                      <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">location_sphere</span><span class="p">,</span> <span class="n">location_sphere</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">observed_positions</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_observed_position</span>
 
             <span class="c1"># Get the limb locations in the camera frame</span>
-            <span class="n">scan_center_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observed_positions</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">scan_center_dir</span> <span class="o">=</span> <span class="n">target_observed_position</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="n">scan_center_dir</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">scan_center_dir</span><span class="p">)</span>
 
             <span class="n">scan_dirs</span> <span class="o">=</span> <span class="n">unit_vectors_camera</span><span class="o">/</span><span class="n">unit_vectors_camera</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">scan_center_dir</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">scan_center_dir</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
             <span class="n">scan_dirs</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">scan_dirs</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">limbs_camera</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">shape</span><span class="o">.</span><span class="n">find_limbs</span><span class="p">(</span><span class="n">scan_center_dir</span><span class="p">,</span> <span class="n">scan_dirs</span><span class="p">,</span>
-                                                             <span class="n">shape</span><span class="o">.</span><span class="n">center</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">observed_positions</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+            <span class="n">target_limbs_camera</span> <span class="o">=</span> <span class="n">shape</span><span class="o">.</span><span class="n">find_limbs</span><span class="p">(</span><span class="n">scan_center_dir</span><span class="p">,</span> <span class="n">scan_dirs</span><span class="p">,</span>
+                                                   <span class="n">shape</span><span class="o">.</span><span class="n">center</span> <span class="o">-</span> <span class="n">target_observed_position</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">limbs_camera</span><span class="p">[</span><span class="n">target_ind</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">limbs_camera</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_limbs_camera</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">project_onto_image</span><span class="p">(</span><span class="n">target_limbs_camera</span><span class="p">,</span>
                                                                                       <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
 
-            <span class="n">target_centered_fixed_limb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">limbs_camera</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">-</span> \
-                                         <span class="bp">self</span><span class="o">.</span><span class="n">observed_positions</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">target_centered_fixed_limb</span> <span class="o">=</span> <span class="n">target_limbs_camera</span> <span class="o">-</span> \
+                                         <span class="n">target_observed_position</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
             <span class="n">target_centered_fixed_limb</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">target_centered_fixed_limb</span>
 
             <span class="c1"># compute the covariance matrix</span>
             <span class="n">delta_ns</span> <span class="o">=</span> <span class="n">location_sphere</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">right_sphere_cone_vectors</span>
 
             <span class="n">decomp_matrix</span> <span class="o">=</span> <span class="p">(</span><span class="n">q_matrix</span><span class="nd">@shape</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-            <span class="n">meas_std</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">])</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">model_jacobian</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">compute_unit_vector_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">],</span>
+            <span class="n">meas_std</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_observed_bearings</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">computed_bearings</span><span class="p">[</span><span class="n">target_ind</span><span class="p">])</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">model_jacobian</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">compute_unit_vector_jacobian</span><span class="p">(</span><span class="n">target_observed_bearings</span><span class="p">,</span>
                                                                             <span class="n">temperature</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">temperature</span><span class="p">)</span>
             <span class="n">meas_cov</span> <span class="o">=</span> <span class="n">model_jacobian</span><span class="nd">@np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">meas_std</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="nd">@model_jacobian</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
-            <span class="n">inf_eta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">right_sphere_cone_size</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span>
-                              <span class="p">(</span><span class="n">delta_ns</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="o">@</span>
-                               <span class="n">decomp_matrix</span> <span class="o">@</span>
-                               <span class="n">meas_cov</span> <span class="o">@</span>
-                               <span class="n">decomp_matrix</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span> <span class="o">@</span>
-                               <span class="n">delta_ns</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">inf_eta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">((</span><span class="n">right_sphere_cone_size</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="o">**-</span><span class="mi">2</span> <span class="o">*</span>
+                                <span class="p">(</span><span class="n">delta_ns</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="o">@</span>
+                                <span class="n">decomp_matrix</span> <span class="o">@</span>
+                                <span class="n">meas_cov</span> <span class="o">@</span>
+                                <span class="n">decomp_matrix</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span> <span class="o">@</span>
+                                <span class="n">delta_ns</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
 
             <span class="n">cov_location_sphere</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">right_sphere_cone_vectors</span> <span class="o">@</span>
                                                  <span class="n">inf_eta</span> <span class="o">@</span>
@@ -948,8 +469,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="n">target_ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Surface Limb Points&quot;</span><span class="p">:</span> <span class="n">target_centered_fixed_limb</span><span class="p">,</span>
                                         <span class="s2">&quot;Covariance&quot;</span><span class="p">:</span> <span class="n">covariance_camera</span><span class="p">}</span></div>
 
-<div class="viewcode-block" id="EllipseMatching.reset"><a class="viewcode-back" href="../../../../relative_opnav/estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.reset.html#giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+            
+            
+<div class="viewcode-block" id="EllipseMatching.reset">
+<a class="viewcode-back" href="../../../../relative_opnav/estimators/ellipse_matching/giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.reset.html#giant.relative_opnav.estimators.ellipse_matching.EllipseMatching.reset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method resets the observed/computed attributes, the details attribute, and the limb attributes to have</span>
 <span class="sd">        ``None``.</span>
 
@@ -959,10 +484,9 @@
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_edge_detection_limbs</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">limbs_camera</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_limbs_extracted</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_image_interp</span> <span class="o">=</span> <span class="kc">None</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">limbs_camera</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">target_objs</span><span class="p">)</span></div>
+</div>
+
 </pre></div>
 
           </div>
@@ -978,17 +502,24 @@
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

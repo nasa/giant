@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>giant.photometry.planning.DiscretizedTrajectory &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../_static/logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+    <link rel="next" title="DiscretizedTrajectory.place_and_point_to_body" href="giant.photometry.planning.DiscretizedTrajectory.place_and_point_to_body.html" />
+    <link rel="prev" title="giant.photometry.planning" href="../giant.photometry.planning.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A powerful API for Optical Navigation</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installing GIANT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../giant.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../giant.html#indices">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../giant.html">API Reference</a><ul>
+  <li><a href="../../giant.photometry.html">giant.photometry</a><ul>
+  <li><a href="../giant.photometry.planning.html">giant.photometry.planning</a><ul>
+      <li>Previous: <a href="../giant.photometry.planning.html" title="previous chapter">giant.photometry.planning</a></li>
+      <li>Next: <a href="giant.photometry.planning.DiscretizedTrajectory.place_and_point_to_body.html" title="next chapter">DiscretizedTrajectory.place_and_point_to_body</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.photometry.planning.html" title="Previous document">giant.photometry.planning</a>
+        </li>
+        <li>
+          <a href="giant.photometry.planning.DiscretizedTrajectory.place_and_point_to_body.html" title="Next document">DiscretizedTrajectory.place_and_point_to_body</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="giant-photometry-planning-discretizedtrajectory">
+<h1>giant.photometry.planning.DiscretizedTrajectory<a class="headerlink" href="#giant-photometry-planning-discretizedtrajectory" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="giant.photometry.planning.DiscretizedTrajectory">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">giant.photometry.planning.</span></span><span class="sig-name descname"><span class="pre">DiscretizedTrajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_position_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_bound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_bound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/giant/photometry/planning.html#DiscretizedTrajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.photometry.planning.DiscretizedTrajectory" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class is used to setup a span in which to query the photometry model over. When iterating over 
+this class, the photometry model is placed in the correct geometry within the camera frame and points
+to the defined target for each time step.</p>
+<p>This class should only be used to step through a photometry model by time.</p>
+<p>If a target_index value is not provided by the user, then the camera will point to the first target 
+defined in the photometry model’s scene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scene</strong> (<a class="reference internal" href="../../ray_tracer/scene/giant.ray_tracer.scene.Scene.html#giant.ray_tracer.scene.Scene" title="giant.ray_tracer.scene.Scene"><em>Scene</em></a>) – A Scene in which to find trajectory parameters</p></li>
+<li><p><strong>camera_position_function</strong> (<em>Callable</em>) – a function that returns the position of the camera 
+for an input datetime</p></li>
+<li><p><strong>start_bound</strong> (<em>datetime</em>) – A datetime object defining the beginning of the window over which the calculations are to be
+done (inclusive)</p></li>
+<li><p><strong>stop_bound</strong> (<em>datetime</em>) – A datetime object defining the end of the window over which the calculations are to be
+done (inclusive)</p></li>
+<li><p><strong>step_size</strong> (<em>timedelta</em>) – A timedelta object specifying how to discretize the trajectory.</p></li>
+<li><p><strong>target_index</strong> (<em>int</em><em> | </em><em>None</em>) – The index representing the body to point to during the trajectory in the scene objects
+defined in the photometry model</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.photometry.planning.DiscretizedTrajectory.scene">
+<span class="sig-name descname"><span class="pre">scene</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../ray_tracer/scene/giant.ray_tracer.scene.Scene.html#giant.ray_tracer.scene.Scene" title="giant.ray_tracer.scene.Scene"><span class="pre">Scene</span></a></em><a class="headerlink" href="#giant.photometry.planning.DiscretizedTrajectory.scene" title="Link to this definition">¶</a></dt>
+<dd><p>A Photometry object containing the scene in which to calculate photometry</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.photometry.planning.DiscretizedTrajectory.camera_position_function">
+<span class="sig-name descname"><span class="pre">camera_position_function</span></span><a class="headerlink" href="#giant.photometry.planning.DiscretizedTrajectory.camera_position_function" title="Link to this definition">¶</a></dt>
+<dd><p>a function that returns the position of the camera for an input datetime</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.photometry.planning.DiscretizedTrajectory.target_index">
+<span class="sig-name descname"><span class="pre">target_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#giant.photometry.planning.DiscretizedTrajectory.target_index" title="Link to this definition">¶</a></dt>
+<dd><p>The index representing the body to point to during the trajectory in the scene objects
+defined in the photometry model</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.photometry.planning.DiscretizedTrajectory.start_bound">
+<span class="sig-name descname"><span class="pre">start_bound</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">datetime</span></em><a class="headerlink" href="#giant.photometry.planning.DiscretizedTrajectory.start_bound" title="Link to this definition">¶</a></dt>
+<dd><p>A datetime object defining the beginning of the window over which the calculations are to be done (inclusive)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.photometry.planning.DiscretizedTrajectory.stop_bound">
+<span class="sig-name descname"><span class="pre">stop_bound</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">datetime</span></em><a class="headerlink" href="#giant.photometry.planning.DiscretizedTrajectory.stop_bound" title="Link to this definition">¶</a></dt>
+<dd><p>A datetime object defining the end of the window over which the calculations are to be done (inclusive)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giant.photometry.planning.DiscretizedTrajectory.step_size">
+<span class="sig-name descname"><span class="pre">step_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">timedelta</span></em><a class="headerlink" href="#giant.photometry.planning.DiscretizedTrajectory.step_size" title="Link to this definition">¶</a></dt>
+<dd><p>A timedelta object defining the size of the steps to take when discretizing the trajectory</p>
+</dd></dl>
+
+</dd></dl>
+
+<p class="rubric">Summary of Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="giant.photometry.planning.DiscretizedTrajectory.place_and_point_to_body.html#giant.photometry.planning.DiscretizedTrajectory.place_and_point_to_body" title="giant.photometry.planning.DiscretizedTrajectory.place_and_point_to_body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">place_and_point_to_body</span></code></a></p></td>
+<td><p>This method computes places the scene at the input date, changes the origin of the scene to the camera,  and points the camera directly at the target at <code class="docutils literal notranslate"><span class="pre">target_index</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="../giant.photometry.planning.html" title="Previous document">giant.photometry.planning</a>
+        </li>
+        <li>
+          <a href="giant.photometry.planning.DiscretizedTrajectory.place_and_point_to_body.html" title="Next document">DiscretizedTrajectory.place_and_point_to_body</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
+    </div>
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
+  </body>
+</html>

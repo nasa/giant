@@ -6,7 +6,7 @@
 .. autoclass:: Moment
     :show-inheritance:
     :no-members:
-    :members: centroid_x, centroid_y, centroid, residual_rss, residual_std, covariance
+    :members: centroid_x, centroid_y, centroid, residual_rss, residual_mean, residual_std, covariance
 
     .. attribute:: save_residuals
         :value: False
@@ -29,5 +29,8 @@
     ~Moment.apply_1d
     ~Moment.evaluate
     ~Moment.generate_kernel
+    ~Moment.shift_centroid
+    ~Moment.volume
+    ~Moment.compare
 
 |

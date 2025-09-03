@@ -7,7 +7,7 @@ OpNav
 
 .. autoclass:: OpNav
     :no-members:
-    :members: camera, model, image_processing
+    :members: camera, model
 
 .. rubric:: Summary of Methods
 
@@ -15,7 +15,5 @@ OpNav
     :nosignatures:
 
     OpNav.add_images
-    OpNav.reset_image_processing
-    OpNav.update_image_processing
 
 |

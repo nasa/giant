@@ -1,20 +1,19 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Measurement &#8212; GIANT 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../_static/logo.ico"/>
+    <title>Measurement &#8212; GIANT 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=3f530b75" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=aae3c237" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../_static/logo.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="copyright" title="Copyright" href="../../copyright.html" />
@@ -23,17 +22,18 @@
    
   <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   <div class="document">
     
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../../index.html">
-    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    <img class="logo" src="../../_static/logo.png" alt="Logo" />
     
   </a>
 </p>
@@ -72,7 +72,7 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -80,8 +80,8 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -106,42 +106,42 @@
           <div class="body" role="main">
             
   <section id="measurement">
-<h1>Measurement<a class="headerlink" href="#measurement" title="Permalink to this headline">¶</a></h1>
+<h1>Measurement<a class="headerlink" href="#measurement" title="Link to this heading">¶</a></h1>
 <p><a class="reference internal" href="../giant.ufo.measurements.html#module-giant.ufo.measurements" title="giant.ufo.measurements"><code class="xref py py-mod docutils literal notranslate"><span class="pre">giant.ufo.measurements</span></code></a>:</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="giant.ufo.measurements.Measurement">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">giant.ufo.measurements.</span></span><span class="sig-name descname"><span class="pre">Measurement</span></span><a class="reference internal" href="../../_modules/giant/ufo/measurements.html#Measurement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.ufo.measurements.Measurement" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">giant.ufo.measurements.</span></span><span class="sig-name descname"><span class="pre">Measurement</span></span><a class="reference internal" href="../../_modules/giant/ufo/measurements.html#Measurement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#giant.ufo.measurements.Measurement" title="Link to this definition">¶</a></dt>
 <dd><p>This ABC defines the interface for a measurement that is expected by the <a class="reference internal" href="../extended_kalman_filter/giant.ufo.extended_kalman_filter.ExtendedKalmanFilter.html#giant.ufo.extended_kalman_filter.ExtendedKalmanFilter" title="giant.ufo.extended_kalman_filter.ExtendedKalmanFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtendedKalmanFilter</span></code></a> class for a
 measurement.</p>
 <p>To implement a new measurement type, simply subclass this class, implement the abstract methods and properties (plus
 whatever you need for the methods/properties) and then use it to feed measurements into the EKF.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="giant.ufo.measurements.Measurement.covariance">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">covariance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.covariance" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">abstract</span></span><span class="w"> </span><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">covariance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.covariance" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the covariance of the measurement as a numpy array</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="giant.ufo.measurements.Measurement.observed">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numbers.Real</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.observed" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">abstract</span></span><span class="w"> </span><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.observed" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the observed measurement.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="giant.ufo.measurements.Measurement.observer_location">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observer_location</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">giant.ufo.dynamics.Dynamics.State</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.observer_location" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">abstract</span></span><span class="w"> </span><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observer_location</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">State</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.observer_location" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the state of the observer at the time the measurement was captured in the base dynamics frame</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="giant.ufo.measurements.Measurement.time">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">datetime.datetime</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.time" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">abstract</span></span><span class="w"> </span><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">datetime</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.time" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the time of the measurement as a python datetime object</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="giant.ufo.measurements.Measurement.identity">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Hashable</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.identity" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">abstract</span></span><span class="w"> </span><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Hashable</span></em><a class="headerlink" href="#giant.ufo.measurements.Measurement.identity" title="Link to this definition">¶</a></dt>
 <dd><p>The identity of this measurement.</p>
 <p>This is used primarily by the tracker to link measurement back to observation ids</p>
 </dd></dl>
@@ -149,11 +149,7 @@ whatever you need for the methods/properties) and then use it to feed measuremen
 </dd></dl>
 
 <p class="rubric">Summary of Methods</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="giant.ufo.measurements.Measurement.compare_residuals.html#giant.ufo.measurements.Measurement.compare_residuals" title="giant.ufo.measurements.Measurement.compare_residuals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compare_residuals</span></code></a></p></td>
 <td><p>This compares residuals computed using these measurement models.</p></td>
@@ -193,20 +189,24 @@ whatever you need for the methods/properties) and then use it to feed measuremen
       </div>
     <div class="clearer"></div>
   </div>
-    <div class="footer">
-      &copy;2021 United States Government.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="../../_sources/ufo/measurements/giant.ufo.measurements.Measurement.rst.txt"
-          rel="nofollow">Page source</a>
+<div class="footer">
+    <div style="display:inline-block;vertical-align:middle;">
+        <img src="/_static/NASA_logo.svg" alt="NASA" style="width:80px;height:80px;">
     </div>
-
-    
-
-    
+    <div style="display:inline-block;vertical-align:middle;">
+        &copy;2023 United States Government | 
+        NASA Official: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a> |
+        Curator: <a href="mailto:andrew.j.liounis@nasa.gov">Andrew Liounis</a>
+        <br>
+        Last updated on Sep 03, 2025 |
+        
+        |
+        Powered by <a href="http://sphinx-doc.org/">Sphinx 8.2.3</a>
+        &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 1.0.0</a>
+        
+        |
+        <a href="https://www.nasa.gov/about/highlights/HP_Privacy.html">Privacy Policy/Notices</a>
+    </div>
+</div>
   </body>
 </html>

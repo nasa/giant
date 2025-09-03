@@ -45,7 +45,7 @@ that we'll need later.  You'll see these things in use in a little bit so just t
 
     # A module to provide access to the NAIF Spice routines
     import spiceypy as spice
-    from spiceypy.utils.support_types import SpiceyError
+    from spiceypy import SpiceyError
 
     # a standard library for representing dates and time deltas
     from datetime import timedelta
@@ -55,11 +55,11 @@ that we'll need later.  You'll see these things in use in a little bit so just t
 
 Subclassing OpNavImage
 ----------------------
-With the imports out of the way the first object we need to update is the :class:`.OpNavImage` class. While its not
+With the imports out of the way the first object we need to update is the :class:`.OpNavImage` class. While it's not
 required to personalize the :class:`.OpNavImage` class, it is generally a good idea because it allows you to
-automatically fill in much of the required meta data for the image at load time, and also allows you to build special
+automatically fill in much of the required metadata for the image at load time, and also allows you to build special
 loaders that can handle non-standard image formats (like raw formats directly from the spacecraft).  There are two
-different methods we can override to set these behaviours.  The first is :meth:`.load_image`.  In this method, the image
+different methods we can override to set these behaviors.  The first is :meth:`.load_image`.  In this method, the image
 data is loaded from the file and stored as a 2D numpy array.  The method expects a string to be input that represents
 the path to the file to be loaded, and the rest of GIANT expects that the loaded image data is returned as a numpy
 array.  If your image is in a basic format then you probably don't need to worry about this (and for this tutorial, that
@@ -67,7 +67,7 @@ is the case), but we wanted to make this possibility known to you.
 
 The next method we can override is the :meth:`.parse_data` method.  This method is intended to fill out all of the meta
 data from an image from the image file the image was loaded from.  In pure GIANT, this method is not implemented because
-there are an incredible number of ways to communicate meta data with an image so it would be impossible for us to
+there are an incredible number of ways to communicate metadata with an image, so it would be impossible for us to
 provide even a small subset.  Therefore, if you want this feature you need to implement it yourself.
 
 For DAWN, the images come in the standard FITS format, which GIANT can read by default, so we do not need to update the
@@ -78,16 +78,17 @@ label files that correspond to each image.  The following code shows how to do t
 
     class DawnFCImage(OpNavImage):
 
-        def parse_data(self):
+        def parse_data(self, *args):
 
             # be sure the image file exists
+            assert self.file is not None, "we need a file to parse the data from"
             if os.path.exists(self.file):
 
                 # get the extension from the file
                 _, ext = os.path.splitext(self.file)
 
                 # replace the extension from the file with LBL to find the corresponding label file
-                lbl_file = self.file.replace(ext, '.LBL')
+                lbl_file = str(self.file).replace(ext, '.LBL')
 
                 # check to see if the label file exists
                 if os.path.exists(lbl_file):
@@ -96,29 +97,32 @@ label files that correspond to each image.  The following code shows how to do t
                     with open(lbl_file, 'r') as lfile:
                         # pvl treats \ as escape characters so we need to replace them
                         data = pvl.loads(lfile.read().replace('\\', '/'))
+                        
+                        assert data is not None, "we were unable to parse the label file {}".format(lbl_file)
 
                     # extract the exposure time from the label and convert from ms to seconds
-                    self.exposure = data["EXPOSURE_DURATION"].value / 1000
+                    self.exposure = data["EXPOSURE_DURATION"].value / 1000 # pyright: ignore[reportAttributeAccessIssue]
 
                     # set the exposure type based off of the exposure length to make handling long/short opnav sequences
                     # easier.  This is typically camera specific and needs to be set by an analyst
+                    assert self.exposure is not None, "we were unable to extract the exposure time from the label file {}".format(lbl_file)
                     if self.exposure > 1:
                         self.exposure_type = "long"
                     else:
                         self.exposure_type = "short"
 
                     # extract the observation observation_date (middle of the exposure time of the image)
-                    self.observation_date = data["START_TIME"].replace(tzinfo=None) + timedelta(seconds=self.exposure / 2)
+                    self.observation_date = data["START_TIME"].replace(tzinfo=None) + timedelta(seconds=self.exposure / 2) # pyright: ignore[reportAttributeAccessIssue]
 
                     # get the temperature of the camera for this image
-                    self.temperature = data["DAWN:T_LENS_BARREL"].value - 273.15  # convert kelvin to celsius
+                    self.temperature = data["DAWN:T_LENS_BARREL"].value - 273.15  # pyright: ignore[reportAttributeAccessIssue] # convert kelvin to celsius
 
                     # get the quaternion of the rotation from the inertial frmame to the camera frame
                     # store the rotation as an attitude object.  Need to move the scalar term last
                     self.rotation_inertial_to_camera = Rotation(data["QUATERNION"][1:] + data["QUATERNION"][0:1])
 
                     # get the target
-                    self.target = data["TARGET_NAME"]
+                    self.target = str(data["TARGET_NAME"])
                     if self.target == "N/A":
                         self.target = None  # notify that we don't have a target here
                     else:
@@ -150,17 +154,17 @@ label files that correspond to each image.  The following code shows how to do t
                     # get the position and velocity of the camera (sc) with respect to the solar system bary center
                     try:
                         state, _ = spice.spkezr(self.spacecraft, et, 'J2000', 'NONE', "SSB")
-                        self.position = state[:3]
-                        self.velocity = state[3:]
+                        self.position = state[:3] # pyright: ignore[reportIndexIssue]
+                        self.velocity = state[3:] # pyright: ignore[reportIndexIssue]
 
                     except SpiceyError:
 
                         print('Unable to retrieve camera position and velocity \n'
-                              'for {0} at time {1}'.format(self.instrument, self.observation_date.isoformat()))
+                            'for {0} at time {1}'.format(self.instrument, self.observation_date.isoformat()))
 
                 else:
                     raise ValueError("we can't find the label file for this image so we can't parse the data."
-                                     "Looking for file {}".format(lbl_file))
+                                    "Looking for file {}".format(lbl_file))
 
 In the above code block, the first thing we do is extract the exposure time and type and store it in the
 :attr:`~.OpNavImage.exposure` and :attr:`~.OpNavImage.exposure_type` attributes.  Both of these attributes are required
@@ -222,19 +226,17 @@ and the :meth:`.Camera.preprocessor` method.  We set these methods for the DAWN 
 
         # update the init function to use the new DawnFCImage class instead of the default OpNavImage class
         def __init__(self, images=None, model=None, name=None, spacecraft_name=None,
-                     frame=None, parse_data=True, psf=None, attitude_function=None, start_date=None, end_date=None,
-                     default_image_class=DawnFCImage):
-
+                    frame=None, parse_data=True, psf=None, attitude_function=None, start_date=None, end_date=None,
+                    default_image_class=DawnFCImage):
             super().__init__(images=images, model=model, name=name, spacecraft_name=spacecraft_name,
-                             frame=frame, parse_data=parse_data, psf=psf,
-                             attitude_function=attitude_function, start_date=start_date, end_date=end_date,
-                             default_image_class=default_image_class)
+                            frame=frame, parse_data=parse_data, psf=psf,
+                            attitude_function=attitude_function, start_date=start_date, end_date=end_date,
+                            default_image_class=default_image_class)
 
         def preprocessor(self, image):
-
             # here we might apply corrections to the image (like flat fields and darks) or we can extract extra
             # information about the image and store it as another attribute (like dark_pixels which can be used to
-            # compute the noise level in the image). For the DAWN framing cameras though, we don't need to do anything
+            # compute the noise level in the image.  For the DAWN framing cameras though, we don't need to do anything
             # so we just return the image unmodified.
             return image
 
@@ -258,18 +260,16 @@ certain objects that we will frequently need.  Since most of this data is coming
     # convenience functions
     def sun_orientation(*args):
         # always set the sun orientation to be the identity rotation (J2000) because it doesn't actually matter
-        return Rotation([0, 0, 0])
+        return Rotation()
 
 
     # define a function that will return the sun position in the inertial frame wrt SSB for a datetime
     sun_position = spint.SpicePosition('SUN', 'J2000', 'NONE', 'SSB')
 
-
     # define a function that will return the framing camera 1 attitude with respect to inertial for an input datetime
     fc1_attitude = spint.SpiceOrientation('J2000', 'DAWN_FC1')
     # define a function that will return the framing camera 2 attitude with respect to inertial for an input datetime
     fc2_attitude = spint.SpiceOrientation('J2000', 'DAWN_FC2')
-
 
     # define a function that will return the dawn spacecraft attitude with respect to inertial for an input datetime
     dawn_attitude = spint.SpiceOrientation('J2000', 'DAWN_SPACECRAFT')
@@ -277,7 +277,6 @@ certain objects that we will frequently need.  Since most of this data is coming
     dawn_state = spint.SpiceState('DAWN', 'J2000', 'NONE', 'SSB')
     # define a function that will return the spacecraft position in the inertial frame wrt SSB for a datetime
     dawn_position = spint.SpicePosition('DAWN', 'J2000', 'NONE', 'SSB')
-
 
     # define a function that will return the vesta body fixed attitude with respect to inertial for an input datetime
     # GIANT needs this to be from body fixed to inertial
@@ -293,44 +292,48 @@ The final step in customizing GIANT is to install our ``dawn_giant`` module to o
 required step, it makes it easier to have access to all of the work we just did from whatever directory we want, so
 it is strongly recommended.  The easiest way to perform this step is using setuptools and a setup.py file.
 
-In the ``dawn_giant`` directory, create a file called ``setup.py`` and open it with your favorite text editor.  Then,
+In the ``dawn_giant`` directory, create a file called ``pyproject.toml`` and open it with your favorite text editor.  Then,
 place the following code into the file
 
 .. code::
 
-    from setuptools import setup
+    [build-system]
+    requires = ["setuptools>=61.0"]
+    build-backend = "setuptools.build_meta"
 
-    setup(
-        name='dawn_giant',
-        version='1.0',
-        description='Dawn Customizations for GIANT',
-        py_modules=['dawn_giant'],
-        install_requires=[
-             'giant',
-             'numpy',
-             'spiceypy',
-             'pvl',
-             'bs4',
-             'requests'
-        ]
-    )
+    [project]
+    name = "dawn_giant"
+    version = "1.0"
+    description = "Dawn Customizations for GIANT"
+    dependencies = [
+    "giant",
+    "numpy",
+    "spiceypy",
+    "pvl",
+    "beautifulsoup4",
+    "requests",
+    ]
+
+    [tool.setuptools]
+    py-modules = ["dawn_giant"]
 
 This script simply tells python that we want to install our dawn_giant module so that it is always available.  It also
 lists the external requirements that need to be installed for this file to work.  If you've been following along to this
 point then most of these requirements are already installed, with the exception of `pvl`, which we discussed above.  The
 nice thing is, when we run the ``setup.py`` script, python will install pvl for us.
 
-Now, be sure that your ``giant_env`` is activated and then run ``python setup.py develop`` from the ``dawn_giant``
+Now, be sure that your ``giant_env`` is activated and then run ``python -m pip install -e`` from the ``dawn_giant``
 directory in order to install the ``dawn_giant`` package.  To test this install, simply cd to any other directory,
 start an interactive python shell, and then try ``import dawn_giant``.  This should complete successfully without any
 errors.
 
-And that is it, we have successfully customized GIANT to work for the DAWN mission and now we can move on to doing some
+And that is it, we have successfully customized GIANT to work for the DAWN mission, and now we can move on to doing some
 actual processing.
 
 The Full dawn_giant File
 ------------------------
-For your convenience the full ``dawn_giant.py`` file is presented here
+For your convenience the full ``dawn_giant.py`` file is presented here.  It can also be found in the GIANT repo under the 
+``examples/dawn_giant`` directory.
 
 .. code::
 
@@ -349,7 +352,7 @@ For your convenience the full ``dawn_giant.py`` file is presented here
 
     # A module to provide access to the NAIF Spice routines
     import spiceypy as spice
-    from spiceypy.utils.support_types import SpiceyError
+    from spiceypy import SpiceyError
 
     # a standard library for representing dates and time deltas
     from datetime import timedelta
@@ -360,16 +363,17 @@ For your convenience the full ``dawn_giant.py`` file is presented here
 
     class DawnFCImage(OpNavImage):
 
-        def parse_data(self):
+        def parse_data(self, *args):
 
             # be sure the image file exists
+            assert self.file is not None, "we need a file to parse the data from"
             if os.path.exists(self.file):
 
                 # get the extension from the file
                 _, ext = os.path.splitext(self.file)
 
                 # replace the extension from the file with LBL to find the corresponding label file
-                lbl_file = self.file.replace(ext, '.LBL')
+                lbl_file = str(self.file).replace(ext, '.LBL')
 
                 # check to see if the label file exists
                 if os.path.exists(lbl_file):
@@ -378,29 +382,32 @@ For your convenience the full ``dawn_giant.py`` file is presented here
                     with open(lbl_file, 'r') as lfile:
                         # pvl treats \ as escape characters so we need to replace them
                         data = pvl.loads(lfile.read().replace('\\', '/'))
+                        
+                        assert data is not None, "we were unable to parse the label file {}".format(lbl_file)
 
                     # extract the exposure time from the label and convert from ms to seconds
-                    self.exposure = data["EXPOSURE_DURATION"].value / 1000
+                    self.exposure = data["EXPOSURE_DURATION"].value / 1000 # pyright: ignore[reportAttributeAccessIssue]
 
                     # set the exposure type based off of the exposure length to make handling long/short opnav sequences
                     # easier.  This is typically camera specific and needs to be set by an analyst
+                    assert self.exposure is not None, "we were unable to extract the exposure time from the label file {}".format(lbl_file)
                     if self.exposure > 1:
                         self.exposure_type = "long"
                     else:
                         self.exposure_type = "short"
 
                     # extract the observation observation_date (middle of the exposure time of the image)
-                    self.observation_date = data["START_TIME"].replace(tzinfo=None) + timedelta(seconds=self.exposure / 2)
+                    self.observation_date = data["START_TIME"].replace(tzinfo=None) + timedelta(seconds=self.exposure / 2) # pyright: ignore[reportAttributeAccessIssue]
 
                     # get the temperature of the camera for this image
-                    self.temperature = data["DAWN:T_LENS_BARREL"].value - 273.15  # convert kelvin to celsius
+                    self.temperature = data["DAWN:T_LENS_BARREL"].value - 273.15  # pyright: ignore[reportAttributeAccessIssue] # convert kelvin to celsius
 
                     # get the quaternion of the rotation from the inertial frmame to the camera frame
                     # store the rotation as an attitude object.  Need to move the scalar term last
                     self.rotation_inertial_to_camera = Rotation(data["QUATERNION"][1:] + data["QUATERNION"][0:1])
 
                     # get the target
-                    self.target = data["TARGET_NAME"]
+                    self.target = str(data["TARGET_NAME"])
                     if self.target == "N/A":
                         self.target = None  # notify that we don't have a target here
                     else:
@@ -432,29 +439,29 @@ For your convenience the full ``dawn_giant.py`` file is presented here
                     # get the position and velocity of the camera (sc) with respect to the solar system bary center
                     try:
                         state, _ = spice.spkezr(self.spacecraft, et, 'J2000', 'NONE', "SSB")
-                        self.position = state[:3]
-                        self.velocity = state[3:]
+                        self.position = state[:3] # pyright: ignore[reportIndexIssue]
+                        self.velocity = state[3:] # pyright: ignore[reportIndexIssue]
 
                     except SpiceyError:
 
                         print('Unable to retrieve camera position and velocity \n'
-                              'for {0} at time {1}'.format(self.instrument, self.observation_date.isoformat()))
+                            'for {0} at time {1}'.format(self.instrument, self.observation_date.isoformat()))
 
                 else:
                     raise ValueError("we can't find the label file for this image so we can't parse the data."
-                                     "Looking for file {}".format(lbl_file))
+                                    "Looking for file {}".format(lbl_file))
 
 
     class DawnFCCamera(Camera):
 
         # update the init function to use the new DawnFCImage class instead of the default OpNavImage class
         def __init__(self, images=None, model=None, name=None, spacecraft_name=None,
-                     frame=None, parse_data=True, psf=None, attitude_function=None, start_date=None, end_date=None,
-                     default_image_class=DawnFCImage):
+                    frame=None, parse_data=True, psf=None, attitude_function=None, start_date=None, end_date=None,
+                    default_image_class=DawnFCImage):
             super().__init__(images=images, model=model, name=name, spacecraft_name=spacecraft_name,
-                             frame=frame, parse_data=parse_data, psf=psf,
-                             attitude_function=attitude_function, start_date=start_date, end_date=end_date,
-                             default_image_class=default_image_class)
+                            frame=frame, parse_data=parse_data, psf=psf,
+                            attitude_function=attitude_function, start_date=start_date, end_date=end_date,
+                            default_image_class=default_image_class)
 
         def preprocessor(self, image):
             # here we might apply corrections to the image (like flat fields and darks) or we can extract extra
@@ -467,7 +474,7 @@ For your convenience the full ``dawn_giant.py`` file is presented here
     # convenience functions
     def sun_orientation(*args):
         # always set the sun orientation to be the identity rotation (J2000) because it doesn't actually matter
-        return Rotation([0, 0, 0])
+        return Rotation()
 
 
     # define a function that will return the sun position in the inertial frame wrt SSB for a datetime
